@@ -219,8 +219,8 @@ function verdictFor(state: OverviewDerivedState, mode: OverviewEvidenceMode, ris
   if (risk === "route") return { label: "出口证据不完整", title: "默认路由无法核实", summary: "WAN 有记录；无明确活动默认路由。", tone: "warn" as OverviewTone };
   return {
     label: state.scale === "fleet" ? "多对象巡检" : "当前出口证据",
-    title: "业务可用性尚未判定",
-    summary: "已核实默认路由与采集通道；未探测外部业务。",
+    title: "默认出口与采集已核实",
+    summary: "已核实默认路由、采集通道与当前证据；外部业务未探测。",
     tone: "trust" as OverviewTone,
   };
 }

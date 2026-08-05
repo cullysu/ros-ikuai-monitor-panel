@@ -1037,8 +1037,8 @@ assert.equal(fleetModel.focusObject.route, "routes");
 
 const singleModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES.single));
 assert.equal(singleModel.verdictLabel, "当前出口证据");
-assert.equal(singleModel.verdictTitle, "业务可用性尚未判定");
-assert.equal(singleModel.verdictSummary, "已核实默认路由与采集通道；未探测外部业务。");
+assert.equal(singleModel.verdictTitle, "默认出口与采集已核实");
+assert.equal(singleModel.verdictSummary, "已核实默认路由、采集通道与当前证据；外部业务未探测。");
 assert.doesNotMatch(singleModel.verdictTitle, /出口路径已核实/);
 assert.equal(singleModel.scenarioFocus, null);
 assert.equal(singleModel.focusObject.category, "活动默认路由");

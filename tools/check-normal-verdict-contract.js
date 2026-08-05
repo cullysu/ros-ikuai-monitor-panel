@@ -9,10 +9,10 @@ const branchEnd = source.indexOf("\n  };\n}", branchStart);
 const normalBranch = branchStart >= 0 && branchEnd >= 0 ? source.slice(branchStart, branchEnd) : "";
 const checks = {
   normalBranchFound: normalBranch.length > 0,
-  businessBoundaryTitle: /title:\s*\"业务可用性尚未判定\"/.test(normalBranch),
+  verifiedManagementTitle: /title:\s*\"默认出口与采集已核实\"/.test(normalBranch),
   managementEvidenceInSummary: /默认路由|采集通道/.test(normalBranch),
   externalProbeBoundaryInSummary: /外部业务.*未探测|未探测.*外部业务/.test(normalBranch),
-  oldRouteFirstTitleRemoved: !/title:\s*\"默认路由已核实\"/.test(normalBranch),
+  unverifiedBusinessTitleRemoved: !/title:\s*\"业务可用性尚未判定\"/.test(normalBranch),
 };
 const failed = Object.entries(checks).filter(([, value]) => !value).map(([name]) => name);
 const report = {

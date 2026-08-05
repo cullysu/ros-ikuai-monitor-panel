@@ -25188,3 +25188,16 @@ ocused-green-engineering
 - nextAction：提交并同步 Step884；在新 clean HEAD 重新生成 runtime、Overview、full/bounded route、route-state、tablet、packet、truth、quarantine 和 readiness，然后继续独立正式签收、Route Owner、RouterOS soak 与 exact-SHA CL。
 - validForCommit：本步 tracked 文档与 CSS/构建产物尚未提交；提交前报告仅作诊断，不能作为当前发布证据。
 - supersededBy：null
+
+## 第 885 步：独立视觉复核暴露正常主结论与 430 宽度证据缺口
+
+- status：`normal-verdict-truth-and-430-visual-evidence-red`
+- latestStepOutcome: `885:normal-verdict-truth-and-430-visual-evidence-red`
+- 触发/问题：针对当前候选 `756d9d4a889a5140d9384dd47105e0ab53dfec4a` 的独立 Visual/Product 复核返回 P0=0、P1=2。第一项是 exact-SHA 没有 430px 正常/资源/采集失败/接口异常截图；第二项是正常态最大标题仍为“业务可用性尚未判定”，而同一首屏已经证明默认路由、WAN 与采集通道可用，造成证据事实与主视觉结论冲突。两项都是真实可执行问题，不是外部阻塞。
+- 决策：先建立正常 verdict 的证据真值红合同，主标题改为“默认出口与采集已核实”，紧邻摘要保留“外部业务未探测”边界；风险/无快照/采集失败分支保持原有明确告警，不把管理面证据升级成业务可用性。随后在同一 clean SHA 生成 430px 四个必测场景截图和裁切检查，并把它们纳入产品/视觉 packet 的精确身份绑定。
+- 拒绝：不把“业务可用性尚未判定”继续留在正常主视觉上；不通过扩大自动化数量、复用旧 430 工件或修改证据语义来伪造视觉签收；不把 sub-agent scoped review 当成 trusted external signature。
+- 预期红灯：`check-normal-verdict-contract` 与 `check-verdict-truth-contract` 应先明确指出旧标题；430px 缺少当前 SHA 证据时，visual packet 必须保持 `prepared-not-signed`。
+- 边界：只修正常态主结论和当前候选的 430px 视觉证据覆盖；不改变 current/stale/unavailable 数据语义、默认路由验证、只读边界、横屏或桌面 render tree。Product/Design/Visual trusted acceptance、真实 AT、Route Owner、RouterOS soak、exact-SHA CL 与 GitHub 继续 fail-closed。
+- nextAction：先运行 focused verdict red contract，修正 evidence model 与对应浏览器/模型断言；再运行 types、Overview、build 和 fresh 运行时，提交新 clean SHA 后生成 430px 矩阵与 packet，并再次独立复核。
+- validForCommit：`756d9d4a889a5140d9384dd47105e0ab53dfec4a`
+- supersededBy：null

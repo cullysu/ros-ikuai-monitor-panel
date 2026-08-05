@@ -147,7 +147,7 @@ function inspectMobileNativeOverview({
   if (!mobileRoot) return null;
 
   const expected = {
-    single: { mode: 'current', risk: 'none', facts: ['route', 'wan', 'collection'], title: '业务可用性尚未判定', priority: 0, traffic: true, resource: false, ledger: ['target', 'boundary'] },
+    single: { mode: 'current', risk: 'none', facts: ['route', 'wan', 'collection'], title: '默认出口与采集已核实', priority: 0, traffic: true, resource: false, ledger: ['target', 'boundary'] },
     fleet: { mode: 'current', risk: 'interfaces', facts: ['route', 'wan', 'collection'], title: '3 个出口依赖接口未运行', priority: 3, priorityLabel: '配置依赖接口', priorityTitle: '核对受影响配置依赖', traffic: false, resource: false, ledger: ['target', 'boundary'] },
     'all-offline': { mode: 'current', risk: 'wan', facts: [], focus: 'outage', title: '全部', priority: 8, priorityLabel: '离线 WAN', priorityTitle: '逐条核对 WAN 链路', traffic: false, ledger: ['target', 'boundary'] },
     'no-snapshot': { mode: 'unavailable', risk: 'evidence', facts: [], focus: 'coverage', title: '当前业务状态不可判断', priority: 2, priorityLabel: '恢复入口', priorityTitle: '恢复当前快照', traffic: false, ledger: ['failures', 'boundary'] },

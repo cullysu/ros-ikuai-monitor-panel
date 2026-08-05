@@ -5193,9 +5193,9 @@ async function main() {
     screenshots.push(await screenshot(taskDesktopPage, 'overview-normal-task-1200.png', 'overview-normal-task-1200'));
     check(
       checks,
-      'normal current mobile and desktop verdicts lead with the unproven business boundary and preserve verified evidence',
+      'normal current mobile and desktop verdicts lead with verified management evidence and preserve the external business boundary',
       [normal390, normal1199].every((item) => (
-        item.verdictTitleText === '业务可用性尚未判定' &&
+        item.verdictTitleText === '默认出口与采集已核实' &&
         item.verdictSummaryText.includes('默认路由') &&
         item.verdictSummaryText.includes('采集通道') &&
         /未探测外部业务|外部业务未探测/.test(item.verdictSummaryText) &&

@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step884 records the framework style budget repair after the 320 evidence-wrap and tablet relationship repair and the current exact-SHA evidence boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step885 records the normal verdict truth red contract and missing 430px visual evidence boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step884 在 Step883 修复 320px 关键证据裁切和 844 平板关系证据挤压后，又修复了 framework style 超预算：将平板规则并入既有能力媒体块，产物回到 119993 bytes；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step885 记录独立视觉/产品复核发现的正常主结论冲突与缺少 430px 候选证据：正常态改为“默认出口与采集已核实”，并保留“外部业务未探测”边界；430px 正常、资源、采集失败、接口异常截图必须绑定新 clean SHA。exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `884`
-- currentOutcome: `884:framework-css-budget-repair-and-exact-sha-rebind`
-- currentBoundary: `884`
+- currentStep: `885`
+- currentOutcome: `885:normal-verdict-truth-and-430-visual-evidence-red`
+- currentBoundary: `885`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -53,4 +53,4 @@ Step877: the visual packet generator now reads the authoritative current-state d
 
 Step878: the quarantine scanner now uses only the machine state's current evidence ledger for current report discovery; historical gate records remain audit-only and the release stays FAIL-closed.
 
-Step884: the framework style budget was repaired after Step883 without weakening its evidence contract; the rebuilt style is 119993 bytes, while formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
+Step885: the normal verdict now has a red contract to lead with verified management evidence while preserving the unprobed business boundary; a 430px visual shard is required before independent signoff. Formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.

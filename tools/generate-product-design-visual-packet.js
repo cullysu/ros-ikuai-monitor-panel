@@ -19,6 +19,10 @@ const evidenceFiles = [
   "mobile-composite-risk-390.png",
   "mobile-composite-risk-375.png",
   "mobile-log-explicit-detail-390.png",
+  "mobile-visual-430-single.png",
+  "mobile-visual-430-resource-full.png",
+  "mobile-visual-430-collection-down.png",
+  "mobile-visual-430-interfaces-down.png",
   "tablet-overview-normal-768.png",
   "tablet-overview-master-detail-844.png",
   "tablet-interface-review-844.png",
@@ -69,8 +73,8 @@ const packet = {
     {
       id: "R07",
       label: "mobile visual maturity",
-      viewports: ["390x844", "375x667", "768x1024", "844x390"],
-      evidence: ["mobile-runtime-current.png", "mobile-composite-risk-390.png", "mobile-composite-risk-375.png", "mobile-log-explicit-detail-390.png"],
+      viewports: ["390x844", "375x667", "430x932", "768x1024", "844x390"],
+      evidence: ["mobile-runtime-current.png", "mobile-composite-risk-390.png", "mobile-composite-risk-375.png", "mobile-visual-430-single.png", "mobile-visual-430-resource-full.png", "mobile-visual-430-collection-down.png", "mobile-visual-430-interfaces-down.png", "mobile-log-explicit-detail-390.png"],
     },
     {
       id: "R09",

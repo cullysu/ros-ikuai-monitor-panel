@@ -12,7 +12,7 @@ const normalBlock = normalStart >= 0 && normalEnd > normalStart
 
 const checks = [
   ["normal branch found", normalBlock.length > 0],
-  ["normal title leads with unproven business boundary", normalBlock.includes('title: "业务可用性尚未判定"')],
+  ["normal title leads with verified management evidence", normalBlock.includes('title: "默认出口与采集已核实"')],
   ["normal label names evidence boundary", normalBlock.includes("当前出口证据")],
   ["normal summary preserves unprobed business boundary", normalBlock.includes("外部业务") && normalBlock.includes("未探测")],
   ["normal tone remains trust for current evidence", normalBlock.includes('tone: "trust"')],

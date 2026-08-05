@@ -2,15 +2,15 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `884`
-- currentOutcome: `884:framework-css-budget-repair-and-exact-sha-rebind`
-- latestStepOutcome: `884:framework-css-budget-repair-and-exact-sha-rebind`
+- currentStep: `885`
+- currentOutcome: `885:normal-verdict-truth-and-430-visual-evidence-red`
+- latestStepOutcome: `885:normal-verdict-truth-and-430-visual-evidence-red`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
 - Step883: Independent visual review identified tablet relationship evidence squeezed by the previous three-column formula, and independent product/accessibility review exposed real 320px clipped evidence that the old reflow gate ignored. The runtime bar now wraps the freshness proof at narrow widths, narrow metric labels and notes wrap, the 320 gate rejects any clipped text, and the tablet comparison inspector gives relationship evidence a readable column with a full-row action. Focused build/runtime/tablet contracts pass before this governance sync; the current docs change opens a new exact-SHA boundary, so all reports must be regenerated after commit. Formal Product/Design/Visual/Accessibility acceptance, Route Owner, route maturity, RouterOS soak, Linux/Windows/GHCR exact-SHA CL and GitHub publication remain open; task active and blocked=false.
 
-- Step884: The first rebuild of Step883 exceeded the unchanged framework style budget at 121206 bytes. The tablet rules were folded into the existing 768–1199px capability media block and the narrow wrapping overrides were reduced without changing the evidence contract; rebuild produced 119993 bytes and focused runtime passed. This tracked change opens a new exact-SHA boundary, so all reports must be regenerated after commit. Formal Product/Design/Visual/Accessibility acceptance, Route Owner, route maturity, RouterOS soak, Linux/Windows/GHCR exact-SHA CL and GitHub publication remain open; task active and blocked=false.
+- Step885: Independent Visual/Product review of candidate 756d9d4 returned P0=0/P1=2: normal verdict copy still led with unproven business availability despite verified management evidence, and the candidate had no exact-SHA 430px visual shard. The red contract changes the normal title to “默认出口与采集已核实”, preserves “外部业务未探测”, and requires 430px normal/resource/collection-down/interfaces-down evidence. This tracked change opens a new exact-SHA boundary; formal Product/Design/Visual/Accessibility acceptance, Route Owner, route maturity, RouterOS soak, Linux/Windows/GHCR exact-SHA CL and GitHub publication remain open; task active and blocked=false.
 
 - Step862: Three independent read-only reviews ran on the current candidate: design scoped PASS with P0/P1=`0`, Product conditional for the mobile patrol slice, and Visual conditional/no-go until evidence context and fixed-navigation screenshot boundaries are rechecked. The root cause was fixed: matrix aggregate families no longer overwrite one another, runtime fixture identity is aligned with the public matrix family, and composite screenshot capture resets scroll and waits for paint. This tracked governance change requires a fresh exact-SHA rebind; formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
