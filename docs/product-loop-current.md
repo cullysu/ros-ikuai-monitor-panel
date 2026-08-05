@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `888`
+- currentHandoffForStep: `889`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-05
-- latestRecordedStep: `888`
-- latestStepOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
+- latestRecordedStep: `889`
+- latestStepOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
 - currentConclusion: **FAIL overall**. Current-SHA scoped Product/Design/Visual/Engineering review is P0/P1=0, but formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
 ## Loop refinement applied
@@ -13,12 +13,12 @@
 - `emil-design-eng` was installed from `emilkowalski/skills` and fused into the product-company loop through `C:\Users\cully\.codex\skills\product-company-loop\references\emil-design-eng-gate.md`.
 - The operational rule is restraint: motion cannot invent freshness or urgency, and static evidence remains preferred for metrics, alerts, timestamps, and charts.
 
-## Current handoff: Step 888 Windows packaging contract repair; formal gates remain open
+## Current handoff: Step 889 exact-SHA scoped review and local Windows package verification; formal gates remain open
 
-- Result: current-SHA c93 scoped Product/Design/Visual/Accessibility/Engineering review found no P0/P1 findings; the Windows packaging preflight/CI neutral mount contract mismatch was then repaired. Current exact-SHA runtime and matrix reports are historical after this tracked code/docs change and must be rebound.
-- Decision: close the local scoped review only. Keep product release FAIL-closed, preserve bounded route semantics, keep scoped review separate from trusted acceptance, and require a fresh clean SHA for every matrix family. The task is active and `blocked=false` while all remaining gates are executable.
+- Result: current-SHA 911 scoped Visual/Product review found P0/P1=`0` with three non-blocking P2 observations; Product/Accessibility/Engineering found P0/P1/P2=`0`. Windows packaging/CI now validate the neutral mount and the local EXE build plus framework asset hash checks pass.
+- Decision: close the local scoped review and local packaging verification only. Keep product release FAIL-closed, preserve bounded route semantics, keep scoped review separate from trusted acceptance, and require a fresh clean SHA for every matrix family. The task is active and `blocked=false` while all remaining gates are executable.
 - Boundary: route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Formal product/design/visual/accessibility acceptance, Route Owner, RouterOS soak, exact-SHA CL and public release remain fail-closed.
-- Next: commit and sync Step888, regenerate every exact-SHA report family plus the 430px visual shard, re-run Windows packaging and readiness, then continue trusted Product/Design/Visual/Accessibility acceptance, Route Owner, RouterOS soak and exact-SHA external CL before any GitHub publication.
+- Next: commit and sync Step889, perform the final exact-SHA rebind of runtime, all matrices, packet, truth, quarantine and readiness, then continue trusted Product/Design/Visual/Accessibility, Route Owner/AT, real RouterOS soak and exact-SHA external CL before any GitHub publication.
 ## Gate boundary
 
 | Gate | Status | Meaning |

@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step888 records the Windows packaging/neutral mount contract repair after a fresh c93 scoped Product/Design/Visual/Accessibility/Engineering pass with no P0/P1 findings; formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step889 records the 911 exact-SHA scoped review and local Windows package verification after the neutral mount contract repair; formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step888 记录 c93 scoped Product/Design/Visual/Accessibility/Engineering 未发现 P0/P1 后，修复 Windows packaging 与中性 `<div id="app">` 合同冲突；该修复不改变运行时产品。scoped pass 不替代独立 trusted 签名；辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step889 记录 911 exact-SHA 的独立 scoped 复核与 Windows 本地 EXE/框架 hash 核验；此前 Step888 修复了 Windows packaging 与中性 `<div id="app">` 合同冲突。scoped pass 不替代独立 trusted 签名；辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `888`
-- currentOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
-- currentBoundary: `888`
+- currentStep: `889`
+- currentOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
+- currentBoundary: `889`
 - authority: `decision-system/current-state.md`
 
 ## 入口

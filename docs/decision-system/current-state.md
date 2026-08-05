@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `888`
-- latestRecordedStep: `888`
-- latestStepOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
-- currentBoundaryForStep: `888`
+- currentConclusionForStep: `889`
+- latestRecordedStep: `889`
+- latestStepOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
+- currentBoundaryForStep: `889`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-06T00:00:00+08:00
@@ -10,17 +10,18 @@
 
 ## Current conclusion
 
-**FAIL overall / scoped Product·Design·Visual review clean / formal release gates OPEN.** The current implementation has local engineering evidence and a current-SHA scoped review with P0/P1=0, but this is not public-release approval. Trusted acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
+**FAIL overall / scoped Product·Design·Visual·Accessibility review clean / formal release gates OPEN.** Candidate `911bd00ab25e9e788d7dd8ce171a5fb350b53bc9` has current local engineering evidence, a current-SHA scoped review with no P0/P1 findings, and a locally built Windows EXE, but this is not public-release approval. Trusted acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 888
+## Current decision record: Step 889
 
-- observed: c93 候选的两组独立只读复核已关闭本地 scoped review；随后 Windows packaging preflight 在真实执行中暴露了一个可执行的旧 `<main id="app">` 合同，而产品的正确 mount 是中性的 `<div id="app">`。该冲突不是产品缺陷，也不是外部阻塞，而是发布门禁与已验证 DOM 事实不一致。
-- decision: 修复 Windows preflight、CI bundle 检查和 release-blocker 反向合同，使它们统一验证 `<div id="app">`；保持 scoped Product/Design/Visual/Accessibility/Engineering 结论分离于 trusted external acceptance。正式 Product/Design/Visual/Accessibility、Route Owner、route maturity、RouterOS soak 和外部 CL 继续 fail-closed。
-- visual disposition: 375/390/430 手机、844×390 横屏、768/844 平板、1366/1440 桌面在 c93 evidence scope 未发现 P0/P1 视觉阻断；P2 不阻断 scoped closure，不授权公众发布。
+- observed: Step888 后的精确候选为 `911bd00ab25e9e788d7dd8ce171a5fb350b53bc9`，必须重新绑定所有报告和视觉包；两组独立只读复核已核对当前 HEAD 且未修改文件。
+- decision: 关闭当前 scoped Product/Design/Visual/Accessibility/Engineering review 范围内的 P0/P1；Visual/Product 保留 320 顶栏、844×390 横屏重心、430 资源趋势位置三个非阻断 P2，Product/Accessibility/Engineering 为 P0/P1/P2=`0`。不把 scoped review 当作 trusted external acceptance。
+- visual disposition: 375/390/430 手机、844×390 横屏、768/844 平板、1366/1440 桌面在当前 evidence scope 未发现 P0/P1 视觉阻断；P2 不阻断 scoped closure，不授权公众发布。
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. No RouterOS write capability or business-health claim was added.
-- report truth: c93 current runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, full route `532/532`, route-state `266/266`, bounded route `76/76`, tablet shard and 430px shard requested cells all pass with zero failed requested cells. The Windows preflight failure is recorded separately as a fixed gate-contract issue. These reports are exact-bound to c93 before this tracked Step888 change; after commit they must be regenerated and rebound to the new clean SHA.
+- report truth: 911 exact-SHA runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, full route `532/532`, route-state `266/266`, bounded route `76/76`, tablet shard requested `152`, 430px shard requested `4`; all requested cells have zero failures. report truth, quarantine, asset identity, backend security, collector regressions, release blockers, types, overview and static assets pass.
+- packaging truth: Windows preflight frontend assets, shared public paths, RouterOS archive/install dry-runs pass; local `build-windows-exe.ps1 -NoZip` succeeds, EXE mount is `<div id="app">`, and framework script/style/desktopStyle hashes match the manifest. This is local packaging evidence, not Windows CI/CL.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
-- release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, RouterOS soak, trusted independent signatures and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred. Any c93 report is historical after the Step888 tracked commit.
+- release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; trusted independent signatures, Route Owner/AT, real RouterOS soak and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred. Bash/WSL is unavailable locally, so no Linux CL is claimed.
 
 ## Gate status
 
@@ -56,4 +57,4 @@
 
 ## One next action
 
-- nextAction: commit and sync Step888, regenerate all exact-SHA evidence including runtime, matrices, packet and 430px visual shard, re-run Windows packaging and release readiness, then continue trusted Product/Design/Visual/Accessibility acceptance, Route Owner acceptance, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL; only then consider atomic GitHub publication.
+- nextAction: commit and sync Step889, perform the final exact-SHA rebind of runtime, all matrices, packet, truth, quarantine and readiness, then continue trusted Product/Design/Visual/Accessibility, Route Owner/AT, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL; only then consider atomic GitHub publication.

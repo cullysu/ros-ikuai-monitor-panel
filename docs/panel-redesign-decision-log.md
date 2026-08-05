@@ -25243,3 +25243,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step888；在新 clean HEAD 重建并重跑全套 exact-SHA 证据、Windows packaging preflight 和 release readiness，然后继续 Linux/Windows/GHCR CL 与 RouterOS soak。
 - validForCommit：当前 Step887 clean candidate `1a978e94fe972ba1374ab541c192398ed27d703a`；本步 tracked 代码与文档提交后全部旧报告仅作历史诊断。
 - supersededBy：null
+
+## 第 889 步：911 精确候选的独立 scoped 复核与本地打包证据闭合
+
+- status：`exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
+- latestStepOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
+- 触发/问题：Step888 提交后的候选为 `911bd00ab25e9e788d7dd8ce171a5fb350b53bc9`。必须重新绑定所有报告，不能把修复前的 c93 或文档提交前的报告当作当前发布证据；同时必须完成当前候选的独立视觉/产品/无障碍复核和 Windows 本地打包核验。
+- 独立复核：两组只读复核均核对当前 HEAD 与 911 SHA、工作树干净且未修改文件。Visual/Product scoped pass 返回 P0/P1=`0`，仅保留 320 顶栏高度、844×390 横屏重心、430 资源趋势位置三个非阻断 P2；Product/Accessibility/Engineering scoped pass 返回 P0/P1/P2=`0`，确认 current/stale/unavailable、风险优先级、无任意路由兜底、navigator.onLine 不阻断请求、ARIA、Back/Forward、320/375/430、平板和 200% 证据无回归。两组均明确不签署 trusted external acceptance。
+- 验证：当前 SHA runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`；Overview `28/28`；full route `532/532`；route-state `266/266`；bounded route `76/76`；tablet 分片请求单元 `152`、430 分片请求单元 `4` 均为零失败；report truth、quarantine、asset identity、backend security、collector regressions、release blockers、types、overview 和 static assets 均通过。Windows preflight 的前端资源、共享 public 路径、RouterOS 安装说明、archive builder/converter、bash/install dry-run 均通过，唯一失败仍是 readiness 内部的 route maturity；`build-windows-exe.ps1 -NoZip` 成功，EXE 内部使用 `<div id="app">`，framework manifest 的 script/style/desktopStyle 三项文件均存在且 SHA256 匹配。
+- 真实边界：`check-route-maturity` 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；视觉包为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。本机没有可用的 Linux `/bin/bash`/WSL 发行版，故不能把 Windows 上的本地检查写成 Linux CL；真实 RouterOS soak、Route Owner/AT、可信外部签名、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布仍未完成。
+- 决策：关闭本轮已验证的本地 scoped visual/product/accessibility/engineering 与 Windows 本地 packaging 问题；不伪造外部签名，不把本地 EXE 当作 Windows CI，不把矩阵通过写成产品模块独立签收。任务继续 active、`blocked=false`，发布门保持关闭。
+- 心得：正式门禁的红灯必须指向真实缺口，而不是让代理停止工作；本轮实际可执行的代码/门禁缺陷已修复，剩余红灯属于需要真实外部主体、真实设备或远端 CI 的边界。只有把这些边界逐项获得证据，才可以关闭发布任务。
+- nextAction：提交并同步 Step889；在新 clean HEAD 最后一次重建 runtime、全场景矩阵、packet、truth、quarantine 和 readiness，随后继续获取真实 Route Owner/AT、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL；未全部通过前不上传 GitHub。
+- validForCommit：`911bd00ab25e9e788d7dd8ce171a5fb350b53bc9`
+- supersededBy：null

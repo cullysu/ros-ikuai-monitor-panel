@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `888`
-- latestRecordedStep: `888`
-- latestStepOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
+- currentBoundaryForStep: `889`
+- latestRecordedStep: `889`
+- latestStepOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step888 records the executable Windows packaging/neutral mount contract repair after the current-SHA scoped review, while keeping formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates open.
+Task remains active and blocked=false; Step889 records the 911 exact-SHA scoped review closure and local Windows package verification after the neutral mount repair, while keeping formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates open.

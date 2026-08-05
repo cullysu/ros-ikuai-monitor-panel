@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `888`
-- currentOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
-- latestStepOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
+- currentStep: `889`
+- currentOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
+- latestStepOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -14,6 +14,7 @@
 
 - Step887: Current clean SHA `c93d4906191cfd3e92ac8d3e8ae1867948bb0911` received two fresh independent read-only scoped reviews. Visual/Product found P0/P1=`0` with three non-blocking P2 polish observations; Product/Accessibility/Engineering found P0/P1/P2=`0` and no fact, ARIA, history, risk-object or reflow regression. Local scoped Product/Design/Visual/Accessibility/Engineering review is closed within its declared scope, while the packet remains `prepared-not-signed`, route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, and trusted Product/Design/Visual/Accessibility, Route Owner, RouterOS soak and exact-SHA Linux/Windows/GHCR CL remain open. The subsequent packaging-contract repair is recorded as Step888.
 - Step888: Windows packaging preflight and CI bundle verification were corrected from the retired `<main id="app">` assumption to the validated neutral `<div id="app">` mount. This fixes a real local release-gate defect without changing product runtime behavior. All c93 evidence becomes historical after the tracked change and must be rebound; trusted acceptance, route maturity, RouterOS soak, exact-SHA Linux/Windows/GHCR CL and GitHub remain open; task active and blocked=false.
+- Step889: Exact candidate `911bd00ab25e9e788d7dd8ce171a5fb350b53bc9` received fresh independent read-only scoped review: Visual/Product P0/P1=`0` with three non-blocking P2 observations, Product/Accessibility/Engineering P0/P1/P2=`0`; neither review signed trusted external acceptance. Current runtime `260/140/169`, Overview `28/28`, full route `532/532`, route-state `266/266`, bounded route `76/76`, tablet requested `152` and 430px requested `4` are green with zero requested-cell failures. Windows preflight and local EXE build are green; route maturity remains `0/18/0/1`, packet remains `prepared-not-signed`, and real RouterOS soak, trusted signatures, Linux/Windows/GHCR exact-SHA CL and GitHub remain open. This governance change requires one final exact-SHA rebind; task active and blocked=false.
 
 - Step862: Three independent read-only reviews ran on the current candidate: design scoped PASS with P0/P1=`0`, Product conditional for the mobile patrol slice, and Visual conditional/no-go until evidence context and fixed-navigation screenshot boundaries are rechecked. The root cause was fixed: matrix aggregate families no longer overwrite one another, runtime fixture identity is aligned with the public matrix family, and composite screenshot capture resets scroll and waits for paint. This tracked governance change requires a fresh exact-SHA rebind; formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
