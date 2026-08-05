@@ -25150,7 +25150,7 @@ ocused-green-engineering
 ## 第 882 步：修复桌面来源列可扫描性并继续 exact-SHA 回绑
 
 - status：`desktop-source-disclosure-readability-and-exact-sha-rebind`
-- latestStepOutcome：`882:desktop-source-disclosure-readability-and-exact-sha-rebind`
+- latestStepOutcome: `882:desktop-source-disclosure-readability-and-exact-sha-rebind`
 - 触发/问题：独立视觉复核指出桌面“运行判断”的来源列仍把 `overview.cpuLoad + memoryUsage + diskUsage` 一类原始字段路径放在主扫描层，且展开内容为 11px；这会让运维用户看到调试语法，而不是可判断的证据来源。该问题是可执行的视觉 P1，不能用“专业用户可以理解”放过。
 - 决策/实现：为运行判断、边界台账和 provenance 统一提供人类可读 `sourceLabel`；原始字段路径移动到原生 `details` 渐进披露；展开后的原始代码和 disclosure 箭头提高到 12px。主列优先回答“这条判断来自哪类证据”，只有需要审计时才打开原始字段。
 - 验证：`check:types`、`build`、`check-desktop-information-efficiency`、`check-overview-architecture` 通过；当前 clean candidate 的 runtime 为 `260 checks / 140 screenshots / 169 snapshotApiCalls`，Overview `28/28`，full route `532/532`，route-state `266/266`，bounded route `76/76`，tablet shard `8/8`；packet identity、report truth/quarantine、asset identity、backend security、runtime schema、readonly mode 和 release checkpoint contracts 通过。完成本步 tracked 决策同步后，所有 exact-SHA 报告必须再次绑定到新 HEAD。
