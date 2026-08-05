@@ -5,7 +5,7 @@
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `885`
+- coveredStepMax: `886`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -30,6 +30,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 877 - 880 | packet authority binding, report quarantine current-evidence isolation, amended exact-SHA evidence rebound, post-commit evidence boundary and fail-closed formal gates | current-state.md |
 | 881 - 884 | decision-repository synchronization, desktop source disclosure readability repair, 320 evidence-wrap/tablet relationship repair, framework style budget repair | current-state.md |
 | 885 | normal verdict truth repair, exact-SHA 430px visual evidence, and fail-closed independent visual/product review boundary | current-state.md |
+| 886 | current-SHA scoped Product/Design/Visual/Engineering review with P0/P1=0, explicit P2 boundaries, and formal gate separation | current-state.md |
 
 ## Reading rule
 

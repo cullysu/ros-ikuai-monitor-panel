@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step885 records the normal verdict truth red contract and missing 430px visual evidence boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step886 records a current-SHA scoped Product/Design/Visual/Engineering pass with P0/P1=0 after the normal verdict and 430px evidence repair; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step885 记录独立视觉/产品复核发现的正常主结论冲突与缺少 430px 候选证据：正常态改为“默认出口与采集已核实”，并保留“外部业务未探测”边界；430px 正常、资源、采集失败、接口异常截图必须绑定新 clean SHA。exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step886 记录当前 clean SHA 的独立只读复核：scoped Product/Design/Visual/Engineering 为 P0/P1=0，430px 正常/资源/采集失败/接口异常与 375/390/平板/桌面证据均在声明范围内通过；剩余为 430 资源趋势位置、横屏重心和 1440 留白三个 P2。该 scoped pass 不替代独立 trusted 签名；辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `885`
-- currentOutcome: `885:normal-verdict-truth-and-430-visual-evidence-red`
-- currentBoundary: `885`
+- currentStep: `886`
+- currentOutcome: `886:scoped-independent-review-pass-formal-gates-open`
+- currentBoundary: `886`
 - authority: `decision-system/current-state.md`
 
 ## 入口

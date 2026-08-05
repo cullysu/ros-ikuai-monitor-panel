@@ -25201,3 +25201,18 @@ ocused-green-engineering
 - nextAction：先运行 focused verdict red contract，修正 evidence model 与对应浏览器/模型断言；再运行 types、Overview、build 和 fresh 运行时，提交新 clean SHA 后生成 430px 矩阵与 packet，并再次独立复核。
 - validForCommit：`756d9d4a889a5140d9384dd47105e0ab53dfec4a`
 - supersededBy：null
+
+## 第 886 步：当前 clean SHA 的独立 scoped review 关闭与正式签收边界保持打开
+
+- status：`scoped-independent-review-pass-formal-gates-open`
+- latestStepOutcome: `886:scoped-independent-review-pass-formal-gates-open`
+- 触发/问题：候选 `8e549dc03d608cda99b0c0f92a2e7bd6cb1a3546` 已完成正常 verdict 修复、430px 四场景视觉证据补齐和完整矩阵回绑；用户要求未完成独立签收前继续推进，不能把“受阻”当作停止理由。
+- 独立复核：两组只读复核均核对当前 HEAD 与候选 SHA、工作树干净且未修改文件。Visual/Product scoped pass 返回 P0/P1=`0`，仅保留 430 资源趋势位置、844×390 横屏重心、1440 留白三个 P2；Product/Accessibility/Engineering 未发现本范围内的 P0/P1 事实、ARIA、Back/Forward 或 320/200% 重排回归。
+- 决策：关闭本轮已修复的正常 verdict 与 430px 证据 P1，并将当前候选在声明范围内记录为 scoped Product/Design/Visual/Engineering pass；不把 scoped review、自动矩阵、sub-agent 结果改写为 trusted external signature。正式 Product/Design/Visual/Accessibility、Route Owner、route maturity、真实 RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL 继续 fail-closed。
+- 验证：当前候选 runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`；Overview `28/28`；full route `532/532`；route-state `266/266`；bounded route `76/76`；tablet 与 430px 分片请求单元均为 0 failures；packet 为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。readiness 已接受完整矩阵并诚实停止在 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 视觉边界：375/390/430 手机、844×390 横屏、768/844 平板、1366/1440 桌面在当前 evidence scope 未发现 P0/P1 视觉阻断；三个 P2 记录为后续抛光，不提升为发布资格。
+- 形式边界：本步会修改 tracked 决策文档；因此 `8e549dc...` 报告只代表文档提交前的候选，提交后必须重新生成 runtime、Overview、full/bounded route、route-state、tablet、430px、packet、truth、quarantine 和 readiness。不能复用旧 SHA 工件。
+- 心得：独立签收的价值不在于给当前版本盖章，而在于把“局部 scope 已通过”和“公众发布已获可信授权”严格分开。没有外部签名、真实设备 soak 和 exact-SHA CL 时，继续推进本地可执行步骤才是正确行为；将 formal pending 标成 blocked 反而会掩盖真正的下一步。
+- nextAction：提交并同步 Step886；在新 clean HEAD 重新生成全部 exact-SHA 证据，随后继续 trusted Product/Design/Visual/Accessibility、Route Owner、RouterOS soak、Linux/Windows/GHCR CL，最后才考虑原子 GitHub 发布。
+- validForCommit：`8e549dc03d608cda99b0c0f92a2e7bd6cb1a3546`
+- supersededBy：null
