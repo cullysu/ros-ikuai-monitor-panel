@@ -25146,3 +25146,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step881；在新 clean HEAD 重新生成 runtime、Overview、full/bounded route、route-state、tablet、packet、truth、quarantine 和 readiness，然后继续独立正式签收、Route Owner、RouterOS soak 与 exact-SHA CL。
 - validForCommit：本步 tracked 文档尚未提交；当前候选 dea342348b02702a6fd03b80bba4ef4232caa528 报告在本步提交后仅作历史。
 - supersededBy：null
+
+## 第 882 步：修复桌面来源列可扫描性并继续 exact-SHA 回绑
+
+- status：`desktop-source-disclosure-readability-and-exact-sha-rebind`
+- latestStepOutcome：`882:desktop-source-disclosure-readability-and-exact-sha-rebind`
+- 触发/问题：独立视觉复核指出桌面“运行判断”的来源列仍把 `overview.cpuLoad + memoryUsage + diskUsage` 一类原始字段路径放在主扫描层，且展开内容为 11px；这会让运维用户看到调试语法，而不是可判断的证据来源。该问题是可执行的视觉 P1，不能用“专业用户可以理解”放过。
+- 决策/实现：为运行判断、边界台账和 provenance 统一提供人类可读 `sourceLabel`；原始字段路径移动到原生 `details` 渐进披露；展开后的原始代码和 disclosure 箭头提高到 12px。主列优先回答“这条判断来自哪类证据”，只有需要审计时才打开原始字段。
+- 验证：`check:types`、`build`、`check-desktop-information-efficiency`、`check-overview-architecture` 通过；当前 clean candidate 的 runtime 为 `260 checks / 140 screenshots / 169 snapshotApiCalls`，Overview `28/28`，full route `532/532`，route-state `266/266`，bounded route `76/76`，tablet shard `8/8`；packet identity、report truth/quarantine、asset identity、backend security、runtime schema、readonly mode 和 release checkpoint contracts 通过。完成本步 tracked 决策同步后，所有 exact-SHA 报告必须再次绑定到新 HEAD。
+- 产品/视觉裁决：关闭已证实的本地桌面 source-scan P1；保留 P2 抛光项，不把局部 scoped review 变成 trusted Product/Design/Visual/Accessibility 签收。
+- 发布边界：继续 FAIL-closed。route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；正式签收、Accessibility/AT、Route Owner、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release 未完成，任务 active、`blocked=false`。
+- 边界/心得：来源字段不是装饰性小字，而是证据链的一部分；主扫描层必须使用人的对象语言，原始路径留在审计层。每次 tracked 决策文档变更都会改变候选身份，必须重新生成并检查 exact-SHA 报告；这不是阻塞，而是发布真值保护。
+- nextAction：在 Step882 文档提交后的新 clean HEAD 重新生成 runtime、Overview、full/bounded route、route-state、tablet、packet、truth、quarantine 和 readiness，然后继续独立正式签收、Route Owner、RouterOS soak 与 exact-SHA CL。
+- validForCommit：本步 tracked 文档尚未提交；本步前 clean candidate 报告只作历史诊断，不能冒充新 HEAD 的发布证据。
+- supersededBy：null

@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step881 records the current-evidence rebind boundary after the Step880 decision sync; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step882 records the desktop source disclosure readability repair and the current exact-SHA evidence boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step877 保留 Step876 已通过运行时合同回放确认的正常手机首要动作顺序，并修正 packet 无参数生成时默认沿用历史 Step821 的证据绑定问题；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step882 修复了桌面来源列的可扫描性：人类可读标签优先，原始字段路径按需展开；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `881`
-- currentOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
-- currentBoundary: `881`
+- currentStep: `882`
+- currentOutcome: `882:desktop-source-disclosure-readability-and-exact-sha-rebind`
+- currentBoundary: `882`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -52,3 +52,5 @@ Step874: the final local candidate has Overview 28/28, full route-responsive 532
 Step877: the visual packet generator now reads the authoritative current-state decision step by default instead of historical Step821; current release remains FAIL-closed, and formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
 
 Step878: the quarantine scanner now uses only the machine state's current evidence ledger for current report discovery; historical gate records remain audit-only and the release stays FAIL-closed.
+
+Step882: desktop source disclosure now leads with human-readable labels and keeps raw field paths behind readable native disclosure; the scoped P1 is closed, while formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
