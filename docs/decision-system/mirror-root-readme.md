@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step883 records the 320 evidence-wrap and tablet relationship repair and the current exact-SHA evidence boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step884 records the framework style budget repair after the 320 evidence-wrap and tablet relationship repair and the current exact-SHA evidence boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step883 修复了 320px 关键证据裁切和 844 平板关系证据被挤压的问题：窄屏证据允许换行，320 门禁拒绝 clippedText，平板关系证据获得可读列宽；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step884 在 Step883 修复 320px 关键证据裁切和 844 平板关系证据挤压后，又修复了 framework style 超预算：将平板规则并入既有能力媒体块，产物回到 119993 bytes；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `883`
-- currentOutcome: `883:narrow-evidence-wrap-and-tablet-comparison-repair`
-- currentBoundary: `883`
+- currentStep: `884`
+- currentOutcome: `884:framework-css-budget-repair-and-exact-sha-rebind`
+- currentBoundary: `884`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -53,4 +53,4 @@ Step877: the visual packet generator now reads the authoritative current-state d
 
 Step878: the quarantine scanner now uses only the machine state's current evidence ledger for current report discovery; historical gate records remain audit-only and the release stays FAIL-closed.
 
-Step883: narrow runtime evidence now wraps instead of clipping at 320px, the reflow gate rejects clipped text, and the tablet comparison inspector gives relationship evidence a readable column; the scoped P1s are closed, while formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
+Step884: the framework style budget was repaired after Step883 without weakening its evidence contract; the rebuilt style is 119993 bytes, while formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.

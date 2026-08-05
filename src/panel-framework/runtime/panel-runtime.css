@@ -120,11 +120,5 @@
   .panel-runtime-empty button { width: 100%; }
 }
 @media (max-width: 359px) {
-  .panel-runtime-bar-mobile { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "device mode" "device actions"; min-height: calc(84px + env(safe-area-inset-top)); align-items: center; }
-  .panel-runtime-bar-mobile .panel-runtime-device { grid-area: device; align-self: center; }
-  .panel-runtime-bar-mobile .panel-runtime-device :is(b, span) { overflow: visible; text-overflow: clip; white-space: normal; }
-  .panel-runtime-bar-mobile .panel-runtime-device b { line-height: 1.15; }
-  .panel-runtime-bar-mobile .panel-runtime-device span { margin-top: 2px; line-height: 1.25; }
-  .panel-runtime-bar-mobile .panel-runtime-mode { grid-area: mode; justify-self: end; }
-  .panel-runtime-bar-mobile .panel-runtime-actions { grid-area: actions; justify-self: end; }
+  .panel-runtime-device > :is(b, span) { white-space: normal; }
 }

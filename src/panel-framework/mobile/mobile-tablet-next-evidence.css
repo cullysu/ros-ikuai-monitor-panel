@@ -173,7 +173,7 @@
   }
   .mp-tablet-normal-comparison-inspector {
     display: grid;
-    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.4fr) auto;
+    grid-template-columns: 170px minmax(0, 1fr);
     align-items: center;
     gap: 14px;
     padding: 12px 14px;
@@ -215,12 +215,12 @@
   }
   .mp-tablet-normal-comparison-inspector dd {
     margin: 3px 0 0;
-    overflow: hidden;
+    overflow: visible;
+    overflow-wrap: anywhere;
     color: var(--mp-text);
     font-size: 12px;
     line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
   }
   .mp-tablet-normal-comparison-inspector code {
     color: var(--mp-muted);
@@ -229,7 +229,8 @@
   .mp-tablet-normal-comparison-inspector > button {
     display: flex;
     align-items: center;
-    justify-content: center;
+    grid-column: 1/-1;
+    justify-content: flex-start;
     min-height: 44px;
     gap: 5px;
     padding: 8px 10px;
@@ -322,29 +323,5 @@
       min-height: 44px;
       white-space: nowrap;
     }
-  }
-}
-
-/* The tablet comparison inspector is a full-width evidence band. Keep the
-   object identity beside a genuinely readable evidence column, then place the
-   follow-up action on its own row. The previous three-column formula squeezed
-   relationship evidence into an ellipsis-heavy sliver at 768–844px. */
-@media (min-width: 768px) and (max-width: 1199px) {
-  .mp-shell:not(.is-large-text) .mp-tablet-normal-comparison-inspector {
-    grid-template-columns: minmax(170px, 0.7fr) minmax(0, 1.3fr);
-    gap: 10px 14px;
-  }
-  .mp-shell:not(.is-large-text) .mp-tablet-normal-comparison-inspector > dl {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .mp-shell:not(.is-large-text) .mp-tablet-normal-comparison-inspector > button {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-  }
-  .mp-shell:not(.is-large-text) .mp-tablet-normal-comparison-inspector dd {
-    overflow: visible;
-    overflow-wrap: anywhere;
-    text-overflow: clip;
-    white-space: normal;
   }
 }

@@ -25174,3 +25174,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step883；在新的 clean HEAD 重新生成全部 exact-SHA runtime、Overview、route、route-state、tablet、packet、truth、quarantine 和 readiness，然后重新进行独立视觉/产品/无障碍复核、Route Owner、RouterOS soak 与 exact-SHA CL。
 - validForCommit：本步 tracked 文档尚未提交；本步前所有 bf0cc5e 报告在提交后仅作历史诊断。
 - supersededBy：null
+
+## 第 884 步：修复框架样式预算超限并保持窄屏/平板证据契约
+
+- status：`framework-css-budget-repair-and-exact-sha-rebind`
+- latestStepOutcome: `884:framework-css-budget-repair-and-exact-sha-rebind`
+- 触发/问题：Step883 的窄屏换行和平板关系修复首次重建后使 framework style 产物达到 121206 bytes，超过 120000 bytes 预算；这是真实发布门禁失败，不能通过放宽预算或沿用旧产物掩盖。与此同时，将规则直接叠加在新的媒体查询中会增加重复 CSS，必须在不撤销可读性修复的前提下收敛实现。
+- 决策/实现：把平板比较检查器的两列关系证据、整行操作和可换行证据直接并入既有 768–1199px 能力媒体规则，删除重复覆盖；窄屏 runtime 与 domain 规则只保留完成换行所需的最小声明。没有改变证据语义、路由行为、只读边界或样式预算阈值。
+- 验证：重新 build 后 framework style 为 119993 bytes，低于 120000 bytes；`npm run check:runtime-browser` 通过（260 checks / 140 screenshots / 169 snapshotApiCalls），320px `clippedText=[]`，tablet next-evidence、vertical task、task-space 与相关视觉/架构检查通过。当前工作树尚未完成新 SHA 的完整 exact-SHA 证据回绑。
+- 产品/视觉裁决：关闭本轮确认的资产预算和重复 CSS 实现问题；不能把本地 focused runtime 通过升级为正式 Product/Design/Visual/Accessibility 签收，平板与窄屏的独立视觉复核必须针对新的 clean SHA 重做。
+- 发布边界：继续 FAIL-closed。route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；正式 Product/Design/Visual/Accessibility、Route Owner、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release 未完成，任务 active、`blocked=false`。
+- 边界/心得：预算失败也是产品发布证据的一部分；正确做法是减少重复实现而不是扩大门槛。任何源 CSS、构建产物或决策文档 tracked change 都会使旧报告失效，必须先形成新的 clean SHA，再重新生成矩阵并重新独立签收。
+- nextAction：提交并同步 Step884；在新 clean HEAD 重新生成 runtime、Overview、full/bounded route、route-state、tablet、packet、truth、quarantine 和 readiness，然后继续独立正式签收、Route Owner、RouterOS soak 与 exact-SHA CL。
+- validForCommit：本步 tracked 文档与 CSS/构建产物尚未提交；提交前报告仅作诊断，不能作为当前发布证据。
+- supersededBy：null
