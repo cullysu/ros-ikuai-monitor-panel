@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `875`
-- latestRecordedStep: `875`
-- latestStepOutcome: `875:phone-steady-next-step-order-formal-gates-open`
+- currentBoundaryForStep: `876`
+- latestRecordedStep: `876`
+- latestStepOutcome: `876:phone-steady-next-step-order-aligned-with-signal`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step875 moves the normal-phone primary next-step action ahead of secondary judgments without weakening evidence or matrix requirements. This tracked change requires a fresh exact-SHA rebind; trusted signoff, route maturity, RouterOS soak, CL and publication remain open.
+Task remains active and blocked=false; Step876 places the normal-phone primary next-step action after the WAN signal and before secondary judgments without weakening evidence or matrix requirements. This tracked change requires a fresh exact-SHA rebind; trusted signoff, route maturity, RouterOS soak, CL and publication remain open.

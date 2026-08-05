@@ -5234,7 +5234,9 @@ async function main() {
         item.investigationSecondaryActionCount === 0 &&
         item.firstInvestigationActionId === 'lineStatus' &&
         item.decisionRect && item.firstInvestigationActionRect &&
-        item.firstInvestigationActionRect.top >= item.decisionRect.bottom - 1 &&
+        item.signalRect &&
+        item.firstInvestigationActionRect.top >= item.signalRect.bottom - 1 &&
+        item.firstInvestigationActionRect.bottom <= item.decisionRect.top + 1 &&
         item.firstInvestigationActionRect.height >= 44
       ));
     const normalLargeFirst = [normal768, normal844, normal1199, normal1200].every((item) => (
@@ -5245,7 +5247,7 @@ async function main() {
       ));
     check(
       checks,
-      'normal patrol actions expose one primary task after the phone decision ledger and preserve desktop/tablet first-scan follow-ups',
+      'normal patrol actions expose one primary task after the phone WAN signal and before the phone decision ledger, while preserving desktop/tablet first-scan follow-ups',
       normalPhoneDecisionFirst && normalLargeFirst,
       { normalPhoneDecisionFirst, normalLargeFirst, normal390, normal375, normal768, normal844, normal1199, normal1200 },
     );

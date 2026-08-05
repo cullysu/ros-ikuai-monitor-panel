@@ -218,8 +218,8 @@ export function MobilePatrolScreen({
                {scenarioFocus}
                {resourceSignal}
                {resourceHistory}
-              {normalPhoneNextStep}
                {trafficSignal}
+              {normalPhoneNextStep}
                {phonePrimaryAction}
                {concurrentRiskQueue}
                {compactIncidentActions}

@@ -64,6 +64,12 @@ const checks = [
       primary.indexOf("{normalPhoneNextStep}") < primary.indexOf("{normalPhoneSteadyDecisions}"),
   },
   {
+    name: "normal phone primary next step follows the current WAN signal",
+    pass: primary.includes("{normalPhoneNextStep}") &&
+      primary.includes("{trafficSignal}") &&
+      primary.indexOf("{trafficSignal}") < primary.indexOf("{normalPhoneNextStep}"),
+  },
+  {
     name: "normal phone decision owner is not hidden in the context column",
     pass: !context.includes("MobileSteadyDecisionLedger"),
   },

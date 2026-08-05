@@ -25046,3 +25046,17 @@ ocused-green-engineering
 - nextAction：提交 Step875 并同步 `D:\想法\面板`；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，然后继续当前 SHA 的独立视觉/产品/交互复核、Route Owner、RouterOS soak 与三端 CL。
 - validForCommit：本步 source/tool changes 尚未提交；此前 `dbbe2f31e8ffac67ba2eed4c3c3be93da63dc366` 的 exact-SHA 报告在本步提交后失效。
 - supersededBy：null
+
+## 第 876 步：把正常态首要动作准确放在 WAN 信号之后
+
+- status：`phone-steady-next-step-order-aligned-with-signal`
+- latestStepOutcome: `876:phone-steady-next-step-order-aligned-with-signal`
+- 触发/问题：Step875 的源码顺序契约只证明了首要动作早于次级判断，但实际实现暂时把动作放在 WAN 信号之前；这与“先读当前信号，再给下一步核对”的产品决策不一致，且运行时门禁仍按旧的“动作在决策表之后”检查，暴露出实现与验收合同没有同时迁移。
+- 决策/实现：把 `MobilePhoneNextStep` 调整为 `trafficSignal` 之后、`MobileSteadyDecisionLedger` 之前；将 `tools/check-mobile-phone-action-priority.js` 扩展为 10/10，同时修改 `tools/check-panel-runtime-browser.js`，要求 375/390px 的首要动作位于 WAN 信号与次级决策表之间。桌面/平板动作顺序保持不变。
+- 验证：`check:types`、`node --check tools/check-panel-runtime-browser.js`、`check-mobile-phone-action-priority.js` 10/10 和 `git diff --check` 通过；Step875 的旧 runtime 在重新执行时正确暴露旧合同冲突，未被当作新证据使用。提交后必须重新生成 clean exact-SHA runtime、Overview、route-responsive、route-state、packet、quarantine、truth 和 readiness。
+- 视觉/交互裁决：关闭“正常态动作早于 WAN 当前信号”的本地实现偏差；保留“动作早于次级运行判断”的任务优先级。该修复不等于 trusted Product/Design/Visual 签收。
+- 发布边界：继续 FAIL-closed。18 条业务路由仍为 `bounded-readonly`、`more` 为 `unavailable`；正式 Product/Design/Visual、Accessibility/AT、Route Owner、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release 未完成，任务 active、`blocked=false`。
+- 边界/心得：顺序门禁必须描述用户的真实读取节奏，而不是只描述 DOM 中“谁在谁前面”。任何 UI 顺序修复都要同时更新组件、源码契约和浏览器几何断言；旧候选的绿灯不能覆盖新合同的红灯。
+- nextAction：提交 Step876 并同步 `D:\想法\面板`；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，然后继续当前 SHA 的独立视觉/产品/交互复核、Route Owner、RouterOS soak 与三端 CL。
+- validForCommit：本步 source/tool changes 尚未提交；此前 `5692506a9cc56be2a9fa38a65bd2ed4804d19759` 的 exact-SHA 矩阵与旧 runtime 仅作历史诊断，不能作为本步发布证据。
+- supersededBy：null

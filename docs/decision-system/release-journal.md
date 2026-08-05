@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 875
-- currentOutcome: 875:phone-steady-next-step-order-formal-gates-open
-- latestStepOutcome: 875:phone-steady-next-step-order-formal-gates-open
+- currentStep: 876
+- currentOutcome: 876:phone-steady-next-step-order-aligned-with-signal
+- latestStepOutcome: 876:phone-steady-next-step-order-aligned-with-signal
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -27,6 +27,8 @@
 - Step874: Final candidate `49df42fef4a09e04b8b1549ab0d977066b70e1b1` passes runtime `260/140/169`, Overview `28/28`, full route-responsive `532/532`, bounded route-responsive `76/76`, and route-state `266/266`. Boole and Tesla independently report scoped Product/Design/Visual/Interaction P0/P1=`0`; P2 polish remains bounded. Readiness now passes matrix discovery and stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. This decision-document change invalidates that candidate identity and requires a fresh exact-SHA rebind. Trusted formal acceptance, Accessibility/AT, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
 - Step875: The normal-phone primary next-step action now renders after current resource/traffic signals and before secondary running judgments, and `check-mobile-phone-action-priority.js` proves the ordering 9/9. Existing exact-SHA reports are stale until this source/tool/governance change is committed and rebound. Formal Product/Design/Visual, Accessibility/AT, Route Owner, route maturity, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
+
+- Step876: Runtime-contract replay caught that Step875's source order placed the normal-phone action before the WAN signal even though the intended task flow is signal → next action → secondary judgments. The source now aligns that order, `check-mobile-phone-action-priority.js` proves 10/10, and the browser contract requires the action geometry to sit between the WAN signal and decision ledger at 375/390px. A new clean exact-SHA rebind is required; formal Product/Design/Visual, Accessibility/AT, Route Owner, route maturity, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
 - Step860: Candidate `a5062801df84edb8b1a65c12a31606f708230c9d` passes build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, single-route responsive `76/76`, mobile-native `56/56`, the complete overview contract suite and the product-design visual packet identity check. Fresh local mobile and desktop captures were inspected; the declared local visual scope is P0/P1=`0`. Report quarantine scans five current references with zero contradictions, and readiness accepts the exact-SHA matrix before stopping at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; packet is prepared-not-signed, selfSignoff=false, releaseEligible=false; task active and blocked=false; GitHub untouched. This governance write requires a fresh exact-SHA rebind.
 

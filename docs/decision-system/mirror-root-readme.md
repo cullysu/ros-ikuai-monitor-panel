@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step875 records the normal-phone primary next-step ordering correction without weakening formal gates; this documentation and source change requires a fresh exact-SHA rebind; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step876 records the normal-phone primary next-step ordering correction after runtime-contract replay; this documentation and source change requires a fresh exact-SHA rebind; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step875 把正常手机首要动作放回当前信号之后、次级判断之前，并将源代码顺序契约扩展到 9/9；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step876 通过运行时合同回放把正常手机首要动作准确放在 WAN 当前信号之后、次级判断之前，并将源代码/几何顺序契约扩展到 10/10；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `875`
-- currentOutcome: `875:phone-steady-next-step-order-formal-gates-open`
-- currentBoundary: `875`
+- currentStep: `876`
+- currentOutcome: `876:phone-steady-next-step-order-aligned-with-signal`
+- currentBoundary: `876`
 - authority: `decision-system/current-state.md`
 
 ## 入口

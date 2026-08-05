@@ -3,13 +3,13 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "03153cad0405a6bbadc5ae3062b4971f0302d2d5d5b9de38610e51063bc92ae4",
+    "digest": "7d2bea8df58d9e4568aa9c589c2fb5d56f4f6c15e1fc5981eed3489f08f9bb42",
     "files": 148
   },
   "assets": {
     "script": {
-      "file": "panel-framework.3af147162512.js",
-      "sha256": "3af1471625123b10e3575dd78906e9101323f3e3a9dddd25b12bc19d2e136b53",
+      "file": "panel-framework.02c05cb2f082.js",
+      "sha256": "02c05cb2f0824e581b1cfa29af23f461bc288b3613397e600752045f6d419cd1",
       "bytes": 494740,
       "gzipBytes": 141521,
       "brotliBytes": 117338
