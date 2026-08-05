@@ -119,6 +119,3 @@
   .panel-runtime-empty > div:last-child { width: min(100%, 340px); flex-direction: column; }
   .panel-runtime-empty button { width: 100%; }
 }
-@media (max-width: 359px) {
-  .panel-runtime-device > :is(b, span) { white-space: normal; }
-}
