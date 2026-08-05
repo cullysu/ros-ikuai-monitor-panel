@@ -2,11 +2,11 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `868`
-- currentOutcome: `868:overview-matrix-action-aggregation-fixed-formal-gates-open`
-- currentBoundary: `868`
-- latestRecordedStep: `868`
-- latestStepOutcome: `868:overview-matrix-action-aggregation-fixed-formal-gates-open`
+- currentStep: `870`
+- currentOutcome: `870:tablet-action-notes-unellipsized-formal-gates-open`
+- currentBoundary: `870`
+- latestRecordedStep: `870`
+- latestStepOutcome: `870:tablet-action-notes-unellipsized-formal-gates-open`
 
 ## Current pointer
 

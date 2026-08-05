@@ -30,6 +30,11 @@ function sha256(file) {
 }
 
 check("packet status is prepared-not-signed", packet.status === "prepared-not-signed", packet.status);
+check(
+  "packet release boundary is explicit and fail-closed",
+  packet.currentRelease === "fail-closed-not-eligible",
+  packet.currentRelease,
+);
 check("packet never self-signs", packet.claims?.selfSignoff === false && packet.claims?.releaseEligible === false, packet.claims || null);
 check("required independent signatures are explicit", JSON.stringify(packet.requiredSignatures) === JSON.stringify([
   "independent-product-reviewer",

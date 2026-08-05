@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 867
-- currentOutcome: 867:runtime-secondary-action-height-adaptation-fixed-formal-gates-open
-- latestStepOutcome: 867:runtime-secondary-action-height-adaptation-fixed-formal-gates-open
+- currentStep: 870
+- currentOutcome: 870:tablet-action-notes-unellipsized-formal-gates-open
+- latestStepOutcome: 870:tablet-action-notes-unellipsized-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -21,6 +21,10 @@
 - Step867: Runtime then exposed the secondary context's actual 53/49px rows under the narrow-phone cascade. The compact selector now covers the new context and binds its vertical padding, producing real 45/45px rows within the 44–48px contract; dirty runtime `260/140/169`, build, asset budget and identity pass. The CSS/build/governance change requires a new clean exact-SHA rebind; formal gates remain open, task active and blocked=false; GitHub untouched.
 
 - Step861: The current authority is now non-self-invalidating: current documents describe the clean-worktree evidence boundary, exact-SHA report identity is held in machine state and historical entries, and any tracked change requires a fresh exact-SHA rebind. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
+
+- Step869: The Step868 probe correction was rebound on clean candidate `e5f6b7137cf7a838144acaf74c06a8169bc7b249`: runtime `260/140/169`, Overview `28/28`, route-state `266/266`, and bounded route-responsive `76/76` cells pass; readiness stops honestly at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. The runtime's ambiguous `online` field is now `browserOnlineHint`, explicitly a browser transport hint that never blocks same-origin LAN snapshot requests. This source/governance update invalidates the exact evidence after commit; packet remains `prepared-not-signed` with an explicit fail-closed release boundary, trusted Product/Design/Visual, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
+
+- Step870: The independent scoped visual review found a concrete 768px tablet information-loss issue: patrol action notes such as “核对 WAN 关联” were truncated by the shared single-line ellipsis rule. The tablet task owner now allows action labels and notes to wrap without changing phone/desktop ownership, touch floors or data hierarchy. Build, types and fresh runtime `260/140/169` pass; the current source/governance change invalidates prior exact-SHA evidence and requires a new clean rebind. Formal Product/Design/Visual, Accessibility, Route Owner, route maturity, RouterOS soak, exact-SHA CL and publication remain open; task active and blocked=false.
 
 - Step860: Candidate `a5062801df84edb8b1a65c12a31606f708230c9d` passes build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, single-route responsive `76/76`, mobile-native `56/56`, the complete overview contract suite and the product-design visual packet identity check. Fresh local mobile and desktop captures were inspected; the declared local visual scope is P0/P1=`0`. Report quarantine scans five current references with zero contradictions, and readiness accepts the exact-SHA matrix before stopping at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; packet is prepared-not-signed, selfSignoff=false, releaseEligible=false; task active and blocked=false; GitHub untouched. This governance write requires a fresh exact-SHA rebind.
 

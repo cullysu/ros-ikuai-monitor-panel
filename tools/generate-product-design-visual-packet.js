@@ -52,7 +52,9 @@ const packet = {
   purpose: "independent product design visual review input only",
   validForCommit: identity.commit,
   currentDecisionStep: decisionStep,
-  currentRelease: "closed",
+  // Keep the release boundary explicit without a bare "closed" value that
+  // could be mistaken for a completed release or completed visual signoff.
+  currentRelease: "fail-closed-not-eligible",
   claims: {
     product: "scoped-pass-formal-signoff-pending",
     design: "scoped-pass-formal-signoff-pending",

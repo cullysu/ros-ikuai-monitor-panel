@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `868`
-- latestRecordedStep: `868`
-- latestStepOutcome: `868:overview-matrix-action-aggregation-fixed-formal-gates-open`
+- currentBoundaryForStep: `870`
+- latestRecordedStep: `870`
+- latestStepOutcome: `870:tablet-action-notes-unellipsized-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step868 aligns the Overview matrix probe with the split phone primary/context action contract after the exact-SHA matrix exposed 14 stale `patrolActions` failures. Trusted signoff, RouterOS soak, CL and publication remain open.
+Task remains active and blocked=false; Step870 restores full tablet patrol action notes without weakening touch or evidence contracts. The CSS/governance change requires a fresh exact-SHA rebind; trusted signoff, RouterOS soak, CL and publication remain open.

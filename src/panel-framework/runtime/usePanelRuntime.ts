@@ -58,7 +58,11 @@ export interface PanelSnapshotState {
 
 export interface PanelRuntimeController {
   view: PanelRuntimeView;
-  online: boolean;
+  /**
+   * Browser transport hint only. This is deliberately not a RouterOS or LAN
+   * reachability state; same-origin snapshot requests continue while false.
+   */
+  browserOnlineHint: boolean;
   evidenceAgeSeconds: number | null;
   pollSeconds: number;
   connection: PanelConnectionState;
@@ -141,7 +145,7 @@ function isSnapshotStale(snapshot: OverviewRawSnapshot, now = Date.now()): boole
 
 export function usePanelRuntime(): PanelRuntimeController {
   const [view, setView] = useState<PanelRuntimeView>("connection");
-  const [online, setOnline] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine));
+  const [browserOnlineHint, setBrowserOnlineHint] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine));
   const [connection, setConnection] = useState<PanelConnectionState>(initialConnection);
   const [snapshot, setSnapshot] = useState<PanelSnapshotState>(initialSnapshot);
   const [clock, setClock] = useState(() => Date.now());
@@ -270,7 +274,7 @@ export function usePanelRuntime(): PanelRuntimeController {
     } catch (error) {
       if (controller.signal.aborted) return;
       const browserOfflineHint = typeof navigator !== "undefined" && !navigator.onLine;
-      if (browserOfflineHint) setOnline(false);
+      if (browserOfflineHint) setBrowserOnlineHint(false);
       setSnapshot((current) => ({
         ...current,
         phase: current.data ? "recovering" : "error",
@@ -315,11 +319,11 @@ export function usePanelRuntime(): PanelRuntimeController {
 
   useEffect(() => {
     const onOffline = () => {
-      setOnline(false);
+      setBrowserOnlineHint(false);
       if (connectionRef.current.phase === "ready" && viewRef.current === "panel") void refresh("recovery");
     };
     const onOnline = () => {
-      setOnline(true);
+      setBrowserOnlineHint(true);
       if (connectionRef.current.phase === "ready" && viewRef.current === "panel") void refresh("recovery");
       else if (connectionRef.current.phase === "error") void retryConnectionStatus();
     };
@@ -437,7 +441,7 @@ export function usePanelRuntime(): PanelRuntimeController {
   return useMemo(
     () => ({
       view,
-      online,
+      browserOnlineHint,
       evidenceAgeSeconds,
       pollSeconds,
       connection,
@@ -460,7 +464,7 @@ export function usePanelRuntime(): PanelRuntimeController {
       evidenceAgeSeconds,
       forgetProfile,
       logout,
-      online,
+      browserOnlineHint,
       pollSeconds,
       refresh,
       retryConnectionStatus,

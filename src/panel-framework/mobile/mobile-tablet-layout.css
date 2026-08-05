@@ -239,6 +239,17 @@
       padding-top: 5px;
       padding-bottom: 5px;
     }
+    /* Tablet task cards have enough vertical room for the operational note;
+       do not hide the discriminating part of the action behind an ellipsis. */
+    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list > button {
+      align-items: start;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list b,
+    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list small {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+    }
     .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus > header {
       min-height: 48px;
       padding: 7px 10px 6px;

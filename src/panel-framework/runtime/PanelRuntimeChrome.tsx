@@ -102,7 +102,7 @@ export function PanelRuntimeChrome({
 
 export function PanelRuntimeNotice({ runtime }: { runtime: PanelRuntimeController }) {
   const snapshotMessage = runtime.snapshot.phase === "current" || runtime.snapshot.phase === "refreshing" ? "" : runtime.snapshot.error;
-  const browserConnectivityHint = !runtime.online
+  const browserConnectivityHint = !runtime.browserOnlineHint
     ? "浏览器报告互联网不可用；本地 RouterOS 快照请求仍会继续。"
     : "";
   const message = snapshotMessage || runtime.connection.warning || browserConnectivityHint;

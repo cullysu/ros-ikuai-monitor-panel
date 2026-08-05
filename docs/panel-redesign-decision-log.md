@@ -24979,3 +24979,29 @@ ocused-green-engineering
 - nextAction：提交 Step868 后重绑 exact-SHA runtime 与完整矩阵；随后检查 packet/quarantine/truth/readiness，生成当前 SHA 截图包并完成 scoped visual/product/interaction re-review，再继续真实路由成熟度、RouterOS soak 与三端 CL。
 - validForCommit：Step868 acceptance probe/governance change；之前 `e75b4c...` 的 exact-SHA 矩阵因本步工具变更全部失效。
 - supersededBy：null
+
+## 第 869 步：明确浏览器连接提示边界，禁止把 navigator.onLine 当作 LAN 离线状态
+
+- status：`browser-connectivity-hint-semantics-clarified-formal-gates-open`
+- latestStepOutcome: `869:browser-connectivity-hint-semantics-clarified-formal-gates-open`
+- 触发/问题：上一轮审计指出把 `navigator.onLine` 暴露成 `online` 容易让调用方把浏览器互联网提示误读成 RouterOS/LAN 监控状态。当前实现实际上没有在该提示为 false 时停止 `/api/snapshot`，但字段名仍然有误导风险。
+- 决策/实现：将 `PanelRuntimeController.online` 重命名为 `browserOnlineHint`，并在接口注释中声明它只表示浏览器传输提示；离线/在线事件仍会触发恢复尝试，真实同源快照请求继续由 snapshot phase 和 API 结果决定。未改变 RouterOS 数据、认证、安全边界或产品视觉。
+- 验证：`check:types`、`check-overview-architecture`、`check-overview-ikuai-static`、`check-release-blockers`、`check-backend-security` 全部 PASS。此前 clean candidate `e5f6b7137cf7a838144acaf74c06a8169bc7b249` 的 local evidence 为 runtime `260/140/169`、Overview `28/28`、route-state `266/266`、bounded route-responsive `76/76`，readiness 诚实停在 `0/18/0/1`；本步提交后必须重新绑定 SHA。
+- 设计工程取舍：不增加离线动画、脉冲或“网络断开”大告警；本产品的状态由快照证据、采集平面和 RouterOS 对象状态表达。浏览器提示只在通知层轻量说明，符合 emil-design-eng 的“动画不能制造新鲜度或紧迫感”约束。
+- 发布边界：该修复关闭了语义命名风险，但不关闭独立 Product/Design/Visual/Accessibility 签收、Route Owner、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 或 GitHub 发布；任务 active、blocked=false。
+- nextAction：同步 D 盘决策镜像并提交 Step869；随后重新生成 exact-SHA runtime/matrix/packet/quarantine/truth/readiness，完成当前 SHA 独立 scoped review，再继续 Route Owner、RouterOS soak 与三端 CL。
+- validForCommit：本地当前未提交的 Step869 source/governance changes；旧 exact-SHA 报告在本步提交后失效。
+- supersededBy：null
+
+## 第 870 步：修复平板巡检动作说明被省略号截断的视觉信息损失
+
+- status：`tablet-action-notes-unellipsized-formal-gates-open`
+- latestStepOutcome: `870:tablet-action-notes-unellipsized-formal-gates-open`
+- 触发/问题：独立 scoped review 在 768px 平板截图中发现“核对 WAN…”等动作说明被 `.mp-action-list` 的单行省略号截断。动作标题仍可点击，但运维人员看不到“确认出口是否受影响”“定位状态变化时间”等区分下一步的证据语义；这是真实的信息损失，不是装饰性意见。
+- 决策/实现：只在 600–1199px 平板任务卡内允许动作标题和说明自然换行，并让卡片从顶部对齐；不缩小字号、不降低 44px 触控下限、不改变手机与桌面结构，也不通过塞入重复指标填充空间。规则放在 `mobile-tablet-layout.css` 的平板任务责任边界内，避免解除全局省略号合同。
+- 验证：`check:types`、`check:tablet-task-space`、`check:tablet-vertical-space-tasks`、`check:tablet-information-efficiency` 通过；重新 build 后 `check:runtime-browser` 通过 `260 checks / 140 screenshots / 169 snapshotApiCalls`，更新后的 `tablet-overview-master-detail-768.png` 已显示完整动作说明，横向溢出为 `0`。
+- 视觉/交互裁决：关闭本地 scoped review 发现的该 P2；日志详情底部空白不以重复内容填充，保持自然高度、证据边界和固定导航的独立层级。正式 Product/Design/Visual、Accessibility/AT、Route Owner、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布继续 fail-closed。
+- 边界/心得：高密度不是把所有文字压成一行，而是在任务空间允许时保留能改变决策的说明。省略号适合对象名和不可展开的身份字段，不适合“下一步为什么做”。平板需要自己的空间规则，不能把手机的紧凑省略策略机械套用到三列工作区。
+- nextAction：提交 Step870 后，以新 clean SHA 重绑 runtime、完整 Overview/route 矩阵、packet、quarantine、truth 和 readiness；随后完成当前 SHA 的独立 Product/Design/Visual/Interaction 复核，并继续 Route Owner、RouterOS soak 和三端 CL。
+- validForCommit：Step870 tablet CSS/build/governance changes；Step869 的 exact-SHA 报告在本步提交后全部过期。
+- supersededBy：null
