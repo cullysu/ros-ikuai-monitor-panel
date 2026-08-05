@@ -239,8 +239,8 @@
       padding-top: 5px;
       padding-bottom: 5px;
     }
-    /* Tablet task cards have enough vertical room for the operational note;
-       do not hide the discriminating part of the action behind an ellipsis. */
+    /*Tablet task cards have enough vertical room for the operational note;
+       do not hide the discriminating part of the action behind an ellipsis.*/
     .mp-tablet-vertical-task .mp-action-list > button {
       align-items: start;
     }
