@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `873`
-- latestRecordedStep: `873`
-- latestStepOutcome: `873:route-responsive-discovery-contract-fixed-formal-gates-open`
+- currentBoundaryForStep: `874`
+- latestRecordedStep: `874`
+- latestStepOutcome: `874:exact-local-evidence-scoped-reviews-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

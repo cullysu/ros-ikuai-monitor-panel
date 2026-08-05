@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step873 aligns route-responsive report discovery with the documented/CI `route-matrix-<sha>` path without weakening matrix requirements; exact-SHA evidence remains fail-closed until this gate change is rebound; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step874 records the final local matrix and scoped independent review result without weakening formal gates; the documentation change itself requires a fresh exact-SHA rebind; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
 这是当前面板工作的本地决策仓库镜像。Step868 修复 Overview 验收器对手机主任务/次级上下文动作的漏计，并完成当前 clean SHA 的 exact-SHA 矩阵重绑；exact-SHA 证据只由机器状态绑定，交互 scoped review P0/P1 clean、产品 conditional、正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `873`
-- currentOutcome: `873:route-responsive-discovery-contract-fixed-formal-gates-open`
-- currentBoundary: `873`
+- currentStep: `874`
+- currentOutcome: `874:exact-local-evidence-scoped-reviews-formal-gates-open`
+- currentBoundary: `874`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -48,4 +48,4 @@ Step860: exact-SHA local visual and matrix evidence is green in scope; readiness
 Step862: independent product/design/visual review findings are recorded; matrix aggregate families are isolated, runtime fixture identity is aligned with public matrix captures, and composite screenshot capture is stabilized. Formal gates remain closed and task remains active.
 Step868: the Overview probe now aggregates primary and marked secondary phone investigation actions without weakening thresholds; current exact-SHA Overview, route-responsive and route-state evidence is rebound. Readiness remains fail-closed at route maturity and task remains active.
 Step869: the runtime browser connectivity field is now named browserOnlineHint and explicitly cannot represent RouterOS/LAN reachability; same-origin snapshot requests continue while the hint is false. The source/governance change requires a fresh exact-SHA rebind, and the task remains active and blocked=false.
-Step873: readiness now finds the documented/CI `route-matrix-<sha>` responsive report family. The matrix remains fail-closed on missing cells and identity; a new clean exact-SHA rebind is required, and the task remains active and blocked=false.
+Step874: the final local candidate has Overview 28/28, full route-responsive 532/532, bounded route-responsive 76/76, route-state 266/266, runtime 260/140/169 and scoped independent UI review P0/P1=0. Readiness still stops at route maturity; this documentation change requires a fresh exact-SHA rebind, and the task remains active and blocked=false.

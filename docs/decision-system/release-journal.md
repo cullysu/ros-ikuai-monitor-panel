@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 873
-- currentOutcome: 873:route-responsive-discovery-contract-fixed-formal-gates-open
-- latestStepOutcome: 873:route-responsive-discovery-contract-fixed-formal-gates-open
+- currentStep: 874
+- currentOutcome: 874:exact-local-evidence-scoped-reviews-formal-gates-open
+- latestStepOutcome: 874:exact-local-evidence-scoped-reviews-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -24,7 +24,7 @@
 
 - Step869: The Step868 probe correction was rebound on clean candidate `e5f6b7137cf7a838144acaf74c06a8169bc7b249`: runtime `260/140/169`, Overview `28/28`, route-state `266/266`, and bounded route-responsive `76/76` cells pass; readiness stops honestly at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. The runtime's ambiguous `online` field is now `browserOnlineHint`, explicitly a browser transport hint that never blocks same-origin LAN snapshot requests. This source/governance update invalidates the exact evidence after commit; packet remains `prepared-not-signed` with an explicit fail-closed release boundary, trusted Product/Design/Visual, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
-- Step873: Readiness discovery now recognizes the documented/CI `route-matrix-<sha>` route-responsive report family and no longer treats those names as overview aliases. The matrix cell requirements and bounded incomplete semantics are unchanged. This tracked gate change invalidates prior exact-SHA evidence and requires a new clean rebind. Formal Product/Design/Visual, Accessibility, Route Owner, route maturity, RouterOS soak, exact-SHA CL and publication remain open; task active and blocked=false.
+- Step874: Final candidate `49df42fef4a09e04b8b1549ab0d977066b70e1b1` passes runtime `260/140/169`, Overview `28/28`, full route-responsive `532/532`, bounded route-responsive `76/76`, and route-state `266/266`. Boole and Tesla independently report scoped Product/Design/Visual/Interaction P0/P1=`0`; P2 polish remains bounded. Readiness now passes matrix discovery and stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. This decision-document change invalidates that candidate identity and requires a fresh exact-SHA rebind. Trusted formal acceptance, Accessibility/AT, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
 - Step860: Candidate `a5062801df84edb8b1a65c12a31606f708230c9d` passes build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, single-route responsive `76/76`, mobile-native `56/56`, the complete overview contract suite and the product-design visual packet identity check. Fresh local mobile and desktop captures were inspected; the declared local visual scope is P0/P1=`0`. Report quarantine scans five current references with zero contradictions, and readiness accepts the exact-SHA matrix before stopping at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; packet is prepared-not-signed, selfSignoff=false, releaseEligible=false; task active and blocked=false; GitHub untouched. This governance write requires a fresh exact-SHA rebind.
 

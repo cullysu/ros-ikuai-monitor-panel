@@ -25018,3 +25018,17 @@ ocused-green-engineering
 - nextAction：提交 Step873 后重新运行 clean SHA runtime、28/76/266 矩阵、packet、quarantine、truth 和 readiness；之后继续当前 SHA 独立 Product/Design/Visual/Interaction 复核、Route Owner/route maturity、RouterOS soak 和三端 CL。
 - validForCommit：Step873 `check-public-release-readiness.js` route-responsive report discovery change；Step870 的 exact-SHA 证据在本步提交后过期。
 - supersededBy：null
+
+## 第 874 步：补齐最终候选的全量路由响应式证据并关闭本地 scoped 视觉复核
+
+- status：`exact-local-evidence-scoped-reviews-formal-gates-open`
+- latestStepOutcome: `874:exact-local-evidence-scoped-reviews-formal-gates-open`
+- 触发/问题：本轮独立复核确认最终候选 `49df42fef4a09e04b8b1549ab0d977066b70e1b1` 的 UI 范围没有 P0/P1，但指出原 route-responsive 文件只是 `single` 场景的 76 格 bounded shard。若只保留这份文件，发布证据仍然会被误读为单场景覆盖。
+- 决策/实现：在不修改产品代码的前提下，补跑全量 route-responsive 证据 `7 场景 × 4 视口 × 19 路由 = 532/532`，并保留门禁契约要求的 `single` bounded 文件 `76/76`。同时重新生成 route-state `266/266`、Overview `28/28`、runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`，所有报告绑定同一 clean SHA 与工作区指纹。
+- 独立 scoped 裁决：Boole 与 Tesla 对当前 SHA 的手机、平板、桌面和异常态证据均报告 P0=0、P1=0；P2 仅为正常态动作需要滚动、证据边界靠近固定导航、少量平板安静空间和桌面抛光，不构成当前局部视觉发布阻断。该结果关闭本地 Product/Design/Visual/Interaction scoped review，不转化为可信 Ed25519 正式签名。
+- 验证：`check:types`、`check:overview`、asset identity/static assets、report truth/quarantine、backend security、collector regressions、release blockers、`npm run check:decision-system` 与 D 盘 14/14 byte-identical mirror 通过；readiness 正确穿过矩阵发现并停在 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable` 的非伪造 route maturity gate。
+- 发布边界：本步不把 bounded route evidence 提升为 complete，不伪造外部 Ed25519、RouterOS soak、Linux/Windows/GHCR exact-SHA CL，不上传 GitHub；packet 继续 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`，任务 active、`blocked=false`。
+- 边界/心得：独立评审指出的“单场景响应式报告”是证据形态问题，可以直接补齐而不改 UI；正式签收则是信任边界问题，不能由实现者或本地 Agent 自签。全量矩阵、bounded 门禁矩阵和正式签名必须分别表达，不能用其中任何一个冒充另一个。
+- nextAction：提交并同步 Step874 后，按新 exact SHA 重新生成 runtime、Overview、全量/ bounded route-responsive、route-state、packet、quarantine、truth、readiness；随后继续非伪造 Route Owner/Accessibility/RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL。
+- validForCommit：本步文档与状态记录变更前的 clean candidate `49df42fef4a09e04b8b1549ab0d977066b70e1b1`；提交本步后所有运行证据必须重新绑定。
+- supersededBy：null
