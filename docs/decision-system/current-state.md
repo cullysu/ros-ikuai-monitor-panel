@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `878`
-- latestRecordedStep: `878`
-- latestStepOutcome: `878:quarantine-ignores-historical-machine-evidence`
-- currentBoundaryForStep: `878`
+- currentConclusionForStep: `879`
+- latestRecordedStep: `879`
+- latestStepOutcome: `879:current-sha-evidence-rebound`
+- currentBoundaryForStep: `879`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-05T13:30:00+08:00
+- updatedAt: 2026-08-05T15:30:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
 **FAIL overall / local scoped visual P1 closed / formal release gates OPEN.** The current implementation has fresh local engineering evidence in its declared scope, but this is not public-release approval. Product/Design/Visual trusted acceptance, route maturity, RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 878
+## Current decision record: Step 879
 
-- observed: Step877 fixed the packet default authority, but the report quarantine scanner still tokenized historical machine-state gate evidence as if it were current release input; old SHA paths therefore appeared in the current reference list.
-- decision: make current report discovery read only the machine state's current evidence ledger; retain historical gate evidence for audit without allowing it to become current release input. Rebind all evidence after this tracked tool and decision update.
+- observed: The amended clean SHA 23a51a01ece0bfff7e396c44766ec1d1996c7af6 now owns fresh runtime, Overview, route-responsive, bounded route, route-state, packet, truth and quarantine evidence. The quarantine scanner reads the current evidence ledger with real line boundaries; historical machine-state gate records remain audit-only.
+- decision: record the exact-SHA evidence rebound as a separate current decision outcome. Keep Product/Design/Visual and route maturity fail-closed; do not treat matrix breadth, local review or generated packet as independent acceptance.
 - visual disposition: close the local scoped Product/Design/Visual/Interaction review at P0/P1=0; retain P2 polish notes and keep trusted formal Product/Design/Visual/Accessibility signatures open. Local agents cannot issue the required Ed25519 external acceptance.
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. The route matrix expansion changes evidence coverage only and does not change product UI or RouterOS behavior.
-- report truth: the quarantine-contract and decision-record update changes tracked files, so every current runtime/matrix/packet/quarantine/truth/readiness artifact must be regenerated against the next clean SHA after commit.
+- report truth: current reports are bound to amended clean SHA 23a51a01ece0bfff7e396c44766ec1d1996c7af6; five current report families scan with zero contradictions, and the bounded route shard remains explicitly incomplete rather than green.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
 - release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, RouterOS soak, trusted independent signatures and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred.
 
@@ -56,4 +56,4 @@
 
 ## One next action
 
-- nextAction: sync and commit Step878, regenerate current clean-SHA runtime, Overview, full and bounded route matrices, route-state, packet, quarantine, truth and readiness evidence, then continue current-SHA independent acceptance, Router Owner, RouterOS soak and exact-SHA CL.
+- nextAction: continue current-SHA independent Product/Design/Visual and Accessibility review, Route Owner acceptance, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL; only then consider atomic GitHub publication.

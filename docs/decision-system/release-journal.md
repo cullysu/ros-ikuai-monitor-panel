@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `878`
-- currentOutcome: `878:quarantine-ignores-historical-machine-evidence`
-- latestStepOutcome: `878:quarantine-ignores-historical-machine-evidence`
+- currentStep: `879`
+- currentOutcome: `879:current-sha-evidence-rebound`
+- latestStepOutcome: `879:current-sha-evidence-rebound`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 

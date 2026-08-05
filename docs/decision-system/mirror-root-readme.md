@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step878 records the report-quarantine current-evidence boundary correction; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step879 records the amended exact-SHA evidence rebound; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
 这是当前面板工作的本地决策仓库镜像。Step877 保留 Step876 已通过运行时合同回放确认的正常手机首要动作顺序，并修正 packet 无参数生成时默认沿用历史 Step821 的证据绑定问题；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `878`
-- currentOutcome: `878:quarantine-ignores-historical-machine-evidence`
-- currentBoundary: `878`
+- currentStep: `879`
+- currentOutcome: `879:current-sha-evidence-rebound`
+- currentBoundary: `879`
 - authority: `decision-system/current-state.md`
 
 ## 入口

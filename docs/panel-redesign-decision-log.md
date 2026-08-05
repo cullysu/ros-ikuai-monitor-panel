@@ -25086,3 +25086,15 @@ ocused-green-engineering
 - nextAction: commit and sync Step878, regenerate clean-SHA runtime/matrices/packet/quarantine/truth/readiness, then continue independent review and external gates.
 - validForCommit: Step878 tool/docs changes are not committed; existing 0a5621b evidence becomes historical after commit.
 - supersededBy: null
+
+## 第 879 步：记录 amended exact-SHA 证据重新绑定
+
+- status：`current-sha-evidence-rebound`
+- latestStepOutcome: `879:current-sha-evidence-rebound`
+- 触发/问题：Step878 提交后发现当前报告隔离器的 evidence ledger 分隔符是字面的反斜杠+n，导致报告路径没有真正进入 current reference scan。
+- 决策/实现：用真实换行符分隔 current evidence ledger，将当前报告与当前干净 SHA 23a51a01ece0bfff7e396c44766ec1d1996c7af6 重新生成。历史机器状态证据只作审计，不作当前发布输入。
+- 验证：新 SHA runtime、Overview 28/28、route-responsive 532/532、bounded route 76/76 保持明确不完整、route-state 266/266、packet、report truth、quarantine 和 decision-system 全部通过。quarantine 真实扫描 5 份当前 report，contradictionCount=0。
+- 边界/心得：证据路径的分隔符也是产品发布契约。没有独立 Product/Design/Visual/Accessibility 和 Route Owner 签收、真实 RouterOS soak、三端 exact-SHA CL 之前，不能把本地矩阵通过说成公开发布资格。
+- nextAction：继续 current-SHA independent review、Accessibility/AT、Route Owner、RouterOS soak 和 exact-SHA Linux/Windows/GHCR CL，所有门禁通过后才能进行原子 GitHub 发布。
+- validForCommit：Step879 文档更新未提交；当前 23a51a0 证据在本步提交后属于历史。
+- supersededBy：null
