@@ -96,7 +96,7 @@
 .panel-runtime-empty button:first-child { border-color: #0b6488; color: #fff; background: #0d6a8e; }
 
 @media (max-width: 359px) {
-  .panel-runtime-device > b { white-space: nowrap; }
+  .panel-runtime-device > b { font-size: 14px; white-space: nowrap; }
   .panel-runtime-device > span { white-space: normal; }
 }
 
