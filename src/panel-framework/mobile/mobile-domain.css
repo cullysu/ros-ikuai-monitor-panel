@@ -19,6 +19,16 @@
 }
 
 @media (max-width: 359px) {
+  /*Preserve metric evidence at the smallest supported phone width.*/
+  .mdw-metrics :is(small, b, em) {
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 359px) {
   .mdw-header {
     padding-right: 8px;
     padding-left: 8px;

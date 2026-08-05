@@ -3140,6 +3140,7 @@ async function main() {
         result.activeNavigation.length === 1 && result.activeNavigation[0] === accessibilityRouteNavigationOwners[result.route] &&
         result.unnamedControls.length === 0 && result.positiveTabIndexes.length === 0 &&
         result.orphanControls.length === 0 && result.clippedControls.length === 0 &&
+        result.clippedText.length === 0 &&
         result.coveredControls.length === 0
       )),
       reflow320Results

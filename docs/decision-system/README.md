@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `882`
-- latestRecordedStep: `882`
-- latestStepOutcome: `882:desktop-source-disclosure-readability-and-exact-sha-rebind`
+- currentBoundaryForStep: `883`
+- latestRecordedStep: `883`
+- latestStepOutcome: `883:narrow-evidence-wrap-and-tablet-comparison-repair`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step882 records the desktop source disclosure readability repair and keeps formal product, design, visual, accessibility, route-owner, RouterOS soak, CL and publication gates open.
+Task remains active and blocked=false; Step883 records the 320 evidence-wrap and tablet relationship repair and keeps formal product, design, visual, accessibility, route-owner, RouterOS soak, CL and publication gates open.

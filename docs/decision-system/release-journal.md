@@ -2,13 +2,13 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `882`
-- currentOutcome: `882:desktop-source-disclosure-readability-and-exact-sha-rebind`
-- latestStepOutcome: `882:desktop-source-disclosure-readability-and-exact-sha-rebind`
+- currentStep: `883`
+- currentOutcome: `883:narrow-evidence-wrap-and-tablet-comparison-repair`
+- latestStepOutcome: `883:narrow-evidence-wrap-and-tablet-comparison-repair`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
-- Step882: Independent visual review identified a real desktop source-column scanability P1. Human-readable source labels now lead the row, raw field paths are behind native disclosure, and the expanded raw path is 12px. Types, build, desktop information efficiency, architecture, runtime `260/140/169`, Overview `28/28`, full route `532/532`, route-state `266/266`, bounded route `76/76`, tablet `8/8`, packet identity, report truth, asset identity, security, schema and read-only contracts pass for the clean candidate before this governance sync. The current docs are now synchronized to Step882; exact report identity remains machine-bound and must be regenerated after any future tracked change. Formal Product/Design/Visual/Accessibility acceptance, Route Owner, route maturity, RouterOS soak, Linux/Windows/GHCR exact-SHA CL and GitHub publication remain open; task active and blocked=false.
+- Step883: Independent visual review identified tablet relationship evidence squeezed by the previous three-column formula, and independent product/accessibility review exposed real 320px clipped evidence that the old reflow gate ignored. The runtime bar now wraps the freshness proof at narrow widths, narrow metric labels and notes wrap, the 320 gate rejects any clipped text, and the tablet comparison inspector gives relationship evidence a readable column with a full-row action. Focused build/runtime/tablet contracts pass before this governance sync; the current docs change opens a new exact-SHA boundary, so all reports must be regenerated after commit. Formal Product/Design/Visual/Accessibility acceptance, Route Owner, route maturity, RouterOS soak, Linux/Windows/GHCR exact-SHA CL and GitHub publication remain open; task active and blocked=false.
 
 - Step862: Three independent read-only reviews ran on the current candidate: design scoped PASS with P0/P1=`0`, Product conditional for the mobile patrol slice, and Visual conditional/no-go until evidence context and fixed-navigation screenshot boundaries are rechecked. The root cause was fixed: matrix aggregate families no longer overwrite one another, runtime fixture identity is aligned with the public matrix family, and composite screenshot capture resets scroll and waits for paint. This tracked governance change requires a fresh exact-SHA rebind; formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 

@@ -25160,3 +25160,17 @@ ocused-green-engineering
 - nextAction：在 Step882 文档提交后的新 clean HEAD 重新生成 runtime、Overview、full/bounded route、route-state、tablet、packet、truth、quarantine 和 readiness，然后继续独立正式签收、Route Owner、RouterOS soak 与 exact-SHA CL。
 - validForCommit：本步 tracked 文档尚未提交；本步前 clean candidate 报告只作历史诊断，不能冒充新 HEAD 的发布证据。
 - supersededBy：null
+
+## 第 883 步：修复 320 宽度证据裁切与平板关系列挤压
+
+- status：`narrow-evidence-wrap-and-tablet-comparison-repair`
+- latestStepOutcome: `883:narrow-evidence-wrap-and-tablet-comparison-repair`
+- 触发/问题：独立视觉复核在 844 平板正常态发现“当前比较对象”的关系证据被三列公式压成省略文本；独立产品/无障碍复核还从 exact-SHA runtime report 中发现 320 CSS px 的 `当前快照 · ...`、`DHCPv6 客户端` 和服务日志说明存在真实 `clippedText`，而原有 320 门禁只检查 clipped controls，没有把关键证据裁切计入失败。
+- 决策/实现：在 359px 以下将运行时顶栏拆成设备/模式与操作两行，允许新鲜度证据完整换行；窄屏三格指标的标签、数值和证据说明改为可读换行；320 reflow 门禁加入 `clippedText.length === 0`；平板关系检查器改为可读证据列加整行操作入口，关系证据不再靠 ellipsis 截断。保留 large-text 独立单列规则，避免回归 200% 文本布局。
+- 验证：源码修改后的 `npm run build` 与 `npm run check:runtime-browser` 通过；runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`，320 reflow 的关键证据裁切清零，移动 incident、phone signal、responsive、tablet information/vertical/next-evidence/task-space contracts 全部通过。提交本步文档后，现有报告必须重新绑定新 HEAD，不能沿用旧 SHA。
+- 产品/视觉裁决：关闭两个已证实且可执行的本地 P1；独立视觉复核必须针对新 clean SHA 重新查看 844 平板与完整人工视觉包，独立 AT、Route Owner 和真实 RouterOS soak 仍未签收。
+- 发布边界：继续 FAIL-closed。route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；正式 Product/Design/Visual/Accessibility、Route Owner、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release 未完成，任务 active、`blocked=false`。
+- 边界/心得：测试报告里出现“通过”不能覆盖报告自身记录的裁切；门禁必须把关键证据的可读性当成一等失败条件。平板的关系信息不是装饰列，必须给它足够宽度或诚实换行；小屏空间不足时应重排结构，而不是把证据缩成省略号。
+- nextAction：提交并同步 Step883；在新的 clean HEAD 重新生成全部 exact-SHA runtime、Overview、route、route-state、tablet、packet、truth、quarantine 和 readiness，然后重新进行独立视觉/产品/无障碍复核、Route Owner、RouterOS soak 与 exact-SHA CL。
+- validForCommit：本步 tracked 文档尚未提交；本步前所有 bf0cc5e 报告在提交后仅作历史诊断。
+- supersededBy：null
