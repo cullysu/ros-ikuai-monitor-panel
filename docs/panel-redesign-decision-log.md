@@ -25098,3 +25098,38 @@ ocused-green-engineering
 - nextAction：继续 current-SHA independent review、Accessibility/AT、Route Owner、RouterOS soak 和 exact-SHA Linux/Windows/GHCR CL，所有门禁通过后才能进行原子 GitHub 发布。
 - validForCommit：Step879 文档更新未提交；当前 23a51a0 证据在本步提交后属于历史。
 - supersededBy：null
+
+
+## 第 880 步：提交决策修复后重新打开 exact-SHA 证据边界
+
+- latestStepOutcome: `880:rebind-after-decision-commit`
+
+### 已观察事实
+
+- Step879 的决策文档已完成 D:\想法\面板 14/14 字节一致同步，并提交为父 SHA 4e04813。
+- 任何绑定 23a51a01ece0bfff7e396c44766ec1d1996c7af6 的运行时、矩阵、截图和报告，在这次跟踪文档提交后都只能作为历史证据。
+
+### 判断与取舍
+
+- 不把旧报告继续挂在当前状态上，也不为了维持绿灯跳过重新生成。
+- 先建立新的 clean-SHA 边界，再生成 runtime、Overview、tablet、route、truth、quarantine 和 packet 证据；独立签收必须针对这个最终 SHA。
+- 当前结论仍为 FAIL，Product/Design/Visual、平板空间效率、真实 RouterOS soak、Route Owner 和三端 CL 均保持开放。
+
+### 验证证据
+
+- check-decision-ledger-sync：14/14 字节一致，0 mismatch。
+- npm run check:decision-system：通过；当前状态仍 fail-closed。
+- git diff --check：通过。
+
+### 未解决风险
+
+- 新 SHA 的完整 exact-SHA 证据尚未生成；旧 SHA 证据不能直接复用。
+- 独立 Product/Design/Visual/Accessibility 签收、Router Owner、RouterOS soak 和 Linux/Windows/GHCR CL 尚未完成。
+
+### 心得
+
+决策文档本身也是发布输入。只要它发生 tracked change，之前的截图和矩阵就不再代表当前候选；重新绑定不是形式主义，而是防止代码和结论不是同一个版本。
+
+### 下一步
+
+提交本步骤后，更新机器状态到新的 clean SHA，重新生成全部当前 evidence，再进行独立签收。

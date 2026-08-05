@@ -2,11 +2,11 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `879`
-- currentOutcome: `879:current-sha-evidence-rebound`
-- currentBoundary: `879`
-- latestRecordedStep: `879`
-- latestStepOutcome: `879:current-sha-evidence-rebound`
+- currentStep: `880`
+- currentOutcome: `880:rebind-after-decision-commit`
+- currentBoundary: `880`
+- latestRecordedStep: `880`
+- latestStepOutcome: `880:rebind-after-decision-commit`
 
 ## Current pointer
 

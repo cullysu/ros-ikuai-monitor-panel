@@ -1,18 +1,18 @@
 - status: `current`
-- currentConclusionForStep: `879`
-- latestRecordedStep: `879`
-- latestStepOutcome: `879:current-sha-evidence-rebound`
-- currentBoundaryForStep: `879`
+- currentConclusionForStep: `880`
+- latestRecordedStep: `880`
+- latestStepOutcome: `880:rebind-after-decision-commit`
+- currentBoundaryForStep: `880`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-05T15:30:00+08:00
+- updatedAt: 2026-08-05T15:45:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
 **FAIL overall / local scoped visual P1 closed / formal release gates OPEN.** The current implementation has fresh local engineering evidence in its declared scope, but this is not public-release approval. Product/Design/Visual trusted acceptance, route maturity, RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 879
+## Current decision record: Step 880
 
 - observed: The amended clean SHA 23a51a01ece0bfff7e396c44766ec1d1996c7af6 now owns fresh runtime, Overview, route-responsive, bounded route, route-state, packet, truth and quarantine evidence. The quarantine scanner reads the current evidence ledger with real line boundaries; historical machine-state gate records remain audit-only.
 - decision: record the exact-SHA evidence rebound as a separate current decision outcome. Keep Product/Design/Visual and route maturity fail-closed; do not treat matrix breadth, local review or generated packet as independent acceptance.
@@ -40,7 +40,7 @@
 
 ## Open review boundaries
 
-- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have fresh exact-SHA scoped evidence with P0/P1=0; P2 polish remains bounded. Trusted formal signatures, real assistive-technology acceptance and Route Owner acceptance remain open. The current candidate reports become historical when Step876 is committed and must be regenerated against the resulting clean SHA.
+- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have fresh exact-SHA scoped evidence with P0/P1=0; P2 polish remains bounded. Trusted formal signatures, real assistive-technology acceptance and Route Owner acceptance remain open. The previous scoped evidence is historical after the Step880 decision commit and must be regenerated against the resulting clean SHA.
 - Fresh local screenshots prove the tested scenarios only; they do not prove real RouterOS behavior, public deployment safety or independent human signoff.
 - The task remains active and `blocked=false`. An absent external signature, soak or CL is a release gate, not a reason to stop while local work remains executable; the tablet visual finding was executable and has been fixed locally.
 
