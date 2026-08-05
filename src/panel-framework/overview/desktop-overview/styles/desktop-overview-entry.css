@@ -34,7 +34,7 @@
   margin-left: 5px;
   color: var(--do-blue);
   content: "⌄";
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .do-ledger-source[open] summary::after {
@@ -47,7 +47,7 @@
   overflow-wrap: anywhere;
   color: var(--do-copy);
   font-family: Cascadia Mono, SFMono-Regular, Consolas, monospace;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.35;
   white-space: normal;
 }
