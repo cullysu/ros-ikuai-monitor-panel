@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `886`
-- latestRecordedStep: `886`
-- latestStepOutcome: `886:scoped-independent-review-pass-formal-gates-open`
-- currentBoundaryForStep: `886`
+- currentConclusionForStep: `887`
+- latestRecordedStep: `887`
+- latestStepOutcome: `887:current-sha-scoped-review-pass-formal-gates-open`
+- currentBoundaryForStep: `887`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-06T00:00:00+08:00
@@ -12,15 +12,15 @@
 
 **FAIL overall / scoped Product·Design·Visual review clean / formal release gates OPEN.** The current implementation has local engineering evidence and a current-SHA scoped review with P0/P1=0, but this is not public-release approval. Trusted acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 886
+## Current decision record: Step 887
 
-- observed: 针对当前 clean SHA `8e549dc03d608cda99b0c0f92a2e7bd6cb1a3546` 的两组独立只读复核均返回 P0=0、P1=0。Visual/Product scoped pass 仅保留 430 资源趋势位置、横屏工作台重心和 1440 留白三个 P2；Product/Accessibility/Engineering 未发现事实、ARIA、Back/Forward 或 320/200% 重排回归，但确认正式 trusted acceptance、18 个 bounded-readonly 路由和 `more` unavailable 仍未闭环。
-- decision: 关闭本轮已修复的正常 verdict 与 430px 证据 P1；将当前候选在声明范围内记录为 scoped Product/Design/Visual/Engineering pass，同时保持正式 Product/Design/Visual/Accessibility、Route Owner、route maturity、RouterOS soak 和外部 CL fail-closed。不得把 scoped review、自动矩阵或本地代理结果改写成可信外部签名。
-- visual disposition: 375/390/430 手机、844×390 横屏、768/844 平板、1366/1440 桌面在当前证据中未发现 P0/P1 视觉阻断；P2 作为后续抛光，不阻断本地 scoped closure，但不授权公众发布。
+- observed: 针对当前 clean SHA `c93d4906191cfd3e92ac8d3e8ae1867948bb0911` 的两组独立只读复核均返回 scoped pass。Visual/Product 为 P0/P1=`0`，记录 320px 顶栏高度、844×390 横屏工作台重心和 1440 下方留白三个 P2；Product/Accessibility/Engineering 为 P0/P1/P2=`0`，确认事实、ARIA、Back/Forward、风险对象、离线提示、320/375/430、平板和 200% 证据没有回归。
+- decision: 关闭本地声明范围内 Product/Design/Visual/Accessibility/Engineering scoped review，同时保留三个 P2 为不阻断的后续抛光；正式 Product/Design/Visual/Accessibility、Route Owner、route maturity、RouterOS soak 和外部 CL 继续 fail-closed。不得把 scoped review、自动矩阵或本地代理结果改写成可信外部签名。
+- visual disposition: 375/390/430 手机、844×390 横屏、768/844 平板、1366/1440 桌面在 c93 evidence scope 未发现 P0/P1 视觉阻断；P2 不阻断 scoped closure，不授权公众发布。
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. No RouterOS write capability or business-health claim was added.
-- report truth: current runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, full route `532/532`, route-state `266/266`, bounded route `76/76`, tablet shard and 430px shard requested cells all pass with zero failed requested cells. These reports are exact-bound to `8e549dc...` before this tracked decision sync; after commit they must be regenerated and rebound to the new clean SHA.
+- report truth: c93 current runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, full route `532/532`, route-state `266/266`, bounded route `76/76`, tablet shard and 430px shard requested cells all pass with zero failed requested cells. These reports are exact-bound to c93 before this tracked decision sync; after commit they must be regenerated and rebound to the new clean SHA.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
-- release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, RouterOS soak, trusted independent signatures and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred. Any pre-Step885 report is historical after the next tracked commit.
+- release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, RouterOS soak, trusted independent signatures and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred. Any c93 report is historical after the next tracked commit.
 
 ## Gate status
 
@@ -56,4 +56,4 @@
 
 ## One next action
 
-- nextAction: commit and sync Step886, regenerate all exact-SHA evidence including runtime, matrices, packet and 430px visual shard, then continue trusted Product/Design/Visual/Accessibility acceptance, Route Owner acceptance, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL; only then consider atomic GitHub publication.
+- nextAction: commit and sync Step887, regenerate all exact-SHA evidence including runtime, matrices, packet and 430px visual shard, then continue trusted Product/Design/Visual/Accessibility acceptance, Route Owner acceptance, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL; only then consider atomic GitHub publication.

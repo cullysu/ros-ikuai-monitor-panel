@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `886`
+- currentHandoffForStep: `887`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-05
-- latestRecordedStep: `886`
-- latestStepOutcome: `886:scoped-independent-review-pass-formal-gates-open`
+- latestRecordedStep: `887`
+- latestStepOutcome: `887:current-sha-scoped-review-pass-formal-gates-open`
 - currentConclusion: **FAIL overall**. Current-SHA scoped Product/Design/Visual/Engineering review is P0/P1=0, but formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
 ## Loop refinement applied
@@ -13,12 +13,12 @@
 - `emil-design-eng` was installed from `emilkowalski/skills` and fused into the product-company loop through `C:\Users\cully\.codex\skills\product-company-loop\references\emil-design-eng-gate.md`.
 - The operational rule is restraint: motion cannot invent freshness or urgency, and static evidence remains preferred for metrics, alerts, timestamps, and charts.
 
-## Current handoff: Step 886 scoped independent review pass; formal gates remain open
+## Current handoff: Step 887 current-SHA scoped review pass; formal gates remain open
 
-- Result: current-SHA scoped Product/Design/Visual/Engineering review is P0/P1=0 after the normal verdict and 430px evidence repair; three visual P2 polish notes remain non-blocking. Current exact-SHA runtime and matrix reports are historical after this tracked decision sync and must be rebound.
+- Result: current-SHA c93 scoped Product/Design/Visual/Accessibility/Engineering review found no P0/P1 findings; three visual P2 polish notes remain non-blocking. Current exact-SHA runtime and matrix reports are historical after this tracked decision sync and must be rebound.
 - Decision: close the local scoped review only. Keep product release FAIL-closed, preserve bounded route semantics, keep scoped review separate from trusted acceptance, and require a fresh clean SHA for every matrix family. The task is active and `blocked=false` while all remaining gates are executable.
 - Boundary: route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Formal product/design/visual/accessibility acceptance, Route Owner, RouterOS soak, exact-SHA CL and public release remain fail-closed.
-- Next: commit and sync Step886, regenerate every exact-SHA report family plus the 430px visual shard, then continue trusted Product/Design/Visual/Accessibility acceptance, Route Owner, RouterOS soak and exact-SHA external CL before any GitHub publication.
+- Next: commit and sync Step887, regenerate every exact-SHA report family plus the 430px visual shard, then continue trusted Product/Design/Visual/Accessibility acceptance, Route Owner, RouterOS soak and exact-SHA external CL before any GitHub publication.
 ## Gate boundary
 
 | Gate | Status | Meaning |

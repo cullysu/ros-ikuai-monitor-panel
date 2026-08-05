@@ -25216,3 +25216,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step886；在新 clean HEAD 重新生成全部 exact-SHA 证据，随后继续 trusted Product/Design/Visual/Accessibility、Route Owner、RouterOS soak、Linux/Windows/GHCR CL，最后才考虑原子 GitHub 发布。
 - validForCommit：`8e549dc03d608cda99b0c0f92a2e7bd6cb1a3546`
 - supersededBy：null
+
+## 第 887 步：重新核对 c93 候选并关闭本地 scoped 视觉复核
+
+- status：`current-sha-scoped-visual-product-accessibility-review-pass`
+- latestStepOutcome: `887:current-sha-scoped-review-pass-formal-gates-open`
+- 触发/问题：Step886 的决策同步后，必须禁止把旧 `8e549dc...` 的报告或复核误绑定到新候选。当前候选为 `c93d4906191cfd3e92ac8d3e8ae1867948bb0911`，需要重新核对手机、横屏、平板、桌面、异常态、证据语义和可访问性边界。
+- 独立复核：两组独立只读复核均核对当前 HEAD 与 c93 SHA、工作树干净，未修改文件、未创建可信签名。Visual/Product 复核返回 scoped pass，P0/P1=`0`；记录的 P2 为 320px 顶栏高度、844×390 横屏工作台重心和 1440 下方留白。Product/Accessibility/Engineering 复核返回 P0/P1/P2=`0`，并确认默认风险对象、current/stale/unavailable、离线提示不阻断真实请求、ARIA、Back/Forward、320/375/430、平板和 200% 证据没有回归。
+- 决策：关闭本地声明范围内的 Product/Design/Visual/Accessibility/Engineering scoped review；P2 作为不阻断的后续抛光记录，不用空白内容填充桌面，不把横屏侧栏误称为原生手机布局，也不把 scoped pass 改写成 trusted external acceptance。Formal trusted acceptance、Route Owner、真实 RouterOS soak、精确 SHA 的 Linux/Windows/GHCR CL 继续 fail-closed。
+- 验证：c93 exact-SHA runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`；Overview `28/28`；full route `532/532`；route-state `266/266`；bounded route `76/76`；tablet 与 430px 请求分片均 `requestedComplete=true` 且失败数为 `0`；packet 为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。readiness 接受当前矩阵后诚实停在 route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 形式边界：本步只更新决策记录；提交后 c93 报告不再是当前 SHA，必须在新 clean HEAD 重新生成 runtime、Overview、route、route-state、tablet、430px、packet、truth、quarantine 和 readiness。不能用“文档只改了”绕过 exact-SHA 绑定。
+- 心得：受阻标记只能表示当前没有可执行下一步；formal pending 不是停止条件。当前本地 scoped 视觉复核已经关闭，但公众发布资格仍由外部可信签收、真实设备 soak 和 exact-SHA CL 决定，二者不能混用。
+- nextAction：提交并同步 Step887；在新 clean HEAD 完成全部 exact-SHA 证据回绑，然后继续争取真实 AT/Route Owner/RouterOS soak 与 Linux/Windows/GHCR CL；未全部通过前不上传 GitHub。
+- validForCommit：`c93d4906191cfd3e92ac8d3e8ae1867948bb0911`
+- supersededBy：null
