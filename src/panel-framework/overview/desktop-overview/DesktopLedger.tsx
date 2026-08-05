@@ -64,7 +64,12 @@ export function DesktopLedger({
                 </span>
                 <span className="do-ledger-state" role="cell"><i aria-hidden="true" /><b>{row.state}</b></span>
                 <span className="do-ledger-evidence" role="cell">{row.evidence}</span>
-                <code className="do-ledger-source" role="cell">{row.source}</code>
+                <details className="do-ledger-source" role="cell">
+                  <summary aria-label={`查看${row.sourceLabel || "来源"}原始字段`}>
+                    {row.sourceLabel || "当前快照字段"}
+                  </summary>
+                  <code>{row.source}</code>
+                </details>
               </div>
             ))}
           </div>

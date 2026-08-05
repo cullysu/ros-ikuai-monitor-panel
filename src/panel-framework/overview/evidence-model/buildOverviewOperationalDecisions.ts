@@ -31,6 +31,7 @@ export function buildOverviewOperationalDecisions(
         ? `${state.facts.interfaces.down} 个 Down：${state.facts.interfaces.downNames.slice(0, 3).join("、")}`
         : "本次采样未见 Down",
       source: "interfaces",
+      sourceLabel: "接口状态快照",
       tone: state.facts.interfaces.down ? "danger" : "trust",
       route: "interfaces",
     });
@@ -57,6 +58,7 @@ export function buildOverviewOperationalDecisions(
         ? "阈值 85/85/90%"
         : `已观测 ${state.facts.resource.observed}/3 · 缺失不按零`,
     source: "overview.cpuLoad + memoryUsage + diskUsage",
+    sourceLabel: "资源快照与原子样本",
     tone: state.facts.resource.level,
     route: "trafficLoad",
   });
@@ -69,6 +71,7 @@ export function buildOverviewOperationalDecisions(
     state: connectionTotal === null ? "未记录" : `${connectionTotal.toLocaleString("zh-CN")} 条`,
     evidence: connectionTotal === null ? "不以零值代替缺失" : "当前快照总量",
     source: "connections.total",
+    sourceLabel: "连接总量快照",
     tone: connectionTotal === null ? "missing" : "trust",
     route: "connections",
   });

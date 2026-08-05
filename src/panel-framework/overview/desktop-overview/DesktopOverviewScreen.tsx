@@ -21,6 +21,12 @@ function sourceRows(model: OverviewEvidenceModel): DesktopLedgerRow[] {
     failures: "meta.*EndpointFailures",
     boundary: "capabilities + read-only policy",
   };
+  const labels: Record<string, string> = {
+    target: "设备与采集目标",
+    success: "最近业务成功记录",
+    failures: "采集端点记录",
+    boundary: "只读能力策略",
+  };
   return model.evidenceRows.map((row) => ({
     id: `source:${row.key}`,
     category: "来源",
@@ -28,6 +34,7 @@ function sourceRows(model: OverviewEvidenceModel): DesktopLedgerRow[] {
     state: row.value,
     evidence: row.note,
     source: paths[row.key] || row.key,
+    sourceLabel: labels[row.key] || "当前快照字段",
     tone: row.tone,
     route: "readonlyDiagnostics",
   }));

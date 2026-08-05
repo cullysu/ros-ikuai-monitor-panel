@@ -2,6 +2,55 @@
 @import "./desktop-overview.css";
 @import "./desktop-overview-responsive.css";
 @import "./desktop-overview-recovered.css";
+
+/*
+ * Desktop ledgers show a human-readable source role first. The raw field path
+ * remains available behind a native disclosure instead of forcing debug-like
+ * identifiers into the primary scan line.
+ */
+.do-ledger-source {
+  min-width: 0;
+  color: var(--do-muted);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.do-ledger-source summary {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  cursor: pointer;
+  list-style: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.do-ledger-source summary::-webkit-details-marker {
+  display: none;
+}
+
+.do-ledger-source summary::after {
+  margin-left: 5px;
+  color: var(--do-blue);
+  content: "⌄";
+  font-size: 11px;
+}
+
+.do-ledger-source[open] summary::after {
+  content: "⌃";
+}
+
+.do-ledger-source code {
+  display: block;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  color: var(--do-copy);
+  font-family: Cascadia Mono, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: normal;
+}
 @media (min-width: 1200px) {
   /* Final entry owner: recovered desktop rules must not reopen the normal evidence boundary. */
   .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-module-heading {

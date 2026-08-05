@@ -87,6 +87,8 @@ export interface OverviewOperationalDecision {
   /** A phone-width evidence label; the full evidence remains available to desktop/detail views. */
   compactEvidence?: string;
   source: string;
+  /** A human-readable source label for dense desktop ledgers; source keeps the raw field path. */
+  sourceLabel?: string;
   tone: OverviewTone;
   route: PanelRouteId;
   targetObjectId?: string;
