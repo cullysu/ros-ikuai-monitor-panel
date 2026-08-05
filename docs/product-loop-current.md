@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `874`
+- currentHandoffForStep: `875`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-05
-- latestRecordedStep: `874`
-- latestStepOutcome: `874:exact-local-evidence-scoped-reviews-formal-gates-open`
+- latestRecordedStep: `875`
+- latestStepOutcome: `875:phone-steady-next-step-order-formal-gates-open`
 - currentConclusion: **FAIL overall**. Exact-SHA engineering evidence and fresh scoped Product/Design/Visual/Accessibility reviews are green in declared scope; Route Owner/Operations formally fails the maturity boundary; formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
 ## Loop refinement applied
@@ -13,12 +13,12 @@
 - `emil-design-eng` was installed from `emilkowalski/skills` and fused into the product-company loop through `C:\Users\cully\.codex\skills\product-company-loop\references\emil-design-eng-gate.md`.
 - The operational rule is restraint: motion cannot invent freshness or urgency, and static evidence remains preferred for metrics, alerts, timestamps, and charts.
 
-## Current handoff: Step874 exact local evidence and scoped reviews complete; formal gates remain open
+## Current handoff: Step875 normal-phone action order fixed; exact evidence must be rebound; formal gates remain open
 
-- Result: final candidate `49df42fef4a09e04b8b1549ab0d977066b70e1b1` passes runtime `260/140/169`, Overview `28/28`, full route-responsive `532/532`, bounded `76/76`, route-state `266/266`; Boole and Tesla scoped reviews report P0/P1=0. The current evidence is valid before this Step874 documentation change and becomes stale by identity after commit.
-- Decision: keep product release FAIL-closed, preserve bounded route semantics, close only the local scoped Product/Design/Visual/Interaction review, and require a fresh clean SHA to prove every matrix family after this documentation change. The task is active and `blocked=false` while trusted acceptance, route maturity, RouterOS soak and exact-SHA CL remain executable.
+- Result: Step875 moves the normal-phone primary next-step action ahead of secondary running judgments. The source contract is green (`check-mobile-phone-action-priority.js` 9/9); the prior exact evidence is stale because the worktree now contains source/tool/governance changes. A fresh clean SHA must re-prove runtime and all matrix families.
+- Decision: keep product release FAIL-closed, preserve bounded route semantics, keep scoped Product/Design/Visual/Interaction review separate from trusted acceptance, and require a fresh clean SHA for every matrix family. The task is active and `blocked=false` while trusted acceptance, route maturity, RouterOS soak and exact-SHA CL remain executable.
 - Boundary: route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Formal product/design/visual/accessibility acceptance, Route Owner, RouterOS soak, exact-SHA CL and public release remain fail-closed.
-- Next: sync and commit Step874, rebind exact-SHA runtime/Overview/full+bounded route matrices, route-state, packet, quarantine, truth and readiness, then continue Route Owner/trusted acceptance, RouterOS soak and exact-SHA CL.
+- Next: sync and commit Step875, rebind exact-SHA runtime/Overview/full+bounded route matrices, route-state, packet, quarantine, truth and readiness, then request current-SHA scoped review and continue Route Owner/trusted acceptance, RouterOS soak and exact-SHA CL.
 ## Historical handoff: Step857 (superseded by Step858)
 
 - Result: clean candidate `3ea1924150f5d16f9a261136f3a04811c7f28075` passes build/runtime `257/140/169`, Overview `28/28`, route-responsive `532/532`, route-state `266/266` and bounded route shard `76/76`; product/design/visual and accessibility/interaction scoped reviews are P0/P1 clean.

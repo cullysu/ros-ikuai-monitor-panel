@@ -214,17 +214,17 @@ export function MobilePatrolScreen({
             <div className="mp-workspace-primary">
               {normalPhoneFocusObject}
               {incidentCenter}
-              {proofFollowsIncident ? proofStrip : normalPhoneProofStrip}
-              {scenarioFocus}
-              {resourceSignal}
-              {resourceHistory}
-              {trafficSignal}
-              {phonePrimaryAction}
-              {concurrentRiskQueue}
-              {compactIncidentActions}
-              {normalPhoneSteadyDecisions}
+               {proofFollowsIncident ? proofStrip : normalPhoneProofStrip}
+               {scenarioFocus}
+               {resourceSignal}
+               {resourceHistory}
               {normalPhoneNextStep}
-              {comparisonList}
+               {trafficSignal}
+               {phonePrimaryAction}
+               {concurrentRiskQueue}
+               {compactIncidentActions}
+               {normalPhoneSteadyDecisions}
+               {comparisonList}
             </div>
             <div className="mp-workspace-context">
               {tablet ? focusObject : null}

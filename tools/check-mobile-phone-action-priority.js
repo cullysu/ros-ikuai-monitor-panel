@@ -59,6 +59,11 @@ const checks = [
       primary.indexOf("{trafficSignal}") < primary.indexOf("{normalPhoneSteadyDecisions}"),
   },
   {
+    name: "normal phone primary next step stays before secondary decisions",
+    pass: primary.includes("{normalPhoneNextStep}") &&
+      primary.indexOf("{normalPhoneNextStep}") < primary.indexOf("{normalPhoneSteadyDecisions}"),
+  },
+  {
     name: "normal phone decision owner is not hidden in the context column",
     pass: !context.includes("MobileSteadyDecisionLedger"),
   },

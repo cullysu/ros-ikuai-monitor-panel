@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `874`
-- latestRecordedStep: `874`
-- latestStepOutcome: `874:exact-local-evidence-scoped-reviews-formal-gates-open`
-- currentBoundaryForStep: `874`
+- currentConclusionForStep: `875`
+- latestRecordedStep: `875`
+- latestStepOutcome: `875:phone-steady-next-step-order-formal-gates-open`
+- currentBoundaryForStep: `875`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-05T09:35:00+08:00
@@ -12,10 +12,10 @@
 
 **FAIL overall / local scoped visual P1 closed / formal release gates OPEN.** The current implementation has fresh local engineering evidence in its declared scope, but this is not public-release approval. Product/Design/Visual trusted acceptance, route maturity, RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 874
+## Current decision record: Step 875
 
-- observed: Step874's final local candidate `49df42fef4a09e04b8b1549ab0d977066b70e1b1` passes Overview `28/28`, full route-responsive `532/532`, bounded single-scenario route-responsive `76/76`, route-state `266/266`, runtime `260/140/169`, and all focused visual/product contracts. Boole and Tesla independently found P0=0 and P1=0 in the declared UI scope.
-- decision: keep the full route-responsive report as supplemental scenario evidence and retain the dedicated 19×4 single-scenario report required by the readiness discovery contract. Do not collapse the two report families or infer formal acceptance from either one.
+- observed: Step875 moves the normal-phone primary next-step action ahead of secondary running judgments and extends the source contract to 9/9. The existing exact-SHA evidence is stale because the worktree now contains source/tool/governance changes; no stale report is used as current release evidence.
+- decision: keep the full route-responsive report as supplemental scenario evidence and retain the dedicated 19×4 single-scenario report required by the readiness discovery contract. Rebind all evidence on a new clean SHA; do not collapse report families or infer formal acceptance from scoped local review.
 - visual disposition: close the local scoped Product/Design/Visual/Interaction review at P0/P1=0; retain P2 polish notes and keep trusted formal Product/Design/Visual/Accessibility signatures open. Local agents cannot issue the required Ed25519 external acceptance.
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. The route matrix expansion changes evidence coverage only and does not change product UI or RouterOS behavior.
 - report truth: this decision-record update itself changes tracked files, so every current runtime/matrix/packet/quarantine/truth/readiness artifact must be re-bound to the next clean SHA after commit. Prior `49df42f` reports remain historical until that rebind is complete.
@@ -40,7 +40,7 @@
 
 ## Open review boundaries
 
-- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have fresh exact-SHA scoped evidence with P0/P1=0; P2 polish remains bounded. Trusted formal signatures, real assistive-technology acceptance and Route Owner acceptance remain open. The current candidate reports become historical when Step874 is committed and must be regenerated against the resulting clean SHA.
+- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have fresh exact-SHA scoped evidence with P0/P1=0; P2 polish remains bounded. Trusted formal signatures, real assistive-technology acceptance and Route Owner acceptance remain open. The current candidate reports become historical when Step875 is committed and must be regenerated against the resulting clean SHA.
 - Fresh local screenshots prove the tested scenarios only; they do not prove real RouterOS behavior, public deployment safety or independent human signoff.
 - The task remains active and `blocked=false`. An absent external signature, soak or CL is a release gate, not a reason to stop while local work remains executable; the tablet visual finding was executable and has been fixed locally.
 
@@ -56,4 +56,4 @@
 
 ## One next action
 
-- nextAction: sync and commit Step874, regenerate all exact-SHA runtime/Overview/full+bounded route matrices, route-state, packet, quarantine, truth and readiness evidence, then continue non-forgeable Route Owner/trusted acceptance, RouterOS soak and exact-SHA CL.
+- nextAction: sync and commit Step875, regenerate all exact-SHA runtime/Overview/full+bounded route matrices, route-state, packet, quarantine, truth and readiness evidence, then continue non-forgeable Route Owner/trusted acceptance, RouterOS soak and exact-SHA CL.

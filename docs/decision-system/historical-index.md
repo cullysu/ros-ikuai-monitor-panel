@@ -5,7 +5,7 @@
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `874`
+- coveredStepMax: `875`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -26,6 +26,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 839 - 849 | decision-first mobile ordering, wide resource action correction, exact-SHA matrix rebinding, browser cleanup reliability, current-SHA scoped independent reviews, exact report discovery, current-SHA matrix rebinding, formal-gate fail-closed continuation, emil-design-eng loop refinement, current-SHA route-owner boundary and route-object depth slice | current-state.md |
 | 850 - 863 | exact-SHA rebinding, scoped reviews, route-object evidence, bounded report quarantine, current-authority freshness, evidence-family collision repair, narrow-phone fixed-navigation capture repair and formal release gates remaining open | current-state.md |
 | 864 - 870 | incident support/action responsibility repair, runtime probe expansion, compact secondary-action height adaptation, Overview matrix action aggregation, browser connectivity hint semantics, tablet action-note readability and exact-SHA evidence rebinding | current-state.md |
+| 871 - 875 | exact-SHA evidence rebinding, route-responsive report discovery, full route scenario evidence, scoped visual closure, and normal-phone primary next-step ordering | current-state.md |
 
 ## Reading rule
 

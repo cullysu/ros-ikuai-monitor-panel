@@ -25032,3 +25032,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step874 后，按新 exact SHA 重新生成 runtime、Overview、全量/ bounded route-responsive、route-state、packet、quarantine、truth、readiness；随后继续非伪造 Route Owner/Accessibility/RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL。
 - validForCommit：本步文档与状态记录变更前的 clean candidate `49df42fef4a09e04b8b1549ab0d977066b70e1b1`；提交本步后所有运行证据必须重新绑定。
 - supersededBy：null
+
+## 第 875 步：把手机正常态首要动作放回首屏决策链
+
+- status：`phone-steady-next-step-order-formal-gates-open`
+- latestStepOutcome: `875:phone-steady-next-step-order-formal-gates-open`
+- 触发/问题：当前 scoped 视觉复核虽未发现 P0/P1，但指出手机正常态的首要调查动作在 WAN 图表和运行判断之后才出现，390px 首屏通常看不到入口。异常态已经有“风险对象 → 主动作 → 次级风险”的邻接关系；正常态也必须让用户在读完对象与当前信号后立即得到下一步，而不是滚到列表末尾才找到。
+- 决策/实现：调整 `src/panel-framework/mobile/MobilePatrolScreen.tsx` 的手机正常态渲染顺序，把 `MobilePhoneNextStep` 放到当前资源/流量信号之后、次级运行判断之前；保留异常态主动作、平板任务区和证据边界的既有责任，不复制动作、不缩小触控目标。同步把 `tools/check-mobile-phone-action-priority.js` 的源码契约扩展为明确证明正常态首要动作先于次级判断。
+- 验证：`check:types` 通过；`check-mobile-phone-action-priority.js` 为 `9/9`；`check-mobile-primary-task-proximity-v1.js` 通过；原子流量、时区、路由、sidecar、详情新证据、日志详情、矩阵合并器等既有聚焦检查在本候选修改前均通过。当前工作树因本步 source/tool 变更而非 clean exact-SHA，必须提交后重新生成 runtime、28/28 Overview、route-responsive、route-state、packet、quarantine、truth 和 readiness。
+- 视觉/交互裁决：本地可修复的正常态动作可见性 P2 关闭；平板余量、资源层重复和窄屏证据边界继续由新 SHA 独立复核确认。该 scoped 裁决不转化为 Product/Design/Visual trusted Ed25519 签名。
+- 发布边界：保持 FAIL-closed。18 条业务路由仍为 `bounded-readonly`、`more` 为 `unavailable`；正式 Product/Design/Visual、Accessibility/AT、Route Owner、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release 继续开放但未通过，任务 active、`blocked=false`，不上传 GitHub。
+- 边界/心得：移动端的“信息在页面里”不等于“信息在任务窗口里”。首要动作必须紧邻用户刚刚读完的证据层；正常态和异常态虽然共享动作模型，但不能共享错误的纵向位置。每次顺序变化都要同时更新组件责任、源码门禁和新 SHA 截图，不以旧报告证明新结构。
+- nextAction：提交 Step875 并同步 `D:\想法\面板`；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，然后继续当前 SHA 的独立视觉/产品/交互复核、Route Owner、RouterOS soak 与三端 CL。
+- validForCommit：本步 source/tool changes 尚未提交；此前 `dbbe2f31e8ffac67ba2eed4c3c3be93da63dc366` 的 exact-SHA 报告在本步提交后失效。
+- supersededBy：null

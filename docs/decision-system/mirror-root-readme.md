@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step874 records the final local matrix and scoped independent review result without weakening formal gates; the documentation change itself requires a fresh exact-SHA rebind; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step875 records the normal-phone primary next-step ordering correction without weakening formal gates; this documentation and source change requires a fresh exact-SHA rebind; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step868 修复 Overview 验收器对手机主任务/次级上下文动作的漏计，并完成当前 clean SHA 的 exact-SHA 矩阵重绑；exact-SHA 证据只由机器状态绑定，交互 scoped review P0/P1 clean、产品 conditional、正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step875 把正常手机首要动作放回当前信号之后、次级判断之前，并将源代码顺序契约扩展到 9/9；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `874`
-- currentOutcome: `874:exact-local-evidence-scoped-reviews-formal-gates-open`
-- currentBoundary: `874`
+- currentStep: `875`
+- currentOutcome: `875:phone-steady-next-step-order-formal-gates-open`
+- currentBoundary: `875`
 - authority: `decision-system/current-state.md`
 
 ## 入口
