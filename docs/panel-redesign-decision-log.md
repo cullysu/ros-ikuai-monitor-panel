@@ -25230,3 +25230,16 @@ ocused-green-engineering
 - nextAction：提交并同步 Step887；在新 clean HEAD 完成全部 exact-SHA 证据回绑，然后继续争取真实 AT/Route Owner/RouterOS soak 与 Linux/Windows/GHCR CL；未全部通过前不上传 GitHub。
 - validForCommit：`c93d4906191cfd3e92ac8d3e8ae1867948bb0911`
 - supersededBy：null
+
+## 第 888 步：修复 Windows 发布预检与产品 mount 合同冲突
+
+- status：`windows-packaging-neutral-mount-contract-repair`
+- latestStepOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
+- 触发/问题：Windows packaging preflight 与 CI 仍要求 `<main id="app">`，但产品和无障碍合同已经明确 mount 必须是中性的 `<div id="app">`，否则 Overview/domain/connection 等路由各自的 `<main>` 会形成嵌套 landmark。该冲突是可执行的发布门禁缺陷，不应把正确产品改回错误 DOM。
+- 决策/实现：将 `tools/check-packaging-preflight.ps1` 与 `.github/workflows/ci.yml` 的 bundle root 检查统一为 `<div id="app">`；同步更新 `tools/check-release-blockers.js` 的反向合同和错误文案。没有改变运行时路由、公开 API、只读边界或 React mount 行为。
+- 验证边界：修改前 Windows preflight 的 frontend framework assets 检查确实失败，原因是它寻找旧 `<main id="app">`；其余本地安装、RouterOS archive guidance 和 install dry-run 检查通过，readiness 只停在预期的 route maturity gate。修改后需在新 clean SHA 重跑 types、overview、build、runtime、全部 exact-SHA 矩阵、Windows preflight、package bundle 和 readiness。
+- 发布边界：修复该门禁不等于 Windows CL 已通过；Linux、Windows、GHCR exact-SHA 仍需外部运行证据，真实 RouterOS soak、trusted acceptance、route maturity 和 GitHub 发布继续关闭，任务 active、`blocked=false`。
+- 心得：发布检查必须验证当前产品真实契约，而不是复制一条已经废弃的旧 DOM 假设；发现门禁与产品事实冲突时修门禁并增加回归断言，比牺牲正确的可访问性结构更安全。
+- nextAction：提交并同步 Step888；在新 clean HEAD 重建并重跑全套 exact-SHA 证据、Windows packaging preflight 和 release readiness，然后继续 Linux/Windows/GHCR CL 与 RouterOS soak。
+- validForCommit：当前 Step887 clean candidate `1a978e94fe972ba1374ab541c192398ed27d703a`；本步 tracked 代码与文档提交后全部旧报告仅作历史诊断。
+- supersededBy：null

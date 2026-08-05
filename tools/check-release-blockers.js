@@ -65,11 +65,11 @@ check(
 );
 check(
   'Windows packaging validates the current React root instead of the retired shell',
-  ciWorkflowSource.includes("if ($indexText -notmatch '<main\\s+id=\"app\"(?:\\s|>)')") &&
+   ciWorkflowSource.includes("if ($indexText -notmatch '<div\\s+id=\"app\"(?:\\s|>)')") &&
     ciWorkflowSource.includes('Bundled frontend still contains retired legacy shell markers.') &&
     packagingPreflightSource.includes('$reactShell = (') &&
     packagingPreflightSource.includes("$indexText -notmatch 'data-app-shell=\"ikuai\"'"),
-  'Windows CL and local packaging preflight must validate <main id="app"> and reject legacy shell markers'
+  'Windows CL and local packaging preflight must validate the neutral <div id="app"> mount and reject legacy shell markers'
 );
 check(
   'Linux CL executes the current release blockers, deterministic build, and all desktop contracts',

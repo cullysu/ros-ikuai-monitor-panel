@@ -2,18 +2,18 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `887`
-- currentOutcome: `887:current-sha-scoped-review-pass-formal-gates-open`
-- currentBoundary: `887`
-- latestRecordedStep: `887`
-- latestStepOutcome: `887:current-sha-scoped-review-pass-formal-gates-open`
+- currentStep: `888`
+- currentOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
+- currentBoundary: `888`
+- latestRecordedStep: `888`
+- latestStepOutcome: `888:windows-packaging-contract-aligned-formal-gates-open`
 
 ## Current pointer
 
 The authority is current-state.md; this page is discovery only.
 
 - Current conclusion: FAIL overall; local engineering evidence is complete in declared scopes, while independent public acceptance and trusted external release gates remain open. The task remains active, not blocked.
-- Current engineering boundary: Step887 records current-SHA c93 scoped Product/Design/Visual/Accessibility/Engineering review with no P0/P1 findings; exact report identities remain in machine state and historical evidence is audit-only. Formal trusted acceptance and release gates remain open.
+- Current engineering boundary: Step888 records the fix for the Windows packaging/neutral mount contract mismatch after the c93 scoped review; exact report identities remain in machine state and historical evidence is audit-only. Formal trusted acceptance and release gates remain open.
 - Latest result: current runtime and matrix reports are required to be exact-SHA bound with no nested contradictions; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Full process: panel-redesign-decision-log.md.
 - Product handoff: product-loop-current.md.
