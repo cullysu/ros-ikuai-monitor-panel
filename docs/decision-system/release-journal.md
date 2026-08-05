@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 876
-- currentOutcome: 876:phone-steady-next-step-order-aligned-with-signal
-- latestStepOutcome: 876:phone-steady-next-step-order-aligned-with-signal
+- currentStep: 877
+- currentOutcome: 877:packet-default-step-follows-current-authority
+- latestStepOutcome: 877:packet-default-step-follows-current-authority
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -85,3 +85,4 @@ Only a clean, independently accepted candidate with complete current-identity ma
 - Step849: local route-object depth slice implemented for DHCP pools, security address sets, WAN distribution and split traffic-audit objects. Focused contracts pass, but the code/document commit invalidates previous exact-SHA reports; rebind is required before any release claim. Formal acceptance, RouterOS soak, exact-SHA Linux/Windows/GHCR CL and publication remain closed.
 
 - Step868: exact-SHA Overview rerun exposed 14 mobile incident `patrolActions` failures caused by the probe counting only the primary action section after the product split secondary actions into an explicitly marked context list. The probe was corrected to aggregate both owners without weakening thresholds; the failed report remains audit evidence and all exact-SHA evidence must be rebound after commit. Formal Product/Design/Visual/Accessibility acceptance, route maturity, RouterOS soak, exact-SHA CL and GitHub/public release remain closed.
+- Step877: The visual packet generator previously defaulted to historical Step821 when invoked without an explicit argument, despite the decision repository being authoritative at Step876. It now reads docs/decision-system/current-state.md for the default step while preserving explicit overrides for controlled reproduction. This source/tool/governance change requires a new clean exact-SHA runtime, matrix, packet, truth and readiness rebind; formal Product/Design/Visual, Accessibility/AT, Route Owner, route maturity, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.

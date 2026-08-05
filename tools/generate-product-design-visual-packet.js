@@ -10,7 +10,10 @@ const root = path.resolve(__dirname, "..");
 const evidenceRoot = path.join(root, "_acceptance", "panel-runtime-browser");
 const reportPath = path.join(evidenceRoot, "report.json");
 const outputPath = path.join(evidenceRoot, "product-design-visual-packet.json");
-const decisionStep = Number(process.argv[2] || 821);
+const currentStatePath = path.join(root, "docs", "decision-system", "current-state.md");
+const currentState = fs.readFileSync(currentStatePath, "utf8");
+const currentStepMatch = currentState.match(/^- currentConclusionForStep:\s*`(\d+)`/m);
+const decisionStep = Number(process.argv[2] || currentStepMatch?.[1] || 0);
 const evidenceFiles = [
   "mobile-runtime-current.png",
   "mobile-composite-risk-390.png",

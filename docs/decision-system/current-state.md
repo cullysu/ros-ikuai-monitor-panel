@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `876`
-- latestRecordedStep: `876`
-- latestStepOutcome: `876:phone-steady-next-step-order-aligned-with-signal`
-- currentBoundaryForStep: `876`
+- currentConclusionForStep: `877`
+- latestRecordedStep: `877`
+- latestStepOutcome: `877:packet-default-step-follows-current-authority`
+- currentBoundaryForStep: `877`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-05T11:10:00+08:00
+- updatedAt: 2026-08-05T11:20:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
 **FAIL overall / local scoped visual P1 closed / formal release gates OPEN.** The current implementation has fresh local engineering evidence in its declared scope, but this is not public-release approval. Product/Design/Visual trusted acceptance, route maturity, RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 876
+## Current decision record: Step 877
 
-- observed: Step876 places the normal-phone primary next-step action after the WAN signal and before secondary running judgments, and extends the source/runtime contract to 10/10 plus the geometry relation. The existing exact-SHA evidence is stale because the worktree now contains source/tool/governance changes; no stale report is used as current release evidence.
-- decision: keep the full route-responsive report as supplemental scenario evidence and retain the dedicated 19×4 single-scenario report required by the readiness discovery contract. Rebind all evidence on a new clean SHA; do not collapse report families or infer formal acceptance from scoped local review.
+- observed: Step876 places the normal-phone primary next-step action after the WAN signal and before secondary running judgments, and extends the source/runtime contract to 10/10 plus the geometry relation. The visual packet generator still defaulted to the historical Step821 when invoked without an argument, which could make a fresh packet look current while pointing at the wrong decision record.
+- decision: make the packet generator read `docs/decision-system/current-state.md` as its default decision-step authority, while retaining an explicit CLI override for controlled historical reproduction. Rebind all evidence on a new clean SHA; do not collapse report families or infer formal acceptance from scoped local review.
 - visual disposition: close the local scoped Product/Design/Visual/Interaction review at P0/P1=0; retain P2 polish notes and keep trusted formal Product/Design/Visual/Accessibility signatures open. Local agents cannot issue the required Ed25519 external acceptance.
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. The route matrix expansion changes evidence coverage only and does not change product UI or RouterOS behavior.
-- report truth: this decision-record update itself changes tracked files, so every current runtime/matrix/packet/quarantine/truth/readiness artifact must be re-bound to the next clean SHA after commit. Prior `49df42f` and `5692506` reports remain historical until that rebind is complete.
+- report truth: this decision-record and packet-generator update changes tracked files, so every current runtime/matrix/packet/quarantine/truth/readiness artifact must be re-bound to the next clean SHA after commit. Prior `49df42f`, `5692506` and `513a591f` reports remain historical until that rebind is complete.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
 - release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, RouterOS soak, trusted independent signatures and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred.
 
@@ -56,4 +56,4 @@
 
 ## One next action
 
-- nextAction: sync and commit Step876, regenerate all exact-SHA runtime/Overview/full+bounded route matrices, route-state, packet, quarantine, truth and readiness evidence, then continue non-forgeable Route Owner/trusted acceptance, RouterOS soak and exact-SHA CL.
+- nextAction: sync and commit Step877, regenerate all exact-SHA runtime/Overview/full+bounded route matrices, route-state, packet, quarantine, truth and readiness evidence, then continue non-forgeable Route Owner/trusted acceptance, RouterOS soak and exact-SHA CL.

@@ -25060,3 +25060,17 @@ ocused-green-engineering
 - nextAction：提交 Step876 并同步 `D:\想法\面板`；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，然后继续当前 SHA 的独立视觉/产品/交互复核、Route Owner、RouterOS soak 与三端 CL。
 - validForCommit：本步 source/tool changes 尚未提交；此前 `5692506a9cc56be2a9fa38a65bd2ed4804d19759` 的 exact-SHA 矩阵与旧 runtime 仅作历史诊断，不能作为本步发布证据。
 - supersededBy：null
+
+## 第 877 步：让视觉 packet 默认跟随当前决策权威
+
+- status：`packet-default-step-follows-current-authority`
+- latestStepOutcome: `877:packet-default-step-follows-current-authority`
+- 触发/问题：Step876 已把手机正常态首要动作放到 WAN 当前信号之后，并把浏览器几何合同迁移到 10/10；复核 packet 生成器时发现，无参数调用仍默认使用历史 Step821。这样即使 packet 的 commit、指纹和截图都是新候选，也会把它绑定到错误的决策步号，削弱 D 盘决策仓库和发布证据之间的可追溯性。
+- 决策/实现：`tools/generate-product-design-visual-packet.js` 现在从唯一权威 `docs/decision-system/current-state.md` 读取默认 `currentConclusionForStep`，只有显式传入 CLI 参数时才允许做受控历史复现；同步更新 current-state、current-index、README、handoff、release-journal 与 D 盘镜像到 Step877。该修复不改变 UI、数据或 RouterOS 行为，只修正证据绑定真值。
+- 验证：生成器源码已通过语法级修改检查；在提交前的当前工作树上必须用无参数调用确认 packet 为 Step877，并重新生成新 clean SHA 的 runtime、Overview `28/28`、完整 route-responsive `532/532`、bounded route shard `76/76`、route-state `266/266`、packet、quarantine、truth 和 readiness。
+- 视觉/交互裁决：Step876 已关闭本地 scoped Product/Design/Visual/Interaction 的 P0/P1 顺序偏差；本步不把本地 scoped review 转换为 trusted formal signature，P2 继续保留为独立抛光记录。
+- 发布边界：继续 FAIL-closed。route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；正式 Product/Design/Visual、Accessibility/AT、Route Owner、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release 未完成，任务 active、`blocked=false`，不上传 GitHub。
+- 边界/心得：决策步号是证据链的一部分，不是 packet 里的装饰字段。生成器不能把历史默认值悄悄带入当前证据；当前权威应有单一来源，历史复现必须显式，发布门禁必须继续拒绝自签和过期证据。
+- nextAction：提交并同步 Step877 后，使用无参数 packet 生成验证默认步号为877，再以新 clean SHA 重跑 build/types/runtime、Overview、route 矩阵、packet、quarantine、truth 和 readiness；随后继续当前 SHA 独立复核、Route Owner、RouterOS soak 与三端 CL。
+- validForCommit：本步 source/tool/governance changes 尚未提交；当前 `513a591fe8e17649bb9e6fcd0969e1dddf6dd68a` 的 exact-SHA 报告在本步提交后仅作历史诊断。
+- supersededBy：null
