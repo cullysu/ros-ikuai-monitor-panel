@@ -236,17 +236,10 @@
     }
     .mp-tablet-vertical-task .mp-action-list > button {
       min-height: 48px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-    }
-    /*Tablet task cards have enough vertical room for the operational note;
-       do not hide the discriminating part of the action behind an ellipsis.*/
-    .mp-tablet-vertical-task .mp-action-list > button {
+      padding-block: 5px;
       align-items: start;
     }
     .mp-tablet-vertical-task .mp-action-list :is(b, small) {
-      overflow: visible;
-      text-overflow: clip;
       white-space: normal;
     }
     .mp-tablet-steady .mp-focus > header {
