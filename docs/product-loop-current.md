@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `870`
+- currentHandoffForStep: `873`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-05
-- latestRecordedStep: `870`
-- latestStepOutcome: `870:tablet-action-notes-unellipsized-formal-gates-open`
+- latestRecordedStep: `873`
+- latestStepOutcome: `873:route-responsive-discovery-contract-fixed-formal-gates-open`
 - currentConclusion: **FAIL overall**. Exact-SHA engineering evidence and fresh scoped Product/Design/Visual/Accessibility reviews are green in declared scope; Route Owner/Operations formally fails the maturity boundary; formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
 ## Loop refinement applied
@@ -13,12 +13,12 @@
 - `emil-design-eng` was installed from `emilkowalski/skills` and fused into the product-company loop through `C:\Users\cully\.codex\skills\product-company-loop\references\emil-design-eng-gate.md`.
 - The operational rule is restraint: motion cannot invent freshness or urgency, and static evidence remains preferred for metrics, alerts, timestamps, and charts.
 
-## Current handoff: Step870 tablet action notes restored; formal gates remain open
+## Current handoff: Step873 route-responsive discovery aligned; formal gates remain open
 
-- Result: Step869's browser transport hint boundary remains explicit. Step870 then allowed 600–1199px tablet patrol action notes to wrap instead of truncating; build, types, focused tablet contracts and fresh runtime `260/140/169` pass. The prior exact-SHA evidence is stale until the new clean commit is rebound.
-- Decision: keep product release FAIL-closed, preserve prior matrix failures as historical repair evidence, and regenerate all exact-SHA evidence after this CSS/governance commit. The task is active and `blocked=false` while independent acceptance, route maturity, RouterOS soak and exact-SHA CL remain executable.
+- Result: Step870's tablet action-note fix passed build, types, focused tablet contracts and fresh runtime `260/140/169`. Step873 aligned readiness discovery with the existing CI/documented `route-matrix-<sha>` responsive report path; the db59fc7 evidence was valid before this tracked gate change and is now stale by identity.
+- Decision: keep product release FAIL-closed, preserve bounded route semantics and require a fresh clean SHA to prove runtime/matrices/readiness after this checker change. The task is active and `blocked=false` while independent acceptance, route maturity, RouterOS soak and exact-SHA CL remain executable.
 - Boundary: route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Formal product/design/visual/accessibility acceptance, Route Owner, RouterOS soak, exact-SHA CL and public release remain fail-closed.
-- Next: sync and commit Step870, rebind exact-SHA runtime/Overview/route matrices, packet, quarantine, truth and readiness, complete current-SHA independent Visual/Product/Interaction review, then continue Route Owner acceptance, RouterOS soak and exact-SHA CL.
+- Next: sync and commit Step873, rebind exact-SHA runtime/Overview/route matrices, packet, quarantine, truth and readiness, complete current-SHA independent Visual/Product/Interaction review, then continue Route Owner acceptance, RouterOS soak and exact-SHA CL.
 ## Historical handoff: Step857 (superseded by Step858)
 
 - Result: clean candidate `3ea1924150f5d16f9a261136f3a04811c7f28075` passes build/runtime `257/140/169`, Overview `28/28`, route-responsive `532/532`, route-state `266/266` and bounded route shard `76/76`; product/design/visual and accessibility/interaction scoped reviews are P0/P1 clean.

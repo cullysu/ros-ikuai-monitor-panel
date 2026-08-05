@@ -25005,3 +25005,16 @@ ocused-green-engineering
 - nextAction：提交 Step870 后，以新 clean SHA 重绑 runtime、完整 Overview/route 矩阵、packet、quarantine、truth 和 readiness；随后完成当前 SHA 的独立 Product/Design/Visual/Interaction 复核，并继续 Route Owner、RouterOS soak 和三端 CL。
 - validForCommit：Step870 tablet CSS/build/governance changes；Step869 的 exact-SHA 报告在本步提交后全部过期。
 - supersededBy：null
+
+## 第 873 步：修复完整发布矩阵的 route-responsive 报告发现契约
+
+- status：`route-responsive-discovery-contract-fixed-formal-gates-open`
+- latestStepOutcome: `873:route-responsive-discovery-contract-fixed-formal-gates-open`
+- 触发/问题：新 clean SHA 的 `release-matrix` 28/28、`route-state-matrix` 266/266 和 `route-matrix` 76/76 均通过，但 `check-public-release-readiness.js` 只把目录名含 `responsive` 的报告当作 route-responsive，因而无法发现项目文档和 CI 实际生成的 `_acceptance/route-matrix-${{ github.sha }}`。这会把真实的 76/76 证据误报成缺失，是门禁发现契约不一致，不是产品矩阵失败。
+- 决策/实现：将 `route-matrix-current`、`route-matrix-working-tree`、`route-matrix-worktree` 归入 responsive 别名，并让 `route-matrix-<sha>` 作为 19×4 单场景 route-responsive 候选；从 overview 别名移除同名项，避免同一报告被错误归类。保留 `route-matrix` 的 CI/文档路径，不通过复制报告或放宽矩阵格子来绕过门禁。
+- 当前证据：在修复前的 clean SHA `db59fc7dfc02550d35b44f7d722d3394ea292080` 上，Overview `28/28`、route matrix `76/76`（工程通过、bounded 通过、顶层因单场景而保持 incomplete）、route-state `266/266`、runtime `260/140/169`、visual packet checker 通过；本步修改工具后必须在新 clean SHA 上重新绑定这些报告，旧目录不得作为当前证据。
+- 发布边界：此修复只关闭报告发现误报，不关闭 Product/Design/Visual/Accessibility trusted acceptance、Route Owner/route maturity、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 或 GitHub 发布；packet 继续 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`，任务 active、`blocked=false`。
+- 边界/心得：发布门禁不仅要检查格子是否通过，也必须能按官方命名找到正确证据。报告发现规则应与 CI 产物路径共用一个明确契约；发现不到证据时应 fail-closed，但不能把命名误差伪装成产品失败，也不能用别名复制制造假完整性。
+- nextAction：提交 Step873 后重新运行 clean SHA runtime、28/76/266 矩阵、packet、quarantine、truth 和 readiness；之后继续当前 SHA 独立 Product/Design/Visual/Interaction 复核、Route Owner/route maturity、RouterOS soak 和三端 CL。
+- validForCommit：Step873 `check-public-release-readiness.js` route-responsive report discovery change；Step870 的 exact-SHA 证据在本步提交后过期。
+- supersededBy：null

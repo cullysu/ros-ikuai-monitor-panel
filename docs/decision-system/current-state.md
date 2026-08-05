@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `870`
-- latestRecordedStep: `870`
-- latestStepOutcome: `870:tablet-action-notes-unellipsized-formal-gates-open`
-- currentBoundaryForStep: `870`
+- currentConclusionForStep: `873`
+- latestRecordedStep: `873`
+- latestStepOutcome: `873:route-responsive-discovery-contract-fixed-formal-gates-open`
+- currentBoundaryForStep: `873`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-05T08:19:15+08:00
+- updatedAt: 2026-08-05T08:42:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
 **FAIL overall / local scoped visual P1 closed / formal release gates OPEN.** The current implementation has fresh local engineering evidence in its declared scope, but this is not public-release approval. Product/Design/Visual trusted acceptance, route maturity, RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 870
+## Current decision record: Step 873
 
-- observed: Step869 clarified the browser connectivity hint semantics; the independent scoped visual review then found one concrete 768px tablet information-loss issue: operational action notes were hidden behind ellipses. The prior clean candidate `e5f6b7137cf7a838144acaf74c06a8169bc7b249` remains stale after the current CSS/governance change.
-- decision: keep `browserOnlineHint` as a browser-only transport hint, and scope the new tablet CSS rule to the tablet task owner so action notes wrap instead of truncating. The fix preserves touch floors, phone/desktop ownership and the evidence-first hierarchy.
-- visual disposition: the mobile/desktop product split and current visual scoped boundary remain valid; exact-SHA screenshots cover normal, fleet, offline, collection-down, no-snapshot, resource-full and interfaces-down. A trusted independent Product/Design/Visual signature is still not present and must not be self-issued.
-- runtime truth: backend timestamps are emitted through RFC 3339; client parsing rejects timestamps without a timezone. No source-level fake `#dns`, fake “查看全部”, or inert search control remains in the React surface. Traffic history is represented as atomic timestamp/uplink/downlink/source/evidenceMode samples.
-- report truth: the exact reports above are valid for `e5f6b7137cf7a838144acaf74c06a8169bc7b249` only. This Step870 CSS/governance write invalidates that exact-SHA family; after commit, all runtime/matrix/packet/quarantine/truth/readiness evidence must be rebound to the new clean SHA.
+- observed: Step870 fixed the real tablet action-note truncation. On clean SHA `db59fc7dfc02550d35b44f7d722d3394ea292080`, the Overview matrix is 28/28, route matrix is 76/76 and route-state is 266/266; readiness still failed because its report discovery rejected the CI/documented `route-matrix-<sha>` name for the responsive family.
+- decision: classify `route-matrix-current`/`working-tree`/`worktree` and `route-matrix-<sha>` as route-responsive candidates, and remove those aliases from overview discovery. This aligns the checker with the existing CI/docs path without weakening requested cells or top-level incomplete semantics for bounded single-scenario shards.
+- visual disposition: the current scoped tablet visual finding is closed by the Step870 CSS fix; runtime and visual packet must be regenerated after this tool/doc commit. A trusted independent Product/Design/Visual signature is still not present and must not be self-issued.
+- runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. The route discovery fix changes only evidence lookup and does not change product UI or RouterOS behavior.
+- report truth: Step873 is a tracked gate change, so all current runtime/matrix/packet/quarantine/truth/readiness artifacts must bind to the next clean SHA. Prior reports remain historical evidence and must not be promoted by directory copying.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
 - release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; RouterOS soak, trusted independent signatures and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred.
 
@@ -40,7 +40,7 @@
 
 ## Open review boundaries
 
-- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have independent scoped evidence; the local 375px visual P1 is fixed, but Visual must re-sign the new exact-SHA artifact family after commit and Product remains conditional. The Step868 matrix failure is retained only as historical repair evidence; the rebound `e5f6b7137cf7a838144acaf74c06a8169bc7b249` passed its declared local cells.
+- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have independent scoped evidence; the local 375px visual P1 is fixed, but Visual must re-sign the next exact-SHA artifact family after this gate-tool commit and Product remains conditional. The Step868 matrix failure is retained only as historical repair evidence; reports from db59fc7 are also historical once Step873 is committed.
 - Fresh local screenshots prove the tested scenarios only; they do not prove real RouterOS behavior, public deployment safety or independent human signoff.
 - The task remains active and `blocked=false`. An absent external signature, soak or CL is a release gate, not a reason to stop while local work remains executable; the tablet visual finding was executable and has been fixed locally.
 
@@ -56,4 +56,4 @@
 
 ## One next action
 
-- nextAction: sync and commit Step870, regenerate all exact-SHA runtime/matrix/packet evidence, rerun quarantine/readiness, complete the independent scoped Product/Design/Visual/Interaction review, then continue Route Owner acceptance, RouterOS soak and exact-SHA CL.
+- nextAction: sync and commit Step873, regenerate all exact-SHA runtime/Overview/route matrices, packet, quarantine, truth and readiness evidence, complete the independent scoped Product/Design/Visual/Interaction review, then continue Route Owner acceptance, RouterOS soak and exact-SHA CL.

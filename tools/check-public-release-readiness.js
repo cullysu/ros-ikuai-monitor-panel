@@ -490,9 +490,6 @@ const MATRIX_REPORT_ALIAS_NAMES = {
     'release-overview-current',
     'release-overview-working-tree',
     'release-overview-worktree',
-    'route-matrix-current',
-    'route-matrix-working-tree',
-    'route-matrix-worktree',
   ]),
   responsive: new Set([
     'release-routes-responsive-current',
@@ -501,6 +498,9 @@ const MATRIX_REPORT_ALIAS_NAMES = {
     'route-responsive-current',
     'route-responsive-working-tree',
     'route-responsive-worktree',
+    'route-matrix-current',
+    'route-matrix-working-tree',
+    'route-matrix-worktree',
   ]),
   state: new Set([
     'release-routes-state-current',
@@ -520,7 +520,7 @@ function matrixReportKind(label) {
 }
 
 function reportNameMatchesKind(name, kind) {
-  if (kind === 'responsive') return name.includes('responsive');
+  if (kind === 'responsive') return name.includes('responsive') || name.startsWith('route-matrix-');
   if (kind === 'state') return name.includes('route-state') || name.includes('routes-state');
   return name.includes('overview') || name.includes('matrix') || name === 'panel-runtime-browser';
 }
