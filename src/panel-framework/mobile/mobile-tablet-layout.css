@@ -225,43 +225,42 @@
 
 @media (min-width: 600px) and (max-width: 1199px) {
   @container (min-width: 620px) {
-    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task > header {
+    .mp-tablet-vertical-task > header {
       min-height: 0;
       align-items: flex-start;
       padding: 7px 10px 5px;
     }
-    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-tablet-task-summary {
+    .mp-tablet-vertical-task .mp-tablet-task-summary {
       margin: 3px 0 0;
       line-height: 1.25;
     }
-    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list > button {
+    .mp-tablet-vertical-task .mp-action-list > button {
       min-height: 48px;
       padding-top: 5px;
       padding-bottom: 5px;
     }
     /* Tablet task cards have enough vertical room for the operational note;
        do not hide the discriminating part of the action behind an ellipsis. */
-    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list > button {
+    .mp-tablet-vertical-task .mp-action-list > button {
       align-items: start;
     }
-    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list b,
-    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list small {
+    .mp-tablet-vertical-task .mp-action-list :is(b, small) {
       overflow: visible;
       text-overflow: clip;
       white-space: normal;
     }
-    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus > header {
+    .mp-tablet-steady .mp-focus > header {
       min-height: 48px;
       padding: 7px 10px 6px;
     }
-    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus > button {
+    .mp-tablet-steady .mp-focus > button {
       min-height: 64px;
       padding: 7px 10px 7px 8px;
     }
-    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus-identity {
+    .mp-tablet-steady .mp-focus-identity {
       padding: 7px 10px;
     }
-    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus dl > div {
+    .mp-tablet-steady .mp-focus dl > div {
       padding: 6px 8px;
     }
   }
