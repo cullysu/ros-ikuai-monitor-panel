@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step889 records the 911 exact-SHA scoped review and local Windows package verification after the neutral mount contract repair; formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step890 records the e160 exact-SHA evidence rebinding and scoped visual/product pass after the narrow runtime CSS budget repair; formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step889 记录 911 exact-SHA 的独立 scoped 复核与 Windows 本地 EXE/框架 hash 核验；此前 Step888 修复了 Windows packaging 与中性 `<div id="app">` 合同冲突。scoped pass 不替代独立 trusted 签名；辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step890 记录 e160 exact-SHA 的完整矩阵回绑、CSS 预算修复后的独立 scoped 复核与 Windows 本地 EXE 核验；scoped pass 不替代独立 trusted 签名；辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `889`
-- currentOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
-- currentBoundary: `889`
+- currentStep: `890`
+- currentOutcome: `890:exact-sha-evidence-rebound-scoped-visual-pass-formal-gates-open`
+- currentBoundary: `890`
 - authority: `decision-system/current-state.md`
 
 ## 入口

@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `889`
-- latestRecordedStep: `889`
-- latestStepOutcome: `889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open`
-- currentBoundaryForStep: `889`
+- currentConclusionForStep: `890`
+- latestRecordedStep: `890`
+- latestStepOutcome: `890:exact-sha-evidence-rebound-scoped-visual-pass-formal-gates-open`
+- currentBoundaryForStep: `890`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-06T00:00:00+08:00
@@ -10,16 +10,16 @@
 
 ## Current conclusion
 
-**FAIL overall / scoped Product·Design·Visual·Accessibility review clean / formal release gates OPEN.** Candidate `911bd00ab25e9e788d7dd8ce171a5fb350b53bc9` has current local engineering evidence, a current-SHA scoped review with no P0/P1 findings, and a locally built Windows EXE, but this is not public-release approval. Trusted acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
+**FAIL overall / scoped Product·Design·Visual·Accessibility review clean / formal release gates OPEN.** Candidate `e16070926dce4fd0bff8ca8584badf6f40a8d495` has current local engineering evidence and a fresh scoped review with no P0/P1 findings, but this is not public-release approval. Trusted acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 889
+## Current decision record: Step 890
 
-- observed: Step888 后的精确候选为 `911bd00ab25e9e788d7dd8ce171a5fb350b53bc9`，必须重新绑定所有报告和视觉包；两组独立只读复核已核对当前 HEAD 且未修改文件。
+- observed: Step889 后的精确候选为 `e16070926dce4fd0bff8ca8584badf6f40a8d495`；窄屏标题修复曾使 style budget 超限，现已收敛到 119986 bytes，所有 exact-SHA 报告和视觉包重新生成并由两组独立只读复核核对。
 - decision: 关闭当前 scoped Product/Design/Visual/Accessibility/Engineering review 范围内的 P0/P1；Visual/Product 保留 320 顶栏、844×390 横屏重心、430 资源趋势位置三个非阻断 P2，Product/Accessibility/Engineering 为 P0/P1/P2=`0`。不把 scoped review 当作 trusted external acceptance。
 - visual disposition: 375/390/430 手机、844×390 横屏、768/844 平板、1366/1440 桌面在当前 evidence scope 未发现 P0/P1 视觉阻断；P2 不阻断 scoped closure，不授权公众发布。
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. No RouterOS write capability or business-health claim was added.
-- report truth: 911 exact-SHA runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, full route `532/532`, route-state `266/266`, bounded route `76/76`, tablet shard requested `152`, 430px shard requested `4`; all requested cells have zero failures. report truth, quarantine, asset identity, backend security, collector regressions, release blockers, types, overview and static assets pass.
-- packaging truth: Windows preflight frontend assets, shared public paths, RouterOS archive/install dry-runs pass; local `build-windows-exe.ps1 -NoZip` succeeds, EXE mount is `<div id="app">`, and framework script/style/desktopStyle hashes match the manifest. This is local packaging evidence, not Windows CI/CL.
+- report truth: e160 exact-SHA runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, route responsive `76/76`, route-state `266/266`, tablet `152/152`, 430px and 667px `133/133`; all requested cells have zero failures and the detailed Overview report parses as one JSON document. report truth, quarantine, asset identity, backend security, types, overview and static assets pass.
+- packaging truth: Windows preflight has `10 pass / 1 skip / 1 fail`, with the only failure being the same route-maturity readiness gate; local `build-windows-exe.ps1 -NoZip` succeeds, EXE mount is `<div id="app">`, and framework script/style/desktopStyle hashes match the manifest. This is local packaging evidence, not Windows CI/CL.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
 - release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; trusted independent signatures, Route Owner/AT, real RouterOS soak and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred. Bash/WSL is unavailable locally, so no Linux CL is claimed.
 

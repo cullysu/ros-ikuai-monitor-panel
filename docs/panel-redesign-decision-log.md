@@ -25257,3 +25257,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step889；在新 clean HEAD 最后一次重建 runtime、全场景矩阵、packet、truth、quarantine 和 readiness，随后继续获取真实 Route Owner/AT、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL；未全部通过前不上传 GitHub。
 - validForCommit：`911bd00ab25e9e788d7dd8ce171a5fb350b53bc9`
 - supersededBy：null
+
+## 第 890 步：完成 e160 精确证据回绑并关闭本轮视觉/产品 scoped 复核
+
+- status：`exact-sha-evidence-rebound-scoped-visual-pass-formal-gates-open`
+- latestStepOutcome: `890:exact-sha-evidence-rebound-scoped-visual-pass-formal-gates-open`
+- 触发/问题：Step889 要求在新 clean HEAD 继续工作，不能因为正式签收未到就标记任务受阻。随后发现窄屏运行时标题可读性修复使 framework style 产物短暂超过 120000 bytes；删除重复的窄屏 `white-space: nowrap`，并把 14px 设备名规则并入已有基础声明，只保留窄屏快照说明换行，使预算回到 119986 bytes，同时保留 320px 设备名单行和证据不裁切。
+- 决策/实现：提交 `e16070926dce4fd0bff8ca8584badf6f40a8d495`；重建 public framework assets，不放宽 CSS 预算，不复用旧 SHA 工件。Overview、route、route-state、tablet、430 和 667 均按当前完整 SHA 重新生成；此前误生成的全路由 public-release 报告已隔离为历史工件，正式 Overview 报告只使用 `--sections overview` 的 7 场景 × 4 视口 28 格。
+- 验证：当前 exact SHA 的 runtime 为 `260 checks / 140 screenshots / 169 snapshotApiCalls`；Overview `28/28` 且 `report.json` 可解析为单一 JSON；route responsive `76/76` requested cells；route-state `266/266`；tablet `152/152`；430 与 667 各 `133/133` requested cells；types、overview、asset identity、static assets、backend security、report truth、quarantine、readonly mode 均通过。`check-public-release-readiness.js --require-matrix` 已接受当前 clean-SHA 28/76/266/runtime 矩阵，随后诚实停在 route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。Windows 本地 EXE 构建通过；packaging preflight `10 pass / 1 skip / 1 fail`，唯一失败是同一 route maturity readiness，不把本地 EXE 写成 Windows CI CL。
+- 独立复核：两组只读复核均针对 `e16070926dce4fd0bff8ca8584badf6f40a8d495` 重新核对。Visual/Product scoped pass：P0/P1=`0`，仅保留 320px 快照日期换行的非阻断 P2；Product/Accessibility/Engineering scoped pass：P0/P1=`0`，并确认报告 JSON 已修复、current/stale/unavailable、风险优先级、ARIA、Back/Forward、320/200% 与精确矩阵无新增问题。两组均未修改文件、未自签 trusted acceptance。
+- 决策：关闭本轮可由本地完成的 CSS 预算、窄屏裁切、精确矩阵身份和视觉/产品 scoped review 项；不把 scoped pass 改写成 external trusted signature，不把 route maturity、真实 RouterOS soak、真实 AT/Route Owner、Linux/Windows/GHCR exact-SHA CL 或 GitHub 发布当作已通过。任务继续 active、`blocked=false`，发布保持 fail-closed。
+- 心得：正式红灯只有在没有任何安全可执行工作时才是阻塞；本轮红灯指向真实外部主体、真实设备或远端 CL，所以正确动作是继续准备证据、同步决策库并保持发布关闭，而不是停止。报告目录、JSON 完整性和 CSS 预算都是发布契约，不能用别名、旧 SHA 或人工解释覆盖。
+- nextAction：提交并同步 Step890；在治理提交后的新 clean SHA 最后一次重建 runtime、Overview 28、route 76、route-state 266、tablet/430/667、packet、truth、quarantine、readiness 和 Windows 本地包；随后继续真实 AT/Route Owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL，全部正式门禁通过前不上传 GitHub。
+- validForCommit：`e16070926dce4fd0bff8ca8584badf6f40a8d495`（本步治理文档提交后报告转为历史，必须再次回绑）
+- supersededBy：null
