@@ -4950,7 +4950,7 @@ async function main() {
           investigationKicker: investigationKicker?.textContent?.trim() || '',
           investigationTitle: investigationTitle?.textContent?.trim() || '',
           firstInvestigationActionId: firstInvestigationAction?.id || '',
-          firstInvestigationActionText: firstInvestigationAction?.textContent?.replace(/\s+/g, ' ').trim() || '',
+          firstInvestigationActionText: firstInvestigationAction?.textContent?.replace(/\s+/g, ' ').trim() || firstInvestigationAction?.getAttribute('aria-label') || '',
           verdictIconClass: verdictPanel?.querySelector(mobile ? '.mp-command-icon svg' : '.do-verdict-icon svg')?.getAttribute('class') || '',
           verdictAccent: verdictPanel ? getComputedStyle(verdictPanel, '::before').backgroundColor : '',
           maxTouchPoints: navigator.maxTouchPoints,
@@ -5692,12 +5692,12 @@ async function main() {
 
     async function exerciseFleetWorkspaceHandoff(width, height, file, stateName) {
       await inspectOverviewTaskBoundary(taskDesktopPage, 'fleet-coverage', width, height);
-      const action = taskDesktopPage.locator('.mp-actions #interfaces');
+      const action = taskDesktopPage.locator('[data-mobile-action-route="interfaces"], .mp-actions #interfaces');
       const actionCount = await action.count();
       if (actionCount !== 1) return { available: false, width, height, actionCount };
       await action.scrollIntoViewIfNeeded();
       const actionRect = await action.boundingBox();
-      const actionText = (await action.textContent())?.replace(/\s+/g, ' ').trim() || '';
+      const actionText = ((await action.textContent()) || (await action.getAttribute('aria-label')) || '').replace(/\s+/g, ' ').trim();
       const originUrl = taskDesktopPage.url();
       await action.click();
       await taskDesktopPage.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();

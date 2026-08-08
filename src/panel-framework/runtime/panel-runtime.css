@@ -1,13 +1,10 @@
 .panel-runtime-live { min-height: 100%; background: #edf3f5; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", "Microsoft YaHei UI", sans-serif; }
-
 .panel-runtime-bar {
   box-sizing: border-box;
   color: #153541;
   background: #f8fbfc;
 }
-
 .panel-runtime-bar-desktop { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; align-items: center; gap: 18px; min-height: 58px; padding: 7px 18px; border-bottom: 1px solid #bdced5; }
-
 .panel-runtime-device span,
 .panel-runtime-device b,
 .panel-runtime-device small { display: block; }
@@ -31,13 +28,11 @@
   white-space: nowrap;
 }
 .panel-runtime-mode svg { flex: 0 0 auto; }
-.panel-runtime-phase { display: inline-flex; align-items: center; gap: 7px; color: #476773; font-size: 13px; }
-.panel-runtime-phase i { width: 7px; height: 7px; border-radius: 50%; background: #33795d; }
+.panel-runtime-phase { display: inline-flex; align-items: center; gap: 7px; color: #476773; font-size: 13px; } .panel-runtime-phase i { width: 7px; height: 7px; border-radius: 50%; background: #33795d; }
 .panel-runtime-phase.is-stale i,
 .panel-runtime-phase.is-recovering i { background: #976a32; }
 .panel-runtime-phase.is-error i,
 .panel-runtime-phase.is-offline i { background: #95434d; }
-
 .panel-runtime-actions { display: inline-flex; align-items: center; gap: 5px; }
 .panel-runtime-actions button,
 .panel-runtime-notice button {
@@ -58,9 +53,7 @@
 .panel-runtime-notice button:focus-visible,
 .panel-runtime-empty button:focus-visible { outline: 2px solid #0a7098; outline-offset: 2px; }
 .panel-runtime-actions button:disabled { cursor: not-allowed; opacity: .45; }
-
 @media (min-width: 1200px) { .panel-runtime-bar-desktop { grid-template-columns: minmax(180px, 1fr) auto auto minmax(136px, max-content); } .panel-runtime-bar-desktop .panel-runtime-phase { grid-column: 3; grid-row: 1; justify-self: end; } .panel-runtime-bar-desktop .panel-runtime-actions { grid-column: 4; grid-row: 1; justify-self: end; min-width: max-content; } }
-
 .panel-runtime-notice {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -76,7 +69,6 @@
 .panel-runtime-notice > svg { margin-top: 1px; }
 .panel-runtime-notice.is-critical { border-color: #d7aeb3; color: #763640; background: #f7e9eb; }
 .panel-runtime-notice button { width: 28px; height: 28px; margin: -5px -6px -5px 0; color: currentColor; }
-
 .panel-runtime-empty {
   display: grid;
   box-sizing: border-box;
@@ -94,11 +86,9 @@
 .panel-runtime-empty > div:last-child { display: flex; gap: 9px; margin-top: 18px; }
 .panel-runtime-empty button { min-height: 44px; padding: 0 14px; border: 1px solid #98b6c2; border-radius: 7px; color: #214e5e; background: #f9fbfc; font: inherit; font-weight: 700; cursor: pointer; }
 .panel-runtime-empty button:first-child { border-color: #0b6488; color: #fff; background: #0d6a8e; }
-
 @media (max-width: 359px) {
   .panel-runtime-device > span { white-space: normal; }
 }
-
 @media (max-width: 399px) {
   .panel-runtime-bar-mobile {
     min-height: calc(64px + env(safe-area-inset-top));
@@ -114,7 +104,6 @@
     white-space: normal;
   }
 }
-
 @media (max-width: 1199px) {
   .panel-runtime-live { min-height: 100svh; }
   .panel-runtime-bar-mobile {

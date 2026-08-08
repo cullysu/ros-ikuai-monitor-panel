@@ -25354,3 +25354,18 @@ ocused-green-engineering
 - nextAction：提交 Step896 后以新 exact SHA 重新绑定全部工程证据和真实 667×375 landscape 截图，然后重新取得独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部通过前不上传 GitHub。
 - validForCommit：本步文档与代码尚未提交；提交后当前 SHA 变化，所有旧 exact-SHA 报告仅作历史，必须重新生成。
 - supersededBy：null
+
+## 第 897 步：自适应证据台账与手机巡检动作顺序修复
+
+- status：`adaptive-evidence-ledger-and-phone-task-order-runtime-green-formal-gates-open`
+- latestStepOutcome: `897:adaptive-evidence-ledger-and-phone-task-order-runtime-green-formal-gates-open`
+- 触发/问题：当前浏览器门禁先暴露了真实布局问题，而不是可忽略的测试噪声：正常 375/390 手机的运行判断在固定底部导航之后，Fleet 390 的网络工作区入口被证据台账推到导航边界，接口异常 375 的主动作被展开台账部分遮挡。此前把证据台账固定展开也违背了既定的“按视窗、事故和证据数量自适应展开”原则。
+- 决策/实现：正常手机把 WAN signal 后的第一巡检动作、单设备运行判断放在证据台账之前；Fleet 手机使用同一真实动作语义并保留 collection-level `interfaces` handoff，不制造对象 ID。当前态事故不再因为 risk 强制展开证据台账；台账根据可用高度计算自身证据高度，并为后续主动作预留实际高度，空间不足时收起但仍可由用户打开。固定底部导航、44px 动作目标和证据边界均不通过缩放或隐藏规避。
+- 验证：`npm run build` 通过；最新 dirty-worktree `node tools/check-panel-runtime-browser.js` 通过，`260 checks / 140 screenshots / 169 snapshotApiCalls`。本步修复覆盖正常 375/390、Fleet 390/768、接口复合事故 375 的真实几何回归；运行时脚本同时改为读取动作的可访问标签，并兼容手机 next-step 与平板 action surface。
+- 产品/视觉裁决：关闭本步已修复的动作—证据台账顺序、固定导航遮挡和 Fleet handoff 入口问题；这只是当前工作树的 focused runtime green，不等于独立 Product/Design/Visual/Accessibility 签收。
+- 报告真值：本次运行发生在提交前，不能与旧 exact-SHA 报告混用；提交后必须以新 HEAD 重新生成 runtime、Overview 28/28、route-state 266/266、bounded route 76/76、full route、tablet、430/667 portrait/landscape、packet、truth、quarantine、readiness 和 Windows 本地包。
+- 发布边界：继续 FAIL-closed。route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；正式 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub upload 均未完成，任务 active、`blocked=false`。
+- 边界/心得：门禁失败的正确处理是修复真实产品顺序并保留更强的几何断言，而不是把检查改成软通过。自适应展开必须把“可见证据”和“后续主动作”作为同一可用高度预算，避免诚实台账与可执行入口互相遮挡。
+- nextAction：提交并同步 Step897；在新 clean HEAD 重新绑定全部 exact-SHA 证据，再继续独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；所有正式条件通过前不上传 GitHub。
+- validForCommit：本步代码、门禁和决策记录尚未提交；提交前 runtime 仅为诊断证据，不能作为发布输入。
+- supersededBy：null

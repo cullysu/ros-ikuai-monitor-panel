@@ -1,7 +1,6 @@
 import { ChevronDown, Gauge } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { OverviewEvidenceRow } from "../overview/evidence-model/overviewEvidenceTypes";
-
 export function MobileEvidenceLedger({
   evidenceNote,
   rows,
@@ -16,7 +15,6 @@ export function MobileEvidenceLedger({
   const userOverrideRef = useRef<boolean | null>(null);
   const automaticOpenRef = useRef(false);
   const [open, setOpen] = useState(false);
-
   useLayoutEffect(() => {
     const sync = () => {
       if (userOverrideRef.current !== null) return;
@@ -31,8 +29,12 @@ export function MobileEvidenceLedger({
         ? navigationBox.top
         : window.innerHeight - 16;
       const availableHeight = Math.max(0, bottomBoundary - ledgerBox.top);
-      const requiredHeight = summary.getBoundingClientRect().height + body.getBoundingClientRect().height;
-       const nextOpen = rows.length > 0 && (autoOpen || (requiredHeight > 0 && requiredHeight <= availableHeight));
+       const requiredHeight = summary.getBoundingClientRect().height + body.getBoundingClientRect().height;
+       const primaryTask = document.querySelector('[data-mobile-primary-task-proximity], [data-mobile-phone-next-step]');
+       const reservedTaskHeight = primaryTask?.getBoundingClientRect().height || 0;
+       const nextOpen = rows.length > 0 && (
+         autoOpen || (requiredHeight > 0 && requiredHeight + reservedTaskHeight <= availableHeight)
+       );
       automaticOpenRef.current = nextOpen;
       setOpen((current) => current === nextOpen ? current : nextOpen);
     };
@@ -47,7 +49,6 @@ export function MobileEvidenceLedger({
       window.removeEventListener("resize", sync);
     };
    }, [autoOpen, evidenceNote, rows]);
-
   return (
     <details
       className="mp-ledger"

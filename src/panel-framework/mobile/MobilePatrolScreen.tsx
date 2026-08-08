@@ -1,7 +1,6 @@
 import { Clock3, LockKeyhole, Router } from "lucide-react";
 import { useMemo, useState } from "react"; import { mobilePatrolStateStyle } from "./mobilePatrolState";
-import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
-import { type OverviewPanelProps } from "../overview";
+import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes"; import { type OverviewPanelProps } from "../overview";
 import { buildOverviewEvidenceModel } from "../overview/evidence-model/buildOverviewEvidenceModel";
 import { overviewNavigationRisk } from "../overview/evidence-model/buildOverviewInvestigationActions";
 import { MobileEvidenceLedger } from "./MobileEvidenceLedger";
@@ -45,7 +44,7 @@ export function MobilePatrolScreen({
   const visiblePriorityObjects = tablet || showAllIncidents ? model.priorityObjectsAll : model.priorityObjects;
   const secondaryRiskTasks = model.riskQueue.slice(1);
   const selectedIncident = visiblePriorityObjects.find((object) => object.id === selectedIncidentId);
-  const showPatrolActions = tablet || compactIncident || state.scale === "fleet" || model.risk !== "none"; const autoOpenEvidenceLedger = model.risk !== "none" || model.evidenceMode !== "current";
+  const showPatrolActions = tablet || compactIncident || state.scale === "fleet" || model.risk !== "none"; const autoOpenEvidenceLedger = model.evidenceMode !== "current";
   const evidenceLedger = (
     <MobileEvidenceLedger
       key={`${model.scenario}:${model.evidenceMode}:${model.risk}`}
@@ -131,7 +130,7 @@ export function MobilePatrolScreen({
       traffic={model.evidenceMode === "current" && model.risk === "none" ? model.traffic : null}
     />
   ) : null;
-  const normalPhoneFocusObject = !tablet && !incident ? focusObject : null; const normalPhoneProofStrip = !tablet && !incident ? proofStrip : null; const tabletProofStrip = tablet && !proofFollowsIncident ? proofStrip : null; const phoneIncidentProofStrip = !tablet && incident && !proofFollowsIncident ? proofStrip : null; const normalPhoneNextStep = !tablet && state.scale === "single" && model.scenario === "single" && !incident && model.evidenceMode === "current" && model.risk === "none" && model.investigationActions[0] ? <MobilePhoneNextStep action={model.investigationActions[0]} onNavigate={onNavigate} /> : null; const normalPhoneSteadyDecisions = !tablet && model.scenario === "single" && !incident && model.evidenceMode === "current" && model.risk === "none" && model.secondaryDecisions.length ? <MobileSteadyDecisionLedger rows={model.secondaryDecisions} onOpen={openEvidenceObject} /> : null;
+  const normalPhoneFocusObject = !tablet && !incident ? focusObject : null; const normalPhoneProofStrip = !tablet && !incident ? proofStrip : null; const tabletProofStrip = tablet && !proofFollowsIncident ? proofStrip : null; const phoneIncidentProofStrip = !tablet && incident && !proofFollowsIncident ? proofStrip : null; const normalPhoneNextStep = !tablet && !incident && model.evidenceMode === "current" && model.risk === "none" && model.investigationActions[0] ? <MobilePhoneNextStep action={model.investigationActions[0]} onNavigate={onNavigate} /> : null; const normalPhoneSteadyDecisions = !tablet && model.scenario === "single" && !incident && model.evidenceMode === "current" && model.risk === "none" && model.secondaryDecisions.length ? <MobileSteadyDecisionLedger rows={model.secondaryDecisions} onOpen={openEvidenceObject} /> : null;
   const comparisonList = !incident && model.evidenceAt && model.comparisonObjects.length ? (
     <MobileObjectList heading="对象比较" taskLandmark="comparison" rows={model.comparisonObjects} onOpen={openEvidenceObject} />
   ) : null;
@@ -220,18 +219,18 @@ export function MobilePatrolScreen({
                 {resourceSignal}
                 {resourceHistory}
                 {trafficSignal}
-               {!tablet && !incident ? evidenceLedger : null}
                {normalPhoneNextStep}
                 {phonePrimaryAction}
+               {normalPhoneSteadyDecisions}
+               {!tablet && !incident ? evidenceLedger : null}
                 {compactIncidentActions}
                 {concurrentRiskQueue}
-               {normalPhoneSteadyDecisions}
-               {comparisonList}
+                {comparisonList}
             </div>
             <div className="mp-workspace-context">
               {tablet ? focusObject : null}
               {selectedInspector}
-              {compactIncident || incident ? null : patrolActions}
+              {tablet || incident || !normalPhoneNextStep ? patrolActions : null}
              </div>
           </div>
         )}
