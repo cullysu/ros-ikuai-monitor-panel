@@ -25299,3 +25299,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step892；在新 clean SHA 运行 `check:runtime-browser`，成功后重绑全部矩阵、packet、truth、readiness 和 Windows 包，再请求当前 SHA 独立 Product/Design/Visual/Accessibility 复核。
 - validForCommit：治理提交前的 clean candidate（本步代码/文档提交后旧 exact-SHA 工件全部转历史）
 - supersededBy：null
+
+## 第 893 步：让截图清理门禁匹配真实 bounded helper，继续保持发布关闭
+
+- status：`runtime-cleanup-contract-aligned-before-final-rebind`
+- latestStepOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
+- 触发/问题：Step892 的 480 秒总门禁修复后，`check-runtime-screenshot-bound.js` 仍因寻找直接 `context.close()` 而假红；真实 helper 在 finally 内通过 bounded `closeWithin` 依次清理 context 与 browser。
+- 观察事实：helper 具备独立的 context/browser 变量、每个资源 1500ms 有界 close race、finally 清理和明确退出码；问题只在检查器模式与真实实现不一致。
+- 决策：把检查器改成验证 `closeWithin(context)` 后跟 `closeWithin(browser)` 的真实语义，保留对 finally、资源顺序和有界清理的要求；不改变 runtime、截图数量、单次超时或发布门禁强度。
+- 理由与拒绝项：修复假红不是把失败改绿。禁止删除 cleanup、吞掉截图错误、复用旧报告或把本地子 Agent 结果写成当前独立签收。
+- 验证：本步源码修复后，`check-runtime-browser-lifecycle.js`、`check-runtime-screenshot-bound.js`、`check-release-blockers.js` 应通过；本步提交会使所有旧 exact-SHA 工件失效，需新 SHA 全量重绑。
+- 边界/心得：发布门禁必须与实际实现同构，否则会在真实契约已满足时阻断，或在契约缺失时放行。任务 active、`blocked=false`，不上传 GitHub。
+- nextAction：提交并同步 Step893；在新 clean SHA 运行 runtime，随后重绑全部矩阵、packet、truth、readiness 和 Windows 包，再请求当前 SHA 独立 Product/Design/Visual/Accessibility 复核。
+- validForCommit：Step892 代码/文档提交前的 clean candidate（本步提交后旧 exact-SHA 工件全部转历史）
+- supersededBy：null

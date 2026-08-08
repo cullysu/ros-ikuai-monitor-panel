@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `892`
-- latestRecordedStep: `892`
-- latestStepOutcome: `892:stabilize-runtime-global-timeout-before-final-rebind`
-- currentBoundaryForStep: `892`
+- currentConclusionForStep: `893`
+- latestRecordedStep: `893`
+- latestStepOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
+- currentBoundaryForStep: `893`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-08T00:00:00+08:00
@@ -12,10 +12,10 @@
 
 **FAIL overall / current local engineering evidence green / independent review and formal release gates OPEN.** The clean candidate produced after Step890 has exact-SHA local evidence, but the predecessor Step890 scoped reviews are stale after the governance commit. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 892
+## Current decision record: Step 893
 
-- observed: Step891 的 final rebind 在当前 Windows 环境两次于 240 秒总门禁内超时，分别停在孤立桌面截图批次的不同文件；不是业务断言失败，也没有生成可接受的当前 runtime 报告。Playwright 单次截图和 context/browser 清理仍有边界，但总批次预算不足以保证可复现。
-- decision: 将 runtime browser 总门禁从 240000ms 提升为明确上限 480000ms，同时保留单次截图 60000ms、Promise race、孤立浏览器和 finally cleanup；更新对应生命周期/发布阻断器回归契约。该变化不放宽产品断言，只给长截图批次足够的全局预算。
+- observed: Step892 的 timeout 预算契约已通过，但 `check-runtime-screenshot-bound.js` 仍用旧的正则寻找直接 `context.close()`；实际隔离 helper 使用 `closeWithin(context)`、`closeWithin(browser)`，清理行为真实存在，检查器却错误报红。
+- decision: 将截图边界契约改为匹配真实的有界 cleanup helper 顺序，不削弱对 context/browser finally 清理的要求；继续保留 480000ms 总门禁、60000ms 单次截图、Promise race 和隔离进程。修复的是门禁的假红，不是把失败改绿。
 - visual disposition: 当前 SHA 的截图矩阵已覆盖 390/430/667 手机、844×390 横屏、768/844 平板和 1366/1440 桌面；截图覆盖是工程证据，不等于当前独立视觉签收，上一 SHA 的 P2 观察保留为历史信息。
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. No RouterOS write capability or business-health claim was added.
 - report truth: Step891 的矩阵证据在 runtime 总门禁失败后不再作为当前输入；本步修复后必须在新 clean SHA 重新生成 runtime、全部矩阵、packet、truth、quarantine、readiness 和 Windows 本地包。未重绑前不宣称报告通过。

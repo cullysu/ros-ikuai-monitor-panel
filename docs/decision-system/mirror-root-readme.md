@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step892 records the runtime global-timeout stabilization after two 240-second batch timeouts; all exact-SHA evidence must be rebound, and formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step893 records the screenshot cleanup-contract alignment after the Step892 timeout stabilization; all exact-SHA evidence must be rebound, and formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step892 记录 runtime 浏览器总门禁从 240 秒提升到 480 秒的稳定性修复；旧 exact-SHA 工件必须重新回绑，不能把历史 scoped 复核冒充当前独立签收。辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step893 记录截图 helper 的 bounded cleanup 检查与真实实现对齐；Step892 的 480 秒总门禁修复仍需在新 SHA 重新回绑，不能把历史 scoped 复核冒充当前独立签收。辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `892`
-- currentOutcome: `892:stabilize-runtime-global-timeout-before-final-rebind`
-- currentBoundary: `892`
+- currentStep: `893`
+- currentOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
+- currentBoundary: `893`
 - authority: `decision-system/current-state.md`
 
 ## 入口

@@ -55,7 +55,7 @@ check(
 check(
   'helper-closes-context-and-browser-in-finally',
   /let context\s*=\s*null/.test(helper) &&
-    /finally\s*\{[\s\S]*context\.close\([\s\S]*browser\.close/.test(helper),
+    /finally\s*\{[\s\S]*closeWithin\(context[\s\S]*closeWithin\(browser/.test(helper),
   'the isolated helper must close its context and browser even after a timeout or screenshot error'
 );
 
