@@ -212,17 +212,19 @@ export function MobilePatrolScreen({
         ) : (
           <div className="mp-workspace-body">
             <div className="mp-workspace-primary">
-              {normalPhoneFocusObject}
-              {incidentCenter}
-               {proofFollowsIncident ? proofStrip : normalPhoneProofStrip}
-               {scenarioFocus}
-               {resourceSignal}
-               {resourceHistory}
-               {trafficSignal}
-              {normalPhoneNextStep}
-               {phonePrimaryAction}
-               {concurrentRiskQueue}
-               {compactIncidentActions}
+               {normalPhoneFocusObject}
+               {incidentCenter}
+                {proofFollowsIncident ? proofStrip : normalPhoneProofStrip}
+               {!tablet && incident ? evidenceLedger : null}
+                {scenarioFocus}
+                {resourceSignal}
+                {resourceHistory}
+                {trafficSignal}
+               {!tablet && !incident ? evidenceLedger : null}
+               {normalPhoneNextStep}
+                {phonePrimaryAction}
+                {compactIncidentActions}
+                {concurrentRiskQueue}
                {normalPhoneSteadyDecisions}
                {comparisonList}
             </div>
@@ -230,8 +232,7 @@ export function MobilePatrolScreen({
               {tablet ? focusObject : null}
               {selectedInspector}
               {compactIncident || incident ? null : patrolActions}
-              {evidenceLedger}
-            </div>
+             </div>
           </div>
         )}
       </div></div>

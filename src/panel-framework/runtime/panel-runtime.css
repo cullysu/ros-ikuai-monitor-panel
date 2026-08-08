@@ -99,6 +99,22 @@
   .panel-runtime-device > span { white-space: normal; }
 }
 
+@media (max-width: 399px) {
+  .panel-runtime-bar-mobile {
+    min-height: calc(64px + env(safe-area-inset-top));
+    align-items: start;
+    padding-top: calc(env(safe-area-inset-top) + 7px);
+    padding-bottom: 7px;
+  }
+  .panel-runtime-bar-mobile .panel-runtime-device { align-self: center; }
+  .panel-runtime-device > span {
+    overflow: visible;
+    line-height: 1.25;
+    text-overflow: clip;
+    white-space: normal;
+  }
+}
+
 @media (max-width: 1199px) {
   .panel-runtime-live { min-height: 100svh; }
   .panel-runtime-bar-mobile {

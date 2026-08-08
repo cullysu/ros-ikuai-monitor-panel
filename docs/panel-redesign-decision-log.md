@@ -25327,3 +25327,30 @@ ocused-green-engineering
 - nextAction：同步 Step894 到 `D:\想法\面板`，然后继续当前 SHA 的独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部通过前不上传 GitHub。
 - validForCommit：本步文档尚未提交；提交后 `55ee0f75...` 的 exact-SHA 工件仅作历史，必须在新 HEAD 再绑定。
 - supersededBy：null
+
+## 第 895 步：当前 HEAD 的 exact-SHA 证据已回绑，正式签收仍保持开启
+
+- status：`current-sha-evidence-rebound-formal-gates-open`
+- latestStepOutcome: `895:current-sha-evidence-rebound-formal-gates-open`
+- 触发/问题：用户指出不能把“未取得独立签收”标成任务受阻，必须继续完成所有可执行的视觉、产品、发布与记录工作。本步在 Step894 之后完成当前 clean HEAD 的运行时、矩阵、视觉包、真值/隔离检查和 Windows 本地包回绑；完整 readiness 仍需诚实停在正式路由成熟度门。
+- 已完成：当前候选 runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`；Overview `28/28`；route-state `266/266`；bounded route `76/76`；tablet `152/152`；430 与 667 视觉分片各 `133/133`；当前视觉包 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。types、Overview 全合同、asset/static/backend security、report truth/quarantine、readonly/lifecycle/screenshot-bound、release blockers 与 D 盘 14/14 字节镜像同步通过。Windows `build-windows-exe.ps1 -NoZip` 通过；packaging preflight `10 pass / 1 skip / 1 fail`，唯一失败为 readiness 内的 route maturity。
+- 真实剩余：严格 route maturity 为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；18 个操作路由仍只有 `automated-only` Accessibility 与 `independentAcceptance=pending`，`more` 为工具目录而非模块。可信 Ed25519 allowlist 为空，不能由本地或产品代码自签；真实 RouterOS soak、Route Owner/AT、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布没有证据，继续关闭。
+- 视觉裁决：当前截图和自动化视觉合同覆盖 390/430/667 手机、844×390 横屏、768/844 平板、1366/1440 桌面以及 7 个 Overview 异常场景；这是工程视觉证据，不等于独立视觉签收。新的独立复核请求尚未返回可采纳结果，不把等待或超时写成 pass。
+- 决策：关闭本轮已经完成的当前 SHA 证据回绑、真值隔离、视觉包完整性和 Windows 本地构建工作；不修改 readiness、route maturity 或签名校验来制造绿灯，不上传 GitHub。formal pending 不是 blocked，任务继续 active。
+- 心得：发布红灯要精确指向缺少的外部主体、真实设备或远端 CL；本地可以做的必须继续做，不能停在“受阻”标签上。与此同时，矩阵、截图和 scoped review 不能替代独立签名，工程绿灯与公众发布资格必须分层记录。
+- nextAction：继续取得当前 SHA 的独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部通过前不上传 GitHub。
+- validForCommit：本步 tracked 决策同步后，当前候选 SHA 将改变；提交后必须再次运行 runtime、28/266/76、tablet、430/667、packet、truth、quarantine、readiness 与 Windows 本地包，不能复用提交前报告。
+- supersededBy：null
+
+## 第 896 步：固定导航与 200% 新鲜度 P1 已修复，正式签收继续开启
+
+- status：`visual-p1-corrections-focused-green-formal-gates-open`
+- latestStepOutcome: `896:visual-p1-corrections-focused-green-formal-gates-open`
+- 触发/问题：独立复核指出 375/390 手机的证据摘要可能被固定底部导航覆盖；评审包把 667×375 写成横屏但实际截图是 667×932 竖屏；200% 浏览器缩放时运行时新鲜度文本被截断。本步不把这些意见记成“审美主观”，直接修复结构与证据契约。
+- 已完成：incident 手机将证据边界放到主要事实之后、动作与次要队列之前；steady 手机将证据边界放到 WAN signal 之后、下一步之前；新增 `evidenceBoundaryClearOfNavigation` 回归检查；<=399px CSS viewport 的运行时新鲜度允许完整换行；浏览器 200% 资源门禁增加顶层 `clippedText` 检查；视觉包同时声明 portrait `667x932` 与真实 landscape `667x375`，并为两者保留独立文件名。dirty focused Overview smoke `5 场景 × 2 视口 = 10/10` 通过，TypeScript/build 通过。
+- 仍未完成：当前 tracked 修改尚未提交，Step895 exact-SHA runtime/matrix/packet/Windows 工件不能复用；必须先提交后重新跑完整 runtime、28/266/76、tablet、430/667、真实 667×375 landscape、packet、truth/quarantine、readiness 和 Windows 本地包。正式 route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；正式独立签收、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 均没有证据。
+- 决策：本步只关闭两个可执行的视觉 P1 修复和 focused smoke，不关闭发布资格；不修改 route maturity、签名 allowlist 或 readiness 逻辑制造绿灯。任务保持 active，不能标记 blocked。
+- 心得：当独立评审指出“截图尺寸与声明不一致”时，不能用矩阵通过搪塞，必须把证据命名、实际像素和 packet 契约绑在一起；当固定导航覆盖证据时，优先改 DOM 顺序与回归几何检查，而不是继续加补丁。
+- nextAction：提交 Step896 后以新 exact SHA 重新绑定全部工程证据和真实 667×375 landscape 截图，然后重新取得独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部通过前不上传 GitHub。
+- validForCommit：本步文档与代码尚未提交；提交后当前 SHA 变化，所有旧 exact-SHA 报告仅作历史，必须重新生成。
+- supersededBy：null

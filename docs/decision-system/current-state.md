@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `894`
-- latestRecordedStep: `894`
-- latestStepOutcome: `894:exact-sha-local-evidence-green-formal-gates-open`
-- currentBoundaryForStep: `894`
+- currentConclusionForStep: `896`
+- latestRecordedStep: `896`
+- latestStepOutcome: `896:visual-p1-corrections-focused-green-formal-gates-open`
+- currentBoundaryForStep: `896`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-08T00:00:00+08:00
@@ -10,16 +10,16 @@
 
 ## Current conclusion
 
-**FAIL overall / current candidate requires exact-SHA rebind / independent review and formal release gates OPEN.** Step894 proved the previous clean candidate locally, then this tracked decision update created a new HEAD; its runtime/matrix evidence is therefore historical until rebound. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
+**FAIL overall / focused visual P1 correction green / independent review and formal release gates OPEN.** Step896 fixes the narrow-phone evidence boundary placement and 200% runtime freshness reflow; the focused 10-cell Overview smoke is green. The tracked candidate still requires a clean exact-SHA rebind before any release conclusion. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 894
+## Current decision record: Step 896
 
-- observed: Step893 提交后的上一 clean SHA 已完成 final rebind；严格 readiness 接受该 clean-SHA matrix 后，在 route maturity 处真实失败。随后 Step894 的 tracked decision update 产生了新的 HEAD，因此上一批报告必须视为历史，不能直接支持当前 HEAD。
-- decision: 将当前 SHA 的运行、矩阵、报告真值、资产/安全/生命周期和 Windows 本地包记为工程绿；保留 route maturity、正式独立签收、真实 RouterOS soak 和外部 CL 的失败/待签状态，不修改 gate 逻辑、不把代理超时写成 review pass。
-- visual disposition: 当前证据覆盖 390/430/667 手机、844×390 横屏、768/844 平板、1366/1440 桌面及 7 个 Overview 场景；这些是 exact-SHA 工程与截图材料，不等于当前独立视觉签收。本轮新独立复核请求超时，不能作为签收依据。
-- runtime truth: RFC 3339 timestamps、browser-only connectivity hint、atomic traffic samples、canonical routes 和 read-only boundaries 未回退；未新增 RouterOS 写能力或未经证据支持的业务健康声明。
-- report truth: `_acceptance/panel-runtime-browser/report.json`、`release-matrix-55ee0f75...`、route-state、tablet、430/667、packet、truth 和 quarantine 绑定的是 Step894 提交前的候选；本次 tracked change 后它们转为历史，必须在当前 HEAD 重新绑定。
-- packaging truth: `build-windows-exe.ps1 -NoZip` 成功，EXE mount 为 `<div id="app">`，框架 script/style/desktopStyle hashes 与 manifest 一致；packaging preflight `10 pass / 1 skip / 1 fail`，唯一失败为严格 route-maturity readiness。这是本地包证据，不是 Windows CI/CL。
+- observed: Step895 的 exact-SHA 本地证据之后，独立复核明确指出 375/390 固定导航覆盖证据摘要、667×375 横屏证据缺失，以及 200% 顶部新鲜度文本被截断。本步先在 dirty candidate 修复前两项中的可执行代码边界与 200% 重排，并运行 390/375 五场景共 10 个 Overview cell。
+- decision: 手机 incident 的证据边界改为在事实之后、动作和次要队列之前；steady 手机在 WAN signal 后放置证据边界；运行时宽度不超过 399 CSS px 时允许新鲜度完整换行。focused smoke `10/10` 通过；在提交前不把旧 exact-SHA 报告重绑到新代码。
+- visual disposition: 当前独立复核的 667×375 评审意见不再被忽略；packet 将同时保留 667×932 portrait 与真实 667×375 landscape，并要求 landscape screenshots 具有实际尺寸。375/390 证据摘要不得与固定底部导航相交；新的 full runtime/visual packet 仍待 clean SHA。
+- runtime truth: RFC 3339 timestamps、browser-only connectivity hint、atomic traffic samples、canonical routes 和 read-only boundaries 未回退；本步未新增 RouterOS 写能力或未经证据支持的业务健康声明。
+- report truth: Step895 的 exact-SHA 报告仍是历史输入；Step896 focused smoke 是 dirty-worktree evidence，不进入发布输入。提交后必须重新运行 runtime、28/266/76、tablet、430/667、667 landscape、packet、truth、quarantine、readiness 与 Windows 本地包。
+- packaging truth: Step895 的 Windows `build-windows-exe.ps1 -NoZip` 与 preflight 仍只证明上一 clean SHA 的本地包；本步不借用它作为新 SHA 发布证据。
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，`contractPass=true` 但 `releasePass=false`；complete-module promotion 需要路由级完整证据与可信独立签名，不能自签。
 - release boundary: packet 仍 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；formal Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub upload 均未完成；没有上传 GitHub。
 

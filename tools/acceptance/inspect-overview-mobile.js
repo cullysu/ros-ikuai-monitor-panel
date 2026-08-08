@@ -560,6 +560,12 @@ function inspectMobileNativeOverview({
   const ledgerBottomBoundary = bottomNavigation && navRect ? navRect.top : window.innerHeight - 16;
   const availableLedgerHeight = ledgerBox ? Math.max(0, ledgerBottomBoundary - ledgerBox.top) : 0;
   const requiredLedgerHeight = (ledgerSummaryBox?.height || 0) + (ledgerBodyBox?.height || 0);
+  const ledgerSummaryRect = rect(ledgerSummary);
+  const ledgerSummaryInViewport = Boolean(
+    ledgerSummaryRect && ledgerSummaryRect.bottom > 0 && ledgerSummaryRect.top < window.innerHeight
+  );
+  const evidenceBoundaryClearOfNavigation = !bottomNavigation || !ledgerSummaryInViewport ||
+    Boolean(ledgerSummaryRect && navRect && ledgerSummaryRect.bottom <= navRect.top + 1);
   const explicitAutoOpen = ledger?.getAttribute('data-auto-open') === 'true';
   const shouldOpenLedger = explicitAutoOpen
     ? Boolean(ledgerRows.length)
@@ -630,6 +636,7 @@ function inspectMobileNativeOverview({
     accessibility: Boolean(verdictTitle?.id && mobileRoot.querySelectorAll('h1').length === 1 && ariaControlsValid),
     readableType: smallText.length === 0,
     touchTargets: smallTargets.length === 0,
+    evidenceBoundaryClearOfNavigation,
     readonly: /只读/.test(pageText),
     firstViewport: firstViewportOk,
     noHorizontalOverflow: overflowX <= 1,
@@ -673,6 +680,9 @@ function inspectMobileNativeOverview({
       explicitAutoOpen,
       expectedOpen: shouldOpenLedger,
       override: ledger?.getAttribute('data-user-override') || '',
+      summary: ledgerSummaryRect,
+      summaryInViewport: ledgerSummaryInViewport,
+      clearOfNavigation: evidenceBoundaryClearOfNavigation,
     },
     tabletLayout: workspaceBody ? {
       bodyWidth: Math.round(workspaceBody.getBoundingClientRect().width),

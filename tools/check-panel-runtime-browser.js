@@ -3283,6 +3283,7 @@ async function main() {
         browserZoomResourceHistory.seriesCount === 3 && browserZoomResourceHistory.distinctPatterns === 3 &&
         browserZoomResourceHistory.thresholdLabels?.join('|') === '85% · CPU/内存|90% · 磁盘' &&
         browserZoomResourceHistory.latestPointCount === 0 &&
+        browserZoomResource.clippedText.length === 0 &&
         browserZoomResourceHistory.clippedText?.length === 0 && browserZoomResourceHistory.overflow <= 1,
       browserZoomResource
     );
