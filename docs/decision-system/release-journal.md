@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `893`
-- currentOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
-- latestStepOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
+- currentStep: `894`
+- currentOutcome: `894:exact-sha-local-evidence-green-formal-gates-open`
+- latestStepOutcome: `894:exact-sha-local-evidence-green-formal-gates-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -108,3 +108,4 @@ Only a clean, independently accepted candidate with complete current-identity ma
 - Step892: Step891 的 final rebind 在当前 Windows 环境两次撞到 240 秒 runtime browser 总门禁，停在不同的孤立桌面截图文件；这属于可执行的门禁稳定性问题，不是产品通过或外部签收。将总门禁上限从 `240000ms` 提升到 `480000ms`，保持单次截图 `60000ms`、Playwright、孤立浏览器、Promise race 和 context/browser finally cleanup，并同步生命周期、截图边界和 release-blocker 契约。此次代码/文档变更使所有旧 exact-SHA 工件失效，必须在新 clean SHA 全量重绑；task active、blocked=false，GitHub untouched。
 
 - Step893: timeout 预算修复后的截图边界检查暴露了门禁正则陈旧：隔离 helper 通过 bounded `closeWithin(context)` 与 `closeWithin(browser)` 在 finally 清理资源，旧检查却只寻找直接 `.close()`。已将检查器改为匹配真实有界 cleanup 合同；不改变 runtime 行为、不放宽截图或总时限。该工具/文档变更使旧 exact-SHA 工件再次失效，必须在新 clean SHA 全量重绑；task active、blocked=false，GitHub untouched。
+- Step894: clean SHA `55ee0f75faeed4f9521f8077ce333ff6430d8ee6` 已完成 exact-SHA 本地回绑：runtime `260/140/169`、Overview `28/28`、route-state `266/266`、bounded route `76/76`、tablet `152/152`、430/667 分片各 `133/133`，types/Overview/security/assets/report-truth/quarantine/lifecycle contracts 通过；Windows EXE 本地构建成功，preflight 为 `10 pass / 1 skip / 1 fail`，唯一失败为 route-maturity readiness。严格成熟度仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，packet 为 `prepared-not-signed`。本轮独立复核代理请求超时，未产生签收或可信签名；Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 继续关闭，task active、blocked=false。

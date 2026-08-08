@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `893`
-- latestRecordedStep: `893`
-- latestStepOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
-- currentBoundaryForStep: `893`
+- currentConclusionForStep: `894`
+- latestRecordedStep: `894`
+- latestStepOutcome: `894:exact-sha-local-evidence-green-formal-gates-open`
+- currentBoundaryForStep: `894`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-08T00:00:00+08:00
@@ -12,16 +12,16 @@
 
 **FAIL overall / current local engineering evidence green / independent review and formal release gates OPEN.** The clean candidate produced after Step890 has exact-SHA local evidence, but the predecessor Step890 scoped reviews are stale after the governance commit. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 893
+## Current decision record: Step 894
 
-- observed: Step892 的 timeout 预算契约已通过，但 `check-runtime-screenshot-bound.js` 仍用旧的正则寻找直接 `context.close()`；实际隔离 helper 使用 `closeWithin(context)`、`closeWithin(browser)`，清理行为真实存在，检查器却错误报红。
-- decision: 将截图边界契约改为匹配真实的有界 cleanup helper 顺序，不削弱对 context/browser finally 清理的要求；继续保留 480000ms 总门禁、60000ms 单次截图、Promise race 和隔离进程。修复的是门禁的假红，不是把失败改绿。
-- visual disposition: 当前 SHA 的截图矩阵已覆盖 390/430/667 手机、844×390 横屏、768/844 平板和 1366/1440 桌面；截图覆盖是工程证据，不等于当前独立视觉签收，上一 SHA 的 P2 观察保留为历史信息。
-- runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. No RouterOS write capability or business-health claim was added.
-- report truth: Step891 的矩阵证据在 runtime 总门禁失败后不再作为当前输入；本步修复后必须在新 clean SHA 重新生成 runtime、全部矩阵、packet、truth、quarantine、readiness 和 Windows 本地包。未重绑前不宣称报告通过。
-- packaging truth: Windows preflight has `10 pass / 1 skip / 1 fail`, with the only failure being the same route-maturity readiness gate; local `build-windows-exe.ps1 -NoZip` succeeds, EXE mount is `<div id="app">`, and framework script/style/desktopStyle hashes match the manifest. This is local packaging evidence, not Windows CI/CL.
-- route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
-- release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; trusted independent signatures, Route Owner/AT, real RouterOS soak and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred. Bash/WSL is unavailable locally, so no Linux CL is claimed.
+- observed: Step893 提交后的当前 clean SHA 已完成 final rebind；严格 readiness 接受当前 clean-SHA matrix 后，在 route maturity 处真实失败。Windows 本地包成功，但 preflight 同样只剩该 readiness 失败。
+- decision: 将当前 SHA 的运行、矩阵、报告真值、资产/安全/生命周期和 Windows 本地包记为工程绿；保留 route maturity、正式独立签收、真实 RouterOS soak 和外部 CL 的失败/待签状态，不修改 gate 逻辑、不把代理超时写成 review pass。
+- visual disposition: 当前证据覆盖 390/430/667 手机、844×390 横屏、768/844 平板、1366/1440 桌面及 7 个 Overview 场景；这些是 exact-SHA 工程与截图材料，不等于当前独立视觉签收。本轮新独立复核请求超时，不能作为签收依据。
+- runtime truth: RFC 3339 timestamps、browser-only connectivity hint、atomic traffic samples、canonical routes 和 read-only boundaries 未回退；未新增 RouterOS 写能力或未经证据支持的业务健康声明。
+- report truth: `_acceptance/panel-runtime-browser/report.json`、`release-matrix-55ee0f75...`、route-state、tablet、430/667、packet、truth 和 quarantine 均绑定当前 SHA；任何下一次 tracked change 后必须重新绑定。
+- packaging truth: `build-windows-exe.ps1 -NoZip` 成功，EXE mount 为 `<div id="app">`，框架 script/style/desktopStyle hashes 与 manifest 一致；packaging preflight `10 pass / 1 skip / 1 fail`，唯一失败为严格 route-maturity readiness。这是本地包证据，不是 Windows CI/CL。
+- route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，`contractPass=true` 但 `releasePass=false`；complete-module promotion 需要路由级完整证据与可信独立签名，不能自签。
+- release boundary: packet 仍 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；formal Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub upload 均未完成；没有上传 GitHub。
 
 ## Gate status
 
@@ -57,4 +57,4 @@
 
 ## One next action
 
-- nextAction: commit and sync Step889, perform the final exact-SHA rebind of runtime, all matrices, packet, truth, quarantine and readiness, then continue trusted Product/Design/Visual/Accessibility, Route Owner/AT, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL; only then consider atomic GitHub publication.
+- nextAction: sync Step894 to `D:\想法\面板`; continue current-SHA independent Product/Design/Visual/Accessibility, Route Owner/AT, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL; only after every formal gate passes consider atomic GitHub publication.

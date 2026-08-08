@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `893`
-- latestRecordedStep: `893`
-- latestStepOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
+- currentBoundaryForStep: `894`
+- latestRecordedStep: `894`
+- latestStepOutcome: `894:exact-sha-local-evidence-green-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step893 records the screenshot cleanup-contract alignment before the final exact-SHA evidence rebind. Formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates remain open.
+Task remains active and blocked=false; Step894 records the current `55ee0f75` exact-SHA local evidence rebind and the honest route-maturity/readiness boundary. Formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates remain open.

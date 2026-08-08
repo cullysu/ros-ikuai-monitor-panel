@@ -25313,3 +25313,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step893；在新 clean SHA 运行 runtime，随后重绑全部矩阵、packet、truth、readiness 和 Windows 包，再请求当前 SHA 独立 Product/Design/Visual/Accessibility 复核。
 - validForCommit：Step892 代码/文档提交前的 clean candidate（本步提交后旧 exact-SHA 工件全部转历史）
 - supersededBy：null
+
+## 第 894 步：完成 55ee0f75 exact-SHA 本地回绑，真实停在正式签收边界
+
+- status：`exact-sha-local-evidence-green-formal-gates-open`
+- latestStepOutcome: `894:exact-sha-local-evidence-green-formal-gates-open`
+- 触发/问题：Step893 的截图 cleanup 合同修复提交后，必须重新绑定所有当前证据；不能继续使用 Step890/891 的旧报告，也不能因为本地矩阵变绿就把正式 Product/Design/Visual/Accessibility 或 Route Owner 签收改成通过。
+- 验证：当前 clean SHA `55ee0f75faeed4f9521f8077ce333ff6430d8ee6` 的 production runtime 为 `260 checks / 140 screenshots / 169 snapshot API calls`；Overview `28/28`、route-state `266/266`、bounded route shard `76/76`、tablet `152/152`、430 与 667 分片各 `133/133`；types、Overview、asset identity、static assets、backend/security、runtime schema、readonly、report truth、report quarantine、release blockers、runtime lifecycle 与 screenshot-bound contracts 均通过。Windows `build-windows-exe.ps1 -NoZip` 通过；packaging preflight 为 `10 pass / 1 skip / 1 fail`，唯一失败仍是严格 readiness 的 route-maturity gate。
+- 产品/视觉边界：当前截图和自动化合同只证明声明范围内的工程证据；本轮两个独立复核代理均因请求超时，没有产生可采纳的当前 SHA 独立评审结果，更没有可信 Ed25519 签名。因此 Product/Design/Visual/Accessibility 继续 `pending`，不把超时当作通过，也不把本地截图审阅冒充正式视觉签收。
+- 路由/发布边界：严格 route maturity 真实结果为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，`contractPass=true` 但 `releasePass=false`；packet 仍为 `prepared-not-signed / selfSignoff=false / releaseEligible=false`。真实 RouterOS soak、Route Owner/AT、Linux/Windows/GHCR exact-SHA CL 和 GitHub 上传均未完成，发布继续关闭。
+- 决策：关闭可执行的本地回绑、报告真值、静态与 Windows 包验证；不修改 readiness 以掩盖 route maturity，不伪造外部签名。formal pending 不是任务阻塞，下一步继续争取真实独立评审并完成可执行的 soak/CL 前置工作。
+- 心得：本轮“受阻”标记不准确；能运行的本地证据必须继续运行，不能因为正式签收尚未到位就停止。与此同时，正式签收缺失也不能被大量自动化数字稀释。工程绿灯、scoped review、正式签名和公众发布必须四层分开。
+- nextAction：同步 Step894 到 `D:\想法\面板`，然后继续当前 SHA 的独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部通过前不上传 GitHub。
+- validForCommit：本步文档尚未提交；提交后 `55ee0f75...` 的 exact-SHA 工件仅作历史，必须在新 HEAD 再绑定。
+- supersededBy：null
