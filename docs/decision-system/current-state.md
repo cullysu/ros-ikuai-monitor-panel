@@ -10,11 +10,11 @@
 
 ## Current conclusion
 
-**FAIL overall / current local engineering evidence green / independent review and formal release gates OPEN.** Candidate `4f2a98b6eb7411231f296a6b8450209763ef29e0` has clean exact-SHA local evidence, but the predecessor Step890 scoped reviews are stale after this governance commit. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
+**FAIL overall / current local engineering evidence green / independent review and formal release gates OPEN.** The clean candidate produced after Step890 has exact-SHA local evidence, but the predecessor Step890 scoped reviews are stale after the governance commit. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
 ## Current decision record: Step 891
 
-- observed: Step890 的治理文档提交产生新候选 `4f2a98b6eb7411231f296a6b8450209763ef29e0`；其后已在该 exact SHA 重新生成并核验 runtime、Overview、route、route-state、tablet、430/667 视觉分片及 packet。Step890 的 e160 scoped review 不再冒充当前 SHA 签收。
+- observed: Step890 的治理文档提交后产生了新的 clean candidate；其后已重新生成并核验 runtime、Overview、route、route-state、tablet、430/667 视觉分片及 packet。Step890 的 e160 scoped review 不再冒充当前 SHA 签收。
 - decision: 关闭本轮可本地验证的 exact-SHA 证据回绑与报告真值检查，但把 Product/Design/Visual/Accessibility 标记为 `pending/stale`，不把 predecessor scoped review、自动矩阵或实现者自检写成独立签名。继续保持正式发布 FAIL-closed。
 - visual disposition: 当前 SHA 的截图矩阵已覆盖 390/430/667 手机、844×390 横屏、768/844 平板和 1366/1440 桌面；截图覆盖是工程证据，不等于当前独立视觉签收，上一 SHA 的 P2 观察保留为历史信息。
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. No RouterOS write capability or business-health claim was added.

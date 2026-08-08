@@ -15,7 +15,7 @@
 
 ## Current handoff: Step 891 4f2a98b exact-SHA evidence rebinding; formal gates remain open
 
-- Result: current candidate `4f2a98b6eb7411231f296a6b8450209763ef29e0` has runtime `260/140/169`, Overview `28/28`, route `76/76`, route-state `266/266`, tablet `152/152`, 430/667 `133/133`, valid packet identity and local report/security/static checks. The e160 scoped review is historical, not a current-SHA signature.
+- Result: the clean candidate after Step890 has runtime `260/140/169`, Overview `28/28`, route `76/76`, route-state `266/266`, tablet `152/152`, 430/667 `133/133`, valid packet identity and local report/security/static checks. The e160 scoped review is historical, not a current-SHA signature.
 - Decision: close only the exact-SHA local evidence rebinding and report-truth checks. Keep Product/Design/Visual/Accessibility formal status pending/stale, keep product release FAIL-closed, preserve bounded route semantics, and continue seeking current-SHA independent review, trusted acceptance, Route Owner/AT, RouterOS soak and external CL. The task is active and `blocked=false` while remaining executable work exists.
 - Boundary: route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Formal product/design/visual/accessibility acceptance, Route Owner, RouterOS soak, exact-SHA CL and public release remain fail-closed.
 - Next: obtain a fresh current-SHA independent Product/Design/Visual/Accessibility review, then continue Route Owner/AT, real RouterOS soak and exact-SHA external CL before any GitHub publication.
