@@ -13,7 +13,7 @@ const checks = [
   ['runtime entry awaits shared cleanup on failure', /await cleanupRuntime\(\)/.test(entry)],
   ['runtime entry explicitly exits successfully after cleanup', /process\.exit\(0\)/.test(entry)],
   ['runtime entry explicitly exits unsuccessfully after cleanup', /process\.exit\(1\)/.test(entry)],
-  ['runtime entry keeps a bounded timeout contract', /const testTimeout\s*=\s*Number\.isFinite\(configuredTestTimeout\)[\s\S]*?Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*240000\)/.test(source)],
+  ['runtime entry keeps a bounded timeout contract', /const testTimeout\s*=\s*Number\.isFinite\(configuredTestTimeout\)[\s\S]*?Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*480000\)/.test(source)],
   ['runtime entry keeps isolated screenshot timeout bounded at 60000ms', source.includes('configuredScreenshotTimeout') && source.includes('Math.min(Math.max(configuredScreenshotTimeout, 5000), 60000)') && source.includes(': 60000;')],
 ];
 

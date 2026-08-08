@@ -21,8 +21,8 @@ const sshTrustToken = 'mock-session-bound-ssh-trust-token';
 const actionTimeout = 8000;
 const configuredTestTimeout = Number(process.env.PANEL_RUNTIME_BROWSER_TIMEOUT_MS);
 const testTimeout = Number.isFinite(configuredTestTimeout)
-  ? Math.min(Math.max(configuredTestTimeout, 30000), 240000)
-  : 240000;
+  ? Math.min(Math.max(configuredTestTimeout, 30000), 480000)
+  : 480000;
 const configuredScreenshotTimeout = Number(process.env.PANEL_RUNTIME_SCREENSHOT_TIMEOUT_MS);
 const screenshotTimeout = Number.isFinite(configuredScreenshotTimeout)
   ? Math.min(Math.max(configuredScreenshotTimeout, 5000), 60000)

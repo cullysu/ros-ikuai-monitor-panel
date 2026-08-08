@@ -129,8 +129,8 @@ check(
 check(
   'runtime browser gate uses Playwright with a bounded lifecycle',
   browserGateSource.includes("require('playwright-core')") &&
-    /const testTimeout\s*=\s*Number\.isFinite\(configuredTestTimeout\)[\s\S]*?:\s*240000;/.test(browserGateSource) &&
-    /Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*240000\)/.test(browserGateSource) &&
+     /const testTimeout\s*=\s*Number\.isFinite\(configuredTestTimeout\)[\s\S]*?:\s*480000;/.test(browserGateSource) &&
+     /Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*480000\)/.test(browserGateSource) &&
     browserGateSource.includes('Promise.race([main(), timeout])') &&
     browserGateSource.includes('cleanupRuntime') &&
     browserGateSource.includes('context.close') &&

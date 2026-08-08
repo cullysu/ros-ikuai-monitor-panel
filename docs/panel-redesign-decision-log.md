@@ -25285,3 +25285,17 @@ ocused-green-engineering
 - nextAction：对 `4f2a98b6eb7411231f296a6b8450209763ef29e0` 取得新一轮独立 Product/Design/Visual/Accessibility 复核并记录其签收边界；同步推进 Route Owner/AT、RouterOS soak、route maturity 和 exact-SHA Linux/Windows/GHCR CL，全部正式条件通过前不发布。
 - validForCommit：`4f2a98b6eb7411231f296a6b8450209763ef29e0`
 - supersededBy：null
+
+## 第 892 步：修复浏览器总门禁预算，避免把截图批次超时误写成产品阻塞
+
+- status：`stabilize-runtime-global-timeout-before-final-rebind`
+- latestStepOutcome: `892:stabilize-runtime-global-timeout-before-final-rebind`
+- 触发/问题：Step891 的最终 exact-SHA runtime 回绑在 Windows 环境连续两次于 `240000ms` 总门禁内超时，停在不同的 isolated desktop screenshot；不能拿旧报告继续宣称当前 SHA 通过，也不能把环境/门禁预算问题误写成产品完成。
+- 观察事实：代码已经使用 Playwright、每张截图 `60000ms` 上限、独立截图浏览器、Promise race、context/browser finally cleanup；超时发生在 140 张长批次的全局预算，不是某一条产品断言的失败。两次运行都没有生成可接受的当前 runtime report。
+- 决策：把 runtime browser 总门禁的显式上限从 `240000ms` 提升到 `480000ms`，保持单次截图上限、孤立浏览器、清理和 fail-closed 逻辑；同步 `check-runtime-browser-lifecycle.js`、`check-runtime-screenshot-bound.js` 和 `check-release-blockers.js` 的回归契约。
+- 理由与拒绝项：延长全局预算不是降低断言标准；禁止删除截图、缩短场景、把 timeout 改 warning 或复用旧 SHA 报告。若 480 秒仍超时，必须保留阶段、文件、截图数、snapshot 次数和 cleanup 诊断继续修根因。
+- 验证：本步完成源码和静态契约修复；该代码/决策提交会使 Step891 的所有 exact-SHA 工件失效，必须在新 clean SHA 重新运行 runtime、28/76/266、tablet、430/667、packet、truth、quarantine、readiness 和 Windows 本地包。
+- 边界/心得：运行时总门禁的稳定性是发布证据的一部分；没有可复现的报告，矩阵数量再多也不能作为当前发布证明。任务继续 active、`blocked=false`，不上传 GitHub。
+- nextAction：提交并同步 Step892；在新 clean SHA 运行 `check:runtime-browser`，成功后重绑全部矩阵、packet、truth、readiness 和 Windows 包，再请求当前 SHA 独立 Product/Design/Visual/Accessibility 复核。
+- validForCommit：治理提交前的 clean candidate（本步代码/文档提交后旧 exact-SHA 工件全部转历史）
+- supersededBy：null

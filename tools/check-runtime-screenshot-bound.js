@@ -23,7 +23,7 @@ check(
 );
 check(
   'global-runtime-bound-remains-fail-closed',
-  /Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*240000\)[\s\S]*:\s*120000/.test(source),
+  /Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*480000\)[\s\S]*:\s*480000/.test(source),
   'per-shot diagnostics must not replace or loosen the global runtime gate'
 );
 check(

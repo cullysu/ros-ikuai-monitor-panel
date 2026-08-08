@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `891`
-- currentOutcome: `891:final-exact-sha-rebind-local-evidence-green-formal-gates-open`
-- latestStepOutcome: `891:final-exact-sha-rebind-local-evidence-green-formal-gates-open`
+- currentStep: `892`
+- currentOutcome: `892:stabilize-runtime-global-timeout-before-final-rebind`
+- latestStepOutcome: `892:stabilize-runtime-global-timeout-before-final-rebind`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -104,3 +104,5 @@ Only a clean, independently accepted candidate with complete current-identity ma
 - Step890: e160 exact-SHA 的窄屏标题资产预算修复、完整 Overview 28/28、route-responsive 76/76、route-state 266/266、tablet 152/152、430/667 各 133/133、runtime 260/140/169 与 Windows 本地 EXE 证据均已重新生成；详细 Overview JSON 可解析，两个独立只读复核确认 P0/P1=`0`，仅保留 320px 快照日期换行 P2。readiness 已接受当前 clean-SHA 矩阵并在 route maturity 0/18/0/1 停止；packet 仍 `prepared-not-signed`，正式 trusted acceptance、AT/Route Owner、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布继续关闭，task active、blocked=false。该条记录提交后必须再次 exact-SHA 回绑。
 
 - Step891: Step890 的治理文档提交后，候选更新为新的 clean SHA。已在新 SHA 重新生成 runtime `260/140/169`、Overview `28/28`、bounded route `76/76`、route-state `266/266`、tablet `152/152`、430/667 各 `133/133`，并通过 packet identity、report truth、quarantine、backend security、asset identity、static assets、types、overview 和 D 盘镜像同步核验；readiness 仍 fail-closed 于 route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。Step890 的 e160 独立 scoped review 在治理提交后标为历史，当前 SHA 不写入 Product/Design/Visual/Accessibility 独立签收；正式签名、Route Owner/AT、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布仍关闭，task active、blocked=false。
+
+- Step892: Step891 的 final rebind 在当前 Windows 环境两次撞到 240 秒 runtime browser 总门禁，停在不同的孤立桌面截图文件；这属于可执行的门禁稳定性问题，不是产品通过或外部签收。将总门禁上限从 `240000ms` 提升到 `480000ms`，保持单次截图 `60000ms`、Playwright、孤立浏览器、Promise race 和 context/browser finally cleanup，并同步生命周期、截图边界和 release-blocker 契约。此次代码/文档变更使所有旧 exact-SHA 工件失效，必须在新 clean SHA 全量重绑；task active、blocked=false，GitHub untouched。

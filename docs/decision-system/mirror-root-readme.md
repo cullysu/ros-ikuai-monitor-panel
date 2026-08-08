@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step891 records the 4f2a98b exact-SHA evidence rebinding after the Step890 governance commit; predecessor scoped visual/product reviews are stale, and formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step892 records the runtime global-timeout stabilization after two 240-second batch timeouts; all exact-SHA evidence must be rebound, and formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step891 记录 4f2a98b exact-SHA 的最终本地证据回绑；Step890 的 e160 scoped 复核因治理提交已转为历史，不能冒充当前 SHA 的独立签收。辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step892 记录 runtime 浏览器总门禁从 240 秒提升到 480 秒的稳定性修复；旧 exact-SHA 工件必须重新回绑，不能把历史 scoped 复核冒充当前独立签收。辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `891`
-- currentOutcome: `891:final-exact-sha-rebind-local-evidence-green-formal-gates-open`
-- currentBoundary: `891`
+- currentStep: `892`
+- currentOutcome: `892:stabilize-runtime-global-timeout-before-final-rebind`
+- currentBoundary: `892`
 - authority: `decision-system/current-state.md`
 
 ## 入口
