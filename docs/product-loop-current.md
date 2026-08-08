@@ -6,7 +6,7 @@
 - updated: 2026-08-08
 - latestRecordedStep: `894`
 - latestStepOutcome: `894:exact-sha-local-evidence-green-formal-gates-open`
-- currentConclusion: **FAIL overall**. Current exact-SHA local evidence is green, but the predecessor scoped Product/Design/Visual review is stale after the governance commit; formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
+- currentConclusion: **FAIL overall**. Step894's previous candidate had green exact-SHA local evidence, but this tracked handoff update created a new candidate; final evidence must be rebound before the current HEAD can be assessed. Formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
 ## Loop refinement applied
 
@@ -15,10 +15,10 @@
 
 ## Current handoff: Step 894 exact-SHA local evidence rebind; formal gates remain open
 
-- Result: current clean SHA `55ee0f75faeed4f9521f8077ce333ff6430d8ee6` has fresh runtime `260/140/169`, Overview `28/28`, route-state `266/266`, bounded route `76/76`, tablet `152/152`, 430/667 `133/133`, packet/truth/quarantine and local Windows EXE evidence.
+- Result: the previous Step894 candidate had fresh runtime `260/140/169`, Overview `28/28`, route-state `266/266`, bounded route `76/76`, tablet `152/152`, 430/667 `133/133`, packet/truth/quarantine and local Windows EXE evidence; this tracked handoff update invalidates those exact identities for the new HEAD.
 - Decision: close the executable local rebind and packaging checks, keep Product/Design/Visual/Accessibility formal status pending, and leave product release FAIL-closed. Two new independent review requests timed out and are not review evidence.
 - Boundary: route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Formal product/design/visual/accessibility acceptance, Route Owner, RouterOS soak, exact-SHA CL and public release remain fail-closed.
-- Next: sync Step894 to `D:\想法\面板`, obtain a fresh current-SHA independent Product/Design/Visual/Accessibility review, then continue Route Owner/AT, RouterOS soak and external CL; do not upload GitHub before all gates pass.
+- Next: on the current HEAD rerun the complete exact-SHA evidence families, then obtain a fresh current-SHA independent Product/Design/Visual/Accessibility review and continue Route Owner/AT, RouterOS soak and external CL; do not upload GitHub before all gates pass.
 ## Gate boundary
 
 | Gate | Status | Meaning |
