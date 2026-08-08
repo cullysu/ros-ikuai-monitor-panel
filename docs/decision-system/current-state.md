@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `890`
-- latestRecordedStep: `890`
-- latestStepOutcome: `890:exact-sha-evidence-rebound-scoped-visual-pass-formal-gates-open`
-- currentBoundaryForStep: `890`
+- currentConclusionForStep: `891`
+- latestRecordedStep: `891`
+- latestStepOutcome: `891:final-exact-sha-rebind-local-evidence-green-formal-gates-open`
+- currentBoundaryForStep: `891`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-06T00:00:00+08:00
+- updatedAt: 2026-08-08T00:00:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
-**FAIL overall / scoped Product·Design·Visual·Accessibility review clean / formal release gates OPEN.** Candidate `e16070926dce4fd0bff8ca8584badf6f40a8d495` has current local engineering evidence and a fresh scoped review with no P0/P1 findings, but this is not public-release approval. Trusted acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
+**FAIL overall / current local engineering evidence green / independent review and formal release gates OPEN.** Candidate `4f2a98b6eb7411231f296a6b8450209763ef29e0` has clean exact-SHA local evidence, but the predecessor Step890 scoped reviews are stale after this governance commit. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 890
+## Current decision record: Step 891
 
-- observed: Step889 后的精确候选为 `e16070926dce4fd0bff8ca8584badf6f40a8d495`；窄屏标题修复曾使 style budget 超限，现已收敛到 119986 bytes，所有 exact-SHA 报告和视觉包重新生成并由两组独立只读复核核对。
-- decision: 关闭当前 scoped Product/Design/Visual/Accessibility/Engineering review 范围内的 P0/P1；Visual/Product 保留 320 顶栏、844×390 横屏重心、430 资源趋势位置三个非阻断 P2，Product/Accessibility/Engineering 为 P0/P1/P2=`0`。不把 scoped review 当作 trusted external acceptance。
-- visual disposition: 375/390/430 手机、844×390 横屏、768/844 平板、1366/1440 桌面在当前 evidence scope 未发现 P0/P1 视觉阻断；P2 不阻断 scoped closure，不授权公众发布。
+- observed: Step890 的治理文档提交产生新候选 `4f2a98b6eb7411231f296a6b8450209763ef29e0`；其后已在该 exact SHA 重新生成并核验 runtime、Overview、route、route-state、tablet、430/667 视觉分片及 packet。Step890 的 e160 scoped review 不再冒充当前 SHA 签收。
+- decision: 关闭本轮可本地验证的 exact-SHA 证据回绑与报告真值检查，但把 Product/Design/Visual/Accessibility 标记为 `pending/stale`，不把 predecessor scoped review、自动矩阵或实现者自检写成独立签名。继续保持正式发布 FAIL-closed。
+- visual disposition: 当前 SHA 的截图矩阵已覆盖 390/430/667 手机、844×390 横屏、768/844 平板和 1366/1440 桌面；截图覆盖是工程证据，不等于当前独立视觉签收，上一 SHA 的 P2 观察保留为历史信息。
 - runtime truth: RFC 3339 timestamps, browser-only connectivity hint semantics, atomic traffic samples, canonical routes and read-only boundaries remain unchanged. No RouterOS write capability or business-health claim was added.
-- report truth: e160 exact-SHA runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, route responsive `76/76`, route-state `266/266`, tablet `152/152`, 430px and 667px `133/133`; all requested cells have zero failures and the detailed Overview report parses as one JSON document. report truth, quarantine, asset identity, backend security, types, overview and static assets pass.
+- report truth: current exact-SHA runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, route responsive `76/76`, route-state `266/266`, tablet `152/152`, 430px and 667px `133/133`; all requested cells have zero failures and the detailed Overview report parses as one JSON document. report truth, quarantine, asset identity, backend security, types, overview and static assets pass for this candidate.
 - packaging truth: Windows preflight has `10 pass / 1 skip / 1 fail`, with the only failure being the same route-maturity readiness gate; local `build-windows-exe.ps1 -NoZip` succeeds, EXE mount is `<div id="app">`, and framework script/style/desktopStyle hashes match the manifest. This is local packaging evidence, not Windows CI/CL.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
 - release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; trusted independent signatures, Route Owner/AT, real RouterOS soak and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred. Bash/WSL is unavailable locally, so no Linux CL is claimed.
@@ -27,9 +27,9 @@
 
 | Gate | Status | Boundary |
 |---|---|---|
-| Product | failed | Current-SHA scoped review is clean; trusted Product acceptance, Route Owner acceptance and complete operational modules remain open. |
-| Design | failed | Current-SHA scoped visual/design review is clean; trusted independent design signature is absent. |
-| Visual QA | failed | Current-SHA visual evidence has no P0/P1 in scope; formal visual acceptance is not self-signable. |
+| Product | pending | The predecessor scoped review is stale after the governance commit; trusted Product acceptance, Route Owner acceptance and complete operational modules remain open. |
+| Design | pending | The predecessor scoped visual/design review is stale; a current-SHA independent design signature is absent. |
+| Visual QA | pending | Current-SHA screenshots are present, but formal visual acceptance is not self-signable and no current-SHA independent review is recorded. |
 | Architecture | pass | Mobile/desktop render ownership and current local contracts pass. |
 | Implementation | pass | Current vertical slices pass their declared runtime/static contracts. |
 | Code review | pass | Focused source and boundary checks pass; this does not authorize release. |
@@ -41,7 +41,7 @@
 
 ## Open review boundaries
 
-- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have current-SHA scoped evidence with P0/P1=0. The remaining boundaries are trusted formal signatures, real assistive-technology acceptance, Route Owner acceptance, route maturity and RouterOS soak. Exact report identity is machine-bound and must be regenerated after this tracked decision sync.
+- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have current-SHA screenshot and contract evidence; the predecessor e160 scoped reviews are stale after this tracked decision sync. The remaining boundaries are current-SHA independent review, trusted formal signatures, real assistive-technology acceptance, Route Owner acceptance, route maturity and RouterOS soak.
 - Fresh local screenshots prove the tested scenarios only; they do not prove real RouterOS behavior, public deployment safety or independent human signoff.
 - The task remains active and `blocked=false`. An absent external signature, soak or CL is a release gate, not a reason to stop while local work remains executable; the asset-budget failure was executable and has been fixed locally.
 

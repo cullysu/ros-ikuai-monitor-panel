@@ -25271,3 +25271,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step890；在治理提交后的新 clean SHA 最后一次重建 runtime、Overview 28、route 76、route-state 266、tablet/430/667、packet、truth、quarantine、readiness 和 Windows 本地包；随后继续真实 AT/Route Owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL，全部正式门禁通过前不上传 GitHub。
 - validForCommit：`e16070926dce4fd0bff8ca8584badf6f40a8d495`（本步治理文档提交后报告转为历史，必须再次回绑）
 - supersededBy：null
+
+## 第 891 步：治理提交后的最终 exact-SHA 本地证据回绑，独立签收保持待办
+
+- status：`final-exact-sha-rebind-local-evidence-green-formal-gates-open`
+- latestStepOutcome: `891:final-exact-sha-rebind-local-evidence-green-formal-gates-open`
+- 触发/问题：Step890 更新了当前决策文档。文档提交会改变候选 SHA，不能继续把 e160 的矩阵和 scoped review 叫作当前证据；同时报告隔离器必须只发现当前来源引用，不能允许历史报告或顶层假绿进入发布输入。
+- 观察事实：治理提交后的候选为 `4f2a98b6eb7411231f296a6b8450209763ef29e0`，工作树干净。新 SHA 已重新生成 runtime `260 checks / 140 screenshots / 169 snapshotApiCalls`、Overview `28/28`、bounded route `76/76`、route-state `266/266`、tablet `152/152`、430/667 各 `133/133`；所有请求单元失败数为 `0`。packet 为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。types、overview、asset identity、static assets、backend security、report truth、quarantine、readonly mode 和 D 盘 14/14 字节同步检查通过。
+- 决策：关闭本轮可本地执行的 exact-SHA 证据回绑与报告真值问题；把 Step890 的 e160 独立 scoped review 明确降为历史，当前 SHA 的 Product/Design/Visual/Accessibility 不写入独立签收。继续保持产品 FAIL、发布 fail-closed，继续做当前 SHA 独立复核与所有外部门禁，而不是再次把工程绿灯写成产品完成。
+- 理由与拒绝项：矩阵通过只证明声明范围内的工程行为，不能证明审美成熟、真实 RouterOS 长时间行为、完整路由模块或公众安全；自评、子 Agent 复核和截图包都不能替代可信外部主体签名。禁止用历史 e160 评审、旧候选路径、空的 trusted key 或本地 Windows 构建冒充当前 Product/Design/Visual/AT/CL 通过。
+- 验证：`check-public-release-readiness.js --require-matrix` 已接受当前 clean-SHA 矩阵，随后诚实停止在 route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；`check-route-maturity` 同样保持 fail-closed。Windows 本地 EXE、远端 Linux/Windows/GHCR CL、真实 RouterOS soak、Route Owner/AT 和可信独立签名尚未完成。
+- 边界/心得：正式门禁未通过不是“本轮没有工作可做”。应先修复可执行的真值、身份和视觉问题，再把剩余外部主体边界清楚标成 pending/stale；本步不标记受阻，不上传 GitHub。
+- nextAction：对 `4f2a98b6eb7411231f296a6b8450209763ef29e0` 取得新一轮独立 Product/Design/Visual/Accessibility 复核并记录其签收边界；同步推进 Route Owner/AT、RouterOS soak、route maturity 和 exact-SHA Linux/Windows/GHCR CL，全部正式条件通过前不发布。
+- validForCommit：`4f2a98b6eb7411231f296a6b8450209763ef29e0`
+- supersededBy：null
