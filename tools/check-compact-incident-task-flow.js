@@ -15,7 +15,7 @@ const checks = {
   compactIncidentOwned: /const\s+compactIncident\s*=\s*\(compactTask\s*\|\|\s*compactLandscapeFallback\)\s*&&\s*!tablet\s*&&\s*incident/.test(screen),
   compactShellState: screen.includes('is-compact-incident') && screen.includes('data-mobile-compact-incident'),
   primaryActionLandmark: screen.includes('data-mobile-compact-incident-actions') && screen.includes('compactIncidentActions'),
-  noContextDuplicate: /(?:compactIncident\s*\?\s*null\s*:\s*patrolActions|compactIncident\s*\|\|\s*incident\s*\?\s*null\s*:\s*patrolActions)/.test(screen),
+  noContextDuplicate: /!phonePrimaryAction\s*&&\s*!compactIncidentActions\s*&&\s*state\.scale\s*!==\s*["']fleet["']\s*\?\s*patrolActions\s*:\s*null/.test(screen),
   compactCssBand: /@media\s*\(min-width:\s*(?:375|600)px\)\s*and\s*\(max-width:\s*767px\)/.test(css),
   compactCssOwner: css.includes('.mp-compact-action-list'),
   compactCssTwoColumns: /mp-compact-action-list[\s\S]{0,500}grid-template-columns:\s*repeat\(2/.test(css),

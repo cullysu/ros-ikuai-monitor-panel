@@ -25397,3 +25397,17 @@ ocused-green-engineering
 - nextAction：提交 Step899 并同步 D 盘；在新 clean HEAD 重跑 runtime 与完整 28 格 Overview，随后继续 route-state 266、bounded route 76、tablet/430/667、视觉 packet、truth/quarantine、readiness 和 Windows 本地包，再进入当前 SHA 独立评审与正式外部签收。
 - validForCommit：本步验收器和决策记录尚未提交；focused 3/3 为 dirty-worktree 诊断证据，不能作为发布输入。
 - supersededBy：null
+
+## 第 900 步：静态去重契约跟随真实 owner，运行时绿不能掩盖源码假红
+
+- status：`compact-incident-dedup-static-contract-aligned-focused-green-formal-gates-open`
+- latestStepOutcome: `900:compact-incident-dedup-static-contract-aligned-focused-green-formal-gates-open`
+- 触发/问题：Step899 提交后的 clean SHA `bbbd38574d4f63f52ff14ef0e2da9ac33de492d8` runtime 为 `260 checks / 140 screenshots / 169 snapshotApiCalls` green；`check:overview` 继续运行后，`compact-incident-task-flow-v1` 的 `noContextDuplicate=false`。旧检查只接受早期 `compactIncident ? null : patrolActions` 三元表达式，无法证明当前 `phonePrimaryAction`、`compactIncidentActions` 与 Fleet handoff 三个显式 owner 已抑制上下文重复。
+- 决策/实现：保留 `noContextDuplicate` blocking severity；正则改为精确要求只有 `!phonePrimaryAction && !compactIncidentActions && state.scale !== "fleet"` 时才渲染上下文 `patrolActions`。没有依赖运行时 pass 绕过静态检查，也没有为了匹配旧正则把产品代码退回模糊三元式。
+- 验证：`node --check tools/check-compact-incident-task-flow.js` 通过；focused `compact-incident-task-flow-v1 = 10/10`。`bbbd385…` runtime 保留为前一 clean SHA 证据，本步 tracked checker 修改提交后必须重新绑定全部 exact-SHA 工件。
+- 产品/视觉裁决：UI 未改变；本步把验收语言跟随现有产品 owner，而不是用字符形状代替语义。Emil 静态证据优先约束不变，不引入动画。
+- 发布边界：任务 active、`blocked=false`。正式 Product/Design/Visual/Accessibility、route maturity、Route Owner/AT、真实 RouterOS soak、exact-SHA Linux/Windows/GHCR CL 与 GitHub upload 仍未完成；公众发布继续关闭。
+- 心得：运行时无重复只能证明样本路径，静态 contract 还要证明所有 owner 分支都不会重复；但静态检查也必须验证当前真实语义，不能把旧代码写法当成永恒产品契约。
+- nextAction：提交 Step900 并同步 D 盘；在新 clean HEAD 重跑 runtime、`check:overview` 与完整 Overview/route/tablet/visual matrices，再生成 packet、truth/quarantine、readiness 和 Windows 本地包，之后进入当前 SHA 独立评审与正式外部签收。
+- validForCommit：本步 checker 和决策记录尚未提交；focused 10/10 为 dirty-worktree 诊断证据，不能作为发布输入。
+- supersededBy：null
