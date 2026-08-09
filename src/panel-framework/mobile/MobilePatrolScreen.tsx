@@ -230,7 +230,7 @@ export function MobilePatrolScreen({
             <div className="mp-workspace-context">
               {tablet ? focusObject : null}
               {selectedInspector}
-              {tablet || incident || !normalPhoneNextStep ? patrolActions : null}
+              {!phonePrimaryAction && !compactIncidentActions && state.scale !== "fleet" ? patrolActions : null}
              </div>
           </div>
         )}

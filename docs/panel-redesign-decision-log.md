@@ -25369,3 +25369,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step897；在新 clean HEAD 重新绑定全部 exact-SHA 证据，再继续独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；所有正式条件通过前不上传 GitHub。
 - validForCommit：本步代码、门禁和决策记录尚未提交；提交前 runtime 仅为诊断证据，不能作为发布输入。
 - supersededBy：null
+
+## 第 898 步：收回 Fleet 重复入口并避开正常态固定导航遮挡
+
+- status：`fleet-handoff-deduplicated-and-steady-ledger-navigation-safe-runtime-green-formal-gates-open`
+- latestStepOutcome: `898:fleet-handoff-deduplicated-and-steady-ledger-navigation-safe-runtime-green-formal-gates-open`
+- 触发/问题：Step897 的 clean-build 回归重新暴露两处具体问题：Fleet 手机同时渲染了主巡检入口和上下文 action，造成同一 `interfaces` handoff 出现两个 DOM 入口，Back/Forward journey 因 action count=2 无法签收；正常态证据台账的摘要在固定底栏附近仍可能被遮住。
+- 决策/实现：Fleet 复用已有 `MobilePhoneNextStep` 作为唯一 collection-level `interfaces` 入口，手机上下文不再重复渲染 `MobilePatrolActions`；正常 current steady 台账保留在巡检判断之后，并增加 20px 的非侵入间隔，使摘要不会停在固定底栏覆盖区，用户仍可向下滚动展开全部证据。没有隐藏证据、没有改变路线语义、没有降低触控或可访问性要求。
+- 验证：`npm run build` 与 TypeScript 通过；最新 dirty-worktree `node tools/check-panel-runtime-browser.js` 通过，`260 checks / 140 screenshots / 169 snapshotApiCalls`。本次回归确认 Fleet 390 的 handoff 不再重复，并保持 44px action、RFC 3339 evidenceAt、Back/Forward focus 语义。
+- 产品/视觉裁决：关闭本步已修复的重复入口和固定导航遮挡问题；这仍是 focused runtime green，不是独立 Product/Design/Visual/Accessibility 签收。截图与矩阵必须在新 clean SHA 重新生成后才可进入发布证据。
+- 发布边界：继续 FAIL-closed。route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；正式独立签收、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub upload 均未完成，任务 active、`blocked=false`。
+- 心得：移动端入口去重不能靠 CSS 隐藏，否则验收和辅助技术仍会遇到重复操作；应该让“唯一真实任务入口”拥有唯一 DOM。证据边界也不应为了避开底栏而删除，应该修复文档流中的节奏与间隔，再用当前 SHA 的真实几何重跑验证。
+- nextAction：提交并同步 Step898；在新 clean HEAD 重新绑定 runtime、Overview 28/28、route-state 266/266、bounded route 76/76、tablet、430/667 portrait/landscape、视觉 packet、truth/quarantine、readiness 和 Windows 本地包，然后继续独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部正式条件通过前不上传 GitHub。
+- validForCommit：本步代码、生成资产与决策记录尚未提交；提交后 Step897/898 之前的 exact-SHA 工件只作历史，必须重新生成。
+- supersededBy：null

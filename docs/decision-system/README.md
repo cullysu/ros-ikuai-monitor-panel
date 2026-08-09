@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `897`
-- latestRecordedStep: `897`
-- latestStepOutcome: `897:adaptive-evidence-ledger-and-phone-task-order-runtime-green-formal-gates-open`
+- currentBoundaryForStep: `898`
+- latestRecordedStep: `898`
+- latestStepOutcome: `898:fleet-handoff-deduplicated-and-steady-ledger-navigation-safe-runtime-green-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step897 records focused mobile task-order and adaptive evidence-ledger corrections while clean exact-SHA rebind remains pending. Formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates remain open.
+Task remains active and blocked=false; Step898 records Fleet handoff de-duplication and normal-state fixed-navigation safety while clean exact-SHA rebind remains pending. Formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates remain open.
