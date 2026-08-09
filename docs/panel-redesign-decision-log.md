@@ -25425,3 +25425,17 @@ ocused-green-engineering
 - nextAction：提交 Step901 并同步 D 盘；在新 clean HEAD 重跑 runtime、`check:overview` 与完整 Overview/route/tablet/visual matrices，再生成 packet、truth/quarantine、readiness 和 Windows 本地包，之后进入当前 SHA 独立评审与正式外部签收。
 - validForCommit：本步 checker 和决策记录尚未提交；focused 5/5 为 dirty-worktree 诊断证据，不能作为发布输入。
 - supersededBy：null
+
+## 第 902 步：事故支持边界改量最后内容，auto-open 契约纳入保留任务高度
+
+- status：`incident-support-geometry-and-auto-open-contract-aligned-tail-green-formal-gates-open`
+- latestStepOutcome: `902:incident-support-geometry-and-auto-open-contract-aligned-tail-green-formal-gates-open`
+- 触发/问题：clean SHA `51903bd6808436d5ae8ad7dcbb1372f1195bed1d` runtime 为 `260 checks / 140 screenshots / 172 snapshotApiCalls` green；完整 Overview 在 390px support boundary 报 `slack=263`。原始 `mobile-composite-risk-390.png` 与同一 detail 显示该算法把 y=521 的证据台账当成终点，却漏掉随后 y=521–619 的调查区和 y=665–748 的并发风险队列；真实固定导航从 y=784 开始，余量只有 36px。尾部预检又发现 auto-open contract 仍要求旧的 `requiredHeight <= availableHeight` 字符形状，未识别保留后续主任务高度后的公式。
+- 决策/实现：support gate 继续 blocking，并用现有报告 `lowerRect`、`investigationRect`、`queueRect` 的最大 bottom 作为最后可见 support owner；390px 仍必须在导航前且 slack≤56。auto-open gate 精确证明 `autoOpen || (requiredHeight > 0 && requiredHeight + reservedTaskHeight <= availableHeight)`，所以事故/不可用证据不会被首屏 fit 否决。
+- 验证：focused `mobile-incident-support-boundary-v1 = 10/10`，390px `supportBottom=748 / navTop=784 / slack=36`；`mobile-evidence-auto-open-v1 = 5/5`；其余不依赖 clean-worktree fingerprint 的 Overview tail `21/21`。两个 exact-SHA freshness checks 在 dirty worktree 诊断中按设计保持红，提交后必须用新 clean SHA 完整重跑。
+- 产品/视觉裁决：截图没有空洞，因此不通过增加填充或重复数据“修 UI”；修的是错误测量终点。现有页面保持高密度连续任务流、44px 触控与固定导航安全边界。Emil 约束继续要求静态证据，不添加伪新鲜动画。
+- 发布边界：任务 active、`blocked=false`。正式 Product/Design/Visual/Accessibility、route maturity、Route Owner/AT、真实 RouterOS soak、exact-SHA Linux/Windows/GHCR CL 与 GitHub upload 仍未完成；公众发布继续关闭。
+- 心得：视觉门禁不能只量一个早期模块就推断页面剩余空间；应量用户实际看到的最后任务 owner。反过来，若真实最后内容仍留下大空洞，才应回到产品布局，而不是改阈值。
+- nextAction：提交 Step902 并同步 D 盘；在新 clean HEAD 重跑 runtime 与完整 `check:overview`，随后运行 Overview/route/tablet/visual matrices、packet、truth/quarantine、readiness 和 Windows 本地包，再进入当前 SHA 独立评审与正式外部签收。
+- validForCommit：本步两项 gate 与决策记录尚未提交；focused 证据为 dirty-worktree 诊断输入，不能作为发布输入。
+- supersededBy：null

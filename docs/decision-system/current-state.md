@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `901`
-- latestRecordedStep: `901`
-- latestStepOutcome: `901:primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open`
-- currentBoundaryForStep: `901`
+- currentConclusionForStep: `902`
+- latestRecordedStep: `902`
+- latestStepOutcome: `902:incident-support-geometry-and-auto-open-contract-aligned-tail-green-formal-gates-open`
+- currentBoundaryForStep: `902`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-09T12:40:00+08:00
+- updatedAt: 2026-08-09T13:05:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
-**FAIL overall / primary-task proximity de-duplication contract focused green / independent review and formal release gates OPEN.** Step901 aligns the second source contract with the explicit runtime suppression owners for phone-primary, compact-incident and Fleet handoffs; the focused contract is green. The tracked candidate still requires a new clean exact-SHA rebind before any release conclusion. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
+**FAIL overall / incident support geometry and auto-open contracts focused green / independent review and formal release gates OPEN.** Step902 measures the final visible support owner rather than the earlier evidence ledger and recognizes reserved-task geometry without vetoing incident auto-open; focused gates and the remaining diagnostic tail are green. The tracked candidate still requires a new clean exact-SHA rebind before any release conclusion. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 901
+## Current decision record: Step 902
 
-- observed: clean SHA `c5cdc9e…` 的 runtime 再次为 `260 checks / 140 screenshots / 169 snapshotApiCalls` green；`check:overview` 在 Step900 contract 通过后继续执行，并在 `mobile-primary-task-proximity-v1` 的“incident action is not also rendered in the phone context rail”报 false。它与 Step900 是同源的第二个旧三元式检查。
-- decision: 保留主任务邻近性检查为 blocking，并要求源码证明只有 phone-primary、compact-incident 与 Fleet handoff 均未占有任务时才渲染 context rail；不因 runtime 样本已绿而删除静态分支证明。
-- visual disposition: focused `mobile-primary-task-proximity-v1 = 5/5`；本步不改变 UI，只让第二个独立 contract 检查当前真实 owner。packet 仍需新 clean SHA 重新生成并同时保留真实 667×932 portrait 与 667×375 landscape，focused green 不替代独立视觉签收。
+- observed: clean SHA `51903bd…` runtime 为 `260 checks / 140 screenshots / 172 snapshotApiCalls` green；`check:overview` 的 390px support gate 把证据台账底部 `521` 当成页面最后内容，得到假 `263px` 空洞。原始截图和同一报告表明调查区、主动作与并发风险仍连续延伸到 `748`，固定导航从 `784` 开始，真实余量仅 `36px`。尾部诊断同时发现 auto-open contract 仍只接受未保留后续任务高度的旧公式。
+- decision: support gate 继续 blocking，但用报告中现有 `lowerRect / investigationRect / queueRect` 的最大底边定义最后可见 support owner；auto-open gate 精确证明 `autoOpen || (requiredHeight + reservedTaskHeight <= availableHeight)`，incident auto-open 不受首屏 fit 否决。
+- visual disposition: 原始 390×844 截图确认内容连续而非空白；focused support gate `10/10`、auto-open gate `5/5`、其余不依赖 clean fingerprint 的 Overview tail `21/21`。本步不改变 UI，packet 仍需新 clean SHA 重建并接受独立视觉签收。
 - runtime truth: RFC 3339 timestamps、browser-only connectivity hint、atomic traffic samples、canonical routes 和 read-only boundaries 未回退；本步未新增 RouterOS 写能力或未经证据支持的业务健康声明。
-- report truth: `c5cdc9e…` runtime 为 clean exact-SHA green，但 Step901 tracked static-gate 修改使它成为历史输入；focused 5/5 是 dirty-worktree 诊断证据。提交后必须重新运行 runtime、`check:overview`、28/266/76、tablet、430/667、667 landscape、packet、truth、quarantine、readiness 与 Windows 本地包。
+- report truth: `51903bd…` runtime 为 clean exact-SHA green，但 Step902 tracked gate 修改使它成为历史输入；focused 10/10、5/5 与 tail 21/21 是 dirty-worktree 诊断证据。两个被诊断脚本跳过的检查只因 current-worktree fingerprint 必然为 dirty，提交后必须用新 clean SHA 运行完整 `check:overview`，再运行 28/266/76、tablet、430/667、667 landscape、packet、truth、quarantine、readiness 与 Windows 本地包。
 - packaging truth: 旧 SHA 的 Windows 本地包不作为当前候选证据；本步提交后必须重新生成 exact-SHA 本地包。
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，`contractPass=true` 但 `releasePass=false`；complete-module promotion 需要路由级完整证据与可信独立签名，不能自签。
 - release boundary: packet 仍 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；formal Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub upload 均未完成；没有上传 GitHub。
@@ -57,4 +57,4 @@
 
 ## One next action
 
-- nextAction: 提交并同步 Step901；在新 clean HEAD 重新运行 runtime、`check:overview`、完整 28 格 Overview 与全部 exact-SHA matrices、packet、truth、quarantine、readiness 和 Windows 包；随后继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL，全部正式条件通过后才考虑原子 GitHub 发布。
+- nextAction: 提交并同步 Step902；在新 clean HEAD 重新运行 runtime 与完整 `check:overview`，确认尾部和 fingerprint 门禁全部转绿，再运行完整 28 格 Overview 与全部 exact-SHA matrices、packet、truth、quarantine、readiness 和 Windows 包；随后继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL，全部正式条件通过后才考虑原子 GitHub 发布。

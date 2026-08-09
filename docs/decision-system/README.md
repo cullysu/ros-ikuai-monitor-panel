@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `901`
-- latestRecordedStep: `901`
-- latestStepOutcome: `901:primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open`
+- currentBoundaryForStep: `902`
+- latestRecordedStep: `902`
+- latestStepOutcome: `902:incident-support-geometry-and-auto-open-contract-aligned-tail-green-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step901 records the primary-task proximity de-duplication contract correction while a clean exact-SHA rebind remains pending. Formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates remain open.
+Task remains active and blocked=false; Step902 records the incident support geometry and auto-open contract corrections while a clean exact-SHA rebind remains pending. Formal trusted product/design/visual/accessibility, route-owner, RouterOS soak, CL and publication gates remain open.

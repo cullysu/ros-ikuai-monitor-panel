@@ -69,20 +69,28 @@ for (const detail of boundaryReports) {
   const viewportHeight = detail.viewport.height;
   const lowerBottom = detail.lowerRect?.bottom;
   const lowerHeight = detail.lowerRect?.height;
+  const supportBottom = Math.max(
+    ...[
+      lowerBottom,
+      detail.investigationRect?.bottom,
+      detail.queueRect?.bottom,
+    ].filter(Number.isFinite),
+  );
   const navTop = viewportHeight - navigationHeight;
-  const slack = navTop - lowerBottom;
+  const slack = navTop - supportBottom;
   const pass = width === 390
-    ? Number.isFinite(lowerBottom) && lowerBottom <= navTop + 1 && slack >= 0 && slack <= 56
+    ? Number.isFinite(supportBottom) && supportBottom <= navTop + 1 && slack >= 0 && slack <= 56
     : Number.isFinite(lowerBottom) && Number.isFinite(lowerHeight) && lowerHeight > 0 && detail.overflow <= 1 && autoOpenContract;
   check(`${width}px incident support boundary is reachable without fixed-nav cover`, pass, {
     width,
     viewportHeight,
     lowerBottom,
     lowerHeight,
+    supportBottom,
     navTop,
     slack,
     rule: width === 390
-      ? 'lower boundary is before fixed navigation with <=56px slack'
+      ? 'the last visible support owner is before fixed navigation with <=56px slack'
       : 'real lower evidence may continue below the fold, but must have height, no horizontal overflow, and an explicit auto-open contract',
   });
 }

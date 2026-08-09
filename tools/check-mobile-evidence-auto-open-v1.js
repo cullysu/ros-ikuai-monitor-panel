@@ -22,7 +22,7 @@ const checks = [
   },
   {
     name: "automatic expansion is not vetoed by first-viewport fit",
-    pass: /const nextOpen\s*=\s*rows\.length\s*>\s*0\s*&&\s*\(autoOpen\s*\|\|[\s\S]*requiredHeight\s*<=\s*availableHeight/.test(ledger),
+    pass: /const nextOpen\s*=\s*rows\.length\s*>\s*0\s*&&\s*\(\s*autoOpen\s*\|\|\s*\(requiredHeight\s*>\s*0\s*&&\s*requiredHeight\s*\+\s*reservedTaskHeight\s*<=\s*availableHeight\)\s*\)/.test(ledger),
     detail: "Viewport fit may control normal-state progressive disclosure, but cannot collapse incident evidence solely because it is tall.",
   },
   {
