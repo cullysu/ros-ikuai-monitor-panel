@@ -25470,3 +25470,19 @@ ocused-green-engineering
 - nextAction：提交并同步 Step904；在新 clean HEAD 重跑 runtime、完整 `check:overview`、Overview 28、route-state 266、bounded route 76、full route 532、tablet 152、430/667 视觉分片、packet、truth/quarantine、readiness 和 Windows 本地包，再继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部正式条件通过前不上传 GitHub。
 - validForCommit：本步 CSS、生成资产和决策记录尚未提交；dirty-worktree 预算与 6/6 smoke 仅为诊断/回归证据。
 - supersededBy：null
+
+## 第 905 步：横屏列表按真实 owner 占满工作区，空检查器列进入阻断门禁
+
+- status：`short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open`
+- latestStepOutcome: `905:short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open`
+- 触发/问题：clean SHA `1946ab1252a638d07a20e530d8f3b54e9b24aa06` 已通过 runtime `260/140/169`、Overview `28/28`、route-state `266/266`、bounded route `76/76`、full route `532/532`、tablet `152/152` 与 430 `133/133`。真实 667×375 shard 仅 `fleet/trafficLoad` 直接失败；失败信号是一次 `net::ERR_NETWORK_CHANGED` console error，但原始截图同时暴露现有门禁没有识别的产品 P1：`compact-list` 没有 inspector DOM，CSS 却仍保留两栏 grid，使右侧约半屏成为空白检查器列。844×390 的 `phone-list` 具有同源风险。
+- 决策/实现：不把这张失败图简单归类为网络噪声后重跑。移动域工作区只在存在 detail/preview inspector owner 时保留分栏；`phone-list / compact-list / tablet-list` 统一使用单一满宽 track，并删除不存在 inspector 时的右分隔。`phone-detail / compact-detail / workbench` 的真实主从任务不变，不按 667 或 844 精确尺寸特供。
+- 验收增强：`inspect-section-browser` 现在测量 `.mdw-layout` 与 `.mdw-list-pane` 的左右边界和宽度，list-only 模式只有在列表占满布局时才通过 operational route contract。production runtime 新增 667×375 与 844×390 两项 capability 样本、两张共享合同原图和一条 readiness 必需检查；截图数量从 140 增至 142，检查从 260 增至 261。
+- 验证：focused `fleet/trafficLoad` 在 667×375 与 844×390 均通过；667 list/layout 为 `571/571px`，844 为 `748/748px`，两者 overflow=0。人工检查新原图，空白右列已消失，资源对象、数值和箭头保持横向扫读。dirty-worktree `check:runtime-browser` 为 `261 checks / 142 screenshots / 169 snapshotApiCalls` green；build 为 1902 modules；framework style `117469 / 18645 gzip / 15813 brotli`、desktop style `32725 / 4974 / 4400`，static assets 与 asset identity 通过。
+- 报告真值：Step905 修改 tracked CSS、浏览器探针和共享截图合同，因此此前 `1946ab1…` 的 clean exact-SHA 报告全部降为历史；本步 focused/runtime 是 dirty-worktree 诊断证据，不能进入发布输入。提交后必须重新绑定 runtime、完整 `check:overview`、28/266/76/532、tablet、430/667、packet、truth/quarantine、readiness 与 Windows 包。
+- 产品/视觉裁决：门禁直接失败原因和截图中可见的产品问题可以不同；评审必须看原图，不能只修报错字符串。横屏的宽度只有在有第二个真实任务 owner 时才应分栏，否则“看起来像工作台”的空白列只是机械响应式。
+- 发布边界：任务 active、`blocked=false`。Product/Design/Visual QA 机器门禁保持 `failed`；Accessibility、route maturity、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub upload 仍未完成，公众发布继续关闭。
+- 心得：对偶发环境错误的正确处理不是马上白名单，也不是只重跑到绿；先检查失败截图是否同时揭示产品缺陷。把“有无 owner”写进布局和验收，比继续维护宽度特例更可靠，也更符合 Emil 的目的驱动原则。
+- nextAction：提交并同步 Step905；在新 clean HEAD 重跑 runtime、完整 `check:overview`、Overview 28、route-state 266、bounded route 76、full route 532、tablet 152、430/667 视觉分片、packet、truth/quarantine、readiness 和 Windows 本地包，再继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部正式条件通过前不上传 GitHub。
+- validForCommit：本步 CSS、探针、共享截图合同、生成资产和决策记录尚未提交；dirty-worktree focused/runtime 仅为诊断/回归证据。
+- supersededBy：null

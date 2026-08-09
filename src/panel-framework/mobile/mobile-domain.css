@@ -154,6 +154,22 @@
     grid-template-columns: minmax(292px, 0.43fr) minmax(360px, 0.57fr);
     align-items: start;
   }
+  /*A list-only mobile task has no inspector owner. Do not preserve the
+     master/detail second track as an empty pane in phone landscape.*/
+  .mdw-shell:is(
+      [data-mobile-domain-layout="phone-list"],
+      [data-mobile-domain-layout="compact-list"],
+      [data-mobile-domain-layout="tablet-list"]
+    ) .mdw-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mdw-shell:is(
+      [data-mobile-domain-layout="phone-list"],
+      [data-mobile-domain-layout="compact-list"],
+      [data-mobile-domain-layout="tablet-list"]
+    ) .mdw-list-pane {
+    border-right: 0;
+  }
   .mdw-list-pane {
     border-right: 1px solid var(--mdw-line-strong);
     max-height: calc(100dvh - 52px);

@@ -233,8 +233,21 @@ async function inspectSectionBrowser(
   const mobileDomainPreview = mobileDomainRoot?.querySelector('[data-mobile-object-preview]');
   const mobileDomainDetail = mobileDomainRoot?.querySelector('[data-mobile-object-detail]');
   const mobileDomainMetricSurfaces = mobileDomainRoot?.querySelectorAll('.mdw-metrics').length || 0;
-  const mobileDomainLayoutContractOk = /^(phone-list|compact-list|tablet-list)$/.test(mobileDomainLayout)
-    ? !mobileDomainInspector
+  const mobileDomainLayoutRoot = mobileDomainRoot?.querySelector('.mdw-layout');
+  const mobileDomainListPane = mobileDomainRoot?.querySelector('.mdw-list-pane');
+  const mobileDomainLayoutRect = mobileDomainLayoutRoot?.getBoundingClientRect();
+  const mobileDomainListRect = mobileDomainListPane?.getBoundingClientRect();
+  const mobileDomainListOnly = /^(phone-list|compact-list|tablet-list)$/.test(mobileDomainLayout);
+  const mobileDomainListFillsLayout = !mobileDomainListOnly || Boolean(
+    mobileDomainLayoutRect &&
+    mobileDomainListRect &&
+    mobileDomainLayoutRect.width > 0 &&
+    mobileDomainListRect.width >= mobileDomainLayoutRect.width - 2 &&
+    Math.abs(mobileDomainListRect.left - mobileDomainLayoutRect.left) <= 2 &&
+    Math.abs(mobileDomainListRect.right - mobileDomainLayoutRect.right) <= 2
+  );
+  const mobileDomainLayoutContractOk = mobileDomainListOnly
+    ? !mobileDomainInspector && mobileDomainListFillsLayout
     : /^(phone-detail|compact-detail)$/.test(mobileDomainLayout)
       ? Boolean(mobileDomainDetail) && !mobileDomainPreview
       : mobileDomainLayout === 'workbench' && Boolean(mobileDomainInspector);
@@ -6107,6 +6120,9 @@ async function inspectSectionBrowser(
       mobileEvidenceMode: mobileDomainRoot?.getAttribute('data-mobile-evidence-mode') || '',
       mobileLayout: mobileDomainLayout,
       mobileLayoutContract: mobileDomainLayoutContractOk,
+      mobileListFillsLayout: mobileDomainListFillsLayout,
+      mobileLayoutWidth: mobileDomainLayoutRect ? Math.round(mobileDomainLayoutRect.width) : 0,
+      mobileListWidth: mobileDomainListRect ? Math.round(mobileDomainListRect.width) : 0,
       mobileInspector: Boolean(mobileDomainInspector),
       mobileMetricSurfaces: mobileDomainMetricSurfaces,
       mobileMetricsContract: mobileDomainMetricsContractOk,

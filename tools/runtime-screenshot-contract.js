@@ -139,6 +139,8 @@ const RUNTIME_SCREENSHOT_CONTRACT = Object.freeze([
   { state: 'tablet-network-768', file: 'tablet-network-768.png', viewport: { width: 768, height: 1024 } },
   { state: 'tablet-network-844', file: 'tablet-network-844.png', viewport: { width: 844, height: 1024 } },
   { state: 'tablet-terminals-detail-768', file: 'tablet-terminals-detail-768.png', viewport: { width: 768, height: 1024 } },
+  { state: 'domain-list-667x375', file: 'domain-list-667x375.png', viewport: { width: 667, height: 375 } },
+  { state: 'domain-list-844x390', file: 'domain-list-844x390.png', viewport: { width: 844, height: 390 } },
   { state: 'mobile-log-phone-list-390', file: 'mobile-log-phone-list-390.png', viewport: { width: 390, height: 844 } },
   { state: 'mobile-log-explicit-detail-390', file: 'mobile-log-explicit-detail-390.png', viewport: { width: 390, height: 844 } },
   { state: 'mobile-diagnostic-inspector-390', file: 'mobile-diagnostic-inspector-390.png', viewport: { width: 390, height: 844 } },
@@ -178,6 +180,7 @@ const RUNTIME_CHECK_CONTRACT = Object.freeze({
   syntheticLogDetail: '390x844 log detail survives synthetic text stress with event evidence and temporal context',
   browserZoomIncident: 'physical 768x1024 at browser 200 percent zoom keeps the interface incident operable in a 384x512 CSS viewport',
   browserZoomResource: 'physical 768x1024 resource evidence at browser 200 percent zoom keeps chart truth in a 384x512 CSS viewport',
+  shortLandscapeListFill: 'short-landscape list tasks consume the workspace instead of reserving an empty inspector column',
 });
 
 module.exports = { RUNTIME_CHECK_CONTRACT, RUNTIME_SCREENSHOT_CONTRACT };

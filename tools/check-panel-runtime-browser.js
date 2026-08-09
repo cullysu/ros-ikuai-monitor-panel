@@ -6398,24 +6398,46 @@ async function main() {
         : '[data-desktop-domain-workspace="interfaces"]'
       ).waitFor();
       if (mobile) {
-         const expectedLayout = width <= 599 ? 'phone-list' : width <= 767 ? 'compact-list' : 'workbench';
+        const expectedLayout = width <= 599
+          ? 'phone-list'
+          : width <= 767
+            ? 'compact-list'
+            : height >= 700
+              ? 'workbench'
+              : 'phone-list';
         await tabletPage.waitForFunction((expected) => (
           document.querySelector('[data-mobile-domain-workspace="interfaces"]')
             ?.getAttribute('data-mobile-domain-layout') === expected
         ), expectedLayout);
       }
-      return tabletPage.evaluate(() => ({
-        // Compact two-layer mode deliberately does not mount an inactive
-        // inspector; a missing element is therefore the expected "none".
-        mobile: Boolean(document.querySelector('[data-mobile-domain-workspace="interfaces"]')),
-        desktop: Boolean(document.querySelector('[data-desktop-domain-workspace="interfaces"]')),
-        layout: document.querySelector('[data-mobile-domain-workspace]')?.getAttribute('data-mobile-domain-layout') || '',
-        navLabels: [...document.querySelectorAll('.panel-task-navigation button span')].map((node) => node.textContent?.trim() || ''),
-        rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
-        list: document.querySelector('.mdw-list-pane') ? getComputedStyle(document.querySelector('.mdw-list-pane')).display : 'none',
-        inspector: document.querySelector('.mdw-inspector') ? getComputedStyle(document.querySelector('.mdw-inspector')).display : 'none',
-        overflow: document.documentElement.scrollWidth - innerWidth,
-      }));
+      return tabletPage.evaluate(() => {
+        const layoutNode = document.querySelector('.mdw-layout');
+        const listNode = document.querySelector('.mdw-list-pane');
+        const layoutRect = layoutNode?.getBoundingClientRect();
+        const listRect = listNode?.getBoundingClientRect();
+        return {
+          // Compact two-layer mode deliberately does not mount an inactive
+          // inspector; a missing element is therefore the expected "none".
+          mobile: Boolean(document.querySelector('[data-mobile-domain-workspace="interfaces"]')),
+          desktop: Boolean(document.querySelector('[data-desktop-domain-workspace="interfaces"]')),
+          layout: document.querySelector('[data-mobile-domain-workspace]')?.getAttribute('data-mobile-domain-layout') || '',
+          navLabels: [...document.querySelectorAll('.panel-task-navigation button span')].map((node) => node.textContent?.trim() || ''),
+          rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
+          list: listNode ? getComputedStyle(listNode).display : 'none',
+          inspector: document.querySelector('.mdw-inspector') ? getComputedStyle(document.querySelector('.mdw-inspector')).display : 'none',
+          layoutWidth: layoutRect ? Math.round(layoutRect.width) : 0,
+          listWidth: listRect ? Math.round(listRect.width) : 0,
+          listFillsLayout: Boolean(
+            layoutRect &&
+            listRect &&
+            layoutRect.width > 0 &&
+            listRect.width >= layoutRect.width - 2 &&
+            Math.abs(listRect.left - layoutRect.left) <= 2 &&
+            Math.abs(listRect.right - layoutRect.right) <= 2
+          ),
+          overflow: document.documentElement.scrollWidth - innerWidth,
+        };
+      });
     }
 
     await tabletPage.goto(new URL('/?section=interfaces#interfaces', mock.url).toString(), { waitUntil: 'domcontentloaded' });
@@ -6423,6 +6445,10 @@ async function main() {
     const boundary599 = await inspectCapabilityBoundary(599);
     const boundary600 = await inspectCapabilityBoundary(600);
     const boundary767 = await inspectCapabilityBoundary(767);
+    const boundary667Short = await inspectCapabilityBoundary(667, 375);
+    screenshots.push(await screenshot(tabletPage, 'domain-list-667x375.png', 'domain-list-667x375'));
+    const boundary844Short = await inspectCapabilityBoundary(844, 390);
+    screenshots.push(await screenshot(tabletPage, 'domain-list-844x390.png', 'domain-list-844x390'));
     const boundary768 = await inspectCapabilityBoundary(768);
     const boundary771 = await inspectCapabilityBoundary(771);
     const boundary772 = await inspectCapabilityBoundary(772);
@@ -6449,6 +6475,16 @@ async function main() {
         boundary1366.navLabels.join('|') === boundary1440.navLabels.join('|') &&
         [boundary599, boundary600, boundary767, boundary768, boundary771, boundary772, boundary1199, boundary1200, boundary1365, boundary1366, boundary1440].every((item) => item.overflow <= 1),
       { boundary599, boundary600, boundary767, boundary768, boundary771, boundary772, boundary1199, boundary1200, boundary1365, boundary1366, boundary1440 }
+    );
+    check(
+      checks,
+      'short-landscape list tasks consume the workspace instead of reserving an empty inspector column',
+      boundary667Short.mobile && boundary667Short.layout === 'compact-list' &&
+        boundary667Short.inspector === 'none' && boundary667Short.listFillsLayout &&
+        boundary844Short.mobile && boundary844Short.layout === 'phone-list' &&
+        boundary844Short.inspector === 'none' && boundary844Short.listFillsLayout &&
+        boundary667Short.overflow <= 1 && boundary844Short.overflow <= 1,
+      { boundary667Short, boundary844Short }
     );
     await tabletPage.setViewportSize({ width: 1199, height: 820 });
     await tabletPage.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();

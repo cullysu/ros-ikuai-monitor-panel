@@ -5,7 +5,7 @@
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `904`
+- coveredStepMax: `905`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -35,6 +35,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 888 | Windows packaging and CI neutral React mount contract repair; exact-SHA evidence must be rebound | current-state.md |
 | 889 | 911 exact-SHA scoped review and local Windows package verification; formal gates remain open | current-state.md |
 | 890 - 904 | exact-SHA evidence rebinding, runtime lifecycle stabilization, adaptive mobile evidence/task geometry, static owner-contract alignment, incident support-boundary truth, wide-phone fixed-navigation clearance repair, and ownerless/duplicate CSS removal | current-state.md |
+| 905 | short-landscape domain list ownership, empty inspector-track removal, and required 667/844 runtime geometry evidence | current-state.md |
 
 ## Reading rule
 
