@@ -43,20 +43,6 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  .mp-text-scale-sentinel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: max-content;
-    height: auto;
-    overflow: hidden;
-    clip-path: inset(50%);
-    opacity: 0;
-    pointer-events: none;
-    white-space: nowrap;
-    font-size: 16px;
-    line-height: 1;
-  }
   .mp-device-context {
     display: flex;
     align-items: center;
@@ -579,11 +565,6 @@
     gap: 0;
     padding-bottom: 0;
   }
-  .mp-traffic-body.is-accumulating .mp-rate-pair {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    padding-bottom: 10px;
-  }
   .mp-traffic-body.is-accumulating .mp-chart-pending {
     min-height: 44px;
     border-top: 1px solid var(--mp-line);
@@ -620,37 +601,6 @@
     color: var(--mp-ink);
     font-family: var(--mono);
     font-size: 15px;
-    font-weight: 720;
-    text-align: right;
-    text-overflow: ellipsis;
-  }
-  .mp-rate-pair {
-    display: grid;
-    gap: 7px;
-  }
-  .mp-rate-pair > span {
-    display: grid;
-    min-width: 0;
-    grid-template-columns: 18px auto minmax(0, 1fr);
-    align-items: baseline;
-    gap: 5px;
-  }
-  .mp-rate-pair svg {
-    color: var(--mp-blue);
-  }
-  .mp-rate-pair > span:last-child svg {
-    color: var(--mp-cyan);
-  }
-  .mp-rate-pair small {
-    color: var(--mp-muted);
-    font-size: 12px;
-  }
-  .mp-rate-pair b {
-    overflow: hidden;
-    color: var(--mp-ink);
-    font-family: var(--mono);
-    font-size: 15px;
-    font-variant-numeric: var(--t);
     font-weight: 720;
     text-align: right;
     text-overflow: ellipsis;
@@ -880,6 +830,25 @@
   .mp-shell.is-steady.is-current .mp-workspace-primary > .mp-ledger {
     margin-top: 20px;
   }
+  /*A wide phone has enough inline room to keep the decision category and
+     object on one scan line. Reclaim that real horizontal capacity so the
+     evidence boundary finishes above the fixed navigation instead of being
+     half exposed beneath it. Narrow phones keep the stacked row grammar and
+     place the boundary wholly after the first viewport.*/
+  @media (min-width: 400px) and (max-width: 599px) {
+    .mp-shell.is-steady.is-current:not(.is-large-text) .mp-workspace-primary > .mp-ledger {
+      margin-top: 0;
+    }
+    .mp-shell.is-steady.is-current:not(.is-large-text) .mp-decision-ledger-copy {
+      grid-template-columns: max-content minmax(0, 1fr);
+      align-items: baseline;
+      column-gap: 8px;
+      row-gap: 1px;
+    }
+    .mp-shell.is-steady.is-current:not(.is-large-text) .mp-decision-ledger-copy > span {
+      grid-column: 1 / -1;
+    }
+  }
   .mp-ledger summary {
     display: flex;
     min-height: 56px;
@@ -989,8 +958,7 @@
     grid-column: 2;
   }
   .mp-shell.is-large-text .mp-incident-copy,
-  .mp-shell.is-large-text .mp-traffic-body,
-  .mp-shell.is-large-text .mp-traffic-body.is-accumulating .mp-rate-pair {
+  .mp-shell.is-large-text .mp-traffic-body {
     grid-template-columns: 1fr;
   }
   .mp-shell.is-large-text .mp-incident-copy em {
@@ -1010,10 +978,6 @@
     align-items: flex-start;
     flex-wrap: wrap;
   }
-  .mp-shell.is-large-text .mp-rate-pair > span {
-    grid-template-columns: 24px minmax(0, 0.55fr) minmax(0, 1.45fr);
-  }
-  .mp-shell.is-large-text .mp-rate-pair b,
   .mp-shell.is-large-text .mp-load button b {
     overflow: visible;
     overflow-wrap: anywhere;

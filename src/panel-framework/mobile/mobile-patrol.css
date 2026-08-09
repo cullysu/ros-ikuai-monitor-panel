@@ -219,73 +219,6 @@
     background: #5c6870;
     transform: translateX(-1px);
   }
-  .mp-resource-chart {
-    display: grid;
-    grid-template-columns: 38px minmax(0, 1fr);
-    gap: 8px;
-    padding: 10px 14px 9px;
-    border-top: 1px solid var(--mp-line);
-  }
-  .mp-resource-scale {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 1px 0 17px;
-    color: var(--mp-faint);
-    font-family: var(--mono);
-    font-size: 12px;
-    font-variant-numeric: var(--t);
-    font-weight: 600;
-    line-height: 1;
-  }
-  .mp-resource-chart svg {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 320 / 60;
-    overflow: visible;
-  }
-  .mp-resource-chart polyline {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 2;
-    vector-effect: non-scaling-stroke;
-  }
-  .mp-resource-chart polyline.is-cpu {
-    stroke: #914844;
-  }
-  .mp-resource-chart polyline.is-memory {
-    stroke: #9d6a3e;
-  }
-  .mp-resource-chart polyline.is-disk {
-    stroke: #476f82;
-  }
-  .mp-resource-grid {
-    fill: none;
-    stroke: rgba(59, 89, 105, 0.13);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-  .mp-resource-threshold {
-    fill: none;
-    stroke: rgba(117, 71, 55, 0.36);
-    stroke-dasharray: 4 4;
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-  .mp-resource-time {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 3px;
-    color: var(--mp-faint);
-    font-family: var(--mono);
-    font-size: 12px;
-    font-variant-numeric: var(--t);
-    font-weight: 600;
-    line-height: 1.2;
-  }
   .mp-resource-pending {
     margin: 0;
     padding: 10px 14px;
@@ -429,25 +362,6 @@
     color: var(--mp-blue-dark);
     background: transparent;
   }
-  .mp-focus-identity {
-    padding: 10px 14px;
-    border-top: 1px solid var(--mp-line);
-  }
-  .mp-focus-identity b,
-  .mp-focus-identity small {
-    display: block;
-  }
-  .mp-focus-identity b {
-    color: var(--mp-ink);
-    font-family: var(--mono);
-    font-size: 15px;
-  }
-  .mp-focus-identity small {
-    margin-top: 3px;
-    color: var(--mp-muted);
-    font-size: 12px;
-    line-height: 1.4;
-  }
   .mp-focus dl {
     display: grid;
     margin: 0;
@@ -497,9 +411,6 @@
   .mp-shell.is-large-text .mp-resource-metrics small {
     grid-column: 1 / -1;
     text-align: left;
-  }
-  .mp-shell.is-large-text .mp-resource-chart {
-    grid-template-columns: 48px minmax(0, 1fr);
   }
   .mp-shell.is-large-text .mp-resource footer {
     min-height: 0;
@@ -562,10 +473,6 @@
     grid-template-columns: 56px minmax(48px, 1fr) 42px 58px;
     gap: 6px;
   }
-  .mp-resource-chart {
-    grid-template-columns: 36px minmax(0, 1fr);
-    gap: 6px;
-  }
   .mp-resource footer {
     flex-wrap: wrap;
     padding-top: 8px;
@@ -575,63 +482,6 @@
     overflow: visible;
     text-overflow: clip;
     white-space: normal;
-  }
-}
-
-@media (max-width: 1365px) {
-  .mp-resource-samples {
-    display: none;
-  }
-}
-
-@media (min-width: 600px) and (max-width: 1365px) {
-  .mp-resource-samples {
-    display: block;
-    border-top: 1px solid var(--mp-line);
-    background: #fbfcfd;
-  }
-  .mp-resource-samples > header {
-    display: flex;
-    min-height: 38px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 12px;
-    color: var(--mp-text);
-    font-size: 12px;
-  }
-  .mp-resource-samples > header span {
-    color: var(--mp-muted);
-    font-variant-numeric: var(--t);
-  }
-  .mp-resource-samples table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    color: var(--mp-text);
-    font-family: var(--mono);
-    font-size: 12px;
-    font-variant-numeric: var(--t);
-  }
-  .mp-resource-samples th,
-  .mp-resource-samples td {
-    padding: 7px 6px;
-    border-top: 1px solid var(--mp-line);
-    text-align: right;
-  }
-  .mp-resource-samples th {
-    color: var(--mp-muted);
-    font-family: var(--sans);
-    font-weight: 650;
-  }
-  .mp-resource-samples th:first-child,
-  .mp-resource-samples td:first-child {
-    width: 34%;
-    padding-left: 12px;
-    text-align: left;
-  }
-  .mp-resource-samples th:last-child,
-  .mp-resource-samples td:last-child {
-    padding-right: 12px;
   }
 }
 

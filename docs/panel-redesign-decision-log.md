@@ -25439,3 +25439,34 @@ ocused-green-engineering
 - nextAction：提交 Step902 并同步 D 盘；在新 clean HEAD 重跑 runtime 与完整 `check:overview`，随后运行 Overview/route/tablet/visual matrices、packet、truth/quarantine、readiness 和 Windows 本地包，再进入当前 SHA 独立评审与正式外部签收。
 - validForCommit：本步两项 gate 与决策记录尚未提交；focused 证据为 dirty-worktree 诊断输入，不能作为发布输入。
 - supersededBy：null
+
+## 第 903 步：430 宽屏决策行复用横向容量，证据边界完整避开固定导航
+
+- status：`wide-phone-decision-density-and-ledger-navigation-safe-focused-green-formal-gates-open`
+- latestStepOutcome: `903:wide-phone-decision-density-and-ledger-navigation-safe-focused-green-formal-gates-open`
+- 触发/问题：clean SHA `23f6f81fa33f171f3d72700648585c2287ba4d0f` 的 430×932 全路由视觉分片只有 `public/single/phone/overview` 一格真实失败；其余两个顶层失败是矩阵完整性和报告真值对该红格的连锁反应。该格的证据摘要位于 `861–917`，固定导航从 `872` 开始，摘要被遮住 45px。390×844 的同一摘要从 `850` 开始，已整体位于 `844` 首屏之后，因此不能用全局负间距或统一压缩误伤窄屏。
+- 决策/实现：不放宽 `evidenceBoundaryClearOfNavigation`，也不缩小 12px 正文、44px 主动作或决策行触控下限。仅在 `400–599px` 的宽手机、正常 current steady 且非 large-text 时，利用真实横向容量把“类别 + 对象”放在同一基线、证据说明保留第二行，并移除只为窄屏服务的 20px 台账前距。窄于 400px、200%/large-text、事故态和平板继续使用原有堆叠语法；这是一项能力分段，不按 430×932 精确尺寸识别。
+- 验证：`npm run build` 通过，1902 modules；focused 430×932 正常 Overview 通过，证据摘要变为 `810–866`，固定导航仍从 `872` 开始，完整留出 6px；focused 390×844 继续通过且摘要仍为 `850–906`、`summaryInViewport=false`。随后 dirty-worktree 430×932 全分片 `19 routes × 7 scenarios = 133/133` 全部通过，决策行层级静态 contract `9/9` 通过。
+- 产品/视觉裁决：本步修的是实际可见遮挡，不是为了让测试数字变绿。宽屏行内合并同时减少三行标签复读和无效纵向占用，保持类别、对象、证据三种语义均可扫读；不新增动画、不伪造实时性，继续遵守 Emil 的静态证据优先原则。完整 430 截图已人工检查，证据边界在底栏上方完整出现，390 的窄屏节奏未改变。
+- 报告真值：`23f6f81…` 的 runtime、28/266/76/532/tablet 等 clean exact-SHA 报告在本次 tracked CSS 与生成资产修改后均转为历史；本步 focused 与 133/133 运行发生在 dirty worktree，只能证明修复方向，不能进入发布输入。提交后必须以新 clean SHA 全量回绑。
+- 发布边界：任务 active、`blocked=false`。正式 Product/Design/Visual/Accessibility、route maturity、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub upload 仍未完成；公众发布继续关闭。
+- 心得：固定底栏附近的红项必须同时比较“摘要是否完整可见”和“相邻宽度是否被误伤”。宽屏有横向容量时应先重排信息，而不是继续缩字号、砍证据或堆空白；门禁应保持严格，并用原始截图和 DOM 几何共同验证。
+- nextAction：提交并同步 Step903；在新 clean HEAD 重跑 runtime、完整 `check:overview`、Overview 28、route-state 266、bounded route 76、full route 532、tablet 152、430/667 视觉分片、packet、truth/quarantine、readiness 和 Windows 本地包，再继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部正式条件通过前不上传 GitHub。
+- validForCommit：本步 CSS、生成资产和决策记录尚未提交；dirty-worktree 133/133 仅为诊断/回归证据。
+- supersededBy：null
+
+## 第 904 步：删除失去渲染 owner 的 CSS 与桌面重复规则，恢复固定资产预算
+
+- status：`dead-css-and-duplicate-owner-pruned-asset-budget-green-formal-gates-open`
+- latestStepOutcome: `904:dead-css-and-duplicate-owner-pruned-asset-budget-green-formal-gates-open`
+- 触发/问题：Step903 完成后，`check:static-assets` 报主 framework CSS `120830 > 120000 bytes`。不能提高预算、降低正文/触控尺寸或把 sidecar 压缩率当作 raw 预算替代；必须从实际样式所有权中移除无效地层。
+- 观察事实：源码与构建 JS 均不存在 `mp-resource-chart / mp-resource-scale / mp-resource-time / mp-resource-grid / mp-resource-threshold / mp-resource-samples / mp-rate-pair / mp-focus-identity / mp-text-scale-sentinel` 的渲染 owner；其中逐点资源样本还被当前产品合同明确禁止。桌面 `desktop-overview.css` 的 normal provenance/decision 整段规则通过 entry import 提前载入，随后又被 `desktop-overview-entry.css` 的 final owner 对同一选择器完整覆盖，因此前一段只增加字节、不改变最终 computed style。
+- 决策/实现：删除上述无 DOM owner 的手机资源图、旧速率对、旧身份块、旧 sentinel 与逐点样本样式；同步删除平板对旧身份块的孤立覆盖；删除桌面被 final entry owner 完整覆盖的重复 normal provenance/decision 块。保留当前 `MobileResourcePressure`、`MobileResourceHistory`、`MobileFocusDossier`、`mp-focus-signal` 和 `panel-text-scale-sentinel` 的真实 owner，不改变产品数据或布局语义。
+- 验证：`npm run build` 通过，1902 modules；framework style 为 `117121 / 18616 gzip / 15783 brotli`，desktop style 为 `32725 / 4974 / 4400`，全部低于固定预算；`check:static-assets`、`check:asset-identity` 通过。`single,resource-full × 390×844,430×932,1366×768 = 6/6` dirty-worktree smoke 通过；人工检查 430 资源满载与 1366 正常截图，当前压力条、历史入口、WAN 图表与桌面证据区均未回退。
+- 产品/架构裁决：本步是可证明的减法，不是为了预算盲删。删除条件同时要求“React/构建 JS 无 owner”与“现行产品合同不依赖”；桌面删除则要求 entry 的后置 owner 完整接管最终 computed values。没有压缩可读字号、没有删除可信证据，也没有修改门禁阈值。
+- 报告真值：本步 smoke 与预算验证发生在 dirty worktree，只证明 CSS 减法和关键正常/资源场景方向；提交后仍须以新 clean SHA 回绑 runtime、Overview 和全部矩阵。Step903 的 dirty 133/133 及此前 `23f6f81…` clean 报告均不能作为新候选发布输入。
+- 发布边界：任务 active、`blocked=false`。Product/Design/Visual QA 机器门禁保持 `failed`；State matrix、Accessibility、route maturity、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub upload 仍未完成，公众发布继续关闭。
+- 心得：CSS 预算红灯应迫使系统回答“谁还在渲染这条规则”，而不是继续发明更高阈值。只有同时核对源码 owner、构建产物、现行合同和关键截图，才能把删除称为架构修复而不是碰运气。
+- nextAction：提交并同步 Step904；在新 clean HEAD 重跑 runtime、完整 `check:overview`、Overview 28、route-state 266、bounded route 76、full route 532、tablet 152、430/667 视觉分片、packet、truth/quarantine、readiness 和 Windows 本地包，再继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部正式条件通过前不上传 GitHub。
+- validForCommit：本步 CSS、生成资产和决策记录尚未提交；dirty-worktree 预算与 6/6 smoke 仅为诊断/回归证据。
+- supersededBy：null

@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step893 records the screenshot cleanup-contract alignment after the Step892 timeout stabilization; all exact-SHA evidence must be rebound, and formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step904 records ownerless/duplicate CSS removal and fixed asset-budget recovery; all exact-SHA evidence must be rebound, and formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step893 记录截图 helper 的 bounded cleanup 检查与真实实现对齐；Step892 的 480 秒总门禁修复仍需在新 SHA 重新回绑，不能把历史 scoped 复核冒充当前独立签收。辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step904 删除没有渲染 owner 或被 final owner 完整覆盖的 CSS，使 framework raw style 回到固定预算内；focused 正常/资源 smoke、静态资产和身份检查通过，但提交后仍需按新 clean SHA 重新回绑，不能把 dirty 或历史 scoped 证据冒充当前独立签收。辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `893`
-- currentOutcome: `893:runtime-cleanup-contract-aligned-before-final-rebind`
-- currentBoundary: `893`
+- currentStep: `904`
+- currentOutcome: `904:dead-css-and-duplicate-owner-pruned-asset-budget-green-formal-gates-open`
+- currentBoundary: `904`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -54,3 +54,5 @@ Step877: the visual packet generator now reads the authoritative current-state d
 Step878: the quarantine scanner now uses only the machine state's current evidence ledger for current report discovery; historical gate records remain audit-only and the release stays FAIL-closed.
 
 Step885: the normal verdict now has a red contract to lead with verified management evidence while preserving the unprobed business boundary; a 430px visual shard is required before independent signoff. Formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
+Step903: the 430px steady-state evidence boundary now finishes above fixed navigation by using wide-phone inline decision rows; focused 390/430 and the dirty 430 133-cell shard pass, while clean exact-SHA rebind and all formal gates remain open.
+Step904: ownerless mobile CSS and a fully shadowed desktop block are removed; fixed asset budgets and key normal/resource smoke pass, while clean exact-SHA rebind and all formal gates remain open.
