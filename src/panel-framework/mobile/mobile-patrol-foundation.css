@@ -875,9 +875,8 @@
   .mp-ledger {
     background: #f8fafb;
   }
-
-  /* Keep the normal-state evidence boundary below the patrol rows, but never
-     let its summary sit underneath the fixed phone navigation at rest. */
+  /*Keep the normal-state evidence boundary below the patrol rows, but never
+     let its summary sit underneath the fixed phone navigation at rest.*/
   .mp-shell.is-steady.is-current .mp-workspace-primary > .mp-ledger {
     margin-top: 20px;
   }

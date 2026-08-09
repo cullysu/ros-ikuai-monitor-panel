@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `898`
-- latestRecordedStep: `898`
-- latestStepOutcome: `898:fleet-handoff-deduplicated-and-steady-ledger-navigation-safe-runtime-green-formal-gates-open`
-- currentBoundaryForStep: `898`
+- currentConclusionForStep: `899`
+- latestRecordedStep: `899`
+- latestStepOutcome: `899:adaptive-ledger-independent-geometry-gate-aligned-focused-green-formal-gates-open`
+- currentBoundaryForStep: `899`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-09T02:02:00+08:00
+- updatedAt: 2026-08-09T11:45:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
-**FAIL overall / Fleet handoff de-duplication and steady-navigation correction green / independent review and formal release gates OPEN.** Step898 removes the duplicate Fleet phone handoff and keeps the normal current evidence boundary out of the fixed navigation overlap zone; the latest dirty-worktree runtime is green at 260 checks. The tracked candidate still requires a clean exact-SHA rebind before any release conclusion. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
+**FAIL overall / adaptive-ledger gate alignment focused green / independent review and formal release gates OPEN.** Step899 keeps the adaptive ledger blocking check and fixes its independent geometry model to reserve the real following task height; the focused three-cell matrix is green. The tracked candidate still requires a clean exact-SHA rebind before any release conclusion. This is not public-release approval. Trusted Product/Design/Visual/Accessibility acceptance, route maturity, real RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 898
+## Current decision record: Step 899
 
-- observed: Step897 的 clean-build 回归显示 Fleet 390 的 `interfaces` handoff 同时出现在 phone next-step 与上下文 action 两个入口，actionCount=2；正常 current steady 的证据台账摘要靠近固定底栏覆盖区。
-- decision: Fleet 手机只保留 collection-level `MobilePhoneNextStep` 真实入口，抑制重复上下文 action；正常 steady 台账留在运行判断之后并以 20px 文档流间隔避开固定底栏，不删除、隐藏或改写证据。
-- visual disposition: 最新 dirty runtime `260/140/169` 通过，Fleet 390 的任务入口恢复单一、可扫读且可回溯；packet 仍需 clean SHA 重新生成并同时保留真实 667×932 portrait 与 667×375 landscape。focused runtime green 不替代独立视觉签收。
+- observed: clean SHA `18c53b4…` 的 Overview 矩阵为 25/28；三格唯一失败均来自验收器未把后续主任务高度加入 adaptive-ledger 空间预算，产品本身按完整预算正确收起。
+- decision: 保留 blocking adaptive-ledger 检查，以独立 DOM 几何重新计算“台账 + 后续主任务”总预算，并把 reserved height 写入报告；不读取组件内部状态、不删检查、不软化顶层 pass。
+- visual disposition: focused `fleet/all-offline/interfaces-down × 390×844` 为 3/3；视觉内容未因门禁修正而改变。packet 仍需 clean SHA 重新生成并同时保留真实 667×932 portrait 与 667×375 landscape，focused green 不替代独立视觉签收。
 - runtime truth: RFC 3339 timestamps、browser-only connectivity hint、atomic traffic samples、canonical routes 和 read-only boundaries 未回退；本步未新增 RouterOS 写能力或未经证据支持的业务健康声明。
-- report truth: Step897 的 exact-SHA 报告仍是历史输入；Step898 runtime 是 dirty-worktree evidence，不进入发布输入。提交后必须重新运行 runtime、28/266/76、tablet、430/667、667 landscape、packet、truth、quarantine、readiness 与 Windows 本地包。
+- report truth: `18c53b4…` runtime 为 clean exact-SHA green，但 Overview 25/28 报告保持失败；Step899 focused 3/3 是 dirty-worktree 诊断证据。提交后必须重新运行 runtime、28/266/76、tablet、430/667、667 landscape、packet、truth、quarantine、readiness 与 Windows 本地包。
 - packaging truth: 旧 SHA 的 Windows 本地包不作为当前候选证据；本步提交后必须重新生成 exact-SHA 本地包。
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，`contractPass=true` 但 `releasePass=false`；complete-module promotion 需要路由级完整证据与可信独立签名，不能自签。
 - release boundary: packet 仍 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；formal Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub upload 均未完成；没有上传 GitHub。
@@ -57,4 +57,4 @@
 
 ## One next action
 
-- nextAction: 提交并同步 Step898；在新 clean HEAD 重新运行 runtime、全部 exact-SHA matrices、packet、truth、quarantine、readiness 和 Windows 包；随后继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL，全部正式条件通过后才考虑原子 GitHub 发布。
+- nextAction: 提交并同步 Step899；在新 clean HEAD 重新运行 runtime、完整 28 格 Overview 与全部 exact-SHA matrices、packet、truth、quarantine、readiness 和 Windows 包；随后继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、真实 RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL，全部正式条件通过后才考虑原子 GitHub 发布。

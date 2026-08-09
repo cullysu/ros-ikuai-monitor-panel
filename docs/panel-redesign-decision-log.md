@@ -25383,3 +25383,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step898；在新 clean HEAD 重新绑定 runtime、Overview 28/28、route-state 266/266、bounded route 76/76、tablet、430/667 portrait/landscape、视觉 packet、truth/quarantine、readiness 和 Windows 本地包，然后继续独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部正式条件通过前不上传 GitHub。
 - validForCommit：本步代码、生成资产与决策记录尚未提交；提交后 Step897/898 之前的 exact-SHA 工件只作历史，必须重新生成。
 - supersededBy：null
+
+## 第 899 步：验收器纳入后续主任务高度，三格假红关闭
+
+- status：`adaptive-ledger-independent-geometry-gate-aligned-focused-green-formal-gates-open`
+- latestStepOutcome: `899:adaptive-ledger-independent-geometry-gate-aligned-focused-green-formal-gates-open`
+- 触发/问题：clean SHA `18c53b4f00a5d37ab34eb0d61e9d347c5132aff9` 的 Overview 公开矩阵为 `25/28`；Fleet、all-offline、interfaces-down 的 390×844 唯一失败均为 `adaptiveLedger=false`。产品根据“台账完整高度 + 后续主任务实际高度”决定收起，独立验收器只比较台账自身高度，因而把正确收起误判成应展开。
+- 决策/实现：保留 `adaptiveLedger` 为 blocking check；验收器继续独立读取 DOM 几何，但把真实 `[data-mobile-primary-task-proximity]` / `[data-mobile-phone-next-step]` 高度加入可用空间预算，并在报告中输出 `reservedPrimaryTaskHeight`。没有读取组件内部布尔值，没有删除检查，也没有把失败降级为 warning。
+- 验证：focused bounded matrix `fleet,all-offline,interfaces-down × 390×844 = 3/3` 通过；三格均保持证据摘要清晰、后续主任务可见、44px 触控和固定导航边界。原 `25/28` clean-SHA 报告保留为失败证据；本步 tracked gate 修改提交后必须在新 SHA 重新运行完整矩阵。
+- 产品/视觉裁决：本步只修正验收模型与产品空间预算不一致，不改变界面视觉方向，也不关闭独立 Product/Design/Visual/Accessibility 签收。Emil 约束继续采用静态证据与即时触控反馈，不为监控数值增加暗示新鲜度的动画。
+- 发布边界：任务 active、`blocked=false`。route maturity、Route Owner/AT、真实 RouterOS soak、exact-SHA Linux/Windows/GHCR CL 与 GitHub upload 仍未完成；公众发布继续关闭。
+- 心得：验收器必须独立，但“独立”不等于使用不同的产品定义。它应从真实 DOM 重新计算同一个用户可用空间问题；若漏掉必须保留的后续任务，所谓独立检查只会奖励把任务挤出首屏的错误实现。
+- nextAction：提交 Step899 并同步 D 盘；在新 clean HEAD 重跑 runtime 与完整 28 格 Overview，随后继续 route-state 266、bounded route 76、tablet/430/667、视觉 packet、truth/quarantine、readiness 和 Windows 本地包，再进入当前 SHA 独立评审与正式外部签收。
+- validForCommit：本步验收器和决策记录尚未提交；focused 3/3 为 dirty-worktree 诊断证据，不能作为发布输入。
+- supersededBy：null
