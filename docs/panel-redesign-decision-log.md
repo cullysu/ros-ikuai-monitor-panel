@@ -25411,3 +25411,17 @@ ocused-green-engineering
 - nextAction：提交 Step900 并同步 D 盘；在新 clean HEAD 重跑 runtime、`check:overview` 与完整 Overview/route/tablet/visual matrices，再生成 packet、truth/quarantine、readiness 和 Windows 本地包，之后进入当前 SHA 独立评审与正式外部签收。
 - validForCommit：本步 checker 和决策记录尚未提交；focused 10/10 为 dirty-worktree 诊断证据，不能作为发布输入。
 - supersededBy：null
+
+## 第 901 步：主任务邻近性契约同步显式 owner，第二处旧三元式假红关闭
+
+- status：`primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open`
+- latestStepOutcome: `901:primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open`
+- 触发/问题：Step900 提交后的 clean SHA `c5cdc9ed1654b74fc6d0087043074a436f897cd6` runtime 再次为 `260 checks / 140 screenshots / 169 snapshotApiCalls` green；`check:overview` 在 compact contract 通过后继续执行，并在 `mobile-primary-task-proximity-v1` 的 context-rail 去重项失败。该独立检查仍只接受早期 `compactIncident || incident ? null : patrolActions`，无法证明当前三个显式 owner。
+- 决策/实现：保留该项 blocking；精确要求只有 `!phonePrimaryAction && !compactIncidentActions && state.scale !== "fleet"` 时才允许渲染 context rail 的 `patrolActions`。与 Step900 分开记录，因为二者是不同验收 contract，任何一个滞后都会让完整门禁假红。
+- 验证：`node --check tools/check-mobile-primary-task-proximity-v1.js` 通过；focused `mobile-primary-task-proximity-v1 = 5/5`。`c5cdc9e…` runtime 保留为前一 clean SHA 证据，本步 tracked checker 修改提交后必须重新绑定全部 exact-SHA 工件。
+- 产品/视觉裁决：UI 未改变；主任务仍紧邻最高风险对象，compact 与 Fleet 仍各自只有一个真实 handoff。Emil 静态证据优先约束不变。
+- 发布边界：任务 active、`blocked=false`。正式 Product/Design/Visual/Accessibility、route maturity、Route Owner/AT、真实 RouterOS soak、exact-SHA Linux/Windows/GHCR CL 与 GitHub upload 仍未完成；公众发布继续关闭。
+- 心得：多个独立 gate 检查同一产品语义时，必须逐个迁移并保留各自职责；一个检查转绿不能推断另一个也已理解新 owner。
+- nextAction：提交 Step901 并同步 D 盘；在新 clean HEAD 重跑 runtime、`check:overview` 与完整 Overview/route/tablet/visual matrices，再生成 packet、truth/quarantine、readiness 和 Windows 本地包，之后进入当前 SHA 独立评审与正式外部签收。
+- validForCommit：本步 checker 和决策记录尚未提交；focused 5/5 为 dirty-worktree 诊断证据，不能作为发布输入。
+- supersededBy：null

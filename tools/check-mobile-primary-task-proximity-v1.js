@@ -35,7 +35,7 @@ const checks = [
   },
   {
     name: "incident action is not also rendered in the phone context rail",
-    pass: /compactIncident\s*\|\|\s*incident\s*\?\s*null\s*:\s*patrolActions/.test(source),
+    pass: /!phonePrimaryAction\s*&&\s*!compactIncidentActions\s*&&\s*state\.scale\s*!==\s*["']fleet["']\s*\?\s*patrolActions\s*:\s*null/.test(source),
   },
   {
     name: "fresh incident originals are available",
