@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { assertIndependentReviewRecords } = require('./check-independent-review-records');
 
 const root = path.resolve(__dirname, '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -16,15 +17,27 @@ const currentState = read('docs/decision-system/current-state.md');
 const handoff = read('docs/product-loop-current.md');
 const reviewLedger = read('docs/decision-system/review-adjudication-2026-07-23.md');
 const machine = JSON.parse(read('.product-loop/state.json'));
+const independentReview = assertIndependentReviewRecords({ root });
 const failures = [];
 const latestStep = Number(machine.latest_decision_step);
 const latestOutcome = String(machine.latest_decision_outcome || '');
+const currentReviewStatuses = ['product', 'design', 'visual-qa'].map((name) => machine.gates?.[name]?.status);
+const localReviewIsHistorical = independentReview.pass === true &&
+  independentReview.releaseEligible === false &&
+  independentReview.step < latestStep &&
+  independentReview.runtimeReportMatchesReviewedArtifact === false;
+const localReviewResolved = localReviewIsHistorical
+  ? currentReviewStatuses.every((status) => status === 'pending' || status === 'failed')
+  : currentReviewStatuses.every((status) => status === 'pass');
 const machineFailClosed = Number.isSafeInteger(latestStep) && latestStep > 0 &&
   latestOutcome.startsWith(`${latestStep}:`) &&
-  machine.gates?.product?.status === 'failed' &&
-  machine.gates?.design?.status === 'failed' &&
-  machine.gates?.['visual-qa']?.status === 'failed' &&
-  machine.gates?.['state-matrix']?.status === 'pending';
+  localReviewResolved &&
+  independentReview.pass &&
+  machine.gates?.['state-matrix']?.status === 'pending' &&
+  machine.gates?.['release-hygiene']?.status === 'pending' &&
+  machine.gates?.['ci-linux']?.status === 'pending' &&
+  machine.gates?.['ci-windows']?.status === 'pending' &&
+  machine.gates?.['ci-container']?.status === 'pending';
 
 function expect(condition, message) {
   if (!condition) failures.push(message);
@@ -82,15 +95,10 @@ expect(
     currentState.includes('**FAIL') && handoff.includes('| Current product release | `fail` |'),
   'the current authority and release-boundary contracts must retain the current FAIL boundary'
 );
-expect(
-  reviewLedger.includes('productGate: `failed`') &&
-    reviewLedger.includes('designGate: `failed`') &&
-    reviewLedger.includes('visualGate: `failed`'),
-  'review adjudication must preserve failed Product/Design/Visual boundaries'
-);
+expect(reviewLedger.includes('productGate: `failed`') && reviewLedger.includes('designGate: `failed`') && reviewLedger.includes('visualGate: `failed`'), 'historical review adjudication must preserve its original boundary');
 expect(
   machineFailClosed,
-  'machine state must not convert historical engineering evidence into current product acceptance'
+  'machine state must preserve historical local-review scope while keeping current release evidence fail-closed'
 );
 
 const report = {

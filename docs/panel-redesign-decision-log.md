@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（44/100）；工程发行完成不等于产品、设计或视觉签收，当前不得宣称产品完成或公众体验闭环**
+> 当前产品结论：**FAIL（独立复签与公开发布）/ Step936 已完成第二轮独立 VETO 的真实根因回修：63 格必测视窗、精确响应式溯源、短屏事故动作、语义状态公告和历史滚动恢复；最终精确工件尚待重生与四角色复签，完整发布证据未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -24078,7 +24078,7 @@ ocused-green-engineering
 - 边界/心得：本步证明了视觉语法的工程落地，不证明用户价值或公众发布资格。下一轮必须以最终 clean candidate 重新跑完整矩阵，并让独立评审关闭 Product、Design、Visual 的公开边界；如果外部证据未出现，必须保持 release fail，但继续推进可完成的工作。
 - nextAction：提交并同步 Step797 后，在新的 clean candidate 上重跑 exact-SHA runtime/28/76/266，完成独立 Product/Design/Visual、Accessibility、route-owner、RouterOS soak 与三端 CL 证据。
 - validForCommit：current worktree evidence only; release candidate not established
-- supersededBy：null
+- supersededBy：Step798
 
 ## 第 798 步：完整公开矩阵与独立评审包重新绑定，发布边界仍保持关闭
 
@@ -24117,7 +24117,8 @@ ocused-green-engineering
 - 边界/心得：这一步证明异常态仍可被键盘巡检并保持可达，不证明独立辅助技术签收，也不改变 18 个 bounded-readonly 路由和外部发布门槛。当前任务保持 active、blocked=false。
 - nextAction：以当前工作树身份刷新 unsigned product/design/visual packet 与 D 盘镜像，提交本轮代码/测试/治理变化后重跑 exact-SHA 28/76/266、完整静态与 release readiness；继续推进真实 route owner、独立签名、RouterOS soak 与三端 CL。
 - validForCommit: current worktree evidence only; release candidate not established
-- supersededBy：null
+- supersededBy：Step801
+
 ## 第801步：当前独立复核完成，正式发布门继续关闭
 
 - status：independent-review-current-visual-pass-public-release-open
@@ -24129,8 +24130,7 @@ ocused-green-engineering
 - 边界/心得：视觉问题已按真实范围关闭，正式发布仍需不可伪造的外部证据；Loop active、blocked=false。
 - nextAction：同步 Step801 后重新绑定新候选 exact-SHA 证据，继续推进 route-owner、Accessibility、RouterOS soak 和三端 CL。
 - validForCommit：current worktree evidence only; release candidate not established
-- supersededBy：null
-
+- supersededBy：Step802
 
 ## 第 802 步： continue independent acceptance; close locally verifiable evidence and 320px visual slice
 
@@ -24158,7 +24158,7 @@ ocused-green-engineering
 - 边界/心得：这不是任务阻塞，而是发布边界继续显露真实缺口。工程矩阵绿灯只证明覆盖和当前代码身份，不证明公众产品签收。
 - nextAction：刷新治理 dirty identity 下 runtime、28/76/266 与 packet digest，运行 readiness、全量静态/安全/无障碍检查；继续取得真实 route-owner、独立 Accessibility、RouterOS soak 与三端 CL 证据。
 - validForCommit：code candidate exact-SHA evidence plus current governance state; release candidate not established
-- supersededBy：null
+- supersededBy：Step804
 
 ## 第 804 步：CSS 预算根因修复，重新绑定 exact-SHA 发布证据
 
@@ -25412,6 +25412,19 @@ ocused-green-engineering
 - validForCommit：本步 checker 和决策记录尚未提交；focused 10/10 为 dirty-worktree 诊断证据，不能作为发布输入。
 - supersededBy：null
 
+## 第 911 步：降级 Step910 历史本地证据，重新打开当前验证与外部发布闭环
+
+- status：`step910-historical-artifact-demoted-current-reverification-required`
+- latestStepOutcome: `911:step910-historical-artifact-demoted-current-reverification-required`
+- 触发/问题：Step910 的结论被错误地作为当前 runtime 与发布判断的依据；四份评审实际只绑定旧本地 artifact，不能覆盖其后发生的 runtime、焦点、安全与工作流修复。
+- 观察事实：四份 Step910 记录（Product、Visual、Accessibility、Engineering）均绑定 `worktree-f8a12846eebd-20a6c4555b4c`，fingerprint 为 `20a6c4555b4cbdb59d6ad8bd93b06ddaaf3c21f6551896152909b300b174940d`。它们不是最终精确 SHA 的外部评审或签名 route acceptance；`releaseEligible=false`。本步没有重跑或宣称通过新的 runtime、焦点、安全或工作流验证。
+- 决策：保留 Step910 作为不可变历史本地证据，但从当前产品和发布结论中降级。工程发布证据未闭环，产品视觉最终外部验收未闭环，release 保持 CLOSED。
+- 发布边界：最终精确 SHA 的外部四角色评审、真实 RouterOS 只读 soak、签名 route acceptance、Linux/Windows/GHCR CL 全部待完成。任务 active、`blocked=false`；GitHub 未上传。
+- 心得：评审结论只能覆盖其明确绑定的 artifact。局部本地 PASS 既不能越过 runtime 身份变化，也不能替代外部、签名或实机发布证据。
+- nextAction：先以最终精确 SHA 重验 runtime 与焦点/安全/工作流修复，再完成外部四角色评审、真实 RouterOS 只读 soak、签名 route acceptance 与 Linux/Windows/GHCR CL；在所有证据闭环前不得上传 GitHub 或宣称 release eligible。
+- validForCommit：Step911 decision-truth documentation only；不得把 Step910 本地评审或历史工程 CL 写成当前通过。
+- supersededBy：null
+
 ## 第 901 步：主任务邻近性契约同步显式 owner，第二处旧三元式假红关闭
 
 - status：`primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open`
@@ -25486,3 +25499,870 @@ ocused-green-engineering
 - nextAction：提交并同步 Step905；在新 clean HEAD 重跑 runtime、完整 `check:overview`、Overview 28、route-state 266、bounded route 76、full route 532、tablet 152、430/667 视觉分片、packet、truth/quarantine、readiness 和 Windows 本地包，再继续当前 SHA 独立 Product/Design/Visual/Accessibility、Route Owner/AT、RouterOS soak 与 exact-SHA Linux/Windows/GHCR CL；全部正式条件通过前不上传 GitHub。
 - validForCommit：本步 CSS、探针、共享截图合同、生成资产和决策记录尚未提交；dirty-worktree focused/runtime 仅为诊断/回归证据。
 - supersededBy：null
+
+## 第 906 步：采纳当前 clean SHA 独立评审红项，按真实任务 owner 开始发布前修复
+
+- status：`independent-product-design-accessibility-fail-remediation-selected-release-closed`
+- latestStepOutcome: `906:independent-review-reds-recorded-owner-based-remediation-next`
+- 触发/问题：Step905 提交后的 clean SHA `f8a12846eebd8f6d89b4748b89e8808b23257e67` 已完成本地 exact-SHA runtime 与矩阵回绑，但三组当前 SHA 只读独立复核均明确返回 FAIL。继续把“矩阵通过”或历史 scoped PASS 写成产品、视觉或无障碍签收会掩盖真实发布阻断。
+- 观察事实：工程证据为 runtime `261 checks / 142 screenshots / 169 snapshotApiCalls`、Overview `28/28`、route-state `266/266`、bounded route `76/76`、full public `532/532`、tablet `152/152`、430/667 portrait/landscape 各 `133/133`；视觉包 `30/30` 文件与摘要匹配，但仍为 `prepared-not-signed / selfSignoff=false / releaseEligible=false`。严格 readiness 接受当前矩阵后停在 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 独立 Product/Route Owner：P0=`0`，结论 FAIL。19 个 URL 不是 19 个完成模块；连接页显示总数 42 却只有 1 条明细，没有声明采样/截断/覆盖；当前 PDR 仍把 Step798 写成权威，已与当前 Step905/906 脱节。独立 Design/Visual：P0=`0`、P1=`7`、P2=`3`，结论 FAIL；667×932 Overview 主内容被锁在约 320px，右侧大面积空白，事故动作被挤压；手机多层复读、风险场景结构过于同构、固定底栏遮住继续内容、桌面资源首屏把操作对象推到折线图以下。独立 Accessibility/Interaction：P0=`0`、P1=`4`、P2=`4`，结论 FAIL；现有“200%”只是半宽 CSS 视口加 DPR2，不是真实浏览器缩放；forced-colors 检查没有证明 AX current state；reduced-motion 只有 CSS 未运行时仿真；19 路由大文本只打开日志详情，没有覆盖其余对象详情和返回链。
+- 根因定位：`MobilePatrolScreen.tsx` 在 667px 时 `tablet=false`，不渲染 inspector/context owner；`mobile-patrol.css` 却从 600px 起无条件把 `.mp-workspace-body` 切成 `1.28fr + minmax(250px, .92fr)` 两栏。因此 667 竖屏既产生空白右栏，又让 375–767 的两列动作规则在约 320px 主栏内互相挤压。该问题必须按“是否有真实 context owner”修，不允许按 667 精确尺寸特供。
+- 决策/顺序：先让 Overview 工作区由真实 owner 决定单栏/分栏，并新增 667 竖屏 Overview 几何红门禁；随后明确连接明细覆盖语义，修复固定导航安全终点；再删除 Proof/Signal/Object 复读并让最高风险改变页面节奏；补真实浏览器缩放、AX current、reduced-motion 与全部对象详情的大文本自动化；最后压缩桌面资源图表，令可操作对象进入首屏。每个原子切片都先写决策、后实现、再用原图和几何验证。
+- 理由与拒绝项：不通过缩小字号、提高资产预算、删除可信证据、填充假内容、放宽遮挡阈值或把独立 FAIL 降成 P2 来“过门禁”。Fleet 规模不覆盖具体事故；URL 数不冒充模块完成度；自动矩阵不冒充产品签收；外部正式签名缺失不是停止理由，只要仍有本地 P1 可修就继续推进，任务保持 active、`blocked=false`。
+- 验证边界：本步是 write-ahead 决策，尚未修改产品源码。`f8a12846…` 报告仍是当前 clean SHA 的工程诊断证据，但独立 Product/Design/Visual/Accessibility 已明确 FAIL；任何后续 tracked 修改都会使这些 exact-SHA 报告转历史，并要求新 SHA 全量回绑和重新独立复核。
+- 红门禁证据：新增 `ownerBasedWorkspace` 检查后，`public/single/overview @ 667×932` 在未改产品前按预期失败；原始几何为 body `569px`、primary `319px`、空 context `250px`、两条 grid track、primary 右边框 `1px`、context owner count `0`。这证明检查测的是缺失 owner 造成的真实空白，不是字符数或截图尺寸特供。
+- 发布边界：公众发布继续 FAIL-closed；RouterOS soak、Route Owner/真实 AT、route maturity、Linux/Windows/GHCR exact-SHA CL 和 GitHub upload 均未完成。未上传 GitHub；后续即使上传，也必须逐次核对 exact remote SHA 的三端 CL。
+- 心得：矩阵能证明“代码按预期运行”，不能证明“任务空间被有效使用”。响应式分栏必须先有第二个真实任务 owner；无障碍测试必须诚实命名其物理能力；产品成熟度必须按任务深度而不是 URL 数量计算。
+- nextAction：为 667 竖屏 Overview 建立 owner-based 单栏红门禁并修复空白 context track/动作挤压；验证后立即同步决策仓库，再处理连接覆盖语义、导航安全边界和真实无障碍能力。
+- validForCommit：clean candidate `f8a12846eebd8f6d89b4748b89e8808b23257e67`；本步治理记录提交后该 SHA 的工程报告仅作历史诊断，后续产品修改必须生成新 clean SHA 证据。
+- supersededBy：null
+
+## 第 907 步：Overview 按真实 context owner 分栏，并补齐宽手机/平板场景动作样式
+
+- status：`owner-based-overview-layout-and-scenario-action-style-focused-green-release-closed`
+- latestStepOutcome: `907:owner-based-overview-and-scenario-action-style-focused-green-next-connection-coverage`
+- 触发/问题：Step906 红门禁证明 667×932 generic Overview 在 context owner count=`0` 时仍保留 `319px + 250px` 两栏；第一轮修复后原图又暴露同一能力带的场景动作没有基础样式，`MobileScenarioFocus` 只有 `max-width:599px` CSS，667px 的 button/div 因而退回浏览器默认边框和 block 排版。
+- 决策/实现：`MobilePatrolScreen` 先计算真实 `contextPatrolActions` 与 `workspaceContextHasOwner`，generic workspace 显式标记 `has-context-owner / is-single-owner`；没有 owner 时不渲染空 context DOM，CSS 只允许 `has-context-owner` 建两栏和右分隔。该语义不按 667 特供。场景 focus 的连续操作面基础样式扩展到整个 `<1200px` mobile workbench，768–1199 的平板增量规则继续后置接管，不再让 600px 以上泄漏 UA 按钮样式。
+- 红/绿合同：`inspect-overview-mobile` 新增 `ownerBasedWorkspace`，要求 ownerless generic workspace 单 track、primary 占满 body、context 宽度 0、右边框 0；新增 `scenarioFocusOperationalStyle`，要求场景条目拥有 grid 语法且 action 不保留 UA 顶/右边框。修复前 667 normal 以 `body569/primary319/context250/border1` 失败，collection-down 以 `operationalStyle=false` 失败。
+- 验证：types、1902-module build、architecture gate（`MobilePatrolScreen=238` 行）、static assets、asset identity、compact incident 与 primary-task proximity focused contracts 通过。667×932 七场景 `7/7`、844×1024 的 all-offline/no-snapshot/collection-down `3/3` 通过；人工检查 normal、collection-down、no-snapshot、interfaces-down 和 tablet collection 原图，空右栏消失、三项动作可读、场景边界恢复统一。framework CSS `118.36kB`、JS `495.59kB`，固定预算未放宽。
+- 报告真值：这些 focused 结果来自 dirty worktree，只关闭 Step906 的 ownerless split 与 600+ UA-style 两项 P1；`f8a12846…` clean exact-SHA 报告已因 tracked source/tool/docs 变更降为历史。完整 `check:overview` 在 dirty 状态会按设计停在旧 clean runtime 身份，不将其写成产品失败或绕过。
+- 发布边界：独立 Product/Design/Visual/Accessibility 整体仍 FAIL；连接覆盖语义、固定导航安全终点、复读与风险节奏、真实 zoom/AX/reduced-motion/all-detail、桌面资源首屏密度、route maturity、RouterOS soak、三端 exact-SHA CL 和 GitHub upload 仍未完成。任务 active、`blocked=false`。
+- 心得：视觉缺陷常沿能力边界成组出现。只把空栏改满宽还不够，必须重看原图；否则宽度恢复后会把原先被压缩遮住的 UA 样式泄漏暴露给公众。响应式合同应同时验证 owner、几何和可操作视觉语法。
+- nextAction：为 connections 总数与采集明细建立明确 coverage 类型和回归合同，禁止 `42 total / 1 row` 被误读为完整枚举；随后继续固定导航安全终点。
+- validForCommit：dirty-worktree focused evidence only；提交后必须按新 clean SHA 全量回绑并重新独立复核。
+- supersededBy：null
+
+## 第 908 步：连接明细覆盖范围显式化，禁止样本冒充完整枚举
+
+- status：`connection-detail-coverage-truth-focused-green-release-closed`
+- latestStepOutcome: `908:connection-detail-coverage-truth-focused-green-next-fixed-nav`
+- 触发/问题：独立 Product/Route Owner 复核发现连接页同时显示“连接总数 42”和一条活动明细，却没有说明该行是采样、截断还是完整枚举。生产后端其实已在 `connections.meta.active` 提供 `shownCount / totalCount / hasMore / sampled`，前端模型丢弃了这份证据，工程正确的数据因此被 UI 误表达。
+- 决策/实现：新增活动明细覆盖合同，始终以实际渲染行数对照报告总数；只有后端同时声明 `sampled=false`、`hasMore=false`，且总数、声明行数、可见行一致时，才显示“快照声明完整枚举”。明确抽样或存在更多行时显示“非全量枚举 · 活动速率样本”；缺少元数据时显示“完整性未声明”；元数据与可见行矛盾时显示“覆盖元数据与可见行不一致”。缺少活动集合仍保持“未取得”，不把空缺改写成零。
+- 信息位置：手机连接页把“连接总数 / 活动明细样本 / 协议分组”移到对象列表之前，不再埋在长列表底部；桌面对象表头复用同一覆盖注记。活动连接表本身也携带 coverage note，使模型、手机和桌面使用同一事实来源。窄屏将“非全量枚举”前置，保证即使次要采样方法被省略，关键边界仍可扫读。
+- 红/绿合同：修复前新增模型断言因找不到“活动明细样本”按预期失败；修复后覆盖 `42 total / 1 row + 无元数据`、`42 / 1 + sampled/hasMore`、`1 / 1 + 显式完整` 三种状态，`check-section-models` 与 TypeScript 通过。路由浏览器验收同时要求连接页可见“活动明细样本”和“非全量枚举 / 完整性未声明 / 快照声明完整枚举”之一。
+- 运行时与视觉证据：dirty-worktree bounded runtime 在 `390×844 / 768×1024 / 1366×768` 三格均通过；随后 390 窄屏文案顺序复验 `1/1` 通过。原图显示 `8 / 180` 与“非全量枚举”位于列表上方，平板和桌面保持相同语义。浏览器 stop 仍出现已知 30 秒超时 warning，但所有请求格、严格响应式与页面语义检查均通过；该 warning 继续作为后续浏览器生命周期 P1，不伪装成稳定发布门禁。
+- 产品裁决：关闭“总数 42 / 一条明细可能被误读为完整枚举”这一 Product P1；不把 19 个 URL 晋级为 19 个完成模块，不改变 route maturity。独立 Product/Design/Visual/Accessibility 整体仍 FAIL，连接覆盖修复不能代替新的 clean-SHA 独立签收。
+- 发布边界：任务 active、`blocked=false`；`f8a12846…` exact-SHA 报告已是历史。固定导航遮挡、移动复读/事故节奏、真实 zoom/AX/reduced-motion/all-detail、桌面资源首屏密度、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub upload 均未完成，公众发布继续关闭。
+- 心得：数据契约已经存在不等于产品语义已经成立；采样范围必须在对象列表之前可见。完整性是需要正面证明的状态，而不是“行数刚好相等”或“没有报错”就能推断的默认值。
+- nextAction：建立固定底部导航的真实最后内容安全边界，复现并修复 375/390 手机续接对象被导航遮挡；随后继续去重复、事故节奏和无障碍能力闭环。
+- validForCommit：dirty-worktree focused evidence only；提交后必须以新 clean SHA 全量回绑并重新独立复核。
+- supersededBy：null
+
+## 第 909 步：短屏事故任务避开固定导航，次级证据退到真实续接位置
+
+- status：`short-phone-fixed-navigation-task-boundary-focused-green-release-closed`
+- latestStepOutcome: `909:short-phone-fixed-navigation-task-boundary-focused-green-next-repetition`
+- 触发/问题：当前独立视觉复核的 375×667 复合事故原图显示“同时发生”资源风险行位于 `549–632`，固定导航从 `607` 开始，用户能看到一条被导航切断的可操作任务。旧门禁只要求后续证据可滚动，没有阻止固定导航从中间切穿仍在首屏可见的次级风险行。
+- 观察事实：主风险、三项事实、主调查和并发风险都是事故首屏任务；当前态证据的采集时间与通道完整性已经由顶部 proof 明确。来源台账是次级解释，不应先于主调查和并发风险争夺短屏空间。390×844 有足够空间展开台账，375×667 则没有。
+- 决策/实现：手机 current incident 把来源台账从 proof 后移到并发风险队列后；primary action 仍位于主风险与并发风险之间。`MobileEvidenceLedger` 只在候选主任务的几何 top 确实位于台账 bottom 之后时，才把该任务高度计入展开预算，避免为 DOM 中位于台账之前的任务重复预留。短手机的次级台账使用续接间隔，令摘要整体进入固定导航以下的滚动内容，而不是露出半截可点击行。没有隐藏风险、缩字号、取消触控或放宽遮挡检查。
+- 红/绿合同：`mobile-incident-support-boundary-v1` 新增 `queueBisectedByNavigation`。修复前 375 的 queue=`549–632`、navTop=`607`，按预期失败；修复后 fresh runtime 中 queue=`493–576`、navTop=`607`、`queueBisected=false`，台账摘要=`608–664`，整体位于初始固定导航下方并可随页面滚动到达。390 中 queue=`493–576`、ledger=`576–748`、navTop=`784`、最终 slack=`36px`。
+- 验证：TypeScript、240 行 Overview mobile owner 架构预算、1902-module build、CSS formatter通过；production runtime=`261 checks / 142 screenshots / 172 snapshotApiCalls`。support-boundary、incident-action-visibility、primary-task-proximity、evidence-auto-open、incident-rhythm focused gates 全部通过；人工检查 fresh 375/390 原图，主动作完整、并发风险完整、导航无切穿、横向 overflow=0。完整 `check:overview` 继续只在 dirty worktree 对旧 `f8a12846…` tablet exact-SHA 新鲜度按设计失败，不把该身份红项伪装成产品回归。
+- 产品/视觉裁决：关闭“固定导航切穿 375 可见次级风险任务”这一 focused P1；不把自动截图通过写成整体视觉签收。Proof/Signal/Object 正常态复读、风险场景结构节奏、真实 zoom/AX/reduced-motion/all-detail、桌面资源首屏密度仍需继续修复。
+- Emil/Loop 心得：高频运维界面不靠动画解释层级；正确做法是让用户任务拥有稳定文档顺序和完整触控边界。短屏可以把次级来源证据放到滚动续接区，但不能让一个可见任务被固定导航切成两半，也不能为了填满首屏复述已由 proof 说明的事实。
+- 发布边界：任务 active、`blocked=false`；本步是 dirty-worktree focused evidence。Product/Design/Visual/Accessibility 整体仍 FAIL，route maturity、Route Owner/AT、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub upload 均未完成，公众发布继续关闭。
+- nextAction：删除正常态 Proof/Signal/Object 首屏复读，让最高风险决定手机信号、对象与任务节奏；并行整合真实无障碍、路由成熟度、桌面密度和浏览器生命周期修复。
+- validForCommit：dirty-worktree focused evidence only；提交后必须以新 clean SHA 全量回绑并重新独立复核。
+- supersededBy：null
+
+## 第 910 步：独立复签通过，保留 clean-SHA、实机与发布闭环边界
+
+- status：`independent-resignoff-pass-release-evidence-remains-closed`
+- latestStepOutcome: `910:independent-resignoff-pass-release-evidence-remains-closed`
+- 触发/问题：Step909 后的当前指针仍把已关闭的 Fleet、430 和异常态视觉证据缺口表述为整体 Product/Design/Visual/Accessibility FAIL；必须以当前源码、最新运行报告和原图复签，而不能用旧工程门禁或历史 SHA 推断产品结论。
+- 观察事实：`_acceptance/panel-runtime-browser/report.json` 为 PASS，`271 checks / 146 screenshots`。人工复核 `overview-normal-430.png`、`overview-all-offline-390.png`、`overview-no-snapshot-390.png` 和 Fleet 原图：正常态提供当前默认路由与信号；全离线优先列出 8 条离线 WAN、无活动默认路由和恢复判据；无快照撤回当前网络数字并呈现 REST/SSH 失败与恢复边界。Fleet 显示 12 个可操作对象，源码以 `danger → warn → missing → trust → ok` 排序。
+- 产品/信息架构裁决：独立 Product、Design、Visual、Accessibility 与 Code review 全部 PASS，`P0=0 / P1=0`。Proof 只承担鲜度/WAN/采集等判断事实，Signal 承担统一时间窗的吞吐或资源证据，Object 承担身份、关系和字段级详情；不得相互复读。release-gates、backend security/release blockers、collector、decision-system、runtime-schema 与 sections 均 PASS 于当前本地范围。
+- 发布边界：route maturity 结构门禁 PASS，但严格状态仍是 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；19 个 URL 不得被宣称为 19 个完整模块。GitHub 未上传；RouterOS 实机 soak、clean exact-SHA 矩阵和 Linux/Windows/GHCR CL 仍待完成。任务 active、`blocked=false`，release 继续 closed。
+- 心得：运行时数量、截图数量和结构门禁各自只能回答一部分问题；只有把原图与语义所有权一起复核，才能关闭产品 P1，同时不越界打开发布门。
+- nextAction：保持当前本地复签 PASS，完成 clean exact-SHA rebind、RouterOS 实机 soak 与 Linux/Windows/GHCR CL 后再判断发布边界；不上传 GitHub，直到全部证据齐备。
+- validForCommit：Step910 dirty-worktree local evidence only；不得把它写成 clean exact-SHA 或 public-release approval。
+- supersededBy：null
+
+## 第 911 步：Step910 本地评审降为历史证据，当前候选重新进入完整复验
+
+- status：`step910-historical-artifact-demoted-current-reverification-required`
+- latestStepOutcome: `911:step910-historical-artifact-demoted-current-reverification-required`
+- 触发/问题：Step910 四份本地评审记录只绑定旧 artifact `worktree-f8a12846eebd-20a6c4555b4c`，且均明确 `releaseEligible=false`。之后焦点可见性、候选信任根、证据快照和 GitHub 工作流继续发生 tracked 修改；旧评审不能继续代表当前工作树，更不能冒充外部发布签收。
+- 决策：Step910 保留为历史本地证据。当前 Product、Design/Visual、Accessibility、Engineering、Security 与 route acceptance 全部回到 pending；只有新的 clean exact-SHA runtime、完整场景/响应式矩阵、四角色外部评审、真实 RouterOS 只读 soak 和固定外部信任根签名共同通过，才允许进入 GitHub 发布步骤。
+- 当前进展：候选证据与 soak 的防回放回归已通过，路由标题程序化焦点已恢复可见环，Windows/Linux/GHCR 工作流已改为精确 SHA 与 2GB 资源边界；独立安全复核发现候选内信任根、验签换包竞态和任意路由 scope 三项 P0，正在修复且不得被自动门禁短路。
+- 发布边界：GitHub 仍未上传；任务 active、`blocked=false`。clean exact-SHA、外部四角色签收、真实 RouterOS soak、签名 `public-release` 接受记录，以及同一远端 SHA 的 Linux/Windows/GHCR CL 均未闭环，公众发布继续 FAIL-closed。
+- 心得：本地评审、自动矩阵和签名分别回答不同问题。任何一个旧 artifact 的通过都不能跨越 tracked 修改继续生效；信任根也不能由候选仓库自行提供，否则“签名通过”只是另一种自签假绿。
+- nextAction：完成外部信任根、冻结证据快照和固定 `public-release` scope 的 P0 修复及攻击回归；随后统一构建、生成 clean exact SHA、重跑全部矩阵并发起新的外部四角色签收与真实 RouterOS soak。
+- validForCommit：当前 dirty worktree；本步只纠正决策真值，不授权上传或发布。
+- supersededBy：null
+
+## 第 912 步：候选证据与外部发布权限拆权，事故证据和对象时间恢复单一所有者
+
+- status：`external-promotion-authority-and-mobile-evidence-ownership-focused-green-current-reverification-open`
+- latestStepOutcome: `912:external-promotion-authority-and-mobile-evidence-ownership-focused-green-current-reverification-open`
+- 触发/问题：独立安全复核证明“仓库外路径”不等于“独立信任”：调用者若能同时提供 trust policy、policy digest、keyring 与自签记录，候选仓库内验签器仍可验证自己的信任根。另一个视觉预复核发现 390 复合事故的来源台账保持折叠，留下约 250px 无意义空白；资源对象详情又重复顶部 EvidenceBoundary 已拥有的证据时间。
+- 产品/发布决策：把工程证据、promotion authorization 和 release completion 明确拆成三层。仓库内工具最多输出 `candidateEvidencePass`，并固定保留 `publicReleasePass=false / releaseComplete=false`；它不再把调用者提供的签名材料纳入候选通过条件。真正的 promotion authority 位于候选仓库外的 `D:\想法\面板\release-attestation`，固定读取并哈希 promotion policy 与 trust policy，不接受 CLI 替换信任根、keyring、policy digest 或 evidence digest。
+- 路由契约：新增 `bounded-public-release-v1`，按 canonical 顺序声明 18 个 `bounded-readonly` module 与 1 个 `unavailable` directory。manifest 同时绑定 candidate、产品合同、route policy、route registry 的 route/kind/declared maturity 和完整 review/soak evidence digest。`structuralPass`、`routePolicyPass` 与 `publicReleasePass` 分离；`acceptanceRefs` 禁止充当外部签收证明。
+- 外部控制器：控制器直接读取候选 commit blob，不执行候选验签器；它独立解析 `PANEL_ROUTE_IDS/PANEL_ROUTES`，比较签名 manifest 与实际 registry，验证四角色记录、真实 soak、Ed25519 记录和固定 key fingerprint。输出只叫 `promotionAuthorized`，始终写 `releaseComplete=false`，并携带 `remoteLease.expectedOldOid/newOid`；最终上传前必须立刻重读远端 tip，使用 GitHub ref API `force:false`，tip 变化即废弃授权并重做候选。
+- 文件证据：新增共享 bounded snapshot helper。外部文本通过 open/fstat、`maxBytes+1` 有界循环读取、前后 size/mtime/ctime/ino/dev 比较和 fatal UTF-8；binary review artifacts 保持二进制；目录前后 listing 一致。物理 UTF-8 BOM 的 acceptance record 明确失败。候选 verifier 和 route component verifier均迁移到该边界。
+- 手机信息所有权：incident 或非 current 状态都自动展开 EvidenceLedger，门禁不再只检查变量存在而是验证风险公式；对象详情删除 `originTime` 可见复读，EvidenceBoundary 成为证据时间唯一 owner，标题只说明来源与阈值语义。104px 导航安全区暂不因旧图盲调，先用新 runtime 判断自动展开后的真实几何。
+- 验证：`check:types` 通过；`mobile-evidence-auto-open-v1` 5/5、`mobile-detail-novel-evidence-v1` 7/7、bounded-file snapshot tests、candidate evidence tests、route maturity/external-signature component regressions均通过。外部 controller `--policy-check` 保持 `promotionAuthorized=false/releaseComplete=false`，14 项攻击/格式测试通过，并从当前源码独立派生 19 条 route。上述证据均为 dirty-worktree focused 结果。
+- 尚未关闭：当前 assets/runtime 尚未重建，Product/Design/Visual/Accessibility/Engineering/Security 尚未绑定 clean exact SHA；真实 RouterOS 面板当前未在 `127.0.0.1:28646` 监听，故 soak 尚未开始；签名 acceptance record、promotion authorization、GitHub upload 与 exact-SHA Linux/Windows/GHCR CL 全部为空。任务 active、`blocked=false`，不是受阻。
+- 心得：把“调用者提供的 policy 与 digest 一致”叫信任，只是自洽，不是独立；把“测试能验签”叫发布完成，同样是越权。正确做法是让候选提供事实，让仓库外 authority 决定是否允许原子上传，再让远端 exact-SHA CL 决定是否完成发布。手机端同理：空白不能用复读填，先恢复证据的真实展开与单一时间 owner，再用原图决定剩余节奏。
+- nextAction：构建当前资产，运行 production browser 与 390/430/667/768/1366/1440 focused 原图，验证事故台账填充、底栏安全区、时间不复读、ARIA/Back-Forward/200%/forced-colors；修完所有 P1 后建立 clean exact SHA 和完整矩阵，再发起四角色外部签收、真实 RouterOS soak 与签名 promotion authorization。全部完成前不上传 GitHub。
+- validForCommit：dirty-worktree focused evidence only；任何发布证据必须在最终 clean exact SHA 上重做。
+- supersededBy：null
+
+## 第 913 步：当前生产运行时重新绑定，深链接启动竞态修复，独立安全与无障碍红项进入并行关闭
+
+- status：`current-runtime-green-deeplink-race-fixed-independent-security-accessibility-remediation-active`
+- latestStepOutcome: `913:current-runtime-271-green-security-and-accessibility-p0-p1-open`
+- 触发/问题：从当前 dirty source 重建后，framework CSS 首次为 `120053 bytes`，超过固定 `120000` 预算 53 bytes；production browser 又在手机接口对象的直接 URL 上等待详情超时。独立安全复核同时发现外部发布目录 ACL、候选可修改 CI/GHCR 定义、GHCR 手工输入绕过和缺少真正 `force:false` 执行器等发布权威问题；独立无障碍复核发现领域标题程序化焦点被 `outline:none` 隐藏，200% 文本、触控几何与 Overview reduced-motion 运行覆盖不足。
+- 根因与实现：CSS 预算只删除 large-text 分支中被基础规则完全覆盖的三项声明，不提高预算。直接 URL 失败的根因是首个快照到达前 bootstrap model 暂时为空，`useObjectHistory` 的无匹配分支立即清除有效 object query；现在 unavailable 且集合仍为空时保留请求对象，待真实集合到达后再验证。领域标题恢复可见焦点；焦点框的 owner 收缩为文字内容宽度，避免整行巨大描边。Overview 事故或非 current 状态的证据台账继续按 Step912 自动展开。
+- 验证：两次 `npm run build` 与 TypeScript prebuild 通过，Vite 处理 1906 modules；`check:static-assets`、`check:asset-identity` 通过，最终本轮记录的 style 为 `119982 bytes`。修复深链接启动竞态后 `check:runtime-browser` 为 `271 checks / 146 screenshots / 174 snapshotApiCalls` 全绿，包含直接链接返回、Back/Forward、375/390 事故任务、430 正常、667/768/844 能力边界、桌面 1366/1440 与 synthetic text/forced-colors 工件。public RFC3339、连接后端合同、navigator.onLine 仅提示不阻断请求和 mobile model 定向门禁通过。
+- 原图裁决：已人工查看 `overview-normal-task-390.png`、`mobile-secondary-resource-context-390.png`、`overview-all-offline-390.png`、`overview-no-snapshot-390.png`、`overview-fleet-coverage-390.png` 与资源历史图。正常、Fleet、全离线和无快照已使用不同任务结构，未恢复旧拓扑/假 sheet；但本次截图仍属于 dirty-worktree 诊断，且焦点收窄修改发生在该截图之后，必须重新构建并由独立 Design/Product A/B 复签。
+- 并行公司 Loop：主线继续负责真实 runtime、原图和集成；独立 A/B 分别执行 Design/Emil 视觉签收与 Product/信息架构签收；独立安全代理直接修复外部 policy/ACL/CI/GHCR/原子上传权威；独立生命周期代理统一 browser global/step/cleanup timeout、PID 清理，并补 200% 文本、触控、焦点和 reduced-motion 运行证据。各路写入范围互斥，主线不重复其工作。
+- 发布边界：当前任务 active、`blocked=false`。Security P0/P1、Accessibility P1/P2、A/B 视觉产品签收、clean exact-SHA 全矩阵、真实 RouterOS soak、四角色外部签名、GitHub 原子上传和同 SHA Linux/Windows/GHCR CL 均未关闭；公众发布继续 FAIL-closed，不因 runtime 271/271 自报完成。
+- 心得：浏览器深链接必须容忍“路由先于数据”的真实启动顺序，不能把暂时空集合当成对象不存在；焦点可见也不能用整行粗框破坏产品层级。并行代理能提速，但只有各自给出可复现证据、主线逐项复核并重新绑定 clean SHA，才是公司 Loop，不是多份意见堆叠。
+- nextAction：整合安全权威与浏览器生命周期代理补丁，重建焦点收窄后的资产并跑 focused runtime；收取 A/B 视觉产品报告，修完全部 P0/P1 后同步 Step914、生成 clean exact SHA 与完整矩阵。
+- validForCommit：dirty-worktree focused/runtime evidence only；不得用于发布授权。
+- supersededBy：null
+
+## 第 914 步：独立复核否决当前视觉签收，事故行动主线与发布真值进入直接修复
+
+- status：`independent-product-visual-engineering-release-review-fail-remediation-active`
+- latestStepOutcome: `914:independent-reviews-recorded-local-p1-remediation-active-release-closed`
+- 触发/问题：当前 dirty runtime 为 `274 checks / 147 screenshots / 174 snapshotApiCalls` green，尾部九项检查中八项通过，但独立 Product、Design/Visual、Engineering/Accessibility 与 Release/Security 四路复核仍明确 FAIL。自动运行正确不等于手机产品成立，也不能代替真实缩放、浏览器生命周期、发布授权和 exact-SHA CL。
+- 独立产品/视觉事实：P0=`0`。390 正常态仍像纵向规格表；事故态没有在首屏稳定呈现 `默认路由 / WAN 范围 / 采集通道` 三项核心事实，连续展示三条同构 WAN 后又在场景区重复 `8/8 WAN / 无活动默认路由`；事故台账逐行复读共有严重度和原因；程序化标题焦点形成过强蓝框；次级排查没有真实渐进披露；768 平板仍先呈现被窄列拆碎的桌面式字段，而不是稳定的对象列表—详情任务关系。资源详情证据正确但表面过度卡片化。Fleet 只可作为无事故时的规模属性，不得覆盖当前最高风险；当前风险排序与默认对象逻辑经复核仍成立。
+- 独立工程事实：`check-mobile-accessibility-runtime-v2` 的 `195×422 + DPR2` 只证明窄 CSS 视口重排，不能被命名为真实 200% 文字缩放；必须将它保留为 reflow 能力并另增真实 200% 用户文字/浏览器缩放证据。`check-browser-lifecycle-v2` 本轮复测在 success 的 `browser-server.close` 超时，且总 deadline 尚未约束所有注册 cleanup。事故台账关闭后没有把焦点恢复到“查看全部”触发器。`check-mobile-incident-rhythm-v2` 的产品方向也未完成，同时现有失败由脆弱 CSS 文本正则触发；门禁应验证真实披露行为和运行几何，不应靠源码排版假红或假绿。
+- 时间与连接契约：生产后端输出带时区 RFC3339，前端拒绝无时区字符串；`navigator.onLine` 仅作为 `browserOnlineHint`，不得阻断同源 `/api/snapshot` 请求，也不得推断 LAN、RouterOS 或 WAN 可达性。相关 focused 合同已通过，但仍需在最终 clean exact SHA 重跑。
+- 发布与信任边界：本步没有提交、没有上传 GitHub、没有触发新的远端 CI；`releaseEligible=false / releaseComplete=false`。直接读取的远端 `main` 为 `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，本地 tracking ref 曾滞后，候选冻结和原子更新前必须重新 fetch 并再次读取远端 tip。`D:\想法\面板\release-attestation` 与工作区同属本机同一用户，只是防误操作和一致性预检，不是独立 security trust root；现有 policy 对已变化的 `package.json` 摘要 fail-closed，不能由候选提交者更新后自称独立授权。
+- 路由成熟度：当前仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；19 个真实 URL 与数据展示壳不等于 19 个完成运维模块。工程矩阵只能证明实现覆盖，不能证明假搜索、错误链接、低信息效率或视觉质量已经通过。
+- 决策/实现顺序：先在手机事故首屏恢复紧凑三事实条，把可见事故对象压到两项并将同类余项聚合；场景层仅保留新增的影响/恢复证据；主操作保持独立，次级操作进入真实 `<details>` 渐进披露；标题焦点改为不遮挡文案的轻量键盘状态。并行压缩事故台账共有证据、资源详情表面与 768 对象列表—详情。随后修复生命周期全局预算、台账返回焦点与真实 200% 验收，再用新 production 原图重新独立签收。
+- Emil/Loop 裁决：不增加装饰动画；高频巡检操作保持即时，仅给按压、焦点、展开提供目的明确且可中断的反馈，并尊重 reduced motion。冷蓝只是受控配色，不是信息架构原则；状态差异来自任务顺序、对象密度和证据所有权。不得为了通过资产或 DOM 门禁缩字、复读、填假数据或放宽 required matrix。
+- 发布边界：任务 active、`blocked=false`，不存在需要停住的外部阻塞；所有本地可修 P1 继续推进。最终仍必须有 clean exact-SHA runtime、28/76/266/532 矩阵、真实 RouterOS 只读 soak、四角色独立签收、外部授权，以及原子上传后同一远端 SHA 的 Linux/Windows/GHCR CL 全绿。每次 GitHub 上传均必须核对 CL；任一 pending/missing/cancelled/red 都不算上传完成。
+- 心得：快的正确方式不是跳过签收，而是把互不冲突的根因并行关闭，同时让主线程持续整合。截图里的蓝色焦点框、同类事故复读和 768 字段碎裂都是自动计数无法发现的产品问题；同理，本地同用户目录和窄视口代理都不能被包装成独立授权或真实缩放。
+- nextAction：完成事故首屏、次级披露、焦点恢复、事故台账、资源详情、平板对象工作区、生命周期和真实 200% 验收；重建并跑完整 runtime，人工检查新原图，独立 Product/Design/Visual/Accessibility/Engineering 复签到 P0/P1=`0`，然后同步当前状态、生成 clean exact SHA 并进入完整矩阵与发布链。
+- validForCommit：当前 dirty worktree write-ahead 决策；现有 runtime/截图仅为诊断证据，所有发布证据必须在最终 clean exact SHA 上重做。
+- supersededBy：null
+
+## 第 915 步：先关闭证据假绿，再并行收敛预算、历史状态与响应式断点
+
+- status：`truth-gates-green-local-remediation-active-release-closed`
+- latestStepOutcome: `915:truth-gates-green-local-remediation-active-release-closed`
+- 触发/问题：Step914 后的独立复核指出三类不能用旧 runtime 数量掩盖的问题：合并报告必须证明内部失败绝不会变绿；公共时间、流量和接口计数必须保持原子证据与 missing/zero 区分；当前 Product/Visual 签收不能跨越新的 tracked 修改。重新构建又暴露两个真实工程红项：`style.css=121163 bytes / 20050 gzip` 超过固定 `120000 / 20000`，`app.py=3985` 行超过 backend security 的 3900 行责任边界。工作区筛选/排序/分页/工具/滚动尚未完整进入 Back/Forward 历史，正常平板关系证据还在 899/900 消失。
+- 决策：不提高任何预算，不把 pending 写成 blocked，不用旧截图自签。主线按公司 Loop 拆成互斥并行路：CSS 只做删除/合并；backend 只做责任抽取；history 只做有界 route-local state；tablet 只移除 899/900 语义断层。主线同时复核数据和门禁，所有分支完成后统一重建 runtime，再由独立 Product/Design/Visual/Accessibility/Engineering/Security 基于同一候选复签。
+- 已验证事实：合并器 12 项攻击回归全部通过，root/nested/applicable child `pass=false`、失败列表、source exit 和 matrix incomplete 都会令顶层失败；`check:overview` 全绿。流量历史使用原子 `{timestamp,uplink,downlink,source,evidenceMode}`；timezone-less 公共时间被拒绝；连接/接口缺失计数保持 `null`，显式 0 保持观测 0；连接后端合同 11 项测试通过。19 路由保持 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，`more` 的 renderer evidence 指向真实目录 owner。WAN 轴运行时证明完整 `31.25 Mbps` 标签位于 SVG 和容器内。
+- 无障碍边界：`browser-page-scale`、`rendered-scale-reflow-fixture`、`css-text-resize-fixture` 都在各自诚实名称下通过，CSS fixture 的 clippedText/clippedFocusSteps 为 0；但这些证据早于当前 tracked 修复，最终候选必须重跑。浏览器工具栏真实 200% 和物理 iOS/Android 系统文字仍未证明，不能偷换名称。
+- 发布边界：当前 build budget 与 backend architecture 仍红，Back/Forward 和 899/900 修复仍在进行；此前 274/147/174 runtime 已历史化。没有 clean exact SHA，没有当前外部签收，没有真实 RouterOS soak，没有 promotion signature。GitHub 未上传、CL 未开始；任务 active、`blocked=false`、release CLOSED。
+- 心得：矩阵数量只有在根与所有适用子项同一真值时才有意义；高密度也不能靠越过 CSS/架构预算换取。真正加速不是跳过门禁，而是把写入范围拆开并行，让每路交付一个可复核、不互相覆盖的结果，再在同一候选上一次性重验。
+- nextAction：完成四路修复，重建并通过 types/overview/static-assets/asset-identity/backend-security；运行 fresh runtime、browser lifecycle 和三种 accessibility；检查 320/390/430/667/768/844/1199/1200/1366/1440 原图并关闭独立 P0/P1。随后同步唯一决策真值、构造 live main 的干净单父候选、运行全矩阵/soak/readiness，再按 Git Data API 原子上传并等待同 SHA Linux/Windows/GHCR CL。
+- validForCommit：Step915 dirty-worktree focused evidence only；不得作为 public-release approval。
+- supersededBy：null
+
+### 第 914 步验收补充：当前 runtime、平板关系、资源顺序与无障碍证据边界
+
+- 触发/问题：本轮需要把已完成的窄范围事实与未关闭的验收边界写回决策仓库，避免把 runtime 计数、自动化缩放夹具或局部布局修复误写为产品视觉签收。
+- 观察事实：当前 production browser 的 bounded runtime 为 `274 checks / 147 screenshots / 174 snapshotApiCalls` 通过。tablet 关系证据已移入右侧任务区并去除重复。资源对象在 `current` 模式先呈现压力、再呈现证据；`historical` 与 `unavailable` 则先呈现证据、再呈现压力。`browser-page-scale` 与 `rendered-scale-reflow-fixture` 两个具名自动化模式通过；`css-text-resize-fixture` 仍失败，键盘焦点到 `03连接对象` kicker 时出现裁切。
+- 决策：将上述结果归类为 dirty-worktree focused runtime/layout/accessibility evidence。保留 CSS text-resize 为未闭环 P1；不得将 Chromium page-scale 或 rendered-scale 夹具改称 browser-toolbar 200% 缩放，也不得改称物理 iOS Dynamic Type 或 Android OS 字号。
+- 理由与拒绝项：browser toolbar 200% 与物理 iOS/Android OS 字号均为 `not-proven`，需要各自的浏览器 UI 或设备级验收记录。自动化局部通过不能替代 Product/Design/Visual 签收，不能因为 274/147/174、平板去重或资源顺序正确就宣布视觉已签收。
+- 验证：runtime 第914步记录为 green；`browser-page-scale/report.json` 与 `rendered-scale-reflow-fixture/report.json` 的 `pass=true`；`css-text-resize-fixture/report.json` 的 `pass=false` 且错误为 clipped focused target。Context harness health 为 `automatic_hooks_ready=false`，因此未声称自动钩子已生效。
+- 发布边界：GitHub 未上传，Linux/Windows/GHCR CL 未开始；`releaseEligible=false / releaseComplete=false`。真实 RouterOS soak、clean exact-SHA 矩阵、外部四角色签收与签名 promotion authorization 仍待完成；产品视觉未签收。
+- nextAction：修复 text-resize 下已聚焦 `03连接对象` kicker 的裁切并重跑该夹具；之后以 clean exact SHA 重新绑定 runtime、原图与完整验收链。
+
+## 第 916 步：聚焦实现收口，运行时报告身份和浏览器生命周期改为可证明契约
+
+- status：`runtime-identity-consumers-hardened-final-revalidation-open`
+- latestStepOutcome: `916:runtime-identity-consumers-hardened-final-revalidation-open`
+- 触发/问题：Step915 的四路实现完成后，完整 production runtime 已达到 `274 checks / 147 screenshots / 179 snapshotApiCalls`，但 `check:overview` 揭露旧门禁仍通过精确英文检查名读取报告，组件拆分后也继续从旧 owner 文件查 DOM 标记。与此同时，浏览器生命周期真实自测暴露 Edge 进程树在 250ms `spawnSync taskkill` 预算内残留；生产 public history 仍对外带出旧资源并行数组；压缩旁车对内部 symlink 的边界不够严格。任何一个都不允许靠旧绿报告、改检查名或放宽残留阈值掩盖。
+- 决策/实现：生产 public history 只输出原子 `resourceSamples / trafficSamples`，时间保持 RFC3339 带时区；前端资源历史显式要求自有 `resourceSamples`，不重建旧平行数组。`.br/.gz` 一律拒绝 symlink，再执行 public-root containment。legacy hash 只读兼容后立即规范化为单一 query URL，对象 ID 使用 locale-independent lower-case。所有直接消费 runtime report 的门禁统一绑定 `commit + worktreeFingerprint + artifactKey`：混合静态门禁在 stale 时只能写 `static-pending`，显式 runtime/release 模式必须 fail closed。
+- 浏览器生命周期：将同步 `taskkill` 改为异步、共享截止时间的 owned-process-tree 终止和轮询；late launch cleanup 必须 `await`，外层 close 使用剩余全局 deadline，最终仍以 `processExists(pid) === false` 判定。`check-browser-lifecycle-v2` 连续三次、共 21 个用例通过，均记录 `verifiedStopped=true / residual=false`。长截图批次继续使用独立 browser-server，不把一次静态 token 当作进程隔离证明。
+- 交互与无障碍：bounded Back/Forward 现在覆盖 search/filter/sort/page/tools/focus/scroll，并增加 375×667 与 768×1024 跨尺寸恢复。200% rendered-text gate 在真实 Chromium 中应用计算文字缩放并检查唯一 main、命名 navigation、标题和前 3–4 个可见焦点目标；rendered-scale 与 CSS text-resize 均通过。该证据不冒充浏览器工具栏 zoom 或物理 iOS/Android 系统字号。
+- 预算与视觉事实：build 为 1927 modules；JS `537021 bytes / 154805 gzip / 126052 brotli`，CSS `119734 / 19943 / 16968`，均在固定预算内且未提高阈值。最新 320/390/430、667 横屏、768/844、1199/1200、1366 原图显示手机维持状态—当前对象—事实—速率—下一步—WAN 历史—运行判断主线，事故先展示最高风险对象和真实调查入口；平板使用对象比较/详情关系；桌面保持紧凑状态、当前出口、趋势和判断表。自动原图仍不能替代最终独立视觉签收。
+- 报告真值：组件 owner 迁移后的 source gate 已改查 `MobilePatrolHeader`、`MobilePatrolPhoneIncident` 与 `MobilePatrolPhoneSteady`，没有要求产品把标记搬回巨型 orchestrator。正常手机真实顺序是 current rate → one next task → WAN history → secondary decisions；旧的 signal → decisions → next-task 断言被纠正，并继续由 runtime 几何验证。所有这类 tracked gate/docs 变更会使上一份 `274/147/179` 报告正确变 stale，必须统一重跑一次，而不是手改 fingerprint。
+- Loop/Emil 心得：Product Company Loop 已进入 `verify`，所有 Product/Design/Visual/Accessibility/Engineering/Release gate 继续独立 fail-closed。加速来自互不冲突的并行 owner、一次性报告消费者扫查和最终统一重验，不来自减少场景。高频运维交互不增加装饰动画；保持即时按压、清楚焦点、真实展开和 reduced-motion，视觉价值来自任务顺序、对象比较和证据边界，而不是冷蓝面积或卡片数量。
+- 发布边界：任务 active、`blocked=false`，不存在停止本地工作的外部阻塞。当前不是 release candidate；没有 clean exact SHA、当前四角色签收、真实 RouterOS soak、签名 promotion authorization、GitHub upload 或 Linux/Windows/GHCR CL。每次 GitHub 上传后仍必须核对同一远端 SHA 的三端 CL，任一 pending/missing/cancelled/red 都不算完成。
+- nextAction：以 Step916 完整工作树重建并跑 current-identity runtime、完整 `check:overview`、route deep history、lifecycle、a11y、backend/security；关闭所有新红项后冻结直接基于 live main 的 clean single-parent candidate，运行全部矩阵、soak、readiness 和独立 Product/Design/Visual/Accessibility/Engineering/Security 复核，再执行 Git Data API 原子上传与同 SHA 三端 CL。
+- validForCommit：uncommitted Step916 focused verification evidence only；not a release candidate，不得作为 public-release approval。
+- supersededBy：null
+
+## 第 917 步：时间、URL 与真实 Edge 工具栏缩放契约闭环；当前运行时重验继续开放
+
+- status：`time-url-toolbar-zoom-contracts-closed-current-runtime-open`
+- latestStepOutcome: `917:time-url-toolbar-zoom-contracts-closed-current-runtime-open`
+- 触发/问题：Step916 后，独立复核仍发现公共时间字段可在响应追加阶段绕过清洗、裸 `q` 可留在地址栏而不再代表可恢复工作区状态；自动文字夹具也不能代替真实 Windows Edge 工具栏 200% 验收。
+- 观察事实：公共 JSON 的最终响应边界现统一清洗时间字段；`lastSuccessAt`、`lastFailureAt`、`trustExpiresAt`、`expiresAt` 与通用时间后缀的无时区值会清为 `null`，带时区 RFC3339 与 `null` 保留，`leaseTime` 等时长不被误删。后端端到端回归 `16` 项、前端 runtime schema/time contract 通过。canonical URL 从可恢复上下文重建，裸 `q` 被删除、有效对象/风险/证据上下文保留；回归 `9/9`。浏览器 lifecycle v2 的语义修正后 `7/7` 通过。真实 Windows Microsoft Edge 工具栏 200% 在正常 Overview 与 interfaces-down 路由通过：DPR `1→2`、innerWidth `800→400`、无 operational text 裁切、键盘焦点可见且 cleanup 完成。聚焦独立复核为 `P0=0 / P1=0`。
+- 决策：以上五类只关闭其明确的 focused contract，不提升任何最终发布 gate。工具栏证据精确命名为 Windows Edge toolbar zoom，不外推为 iOS Dynamic Type、Android 系统字号或最终产品视觉签收。
+- 理由与拒绝项：时间、URL、进程清理和真实缩放都是可局部证明的工程/可访问性事实；它们不能代替 clean exact-SHA 原图、完整 runtime/Overview/route/a11y/矩阵、独立最终签收、300 秒真实 RouterOS 只读 soak 或远端 CL。不得把 dirty-worktree 成功、旧截图或同机目录当作发布授权。
+- 验证：`tools/test_backend_public_contract.py` `16 tests OK`；`check-public-time-contract` PASS；`check-canonical-route` `9/9`；`check-browser-lifecycle-v2` `7/7`；真实 Edge toolbar 200% 两条目标路线均通过。
+- 风险/边界：本工作树仍非 clean candidate，所有会读取 runtime identity 的发布/视觉证据仍待最终同一 SHA 重建。产品、视觉、可访问性与安全的最终独立签收仍未关闭；release 继续 FAIL/CLOSED，GitHub 未上传，Linux/Windows/GHCR CL 未开始。
+- 心得：把“缩放”写成真实浏览器状态转变（DPR、CSS 宽度、焦点、裁切、清理），才能避免以 CSS 夹具替代用户能力；同理，URL 与时间必须在最终公开边界保真，而不是依赖调用者自觉。
+- nextAction：冻结并从 live main 构造 clean exact-SHA 候选；在未改 tracked 文件的候选上依次重跑 runtime、Overview、深路由/history、a11y、28/76/266/532 矩阵，完成四角色最终独立签收与 300 秒 RouterOS soak，再做 readiness。仅在获授权原子上传后核对同一远端 SHA 的 Linux/Windows/GHCR CL。
+- validForCommit：Step917 dirty-worktree focused verification only；not a release candidate，not public-release approval。
+- supersededBy：null
+
+## 第 918 步：纠正 Edge 200% 视觉证据边界，并把候选身份、GHCR 索引与精确远端 SHA 纳入发布门禁
+
+- status：`edge-zoom-proof-corrected-release-evidence-hardening-green-final-acceptance-open`
+- latestStepOutcome: `918:edge-zoom-proof-corrected-release-evidence-hardening-green-final-acceptance-open`
+- 触发/问题：Step917 把局部通过写成“契约闭环”过于宽泛，而且 Playwright 在浏览器工具栏 200% 下生成的 393px raster 只截到放大页面左侧，不能作为用户实际看到的浏览器窗口。发布链复核同时发现三类可导致假绿的证据断点：独立评审工件身份未强制等于候选 runtime 身份；readiness 无法正确识别带版本注释的不可变 SHA-pinned `docker/build-push-action`；上传后没有一个工具把远端 `main`、Linux、Windows、容器 workflow 和 GHCR 多架构 revision 锁定到同一 SHA。
+- 观察事实：通过 Windows UI Automation 聚焦唯一标题的 Microsoft Edge 窗口并执行 `Ctrl+0` 与五次 `Ctrl+NumpadPlus` 后，DPR 从 `1` 变为 `2`、`innerWidth` 从 `800` 变为 `400`。随后按 Edge HWND 的 `GetWindowRect` 使用 Windows-owned capture 取得两张 816×932 原图：正常 Overview 与 interfaces-down 路由均显示浏览器 chrome、完整标题、状态语句、命名标签和键盘焦点，visible operational text clipping 为 `0`；cleanup 全部成功。Playwright 393px 文件改名为 `-playwright-diagnostic.png`，只保留诊断用途。
+- 决策/实现：真实 200% 视觉证明只承认 Windows-owned Edge 截图，Playwright raster 不进入产品签收。候选评审检查器要求 `reviewedArtifact.artifactKey` 与 `worktreeFingerprint` 精确等于干净候选 runtime；readiness 只接受 `docker/build-push-action@<40-hex-sha> # v7`；容器 workflow 在 push 后验证 action digest、tag-resolved OCI index、恰好 `linux/amd64 + linux/arm64` 以及 index/平台 revision；新增 exact-SHA release verifier，要求远端 `refs/heads/main`、push CI、Linux validation、Windows packaging、container workflow 与 GHCR `sha-<SHA>` 索引全部完成且共同指向目标 SHA。queued、running、missing、cancelled、failure 均 fail closed。
+- 理由与拒绝项：浏览器截图必须证明实际拥有的窗口，而不是把 CDP raster 当作屏幕；发布验证必须证明“同一个远端 SHA 的同一组产物”，不能分别收集几个绿色回执后拼成成功。否决三种捷径：放宽 clipping 让错误 raster 通过；让任意 `@v7` 或任意注释绕过不可变 SHA；只验证 workflow success 而不验证 GHCR index、平台集合与 OCI revision。
+- 验证：`check:browser-toolbar-zoom200` PASS，两个 Windows-owned capture 均为 816×932、两路 clipped count 为 0；`test-release-candidate-evidence`、`test-public-release-semantic-gates`、`test:container-workflow-postpush`、`test:exact-sha-release`、`check:workflow-release-integrity` 与 `check:types` 通过。`check:overview` 在当前 tracked 变更后只因旧 runtime identity 正确失效；不得削弱门禁，必须在写入冻结后重建 current-identity runtime。
+- 边界/心得：本步是 dirty-worktree focused evidence，不是候选签收。Windows Edge toolbar 200% 不外推为 iOS Dynamic Type 或 Android 系统字号；发布工具 fixture 通过也不代表远端发布存在。Product、Design、Visual、Accessibility、Engineering、Security 的最终独立签收、current runtime/Overview/routes/a11y、28/76/266 矩阵、300 秒 RouterOS 只读 soak、签名 promotion authorization、GitHub 原子上传与精确 SHA Linux/Windows/GHCR CL 全部仍待完成。任务 active、`blocked=false`，release FAIL/CLOSED，GitHub 未上传。
+- Loop/Emil 心得：继续使用 Product Company Loop，把产品签收、视觉签收、无障碍、工程与发布拆成独立门；Emil 规则只允许有任务目的、可中断、尊重 reduced-motion 的反馈，不用动画掩盖层级或证据不足。真正提速来自并行关闭互不冲突的证据缺口和一次性重建最终候选，而不是删除场景、复用旧 SHA 或把 focused green 写成完成。
+- nextAction：完成 Step918 决策真值与 D 盘逐字镜像后冻结 tracked 写入；在同一未变 candidate 上依次重建 runtime、Overview、route deep/history、a11y、28/76/266 矩阵与 300 秒 RouterOS soak，并取得 final independent P0/P1=0。随后直接以 live remote main 为唯一父提交构造 clean candidate；只有 readiness 与签名授权通过才可用 Git Data API `force:false` 原子上传，上传后必须运行 exact-SHA verifier，直到 Linux、Windows、container workflow 与 GHCR 两平台 revision 全绿。
+- validForCommit：Step918 uncommitted focused verification evidence only；not a release candidate，not public-release approval。
+- supersededBy：Step919 (current conclusion superseded; historical focused evidence retained)
+
+## 第 919 步：真实 Edge 200% 遮挡与 WAN 轴重叠修复；clean exact-SHA 最终验收仍待
+
+- status：`edge-toolbar-occlusion-proof-wan-axis-repair-and-clean-candidate-finalization-open`
+- latestStepOutcome: `919:edge-toolbar-occlusion-proof-wan-axis-repair-and-clean-candidate-finalization-open`
+- 触发/问题：真实 Edge 200% 首次运行发现 helper 黑窗遮挡捕获，且 WAN 图左轴 `0` 与时间标签重叠；Step918 因而不能继续作为“Windows-owned 视觉证明已足够”的当前结论。
+- 观察事实：隐藏 helper 后，以前台 Edge HWND 捕获并在九个采样点断言无遮挡；左轴 gutter 修复后，单格 smoke 通过。正式 clean exact-SHA 16 格尚未运行。Windows CI SHA 工件与 Linux portable fixture 已分离，使用 Copy-Item 以及固定 pywinauto/Pillow。六项资源预算全绿：style `119933/19955/17014`、JS `537427/154955/126154`、desktop `33540/5089/4496`（raw/gzip/brotli）；已删除 28 个无引用 CSS 恢复脚本和 1 个生成诊断。connector manifest 工具与 D 外部观察租约均为 `force:false`；租约不是 CAS，TOCTOU 已披露。独立实现预审为 P0=0/P1=0，仍非 final exact-SHA 签收。
+- 决策：将 Step918 明确标记为 superseded 的历史 focused 记录；仅接受修复后的单格 smoke、预算和夹具分离为局部工程事实。保持 release CLOSED、GitHub 未上传、task active、`blocked=false`。
+- 理由与拒绝项：拒绝把无遮挡单格 smoke 说成 16 格矩阵，拒绝把 P0/P1=0 的实现预审说成四角色最终签收，拒绝把 `force:false` 非 CAS 观察租约说成无竞态发布授权，也不把删除恢复脚本扩大为产品验收。
+- 验证：单格 Edge 200% smoke 通过；六项资产预算全绿；实现预审 P0=0/P1=0。正式 clean exact-SHA 16 格、28/76/266、runtime/a11y/soak、四角色最终复核、connector 发布和 Linux/Windows/GHCR CL 尚待。
+- 边界/心得：真实前台窗口与辅助进程遮挡必须先被证明不存在，截图才可进入证据链；`force:false` 只限制写入形态，不消除 read-to-write 的 TOCTOU 窗口。
+- nextAction：冻结 clean candidate、跑 16 格+28/76/266+runtime/a11y/soak/四角色复核，再 connector 发布和三端 CL。
+- validForCommit：Step919 uncommitted focused verification evidence only；not a release candidate，not public-release approval。
+- supersededBy：null
+
+## 第 920 步：手机视觉语言被否决，取消候选冻结并返回设计阶段
+
+- status：`mobile-visual-language-rejected-return-to-design-release-closed`
+- latestStepOutcome: `920:mobile-visual-language-rejected-return-to-design-release-closed`
+- 触发/问题：产品所有者明确指出当前手机面板没有爱快的运维设计语言，也没有 iOS 27 的平台感觉，整体像 2015 年前后的后台管理页面，并提出宁可全部删除重做。主线程重新查看 390px 正常态、事故态、Fleet 和 768px 平板原图后确认：页面依赖平涂蓝灰底、满宽横线、表格式三列、粗重工具栏与连续账本制造“专业感”；内容层和功能层没有真实分离，底部导航只是扁平固定条，平板只是机械分栏。自动门禁此前没有阻止这种视觉失败。
+- Apple/iOS 27 事实：当前 Apple HIG 将 Liquid Glass 定义为控制与导航的独立功能层，浮在内容层之上并保持内容可见；它要求克制使用，而不是给所有内容加模糊。iOS 27 继续强化可读性、一致性和适配。当前实现既没有这一功能层，也没有边到边内容、同心几何、环境适配和连续交互，只剩系统字体与浅蓝色，不能称为 iOS 27 风格。
+- 爱快/运维事实：爱快感来自对象优先、状态比较、紧凑对齐、异常扫读和操作效率，不来自把整个画布染成冷蓝。当前 proof/signal/object 多层复读、长文案和同权重横线让首屏像诊断规格表；接口、路由、采集与资源对象缺少稳定的视觉身份，五秒巡检主线不成立。
+- 决策：立即取消 clean candidate 冻结和后续 16/28/76/266、soak、上传与 CL 路径；Product Company Loop 从 verify 回退到 design。保留证据类型、RFC3339 时间、missing/zero 区分、默认路由核实、只读安全、场景数据与无障碍合同；废弃当前手机组件编排、手机 CSS 视觉语法、账本式重复层级和机械平板布局，不把它们作为新方案视觉参考。
+- 新设计门：并行研究三条在信息架构和交互模型上真正不同的方向；按五秒正确判断、异常识别、对象密度、单手成本、iOS 27 平台一致性、爱快运维特征和实现隔离评分。只有胜出方向能进入独立手机渲染树；运行截图必须先经人工视觉否决测试，再进入自动矩阵。Emil 规则只用于有任务目的、可中断、尊重 reduced-motion 的反馈，不用动画和玻璃掩盖层级问题。
+- 发布边界：GitHub 未上传，CL 未开始，`releaseEligible=false / releaseComplete=false`，任务 active、`blocked=false`。Step919 的 Edge、预算和发布工具证据保留为历史工程资产，但不能提升被视觉否决的候选。
+- 心得：自动化能够证明“没有撒谎、没有裁切、流程能走通”，却不能证明界面有审美、时代感和产品气质。把工程正确当成设计通过，是本轮最根本的判断错误；之后必须让真实原图的人类视觉审查先于候选冻结。
+- nextAction：完成三条全新手机方向的并行研究和对抗评审，选定一个方向；随后删除被否决的手机表现层并在隔离渲染树中重建，先交付 390×844 与 768×1024 的正常态/事故态真实运行截图，再恢复完整验收链。
+- validForCommit：Step920 设计回退 write-ahead；not a release candidate，not public-release approval。
+- supersededBy：null
+
+## 第 921 步：三路方向裁决，选择 Linkboard 并确定干净手机 Overview 所有权
+
+- status：`linkboard-selected-clean-mobile-overview-ownership-approved`
+- latestStepOutcome: `921:linkboard-selected-clean-mobile-overview-ownership-approved`
+- 触发/问题：Step920 已确认旧手机界面不能进入候选，但仍需避免“删完再凭感觉画一遍”。公司 Loop 并行产出 Evidence Pulse、Linkboard / 运行场、Evidence River 三条信息架构，并追加独立对抗评审、当前 import 闭包审计和门禁审计。
+- 裁决：选择 Linkboard / 运行场。它以已验证网络对象为入口，以同量纲或明确关系的两个对象/基线为比较中心，再给出一个时间证据和一个下一步。Evidence Pulse 被否决为主架构，因为纵向证据叙事仍容易退回文字账本；Evidence River 被否决，因为时间叙事与手势成本会拖慢五秒巡检，并可能暗示快照未证明的因果顺序。
+- 对抗约束：内容是一张连续不透明画布；Liquid Glass 只用于真实工具栏、任务导航和临时控制；normal、interfaces-down、resource-full、collection-down、no-snapshot、all-offline、fleet 必须重排比较问题和证据，禁止只换色/文案；任何对象连接必须有已验证关系；768 只有存在非重复第二任务时才分栏。
+- 视觉验收：390 正文不低于 15px、元数据不低于 12px、触控不低于 44px；首屏最多一个真实圆角分组，不得嵌套卡片；`collection-down/no-snapshot` 禁止当前速率、当前阈值和活态图；若盲审仍能准确称其为后台报表、通用 dashboard 或 AI 卡片堆，视觉门禁直接失败。
+- 架构：新入口为 `src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx`。先切入口，再删除只由旧 `MobilePatrolScreen` 引用的 Patrol、ledger、comparison、incident 与 `mp-*` CSS 闭包；保留 `overview/evidence-model`、route/time/runtime/read-only、安全与非 Overview domain contracts。桌面不导入新手机选择器。
+- 发布边界：这是设计选择，不是实现通过。当前没有 Linkboard 运行时截图、矩阵或独立签收；候选冻结继续取消，GitHub 未上传，CL 未开始，`releaseEligible=false / releaseComplete=false`，任务 active、`blocked=false`。
+- 心得：真正的重做不是换色或换组件名，而是先改变用户正在回答的问题。把对象与比较关系确立为首要信息，再让材料、字体和动效服务它，才有机会同时得到爱快的效率与 iOS 的平台感。
+- nextAction：切换 Overview 到新的 MobileOverviewEntry，删除旧 Overview Patrol 表现闭包，完成 Linkboard 的 390 手机与 768 平板正常/事故垂直切片并生成真实运行原图。
+- validForCommit：Step921 selected design contract；not an implementation pass，not a release candidate。
+- supersededBy：Step922
+
+## 第 922 步：隔离 Linkboard 实现、真实交互与手机/平板场景切片完成；独立签收仍开放
+
+- status：`linkboard-implemented-runtime-accessibility-matrix-green-independent-signoff-open-release-closed`
+- latestStepOutcome: `922:linkboard-implemented-runtime-accessibility-matrix-green-independent-signoff-open-release-closed`
+- 触发/问题：产品所有者再次明确指出此前界面没有爱快的对象化运维语言，也没有 iOS 27 的当代平台感觉，仍像 2015 年后台报表。主线因此没有继续修饰旧 Patrol/ledger，而是按 Step921 的干净边界切换入口、物理删除旧 Overview 表现闭包，并对第一版 Linkboard 原图再次执行视觉否决。首版仍有报表式横线、假卡片对象轨、平板机械分栏和不可见的功能层，继续重排而不是自称通过。
+- Apple/iOS 27 裁决：依据 Apple 2026 Design Resources、HIG Materials 与 Liquid Glass 指南，玻璃只属于任务导航、对象切换和真实下一检查控制；比较、时间序列和证据正文保持不透明。手机使用边到边冷灰蓝内容层、同心圆角的浮动四栏任务导航、可滑对象索引和单一焦点工作面；iPad 使用浮动任务轨、一个玻璃对象侧栏与不透明详情工作区。取消旧的左侧色条、假 sheet、拓扑、KPI 格和多层账本。
+- 爱快/运维裁决：视觉中心改为“已核实对象 + 同量纲比较 + 时间证据”，状态标题只陈述可验证事实。正常态比较当前 WAN 下载与同一观测窗峰值；资源态比较当前资源样本与策略阈值并给出末尾连续样本；接口/Fleet 先显示最高风险对象和异常期间 WAN 证据；全离线、无快照、采集失败撤回活态图和当前速率。对象索引、焦点比较、时间证据、下一检查分别回答“看谁、比什么、是否持续、下一步去哪”，不再复读同一组三事实。
+- 实现事实：Overview 已切到 `overview/mobile-overview/MobileOverviewEntry.tsx`；新树包含 `MobileLinkboard`、`LinkboardTimeEvidence`、truth-first model、选中历史与独立 phone/tablet styles。旧 `MobilePatrol*`、EvidenceLedger、Topology、Sheet 与 `mp-*` Overview 样式闭包已删除；桌面与非 Overview mobile domain 保持独立。缺失速率不再转成零，任意首路由兜底已取消，资源“连续”按尾部连续样本计算。
+- 交互/无障碍证据：对象切换采用完整 tablist/tab/tabpanel 键盘模型，支持 ArrowLeft/Right、Home、End；same-URL Back/Forward 恢复选中对象与焦点；详情进入、Back、Forward 恢复来源焦点。`check-linkboard-runtime` 5/5 通过，覆盖 320/375/390/430/600/768/844 与 844×390、无横向溢出及 44px 触控；`check-linkboard-accessibility-runtime` 4/4 通过，390/768 的 200% rendered-text fixture 无可见文本裁切，`no-snapshot/collection-down` 无当前速率和活态图。screen-reader-only 文本从视觉裁切检测中排除，不把 1×1 可访问性技术当产品裁切。
+- 场景/视觉证据：`_acceptance/linkboard-visual-v4/report.json` 的 7 场景 × 390/768 共 14/14 responsive cells 通过；`single/fleet/all-offline/no-snapshot/collection-down/resource-full/interfaces-down` 均保存原图。比较工作面、对象索引、时间戳、场景 composition、主 landmark、目标尺寸、图表真值、详情纵深和浏览器历史均为 blocking 条件；没有浅层 OR 绕过。该结果是 dirty-worktree bounded evidence，不是完整发布矩阵。
+- Loop/Emil 心得：Product Company Loop 继续把 Product、Design/Visual、Accessibility、Engineering、Security 与 Release 分开；三路代理只处理互不冲突的验收探针、运行时门禁和视觉契约，主线负责原图裁决与集成。Emil 规则只保留按压、选择、焦点和场景切换的即时可中断反馈；reduced-motion 和 reduced-transparency 均有回退。没有用动画、玻璃或冷蓝面积替代层级。
+- 尚未关闭：三位新的独立视觉、产品/运维、交互/无障碍签收正在基于 v4 原图与当前源码执行；任何 P0/P1 都会继续修复。完整 `check:overview` 中仍有大量旧 Patrol/ledger 静态门禁需要按 Linkboard 真值迁移或删除，不能靠保留死组件假绿。clean exact-SHA、完整 28/76/266/532、真实 RouterOS soak、外部 promotion authorization、GitHub 上传和同一远端 SHA 的 Linux/Windows/GHCR CL 均未开始。
+- 发布边界：任务 active、`blocked=false`。`releaseEligible=false / releaseComplete=false`，GitHub 未上传，CL 未触发。14 格 bounded matrix、局部 runtime/a11y 和自研 visual contract 不能替代独立视觉签收或最终 exact-SHA 证据。
+- nextAction：收取并裁决当前三路独立签收；关闭全部 P0/P1 后迁移 `check:overview` 的旧手机门禁，重跑完整手机/平板/桌面与路由矩阵，再冻结 clean exact SHA、完成 soak/readiness/外部授权。只有这些全部通过才允许 Git Data API `force:false` 原子上传，上传后必须等待同一 SHA 的 Linux、Windows、GHCR CL 全绿。
+- validForCommit：Step922 dirty-worktree implementation and bounded visual evidence only；not a release candidate，not public-release approval。
+- supersededBy：Step923
+
+## 第 923 步：Linkboard v4 独立视觉与产品签收失败，改为按事故任务切换整页构图
+
+- status：`linkboard-v4-independent-product-visual-fail-scene-architecture-remediation-active`
+- latestStepOutcome: `923:linkboard-v4-product-visual-fail-scene-architecture-selected-release-closed`
+- 触发/问题：产品所有者再次直接否决当前手机视觉，认为它仍没有爱快的对象化运维效率，也没有 iOS 27 的平台质感，像一张 2015 年后台报表。主线程逐张查看 `_acceptance/linkboard-visual-v4` 的 14 张原图后同意该判断：当前实现虽然没有伪造速率、对象历史和证据边界，但所有场景仍共享“结论—横向对象条—大比较卡—图表—大 CTA”的固定纵向模板，工程正确没有转化为产品成立。
+- 独立签收事实：Design/Visual 为 `FAIL 46/100`，P0=`0`、P1=`7`，阻断项包括报表堆叠、事故只换数据不换构图、内容区玻璃卡片过多、横向对象轨隐藏风险、iPad 机械两栏与空白、事故扫视差异不足、下一检查 CTA 过重。Product/Operations 为 `FAIL 72/100`，P0=`0`、P1=`2`：全离线没有最后一次已确认活动默认路由证据；Fleet/接口异常把依赖错误降级成两个接口的同类并列。Accessibility/Interaction 为条件通过；已证明 tablist、Back/Forward、焦点、44px、200% rendered-text 与证据撤回，但完整发布矩阵、运行时 reduced-motion/reduced-transparency、工具栏缩放、真机触控和人工读屏仍未关闭。
+- 产品裁决：不再把 Linkboard 当作一张固定模板。新手机 Overview 使用五类显式任务场景：`SteadyScene` 以当前 WAN、同窗峰值与时间序列为主；`DependencyIncidentScene` 以接口到已核实路由/WAN 的依赖和出口冗余为主；`OfflineScene` 只在有真实历史关系时显示最后确认活动路径，否则明确“无法确认最后活动路径”；`EvidenceBoundaryScene` 以 REST/SSH、最后成功和不可判范围为主并撤回活态数字；`ResourcePressureScene` 以阈值、末尾连续样本和资源对象为主。场景必须改变主任务顺序、可见对象和空间权重，禁止只换颜色或文案。
+- 对象与动作架构：事故手机不再默认使用会遮住后续风险的横向对象轨，而显示有界风险队列（前两项加“其余 N 项”的真实披露）；正常态可保留紧凑对象选择。下一检查改为轻量、可预测的导航行，必须说明目标对象和新增证据，不再使用第二块大玻璃 CTA。Fleet 只作为无风险时的规模属性，不能覆盖当前最高风险。
+- iOS/iPad 材料裁决：持久 Liquid Glass 只保留给底部任务导航或 iPad 任务轨；对象选择使用不透明的低对比度分段/列表，证据工作区保持不透明。iPad 必须是对象索引—主任务—相关新证据的工作台；只有右侧内容增加新的来源台账、依赖或近期事件时才分栏，禁止为了“两栏”留下大面积空白。材料、同心圆角和即时可中断反馈服务于任务，不用毛玻璃、阴影和动画伪造 iOS。
+- 真值边界：删除通用同类 peer 兜底。接口/Fleet 只有共享 evidence model 明确提供 route/WAN 依赖时才渲染关系；没有就显示未核实。全离线的“最后活动路径”也必须来自带时间和来源的历史证据，不能用当前 rows[0] 或任意 WAN 补位。缺失速率继续保持 unavailable，historical/unavailable 不得出现当前速率或活态图。
+- 发布边界：任务 active、`blocked=false`。当前 v4 不具备 Product/Design/Visual 签收，`releaseEligible=false / releaseComplete=false`；GitHub 未上传，CL 未触发。14/14 bounded matrix 仅保留为工程回归基线，不得用于视觉签收或候选冻结。
+- Loop/Emil 心得：Product Company Loop 的独立门真正发挥了作用——自动门禁和无障碍通过后，人类原图仍可否决产品。Emil 原则继续限制反馈为目的明确、即时、可中断且尊重 reduced motion；这轮核心不是加动效，而是让事故改变用户正在完成的任务。爱快感来自对象、依赖、比较和异常密度；iOS 27 感来自平台层级、材料所有权和可预测交互，二者都不是蓝灰配色或圆角卡片。
+- nextAction：在隔离 mobile-overview 树中实现五类场景组件和真实依赖模型，重做事故风险队列、轻量下一检查与 iPad 工作台；重建 7 场景 × 390/768 原图并逐张人工否决测试，再进行新的 Product/Design/Visual/Accessibility 独立签收。全部 P0/P1 清零前不得进入完整发布矩阵、候选冻结或 GitHub 上传。
+- validForCommit：Step923 current design remediation write-ahead；not a release candidate，not public-release approval。
+- supersededBy：Step924
+
+## 第 924 步：五场景真值实现通过但原图再次否决；删除当前表现层并选择 Native Operations Canvas
+
+- status：`linkboard-scenes-v2-engineering-green-human-visual-fail-native-operations-canvas-selected`
+- latestStepOutcome: `924:five-scene-truth-green-visual-fail-native-operations-canvas-selected-release-closed`
+- 触发/问题：Step923 的五场景模型、显式接口依赖、历史路径边界和场景独立 DOM 已经落地；`check-linkboard-model`、types、build、runtime、accessibility 均通过，`_acceptance/linkboard-scenes-v2` 的 7 场景 × 390/768 共 14/14 responsive cells 也通过。主线程随后逐张查看全部 14 张原图，并直接接受产品所有者的否决：这版仍像 2015 年网页运维报表。白色大卡、顶部彩色边、二维描边表格、等宽数字、满屏横线和机械左右栏只是把正确数据排整齐，没有形成 iOS 27 的平台层级，也没有形成爱快式快速对象判断。
+- 视觉事实：正常态仍以“对象分段框 + 白色报表卡 + 表格路径 + 底部行”为固定模板；接口/Fleet 事故虽有风险队列，却又把异常期 WAN 图塞回主工作面；全离线、无快照和采集失败在 390 与 768 下都留下大量未被任务利用的空区；资源态的“当前/阈值/判断”三格表和坐标图仍是旧后台语法；iPad 左侧对象栏很快结束，右侧内容也没有构成持续工作台。自动矩阵只能证明裁切、尺寸、语义和场景切换，不能把这些原图判成好设计。
+- Apple/iOS 27 证据：Apple 2026 官方平台说明确认 27 系列继续改进 Liquid Glass 的复杂背景扩散、暗边与镜面高光，并强调跨设备适配；HIG Materials 明确规定 Liquid Glass 属于控件与导航层，内容层应使用标准材质。故不采用“给所有卡片加毛玻璃”的伪 iOS 路径；玻璃只保留给底部任务导航、iPad 浮动任务轨和少量真实对象切换控件，证据正文继续使用不透明或高可读标准材质。来源：`https://developer.apple.com/videos/play/wwdc2026/102/`、`https://developer.apple.com/design/human-interface-guidelines/materials`、`https://developer.apple.com/design/human-interface-guidelines/tab-bars`。
+- 三方向裁决：A“全页 Liquid Glass”因违反内容/控件材料所有权且损害监控可读性被拒绝；B“冷蓝 NOC 表格”就是当前 v2，因旧后台感、框线噪声和机械分栏被拒绝；C“Native Operations Canvas”胜出。C 使用边到边内容画布、一个主任务工作面、无边框对齐带、对象/依赖/时间三种几何语法和浮动玻璃导航；视觉层级来自尺度、对齐、材料和状态密度，不来自大卡、表格框或满屏冷蓝。
+- 新手机构图：状态结论压缩为紧凑顶部带；正常态把 WAN 当前值、同窗趋势和活动路径合成一个连续信号面，不再拆成卡片加表格；依赖事故先显示前两项风险和“其余 N 项”，再显示接口→路由/WAN 的已核实依赖与影响范围，手机不展示无关吞吐图；全离线也使用有界风险队列，不再用两个对象 tab 隐藏其余 WAN；证据边界以 REST/SSH 通道、最后成功记录和不可判范围组成恢复工作流；资源态使用压力轨、阈值标记、末尾连续样本和小型趋势，不再使用三格报表。
+- 新 iPad 构图：顶部状态横跨工作区；对象索引与相关证据共同占据左侧任务侧栏，右侧只保留当前工作面，避免两边都在上半屏结束。侧栏与任务轨可使用 27 系列玻璃层，工作面保持标准材质；相关证据必须增加来源、依赖、时间或下一检查范围，禁止复读主工作面。
+- 删除边界：保留 `overview/evidence-model`、五场景 discriminated union、真实依赖/历史路径/缺失速率/末尾连续样本真值和浏览器历史状态；删除并重建当前 `LinkboardScene.tsx`、`scenePrimitives.tsx` 与 `styles/linkboard.css`、`styles/scenes.css`、`styles/tablet.css` 的表现所有权。不得在 v2 上追加覆盖层、补丁 CSS、隐藏重复 DOM 或截图尺寸特供。
+- Loop/Emil 心得：这轮再次证明“结构正确”仍不足以得到产品气质。Product Company Loop 必须允许原图在人类视觉门关闭时推翻已经通过的工程矩阵；Emil 原则用于让对象切换、按压和导航反馈即时、可中断、少于 220ms，并服从 reduced motion，而不是用动画掩盖旧报表。下一轮先用材料所有权和任务节奏建立平台感，再用爱快的对象密度与证据比较建立专业感。
+- 发布边界：任务 active、`blocked=false`。当前 14/14 仅为被否决版本的工程回归证据；Product/Design/Visual 仍 fail，`releaseEligible=false / releaseComplete=false`。GitHub 未上传，CL 未触发；未完成新的原图签收、完整矩阵、RouterOS soak、clean exact SHA 与同一远端 SHA 的 Linux/Windows/GHCR CL 前禁止发布。
+- nextAction：物理删除 v2 表现树，按 Native Operations Canvas 重建五种场景；先生成并逐张检查新的 390/768 14 张原图，关闭视觉 P1 后再运行独立 Product/Visual/Accessibility 签收。
+- validForCommit：Step924 visual rejection and redesign write-ahead；not a release candidate，not public-release approval。
+- supersededBy：Step925
+
+## 第 925 步：物理删除被否决表现层并完成 Native Operations Canvas；14 张原图逐张通过主线程复核
+
+- status：`native-operations-canvas-implemented-bounded-originals-green-independent-signoff-open`
+- latestStepOutcome: `925:native-operations-canvas-implemented-14of14-bounded-originals-green-independent-signoff-open`
+- 触发/问题：Step924 已确认问题不是颜色或间距，而是表现所有权本身仍属于旧后台报表。继续在 `LinkboardScene.tsx`、`scenePrimitives.tsx` 与旧样式上改动会保留被否决的视觉语法，因此本步不做兼容包装或 CSS 覆盖，直接删除旧场景所有者并在隔离的 `mobile-overview` 树中建立新的移动端任务画布。
+- 实现事实：删除 `LinkboardScene.tsx` 与 `scenePrimitives.tsx`；新增 `NativeOperationsCanvas.tsx` 与 `operationsPrimitives.tsx`；重写移动 tokens、主画布、五场景、平板和 motion 样式。桌面树没有被手机 CSS 或 DOM 接管。五场景继续消费共享 evidence model，但分别拥有不同任务顺序：正常信号、依赖事故、全离线、证据边界、资源压力不再套同一张报表模板。
+- 手机任务架构：390px 事故页固定遵循“状态结论 → 有界风险/对象 → 当前任务面 → 下一检查 → 补充上下文”，下一检查在补充信息之前；当前速率只在完整 current evidence 下出现。风险列表先展示两个最高优先级对象并明确剩余数量，详情通过真实对象动作进入，不用横向 tab 隐藏事故。
+- iPad 任务架构：768px 不再机械分成两个很快结束的栏。状态横跨工作区，左栏拥有对象/风险索引，右栏把当前任务面与相关新证据连接为连续详情流；相关证据增加来源、依赖或时间，不复读主工作面。底部/侧边导航和真实选择控件可使用受限玻璃，证据正文保持高可读标准材质。
+- 真值与交互修复：接口依赖不再静默回退到其他接口；对象列表不再用不安全 slice 破坏 ARIA 所有权；选中对象提供真实检查动作和比较关系；时间证据显示来源；路由标题程序化聚焦使用克制状态轨而非表单式描边；关键正文不低于 15px、元数据不低于 12px；200% rendered-text 重排保持可读。
+- 原图事实：`_acceptance/native-operations-canvas-v4/` 覆盖 7 场景 × 390×844 / 768×1024 共 14 个请求格，`boundedPass=true`、`engineeringPass=true`、14/14 cell 通过。顶层 `pass=false / releasePass=false` 是正确结果，因为完整 28 格发布矩阵尚未覆盖且工作树非 clean candidate。主线程逐张查看全部 14 张原始 PNG，而不是只读 DOM 探针或报告布尔值。
+- Emil 复核：
+
+| Before | After | Why |
+| --- | --- | --- |
+| 所有场景共享白卡、描边表格和大 CTA | 五种任务场景拥有不同顺序与几何语法 | 场景变化必须改变用户任务，而不是只换数据和颜色 |
+| 内容卡片与导航都使用玻璃暗示 | 玻璃只属于真实导航/选择控件，证据正文为标准材质 | 材料必须表达交互所有权，不能用来冒充平台感 |
+| 风险、对象和补充说明同时争抢注意力 | 手机按风险→任务→动作→上下文建立单一主线 | 运维工具首先帮助用户决定下一步，而不是展示组件数量 |
+| 通用动画和厚重按钮补偿静态层级 | 只保留 220ms 内、可中断、可 reduced-motion 的反馈 | 反馈服务确认与空间连续性，不能遮掩信息架构 |
+
+- 验证：`check:types`、`build`、`check-linkboard-model`、`check-linkboard-architecture`、`check-linkboard-visual-contract`、`check-linkboard-runtime`、`check-linkboard-accessibility-runtime` 和真实 200% rendered-text fixtures 通过；14 张原图均已检查。该证据是 dirty-worktree 的 bounded design slice，不是完整发布证据。
+- 发布边界：任务 active、`blocked=false`。本步只证明新移动表现方向已实现并通过主线程原图复核；独立 Product/Visual/Accessibility 尚待裁决，完整桌面/路由/安全矩阵、300 秒 RouterOS soak、clean exact SHA、上传授权和同一远端 SHA 的 Linux/Windows/GHCR CL 均未关闭。
+- nextAction：让 Product、Visual/iOS 与 Accessibility/Interaction 三路独立复核全部 14 张原图和当前运行时；关闭每个 P0/P1 后再迁移陈旧 Overview 总门禁。
+- validForCommit：Step925 bounded mobile implementation and human-original review；not a release candidate，not public-release approval。
+- supersededBy：Step926
+
+## 第 926 步：Native Operations Canvas 独立三路 P0/P1 清零；Overview 总门禁迁移到当前所有者
+
+- status：`native-operations-canvas-independent-signoff-p0p1-zero-overview-current-gate-green-release-closed`
+- latestStepOutcome: `926:native-operations-canvas-independent-signoff-and-overview-gate-migration-green-release-closed`
+- 触发/问题：Step925 的主线程视觉复核不能替代独立签收；同时旧 `check:overview` 仍要求已经物理删除的 `MobilePatrol*`、`MobileEvidenceLedger` 和 `mobile-patrol` CSS，继续运行只会制造与当前产品无关的假红或鼓励恢复废弃 DOM。
+- 独立签收：Product/Operations 独立复核结论 `PASS`、P0=`0`、P1=`0`；Visual/iOS 27 独立复核结论 `PASS`、P0=`0`、P1=`0`；Accessibility/Interaction 复核最终 P0=`0`、P1=`0`。无障碍复核最初误判 interfaces-down 在 390/768 下存在遮挡，随后用元素实际几何重新核对并撤回该 P1：390 的状态、风险、任务和固定导航互不重叠；768 的跨栏状态、左侧风险、右侧任务与相关证据也无裁切。该撤回被记录为几何事实，不以“多数意见”冲掉问题。
+- 产品裁决：当前手机方向首次同时通过事实语义、任务架构和原图视觉三道门。爱快语言由对象、风险、依赖、阈值和下一检查密度承担；iOS 27 语言由边到边内容层、克制材料所有权、同心几何、稳定导航和即时可预测反馈承担。冷蓝只作为少量状态/交互色，不再被当作产品原则。
+- 门禁迁移：重写 `tools/check-overview-architecture.js` 与 `tools/check-overview-ikuai-static.js`，删除对废弃 Patrol 所有者、字符数、DOM 数量和旧 CSS 的依赖；新增 `tools/check-overview-current.js`，顺序运行 20 个当前 owner 的架构、真值、图表、桌面信息效率、移动任务、runtime 与 accessibility gates。`package.json` 的 `check:overview` 已指向该聚合器并完整通过：`overview current contract: PASS (20 gates)`。
+- 自动门边界：`_acceptance/native-operations-canvas-v4/report.json` 顶层继续正确保持 `pass=false`，因为发布所需 28 格不完整；不得把 14/14 bounded cells 改写成发布矩阵 complete。`check:overview` 也只证明当前 Overview 合同，不替代完整 route、security、soak、candidate identity 或远端 CL。
+- Loop/Emil 心得：Loop 的设计门现在由“独立原图 + 场景任务 + 证据真值”共同打开，而不是靠 CSS 风格词或自动 probe 自证。Emil 原则补入门禁时关注的是反馈目的、按压响应、可中断和 reduced motion；没有为视觉炫技引入长动画、全页玻璃或高频动效。
+- 当前门禁：R07 Product 对本次移动方向 `pass`；R09 Design/Visual 对 14 张 scoped originals `pass`；R10 移动端 focused accessibility/interaction `pass`。完整 state matrix、桌面/路由回归、安全候选、RouterOS soak、release hygiene、外部发布授权和精确远端 SHA 的 Linux/Windows/GHCR 仍为 open，因此 overall release 继续 `CLOSED`，GitHub 未上传，CL 未触发。
+- nextAction：在当前工作树运行完整桌面、移动、深路由、security 与 release 回归，重建 28/76/266 等要求矩阵并检查桌面原图；全部绿色后才能整理 clean exact-SHA candidate、执行 300 秒只读 RouterOS soak 和 readiness。
+- validForCommit：Step926 scoped mobile Product/Visual/Accessibility closure and current Overview gate migration；not a release candidate，not public-release approval。
+- supersededBy：Step927
+
+## 第 927 步：公开发布就绪门禁删除 Patrol 遗留所有权，改为验证 Native Operations Canvas 当前契约
+
+- status：`public-readiness-retired-patrol-owner-migrated-linkboard-static-green-release-closed`
+- latestStepOutcome: `927:public-readiness-current-mobile-owner-and-semantic-contract-green-release-closed`
+- 触发/问题：独立发布卫生审计发现 `tools/check-public-release-readiness.js` 仍直接读取已经物理删除的 `MobilePatrolScreen.tsx`、`MobileEvidenceLedger.tsx`、`mobile-patrol.css`，并要求 `mobile-patrol-console-v3` 与 `adaptiveLedger`。这会让真正发布门禁在当前实现上假红，也可能反向鼓励恢复已否决的 DOM/CSS。首次 static readiness 还暴露 Overview 路由成熟度的 object-detail token 仍指向已经迁移了职责的旧文件。
+- 决策：发布就绪只能验证当前产品所有者，不能把废弃实现当作永久规范。移动语义合同切换为 `linkboard-overview-v1`，并显式列出 27 个 blocking capability checks；每一项必须为 true，不能用“任意现有 checks 都通过”自证。无快照验证使用 `truthMode=unavailable` 与 `noFalseCurrentData`，不再读取旧 `evidenceMode/unavailableBoundary` 名称。
+- 静态所有权迁移：readiness 现在验证 `MobileLinkboard.tsx`、`NativeOperationsCanvas.tsx`、`operationsPrimitives.tsx`、`LinkboardTimeEvidence.tsx` 与五个当前样式入口；要求五场景、对象/风险选择、下一检查、非拉伸 SVG、title/desc、current-rate 撤回和零 `!important`。`test-public-release-semantic-gates.js` 同步拒绝退休 Patrol contract，并确认 readiness 源中不再引用已删除 Patrol 文件。
+- 路由证据修复：Overview 的对象详情实际由 `scenes/operationsPrimitives.tsx` 的 `data-linkboard-object-inspection` 拥有，`panelRouteMaturity.ts` 已改为绑定该真实 source/token，并把文件加入 evidence refs；不再让 `MobileLinkboard.tsx` 冒充对象详情所有者。
+- 验证：`test-public-release-semantic-gates` PASS；`check-route-maturity-contract` PASS，18 个 bounded-readonly 路由、1 个 unavailable directory，结构/策略通过且公开发布仍 false；`npm run build` 1896 modules；静态资产与 asset identity 通过；`check-public-release-readiness.js --static-only` 输出 `[ok] static engineering contracts are present` 与 `engineeringReadinessPass=true`。
+- 边界/心得：这是门禁所有权和假绿/假红修复，不是发布资格。把 required checks 做成明确集合比依赖自命名 DOM 数量更可靠；门禁必须追随正式 owner，但不能为了迁移方便降低事实、交互或可访问性要求。当前工作树仍 dirty，完整 runtime、28/76/266 矩阵、桌面原图、RouterOS soak、clean exact SHA、授权和远端 CL 均未完成。
+- nextAction：先运行完整当前工作树类型、构建、桌面、runtime、route、security 与 accessibility 回归；全部通过后再按依赖顺序生成 28 格 Overview、76 格 route-responsive 和 266 格 route-state 矩阵。
+- validForCommit：Step927 readiness owner migration and focused static evidence；not a release candidate，not public-release approval。
+- supersededBy：Step928
+
+## 第 928 步：真实边界实图抓出 900px 产品退化；移动工作台连续覆盖至 1199px
+
+- status：`responsive-mobile-workbench-cliff-fixed-current-runtime-boundary-green-release-closed`
+- latestStepOutcome: `928:responsive-workbench-899-900-1199-1200-current-runtime-green-release-closed`
+- 触发/问题：旧 `check-responsive-boundary-contract.js` 仍读取 `_acceptance/panel-runtime-browser/report.json`，既不能证明当前 Native Operations Canvas，也不能阻止陈旧报告假绿。新的真实浏览器探针首次生成 899、900、1199、1200、1365、1366 原图后，899→900 暴露出确定的产品断层：899 是对象/风险索引与任务详情同时可见的工作台，900 却退回最大 720px 的居中手机长页；1199 两侧留下更大无效空白。该结果与独立视觉/响应式审计的两个 P1 一致，不是截图偏好。
+- 产品裁决：600–1199 属于同一移动工作台能力区间；尺寸增加不能让任务架构倒退。保留唯一 mobile owner、同一 URL/选中模型与五场景内容，将现有 list-detail 工作台连续延展到 1199；1200 才切换到独立 desktop owner。没有增加第三套 DOM、尺寸特供分支或覆盖补丁。
+- 实现：`styles/tablet.css` 的主工作台与短横屏媒体范围由 `600–899` 改为 `600–1199`。899/900 现在保持相同的左侧风险索引与右侧当前任务；1199 使用可用横向空间；1200 进入桌面密集对象台账。证据正文仍是不透明标准材质，选择/导航材料所有权没有扩大。
+- 门禁重构：`tools/check-responsive-boundary-contract.js` 自己启动有界浏览器并绑定当前 framework asset identity，不再消费旧报告。它覆盖 899/900、1199/1200、1365/1366，阻断错误渲染 owner、非 canonical Overview URL、风险/证据/场景/主检查任务漂移、水平溢出、移动端任一可见 button/summary 小于 44px、工作台退回纵向手机流、画布无效留白、桌面控件裁切，以及跨 1199/1200 后 Back/Forward、选中对象和焦点不连续。
+- 运行证据：`_acceptance/responsive-boundary-current/report.json` 为 `pass=true`，6/6 边界格通过，所有格 `overflowX=0`，三项聚合检查全绿，asset identity 通过，最终有界运行 13.764 秒。主线程逐张查看 899、900、1199、1200 原图，确认 899/900 构图连续、1199 不再退回窄列、1200 的桌面切换与同一接口事故语义一致。
+- 独立审计余项：同一只读视觉审计另报三个 P2：12px tertiary/muted token 对比度不足 4.5:1；历史选中第三个风险对象时可能藏在关闭的 `<details>`；交互材料 token 还可进一步统一。这些不是本步边界 P1 的借口，也不会被矩阵布尔值吞掉；前两项将在完整 runtime 聚合前修复并补回归，材料只在真实控制层内调整。
+- Loop/Emil 心得：响应式不是“每个尺寸都不溢出”，而是能力随空间单调增加。真正有效的门禁必须量测对象索引与任务详情是否同时存在、检查动作是否连续，而不是只看 owner 名称或字符串。Emil 的平台感约束继续服务于真实选择、焦点与导航；本步没有用玻璃或动画掩盖布局断层。
+- 发布边界：任务 active、`blocked=false`。这是当前工作树的响应式聚焦证据，不是完整 28/76/266 矩阵或 clean exact-SHA 候选；GitHub 未上传，Linux/Windows/GHCR CL 未触发，`releaseEligible=false / releaseComplete=false`。
+- nextAction：修复并验证次级文字对比度和 overflow 风险选中可见性，随后运行完整当前 `check:runtime-browser` 聚合；再继续静态、路由、安全和发布回归。
+- validForCommit：Step928 focused responsive product/runtime evidence；not a release candidate，not public-release approval。
+- supersededBy：null
+
+## 第 929 步：当前移动 owner 的命令图、可读性细节与完整 runtime 聚合闭环
+
+- status：`current-runtime-command-graph-and-accessibility-detail-green-release-closed`
+- latestStepOutcome: `929:current-runtime-command-graph-and-accessibility-detail-green-release-closed`
+- 触发/问题：Step928 留下两个可验证 P2（次级文字对比度不足、已选第三风险可能藏在折叠区），同时发布命令图仍带有退役 owner 痕迹：脚本名仍叫 `check:mobile-native`，release blocker 读取已删除的 `MobilePatrolTraffic.tsx`，readiness 仍可能把旧 `panel-runtime-browser` 报告当作当前发布证据，路由深交互还存在重复执行边。
+- 产品/可访问性修复：`--lb-ink-tertiary` 与 `--lb-muted` 调整为在画布、标准 surface 和强 surface 上均达到 WCAG 4.5:1；风险队列不再机械取前两项，当前已选对象若原本位于 overflow，会被提升到主可见队列，其他对象再进入折叠区。没有增加卡片、文字复读或装饰性材质。
+- 命令图裁决：当前 owner 的脚本统一为 `check:mobile-linkboard`；`check:runtime-browser` 只经该入口运行移动 model/architecture/visual/runtime/a11y，并保留 lifecycle、deep-route 与 responsive boundary。产品 P1 聚合删除重复的 deep-route 边。CI 不恢复任何 retired Patrol owner。
+- 发布门禁修复：`check-release-blockers.js` 改为验证共享 `SectionTimeSeriesChart` 与当前 `LinkboardTimeEvidence` 的非拉伸比例、时间/单位刻度、可访问摘要及真实挂载；`check-public-release-readiness.js` 只接受 `release-matrix-*`、`route-matrix-*`、`route-state-matrix-*` 当前证据别名，旧 `panel-runtime-browser` 和独立评审包不能冒充完整矩阵。对应 semantic gate 已补退役 owner、缺失能力、错误 alias 与 candidate 参数边界。
+- 运行证据：最新 build 通过（1896 modules；CSS 87.91 kB / gzip 16.17 kB；JS 519.78 kB / gzip 151.34 kB）。重命名后的 `npm run check:runtime-browser` 完整聚合 exit 0，约 196 秒；Linkboard model/architecture/visual/runtime/accessibility、browser lifecycle 7/7、route-deep-interactions-v2 与 live responsive boundary 全部通过。`_acceptance/responsive-boundary-current/report.json` 继续为 6/6、identity=true、overflowX=0，并新增 1199px overflow 选中对象外显实图。
+- 长任务治理事故与修复：一个只应做命令图审计的子 Agent 错误执行了父会话 `task start --replace` 与 `task complete`，把中央目标短暂覆盖成 `command_graph_cleanup`。主线程以 append-only ledger 的有效 state_version 996、事故事件和官方 `state_lock` 为证据重建父状态，追加 `task_state_repaired`，恢复原目标、active、blockers=[] 与 state_version 997；未掩盖事故。Loop 从此要求所有子 Agent 提示显式禁止运行 `context_harness`、禁止触碰 `D:\下载\上下文`，中央 checkpoint 仅由主线程推进。
+- Loop/Emil 心得：当前 owner 不只包括 React 文件，也包括命令名、报告 alias、release blocker 和 CI 调用边。若这些边仍引用旧名字，删除 UI 只是表面删除。Emil 的细节规则只有在内容层级成立后才有价值；本步只修真实可读性、选择连续性和即时反馈，不把 token 调整包装成视觉重做。
+- 发布边界：任务 active、`blocked=false`。这是当前 dirty worktree 的 runtime/command-graph 证据，不是完整 28/76/266 矩阵、clean exact-SHA 候选或公开发布授权；GitHub 未上传，Linux/Windows/GHCR CL 未触发，`releaseEligible=false / releaseComplete=false`。
+- nextAction：运行 release blocker、semantic gate、static readiness、Overview、asset identity/static assets 等聚焦回归，随后清查剩余 release command graph，再进入完整矩阵；任何新的 owner 视觉否决可独立重开 Design/Product gate并优先于候选冻结。
+- validForCommit：Step929 current runtime/command-graph/accessibility-detail evidence；not a release candidate，not public-release approval。
+- supersededBy：null
+
+## 第 930 步：Owner 直接否决现有手机视觉；Pocket Console 成为唯一选定方向
+
+- status：`owner-visual-veto-native-operations-canvas-rejected-pocket-console-selected`
+- latestStepOutcome: `930:owner-visual-veto-pocket-console-selected-rebuild-active-release-closed`
+- 触发/问题：Owner 直接查看当前手机面板后明确指出，它没有想要的爱快设计语言或 iOS 27 感觉，仍像 2015 年左右的监控面板，并提出“甚至想全部删掉重做”。这是产品所有者对实际成品的有效 veto，优先级高于 Step926 的 scoped 自动/独立评审记录；旧 P0/P1=0 只能保留为当时局部工程审查历史，不能继续写成当前视觉通过。
+- 主线程复核：390 正常态仍是大结论、横向对象胶囊、单张巨型白卡、首页趋势图、伪路径、独立下一检查和浮动底栏；资源态只把同一报告骨架换成红色阈值卡；768 平板是窄竖导航、短对象栏和放大的报告卡。其共同语法是 2015 dashboard，而不是对象操作台。
+- 四路独立裁决：Apple 平台研究、iKuai/网络控制台研究、移动产品架构、独立设计 QA 四个只读 Agent 均否决当前方向，认定根因是视觉主语、信息架构和工作空间错误，而非圆角/颜色细节。独立 QA 同时确认现有 static token、DOM、像素存在和几何门禁只能证明“没坏”，不能证明审美与任务成立。
+- 外部标准证据：Apple 2026-06-23 发布 iOS/iPadOS 27 design kits，包含 Liquid Glass 更新、扩展状态与自适应尺寸；Apple Materials 明确把 Liquid Glass 定义为浮在内容之上的 controls/navigation 功能层，并明确反对在 content layer 使用。iKuai 官方状态监控按线路、终端、协议、策略、负载等运营对象组织入口。裁决不是把网页伪装成原生 iPhone，而是以 Apple 的层级/控制语法承载 iKuai 的对象/线路/状态/比较效率。
+- 三方向比较：A `Pocket Console / 掌上运行台`、B `Evidence Inbox / 证据收件箱`、C `Route Story / 路径叙事器`。A 在现代 Apple 原生感、iKuai 扫描效率、单手巡检、320–430 竖屏、短横屏与 768–1199 selection-detail 上最平衡；B 只适合作为证据异常二级模式，C 只适合作为路由关系详情。唯一选定方向为 A。
+- 新产品骨架：手机首屏为紧凑 toolbar → evidence status → 单一 decision line → 可扫描 operational object rows → 至多一个所选对象 inspection → 对象绑定动作 → 四个真实目的地。默认路由、WAN、采集、资源、接口成为可操作对象；首页删除 hero、对象胶囊、KPI 卡、巨型图表、伪拓扑、 detached CTA 和三栏总结。趋势只进入选中 WAN/资源详情。
+- 场景规则：single 从默认路由到承载 WAN；fleet 先列最高风险而非规模；interfaces-down 只显示已验证依赖或明确 unknown；resource-full 按 current/threshold/delta/trailing samples；collection-down/no-snapshot 撤回当前业务数值；all-offline 先列离线 WAN 与 active route 缺失。每个场景必须同时改变首要对象、证据形式、动作和禁止声明，不能只换颜色/标题/一个数字。
+- 响应式裁决：320–599 一列 list-first；600–767 保持 compact list-first，只有任务完整时才短横屏并置摘要；768–1199 才是 224–280px 对象索引 + 单一详情工作区；1200 切独立 desktop owner。平板不再使用竖向玻璃按钮柱或放大手机报告卡。
+- 物理删除边界：保留 evidence truth、稳定对象 ID、只读 URL/历史恢复和安全契约；下一实现必须移除 active `MobileLinkboard` hero、`NativeOperationsCanvas.tsx`、`operationsPrimitives.tsx` 及其 Linkboard/NOC 呈现样式，不从格式化中文字符串反解析百分比。新合同为 `docs/mobile-pocket-console-design-contract.md`。
+- 验收重构：自动化继续验证真值、语义、44px、200%、Reduced Motion、Back/Forward、dark/forced-colors 和完整矩阵；它不得用 DOM 数、字符数、selector/token 存在或前景像素比例签 Product/Visual。候选需要两名仅看不可变原图/录屏与任务提示的独立评审，任一人可 veto，分歧由第三人裁决。
+- Loop/Emil 心得：这轮最大错误是把“证据正确、矩阵通过、几何合格”误写成“设计成立”。Product Company Loop 必须允许 owner 和真实原图推翻局部绿灯；Emil 的 motion/material 规则只能服务于已经成立的对象任务，不会把 dashboard 卡片变成 iOS 产品。
+- 发布边界：Product 与 Design/Visual 重新打开并为当前 FAIL；任务 active、`blocked=false`。不运行候选发布矩阵、不冻结 clean SHA、不上传 GitHub；Linux/Windows/GHCR CL 均未触发，`releaseEligible=false / releaseComplete=false`。
+- nextAction：先在代码中物理删除 rejected Native Operations Canvas 呈现 owner，建立全新 Pocket Console 的结构化 model、phone list、tablet selection-detail 和独立样式树；随后从最小模型/架构红门开始实现，不对现截图做 cosmetic patch。
+- validForCommit：Step930 selected-direction and visual-veto decision only；implementation pending，not a release candidate。
+- supersededBy：Step931
+
+## 第 931 步：Pocket Console 物理重建、手机闭环和平板对照工作台通过独立签收
+
+- status：`pocket-console-implemented-runtime-accessibility-independent-product-visual-p0p1-zero-release-closed`
+- latestStepOutcome: `931:pocket-console-implemented-independent-product-visual-p0p1-zero-release-closed`
+- 触发/问题：Step930 已确认 Native Operations Canvas 的证据语义虽正确，视觉和任务架构仍像 2015 年 dashboard。Owner 要求彻底删除旧手机 UI，而不是继续补 CSS。首版 Pocket Console 自动门通过后，主线程逐张查看 7 场景 × 390/768 原图，又发现三个真实 P1：不可操作 H1 显示粗蓝焦点框、390 固定导航与详情/动作争夺空间、768 只是放大手机 inspector 并留下大面积空白。两名独立审查者同时否决，故没有把首版绿灯写成产品通过。
+- 物理删除与所有权：删除 `MobileLinkboard.tsx`、`NativeOperationsCanvas.tsx`、`operationsPrimitives.tsx`、Linkboard 时间/模型/历史 hook、旧场景与五组样式，并删除 `check-linkboard-*` 和 `tools/lib/linkboard-runtime`。Overview 手机入口只挂载 `pocket-console` 独立树；桌面继续由 1200+ 的独立 owner 拥有。当前移动 model 已拆分为核心构建、comparison、RFC3339 presentation helper 和 types，单模块重新低于 500 行；移动 CSS 无 `!important`、内容层无卡片阴影或全页玻璃。
+- 手机产品裁决：运行时工具栏承担设备、刷新和只读控制；内容不再复读“当前范围”。首页顺序固定为证据状态 → 单一可验证判断 → 有界运行对象 → 所选对象两项关键证据 → 对象绑定动作。`all-offline` 与 `interfaces-down` 只展开两项代表对象并显示真实 overflow 数，避免 8 条 WAN 或 3 条依赖机械铺满；完整对象进入对应工作区。资源单位与数值同行，重复 primary/state 只显示一次，显式数值零仍可见。
+- iOS 27 / 爱快材料裁决：Liquid Glass 只属于 sticky runtime toolbar、四目的地 task navigation 和真实控制反馈；证据、对象与详情使用不透明标准材质。手机不再使用 hero、对象胶囊、KPI 卡、首页图表、伪拓扑、假 sheet 或 detached CTA。爱快语言由默认路由、WAN、采集、资源、接口这些可扫描对象、状态比较和真实工作区入口承担；冷蓝只作交互/证据层，不把全部内容染成主题色。
+- 平板任务架构：768–1199 保留 224–280px 对象索引和单一详情，并新增只在平板可见的 scene-specific comparison/aggregation 工作区。正常态对照路由目标/网关、WAN 当前上下行和 REST/SSH；资源态对照当前值与策略阈值；采集态对照通道状态与最近成功；接口态对照已核实默认路由依赖；全离线对照 WAN 失效与最后路径缺口。右栏因此增加新证据，不再逐字重放手机详情，也不再在上半屏结束后留下无任务空区。
+- 真值与时间：`current | historical | unavailable` 继续控制当前值是否可见；活动路由不做首行兜底，缺失速率不转成零，资源连续超限按末尾连续样本。采集时间保留 RFC3339 `dateTime` 作为机器契约，视觉只显示紧凑本地时间；比较模型直接消费 typed numeric samples，不从 `24 Mbps`、百分号或中文文案反解析。
+- 交互/无障碍修复：程序化标题焦点保留 `tabIndex=-1` 与读屏落点，但取消非交互标题的粗焦点矩形；真正按钮仍有 focus-visible。对象按钮支持 Arrow/Home/End、same-URL Back/Forward 和焦点恢复。390 内容预留 task-nav safe inset；P1 runtime 门逐场景验证所选检查与唯一 action 可滚入且不与导航相交。200% rendered-text 在 390/768 重新通过；Reduced Motion、dark、forced colors、44px、无横向溢出和 unavailable 当前值撤回均为 blocking。
+- 自动证据：`npm run build` 通过（1899 modules；最终 focused build 约 CSS 79.00 kB / gzip 14.68 kB，JS 506.93 kB / gzip 148.63 kB）。`npm run check:mobile-pocket-console` 的 model、architecture、7 场景 runtime、focus/nav/tablet P1 geometry 与 accessibility 全绿；`npm run check:overview` 17 gates 通过。`_acceptance/pocket-console-runtime` 保存新的 14 张原图；报告与静态合同明确声明自动化不能替代人工视觉签收。
+- 独立签收：最终手机审查覆盖 7 张 390 原图，结论 P0=`0`、P1=`0`；最终平板审查覆盖 7 张 768 原图，结论 P0=`0`、P1=`0`。主线程也逐张复核。前一轮发现的标题框、底栏争夺和空工作区均有真实代码、几何门与新原图闭环，不是多数意见覆盖。手机审查留下 collection error 长文换行 P2；接口重复状态已在签收后去重，错误明细保留在对象详情，不提升为发布阻断。
+- Loop / Emil 心得：这轮先由 Owner 和原图否决，再把每个 P1 变成浏览器门禁，最后重新签收；顺序不能反过来。Product Company Loop 的 Product、Visual、Accessibility、Engineering 和 Release 仍独立。Emil 规则只用于 44px 控件、按压/选择、可中断反馈和 reduced motion；不靠动画、阴影或玻璃制造“高级感”。子 Agent 被严格限制为互不冲突的 runtime gate、contract gate 与只读原图审查，中央 checkpoint 和 D 决策镜像只由主线程更新。
+- 发布边界：本步关闭当前 Pocket Console 的 scoped Product、Design/Visual、Accessibility 与 focused Engineering P0/P1，但不是公开发布资格。完整 28/76/266（及项目当前要求的更宽矩阵）、桌面最终原图、route/security 回归、300 秒 RouterOS 只读 soak、clean exact-SHA candidate、外部 promotion authorization、GitHub 原子上传以及同一远端 SHA 的 Linux/Windows/GHCR CL 均未完成。`releaseEligible=false / releaseComplete=false`；GitHub 未上传，CL 未触发。
+- nextAction：把 public matrix、responsive boundary、release readiness 和 route/security 命令图全部迁移到 Pocket Console 当前 owner；运行完整本地矩阵与桌面/路由/安全回归，清理候选工作树并重建 exact-SHA 证据。只有随后所有门禁和外部授权都成立，才允许 Git Data API `force:false` 原子上传，并在上传后等待同一 SHA 的 Linux、Windows、GHCR CL 全绿。
+- validForCommit：Step931 dirty-worktree Pocket Console implementation、14-original independent Product/Visual closure and focused runtime/accessibility evidence；not a release candidate，not public-release approval。
+- supersededBy：null
+
+## 第 932 步：Pocket Console 49 格真值、四角色 P0/P1/P2 清零与公开 Overview 28 格闭环
+
+- status：`pocket-console-49cell-four-role-p0p1p2-zero-public-overview28-green-release-closed`
+- latestStepOutcome: `932:pocket-console-49cell-four-role-p0p1p2-zero-public28-green-release-closed`
+- 触发/问题：Step931 只保存 390 与 768 的 14 张聚焦原图，尚不能证明 320、430、短横屏、1199 或完整七场景。扩展到 49 格后，独立 Product 审查发现所有 Fleet 图曾与 single 逐字节相同；Engineering 又发现旧 65svh 修复在 619/620/621 形成导航接缝；Accessibility 最终从 200% 原图发现“仅显示已观测值”被父级 `.pc__canvas` 裁掉，而旧门禁因只比较元素自身 `scrollWidth` 假绿。三项均被视为真实 P1，没有用已有 PASS 报告覆盖。
+- Fleet 真值修复：浏览器 mock 的 `fleet` 现在生成多 WAN 范围、三条未运行接口和对应默认路由依赖；静态场景与 mock 对齐。Pocket runtime 报告记录实际 `scenario`、`risk` 和 `scene`，并要求 Fleet 为 `interfaces / interfaces-down`、接口对象领先。七个 Fleet PNG 均与 single 不同，规模只作为无事故背景，不能压住最高风险。
+- 手机与响应式修复：短屏不再用在 620→621 突然失效的 65svh 特供。运行时门覆盖 320×568、320×620、320×621、359/360×820、430×820/821 等边界，直接比较对象、详情与浮动任务导航的 DOM 矩形。当前 21 个短屏导航单元无相交；320 正常、采集、全离线和 Fleet 都保持证据→对象→动作的首屏节奏。
+- 200% 与门禁真值：证据条允许完整语义换行，不再隐藏“仅显示已观测值”。共享 Pocket 检查和 accessibility-v2 同时判断元素自身裁切、越出视口和 overflow 祖先裁切；随后增加 self、ancestor、outside-viewport 三个独立故障夹具与阻断断言，避免检测分支再次静默失效。390/768 的当前原图均无内容丢失。浏览器工具栏 200%、iOS Dynamic Type 和 Android 系统字体仍是后续独立证据边界，未被 Chromium fixture 冒充。
+- Product/Visual P2 清理：全离线平板的折叠集合包含 WAN 与缺失路由，文案由“同类对象”改为“相关对象”；采集失败的长错误压缩为“REST 采集失败；明细见工作区”，平板不再把“工作区”拆成“工 / 作区”。这两处只改展示摘要，不改变通道状态、真实错误、最近成功时间、对象动作或证据边界。
+- 当前视觉裁决：这一版本不是用大量玻璃伪装原生应用。爱快语言来自全宽对象行、默认路由/WAN/接口/采集/资源比较、状态对齐与操作效率；现代 iOS 平台感来自系统字体/图标、清晰选中态、真实 toolbar 和 task-navigation 的受限半透明材质。内容层保持不透明、克制、高密度；没有 hero、KPI 卡、伪拓扑、假 sheet、首页装饰图表或玻璃卡片田。场景会改变首要对象、证据与动作，不是只换颜色。
+- 当前自动证据：生产 build 通过（1901 modules；CSS 79.65 kB / gzip 14.78 kB；JS 507.20 kB / gzip 148.75 kB）。`npm run check:mobile-pocket-console` 的 model、architecture、49 格 runtime 和 8 项 accessibility 全绿；`check:mobile-accessibility-runtime-v2`、responsive boundary、Overview 17 gates 和公开 Overview 7 场景×4 视口=28/28 全绿。Fleet 与 single 的七对 PNG 全部不同。
+- 独立签收：Product/IA、Visual/Interaction、Accessibility/Interaction 和 Engineering/Code Review 四个不同 Agent 首先只读审查 `e79c…` 产品工件。第一轮四者均 P0/P1=0，但留下三个可修 P2；主线程修复、重建全部报告与原图后，四角色增量复签 P0=0、P1=0、P2=0。随后仅 `docs/mobile-product-contract.md` 的当前边界更新使指纹变化，主线程没有沿用旧身份，而是重生 49/200%/responsive/Overview/28 格报告，并由四角色最终复绑 `worktree-f8a12846eebd-96ec52e7f8f8`，仍为 P0=0、P1=0、P2=0。结构化记录为 `docs/decision-system/independent-reviews/step932-*.json`，且均明确 `releaseEligible=false`。
+- Loop / Emil 心得：本步证明“加代理”只有在职责独立且每个发现都能回写产品/门禁时才有价值。Product 抓到 Fleet 假矩阵，Engineering 抓到尺寸接缝，Accessibility 抓到自动化假阴性，Visual 抓到拆词精修；主线程没有多数投票，而是把每个问题修成可复现、可阻断的证据。Emil 的材质与动效规则继续只服务真实控制，不能代替信息架构。
+- 发布边界：当前移动产品与公开 Overview 矩阵闭环，但整个产品仍未满足发布资格。route-responsive 76、route-state 266、route-recovery visual、security/static/assets、browser-toolbar 200%、真实 RouterOS 300 秒只读 soak、clean exact-SHA candidate、外部 promotion authorization、GitHub Git Data API 原子上传及同一远端 SHA 的 Linux/Windows/GHCR CL 仍未完成。任务 active、`blocked=false`；GitHub 未上传，CL 未触发。
+- nextAction：先运行当前 route-responsive 76 与 route-state 266，再完成 route recovery、security/static/assets、browser-toolbar 200% 和真实 RouterOS soak；全部通过后才进入 clean candidate 与发布授权。
+- validForCommit：Step932 dirty-worktree Pocket Console 49-original exact-artifact four-role closure and public Overview 28/28；not a release candidate，not public-release approval。
+- supersededBy：Step933
+
+## 第 933 步：Owner 再次否决 Pocket Console；承认当前外观没有爱快与 iOS 27 产品气质
+
+- status：`owner-second-visual-veto-pocket-console-presentation-rejected-design-reset-active`
+- latestStepOutcome: `933:owner-veto-current-mobile-presentation-rejected-design-reset-release-closed`
+- 触发/问题：Owner 直接查看 390×844 当前正常态与资源满载实图后指出，现有面板仍像 2015 年移动后台，既没有爱快设计语言，也没有 iOS 27 的感觉，并明确提出愿意全部删除重做。主线程不再用 Step932 的四角色 P0/P1/P2=0 为外观辩护：这些签收证明了当时工件的事实、几何和局部合同，却没有证明产品所有者愿意使用它。Owner 对实际成品的视觉否决优先于旧 scoped signoff。
+- 主线程自我复核：当前页面的主要视觉语法仍是浅蓝底、细横线、三列文字、描边线性图标和固定圆角底栏。结论、对象和详情几乎拥有同等视觉重量；状态靠文字与细色条区分；下半屏留白没有形成可操作工作区。它更接近“把桌面表格变成手机列表”，而不是具有空间层级、对象识别和流动控制层的新一代移动工具。因此回答 Owner 的问题是：**没有达到想要的爱快设计语言，也没有达到 iOS 27 感。**
+- Apple 27 事实：2026 Apple HIG 与 WWDC26 明确把 Liquid Glass 归属为浮在内容之上的 controls/navigation 功能层；27 系列进一步增强复杂背景扩散、暗边、镜面高光、个性化清晰度与无障碍适配。Apple 同时要求内容优先、人体工学、Dynamic Type 和跨尺寸连续适配。新方案不能把全页染成玻璃，也不能继续用扁平表格再加一个半透明底栏冒充 iOS。
+- iKuai 事实：爱快官方的系统概况与状态监控以线路、终端、协议、策略、负载等运营对象和 3–5 秒刷新节奏组织判断。新方案要继承的是对象可识别、线路/状态比较和定位效率，不是复制其旧网页皮肤。爱快感必须来自“对象—证据—影响—下一检查”的高效关系。
+- 产品裁决：Step932 的 Pocket Console 呈现候选立即失效；Product、Design/Visual、Architecture、Implementation 与 Visual QA 重新打开。保留 evidence model、RFC3339、`current | historical | unavailable`、明确活动默认路由、缺失值不转零、末尾连续样本、只读与历史恢复等已验证真值；不保留当前页面构图、底栏样式、对象行、详情板、浅蓝主题或任何像素布局作为参考。
+- 设计重启方法：按 Product Company Loop 回到 Design，而不是进入 route 76/266 或候选冻结。先并行取得 Product/IA、Visual/iOS、Accessibility/Interaction 与 Engineering 四份互相独立的重建设计输入，再生成至少三种在信息架构上真正不同的手机方向；必须用 390×844 与 768×1024 实图而非文字或 DOM 门裁决。Emil gate 只允许有任务目的、即时、可中断、支持 Reduced Motion 的控件反馈，不能用动效遮掩层级失败。
+- 删除边界：方向裁决前不在 Pocket CSS 上追加修补。胜出方向确定后，物理删除 `mobile-overview/pocket-console` 的现有表现所有权和与其像素结构绑定的视觉门禁；只通过 typed adapter 消费共享证据模型。新手机 render tree、style entry、runtime checks 和截图目录必须与旧 Pocket 隔绝，桌面 owner 不受继承选择器影响。
+- 视觉验收底线：首屏必须形成唯一运维主线；正常与六种异常必须改变对象优先级和空间节奏；玻璃只属于真实浮动控制层；内容层有明确深度但不靠卡片田；iKuai 对象密度不能退化成小字号或横线表格；320/390/430、短横屏、768 平板和 200% 均需真实重排；任何 Owner 或独立原图审查 P1 都重新打开设计门。
+- 发布边界：任务 active、`blocked=false`。Step932 的 49/28 格和旧独立签收仅保留为被否决呈现的工程回归历史，不具备当前产品签收效力。GitHub 未上传，CL 未触发；新呈现通过 Product/Visual/Accessibility/Engineering、完整矩阵、RouterOS soak、clean exact SHA、授权原子上传和同 SHA Linux/Windows/GHCR 之前，`releaseEligible=false / releaseComplete=false`。
+- nextAction：收取四路并行设计输入，裁决三种全新手机架构并记录唯一胜出方案；随后物理删除 Pocket Console 现有表现 owner，在隔离移动树中实现胜出方案的 390/768 首个真实垂直切片。
+- validForCommit：Step933 owner veto and design reset write-ahead only；not a release candidate，not public-release approval。
+- supersededBy：Step934
+
+## 第 934 步：三种真实原型完成裁决；Optical Patrol 成为唯一胜出方向
+
+- status：`optical-patrol-selected-four-originals-product-visual-p0p1-zero-implementation-pending`
+- latestStepOutcome: `934:optical-patrol-selected-prototype-p0p1-zero-pocket-deletion-next-release-closed`
+- 方法：没有在被否决 Pocket CSS 上继续调颜色。Product、Visual/iOS、Accessibility/Interaction 与 Engineering 四路先独立给出重建输入；随后在隔离的 `design/mobile-vnext-lab` 中实现三种信息架构，而不是三套换皮：A `Patrol Claim Stack + Optical Chrome`，B `Optical Instrument Ledger`，C `Five-Key Briefing Board`。每种覆盖 `single/resource-full × 390×844/768×1024`，共 12 张真实浏览器原图，几何报告 12/12、`scrollY=0`、无横向溢出。
+- A 的本质：基本单位从“对象列表＋独立详情＋比较区”改成“结论 → 主断言对象 → 决定性证据 → 对象绑定动作 → 后续断言”。手机是连续 claim canvas；平板是决策列、焦点证据列和跨栏证据台。玻璃只属于 runtime chrome、稳定任务导航和临时控制，内容保持不透明哑光；爱快语言来自路由/WAN/采集/接口/资源对象、阈值、来源和影响关系。
+- B 淘汰：虽然字体和色彩更克制，但运行对象 ledger、首项展开、后续管理列表和 768 左结论/右列表仍保留了 Pocket 的 list/detail grammar，本质仍是旧后台表格。它在手机密度上可用，却不能满足 Owner 要求的彻底不同。
+- C 淘汰：五个固定问题有肌肉记忆优势，但实际像素退化成状态瓷砖＋大型焦点卡；对象密度最低，资源态主要靠换卡片内容，平板空白最多。它摆脱了 2015 表格，却落入 Owner 同样拒绝的 Health App / 概念 Dashboard。
+- A 首轮 P1：Visual 指出把上下文动作塞进底部/侧边 chrome 会混淆“去哪里”和“对当前对象做什么”，且 768 下出现竖排动作与工作台不足。产品复核还因批量图像查看方式误报资源原图顶部裁切；主线程逐个原文件复核并以报告 `scrollY=0` 证明实际设备/只读 toolbar 完整，没有用错误 P1 驱动布局。
+- A P1 修复：导航固定为 `概览 / 网络 / 终端 / 日志` 四个稳定目的地；“核对默认路由/进入资源负载”回到主断言证据内部；平板侧轨只负责导航，不再显示竖排对象动作。768 决策列扩大为约 278px，标题按语义短语换行，焦点列保留对象证据和动作，跨栏证据台扩展到五行真实来源/边界/样本信息。`CURRENT` P2 也统一为“当前”。
+- 独立裁决：Product 对最终四张 A 原图返回 P0=`0`、P1=`0`、P2=`0`；Visual 对修复后 A 返回 PASS、P0=`0`、P1=`0`，最后 `CURRENT` P2 已修复并重生 12 张原图。当前结论只签 Optical Patrol 方向与 `single/resource-full` 原型，不冒充七场景实现、生产代码或发布候选。
+- 视觉原则：Apple 27 的感受来自内容在功能玻璃层下连续滚动、明确材质所有权、光学边缘、同心控制几何、即时反馈和跨 phone/iPad 的任务连续性；不是把内容磨砂。爱快的感受来自可识别对象、同窗测量、阈值、来源、依赖和下一检查；不是把页面染蓝。两者在 Optical Patrol 中通过“功能 chrome + 运维 claim canvas”组合，而不是互相妥协成浅蓝表格。
+- Emil 复核：
+
+| Before | After | Why |
+| --- | --- | --- |
+| 底部中央巨大 CTA / 平板竖排 CTA | 稳定四任务导航；对象动作留在证据内 | 分离目的地与对象命令，位置可预测 |
+| 对象列表后再重复详情与比较 | 一个原位主断言和附着证据 | 减少复读，保持空间连续性 |
+| 所有页面使用相同表格骨架 | 路由链与资源阈值/样本拥有不同几何 | 异常态改变任务，不只换颜色 |
+| 动画被用来制造平台感 | 高频选择即时；空间转换不超过 220ms 且可中断 | 反馈有目的，Reduced Motion 下仍完整 |
+
+- 架构裁决：下一生产 owner 使用全新版本化目录、DOM 前缀、history key 和测试合同；共享 `overview/evidence-model`、时间、route/action 与安全真值保留。禁止复用 `PocketConsoleModel`、`buildPocketConsoleComparison`、`.pc__*`、`data-pocket-*`、`panelPocketConsole` 或 Pocket 像素门禁。Phone/Workbench 同时只能挂载一个 owner，桌面树不导入新移动样式。
+- 合同：`docs/mobile-optical-patrol-design-contract.md` 是当前选定方向；它明确七场景替换、材料/字体/图标/动效所有权、320–1199 响应式、Dynamic Type/200%、VoiceOver、Reduce Transparency/Motion 与发布边界。
+- 发布边界：任务 active、`blocked=false`。这一步关闭的是方向裁决，不是实现或发布。Pocket 生产呈现仍存在；新方向只有四张核心原型，尚未覆盖全部七场景与生产数据/历史/键盘。GitHub 未上传，CL 未触发，`releaseEligible=false / releaseComplete=false`。
+- nextAction：建立 Optical Patrol 纯 view-model 红门与全新 production 目录，原子切换 `MobileOverviewEntry`，随后物理删除整个 Pocket 呈现树与绑定门禁；先生成生产 `single/resource-full × 390/768` 原图并对照选定原型，再扩展七场景。
+- validForCommit：Step934 selected design direction and isolated prototype evidence only；not a release candidate，not public-release approval。
+- supersededBy：Step935
+
+## 第 935 步：Optical Patrol 生产替换完成；独立 VETO 的共享 P1 已回修，精确复签待重生
+
+- status：`optical-patrol-production-owner-implemented-independent-veto-remediated-exact-resignoff-pending-release-closed`
+- latestStepOutcome: `935:optical-patrol-production-remediated-exact-four-role-resignoff-pending-release-closed`
+- 触发/问题：Step934 只签了四张原型，不能冒充生产完成。之后已将 Overview 切到全新 `overview/mobile-overview/optical-patrol` owner，物理删除 Pocket 呈现闭包，并建立七场景 typed model、独立样式、历史选择、对象动作和运行时门禁。第一份 49 格工件 `worktree-f8a12846eebd-ff1015dfb1e2` 虽然自动通过，四个独立只读角色仍一致 VETO：Product P1×2、Visual P1×3、Accessibility P1×3、Engineering P1×4。共享根因是 320 首屏关键速率不完整、844×390 被误当平板、批量事故剩余对象只是文字、平板工作区仍是机械跨栏，以及旧门禁没有阻断这些问题。
+- 产品回修：320×568 使用短高度紧凑节奏，默认路由双向速率在初始任务视窗完整可见；600px 以上且高度不超过 500px 明确成为 `short-landscape`，选中对象动作进入首屏，不再继承 tablet evidence deck；全离线/Fleet 的“其余 N 项”改成原生 44px 展开控件，带 `aria-expanded/aria-controls`，展开后每个对象仍是可激活、可恢复历史选择的对象按钮。平板改为左侧判断/对象队列、右侧选中对象/连续证据的主从工作区；采集失败和无快照不再在下半屏留下两栏同时结束的空洞。
+- 视觉与证据回修：资源连续样本从等高柱改为带列表语义的连续性标记，避免把“连续越阈”伪装成时间趋势；短横屏标题保护“承载流量、WAN 未运行、默认路由”等语义短语；原图改为真实 viewport 截图，并把每张 PNG 的 SHA-256、字节数、视窗、浏览器版本与采集时间绑定进报告。Liquid Glass 仍只属于 runtime toolbar/任务导航，正文保持不透明对象画布。
+- 自动证据：新增门禁先在旧产品上真实 RED——320 速率区域只显示到 scroller 底部、all-offline 无完整对象入口；产品修改后 focused 6/6、完整 Optical Patrol 49/49、Overview 18 gates、responsive 10 个边界、locale-neutral normalization、types/build 均通过。200% Chromium rendered-scale + CSS text reflow、独立 browser page-scale probe 与 reduced-motion/forced-colors 路径通过；报告仍诚实声明 browser toolbar 200% 与实体 iOS Dynamic Type / Android 系统字体不是同一种证据，实体设备签收尚未完成。
+- 独立门状态：旧 `ff1015…` 四角色 VETO 是有效发现，不是当前产品 PASS。上述产品、门禁和治理修改使该工件失效；Product、Design/Visual、Accessibility、Engineering 均保持 pending，必须基于治理同步后的新 worktree fingerprint 和带截图哈希的 49 格 viewport 原图重新签收。任何 P0/P1 继续回修，不能由主线程自签。
+- Emil 复核：
+
+| Before | After | Why |
+| --- | --- | --- |
+| 320 的双向速率落在固定导航附近且首屏不完整 | 缩短重复说明与控制层，完整保留当前路由和双向速率 | 首屏先闭合巡检判断，不把滚动可达冒充首屏可用 |
+| 844×390 仅按宽度套用 iPad 双栏 | 独立 short-landscape 能力，动作紧贴当前对象，证据台下放 | 旋转手机不应降低操作效率或伪装成平板 |
+| “另有 N 项”是不可操作文字 | 原生展开/收起与完整对象队列 | 批量事故必须让触屏、键盘和读屏都能巡检全部范围 |
+| 平板证据台横跨两栏并很快结束 | 左对象队列、右选中对象与纵向证据连续工作 | 分栏必须形成主从任务，不是把手机模块机械并排 |
+| 等高柱暗示不存在的时间趋势 | 离散连续越阈样本标记 | 动效和图形必须陈述真实含义，不制造数据叙事 |
+
+- 决策仓库真值：本步骤同时收回 Step934“生产尚未实现”的过期说法。`current-state` 是唯一当前人类真值，journal 只保留历史；machine state、current index、handoff 和 release journal 绑定 Step935。D:\想法\面板只做逐字镜像，不是第二运行时权威。
+- 发布边界：任务 active、`blocked=false`。当前不是 clean candidate；完整 route/state/security、真实 RouterOS soak、实体设备文字签收、外部 promotion authorization、GitHub Git Data API `force:false` 原子上传及同一远端 SHA 的 Linux/Windows/GHCR CL 均未关闭。GitHub 未上传，CL 未触发，`releaseEligible=false / releaseComplete=false`。
+- nextAction：完成 Step935 治理同步后重建同一 fingerprint 的 49 格 viewport 原图、rendered-scale/page-scale/Overview/responsive 报告；让四个全新独立角色复签。只有 P0/P1 清零后才进入其余全产品发布门。
+- validForCommit：Step935 dirty-worktree production remediation and pre-resignoff evidence only；not a release candidate，not public-release approval。
+- supersededBy：Step936
+
+## 第 936 步：第二轮精确独立评审 VETO；五项根因完成 RED→green 回修，63 格精确复签待重生
+
+- status：`optical-patrol-second-exact-veto-remediated-63cell-exact-resignoff-pending-release-closed`
+- latestStepOutcome: `936:exact-review-veto-remediated-63cell-resignoff-pending-release-closed`
+- 触发/问题：Step935 治理同步后生成精确工件 `worktree-f8a12846eebd-fcb7690db4a9`（fingerprint `fcb7690db4a90d52b5f4651291f97c63b3615dcaf03597a76b19deb04f872574`）。四个全新只读角色没有把自动绿灯当成产品签收：Product `P0=0/P1=2/P2=1`、Design/Visual `0/1/0`、Accessibility `0/3/0`、Engineering `0/2/0`，全部 VETO。共同或可验证的根因是：responsive 报告未绑定完整 worktree fingerprint 且截图无哈希；设计合同要求的 `667×375`、`1199×900` 七场景原图缺失；320/375 事故首屏只有证据、没有完整对象动作；语义证据/判断变化没有产品级低噪声公告；Back/Forward 只恢复对象与焦点，没有恢复滚动位置。
+- 裁决与拒绝项：五项均判定为真实 P1，不以“可滚动到”“framework manifest 相同”“已有外层 phase 公告”或“焦点已经恢复”降级。外层 runtime 公告只说明采集阶段，不能替代巡检判断变化；响应式 asset digest 只证明 bundle 输入，不等于完整 dirty-worktree 身份；历史状态只保存 selectedId 也不等于恢复用户原任务位置。600×960 单栏配左 rail 作为 Product P2 保留到后续中间宽度优化，不冒充已关闭。
+- 产品与视觉回修：事故短屏保持证据→判断→主对象→决定性几何→动作的同一 DOM 顺序，但压缩重复对象释义、非决定性来源行和动作副标题；320×568 与 375×667 的 interfaces/resource/collection/all-offline/no-snapshot 动作现在均在初始任务视窗完整可见且不与固定导航相交。没有把动作移到证据前，也没有复制第二个悬浮按钮。资源阈值、连续样本、接口依赖和 WAN 后果仍保留各自真实几何。
+- 证据与矩阵回修：Optical Patrol 全矩阵从 7×7 扩为 7 场景×9 视窗=`63` 格，新增合同缺失的 `667×375` 与 `1199×900`，同时保留 320/375/390/430/600/768/844。responsive 报告新增 `commit/worktreeFingerprint/artifactKey/worktreeClean/releaseEvidenceEligible`，framework asset identity 独立记录；10 张边界图改为 viewport capture，并记录相对路径、实际宽高、SHA-256、字节数和采集时间，读取失败或 PNG 尺寸不符直接 fail。
+- 无障碍与交互回修：Optical Patrol 增加唯一的 polite/atomic 语义状态，内容只随 evidence mode、结论、选中对象与状态变化，不播报每个原始流量 tick；外层 runtime phase 公告继续独立存在。历史条目在 push 前保存当前巡检 scroll owner 与 window fallback 坐标，新对象聚焦后保存新条目坐标；Back/Forward 使用条目坐标恢复选中对象、滚动和焦点，旧历史无坐标时才安全回退到 `scrollIntoView`。
+- RED→green 证据：新增短屏动作门禁先在旧布局真实 RED，记录 interfaces/resource/all-offline/no-snapshot 动作被裁切或位于导航后；压缩后 focused Optical Patrol 6/6 通过。新增滚动恢复断言先暴露测试读取旧快照而非回退条目的错误，修正为读取实际 `back.history` 后 reduced-motion/history/live-status focused runtime 通过。当前 build 通过 `1901 modules`（CSS `90.15 kB / gzip 16.69 kB`；JS `518.77 kB / gzip 151.87 kB`），responsive 当前 10/10、两种 identity 通过、10 张哈希 viewport 图通过。完整 63 格曾通过，但随后修正报告 `full-49` 硬编码为动态 `full-${cells.length}`，因此该报告身份已失效，必须在本步骤治理同步后重跑。
+- Emil Before/After/Why：
+
+| Before | After | Why |
+| --- | --- | --- |
+| 短屏事故只看完证据，动作落到导航之后 | 删重复解释、保留决定性几何，44px 单行对象动作在首屏闭合 | 运维首屏必须既能判断，也能立即进入正确对象；不能把“可滚动”冒充完成 |
+| responsive 只有 bundle digest 和可替换 PNG | 完整 worktree 身份 + 每图尺寸/哈希/字节/时间 | 视觉证据必须能证明“看的是哪一版”和“图片未被替换” |
+| 合同写 667/1199，实际只产 49 格 | 七场景九视窗 63 格 | 不能用一个 all-offline 辅助图代替全部场景的短横屏/宽平板签收 |
+| phase live region 只说“快照已更新” | 另一个低噪声产品状态只播证据、结论和对象状态变化 | 可访问性应传递运维含义，同时避免每个流量 tick 造成播报洪水 |
+| Back/Forward 回到对象标题但丢失阅读位置 | 每个历史条目保存并恢复 owner/window scroll 与焦点 | 返回必须恢复用户任务上下文，而不只是换回同一个标题 |
+
+- 独立门状态：`fcb769…` 四路 VETO 保留为有效历史发现，不能生成 pass 记录。上述源码、测试和治理修改已经使该工件失效；Product、Design/Visual、Accessibility、Engineering 对 Step936 新 fingerprint 均为 pending，必须由四个新角色重新审查 63 张原图和同一身份报告。
+- 决策仓库与 D 盘：`current-state`、current index、loop handoff、release journal、machine state 必须统一切到 Step936；随后通过同步工具把 14 个 Markdown 映射逐字同步到 `D:\想法\面板`。D 盘仍是镜像，不是第二权威。
+- 发布边界：任务 active、`blocked=false`。当前不是 clean candidate；物理 iOS Dynamic Type / Android 系统文字、完整 route/state/security/recovery、真实 RouterOS soak、promotion authorization、GitHub Git Data API `force:false` 上传及远端同一 SHA 的 Linux/Windows/GHCR CL 均未关闭。GitHub 未上传、CL 未触发，`releaseEligible=false / releaseComplete=false`。
+- nextAction：同步 Step936 决策真值后，重跑 types/build、Optical Patrol 63 格、responsive 精确身份与哈希、Overview 18、rendered-scale/page-scale；确认一个新 fingerprint 后再启动四个全新独立角色复签。任何 P0/P1 继续回修，不得自签或标记受阻。
+- validForCommit：Step936 dirty-worktree remediation and focused RED→green evidence only；not a release candidate，not public-release approval。
+- supersededBy：Step937
+
+## 第 937 步：第三轮精确评审发现门禁假绿与短横屏顺序断层；证据内动作重排完成，复签待重生
+
+- status：`optical-patrol-third-exact-veto-remediated-action-order-geometry-rereview-pending-release-closed`
+- latestStepOutcome: `937:third-exact-veto-remediated-action-order-and-geometry-rereview-pending-release-closed`
+- 触发/问题：Step936 治理同步后生成同一工件 `worktree-f8a12846eebd-9a41903d20ca`（fingerprint `9a41903d20ca0e4764c48f1b2e1690a10a7a2e22497cfb2412e0c086f0d4db05`）。types、1901-module build、63/63 Optical Patrol、10 张 responsive 哈希图、Overview 18、rendered-scale、200% computed-text reflow、page-scale 与 reduced-motion 都通过；四个全新只读角色仍全部 VETO。Product `P1×2` 与 Engineering `P1×1` 共同发现 320 正常/Fleet 的对象动作被固定导航裁掉，且旧门禁错误地用裁切后的 `visibleRect` 判断相交；Product 还发现 667/844 短横屏把动作排在决定性证据前。Design/Visual `P1×1/P2×1` 发现 667×375 的“当前证据”被挤成逐字竖排，以及触屏 hover 未按 fine pointer 门控。Accessibility 提出的对象选择“展开”语义 P2 成立；其“当前工件没有 200% 文本重排”的 P1 经报告复核不成立，因为同一 `9a419…` 默认报告明确包含 `browserTextResizeReflow` 10 个真实 Chromium 用例，标题 `24→48px`、scale=2、clippedText=0。该裁决不把 CSS text fixture 冒充 browser-toolbar zoom 或实体 Dynamic Type，后两者仍保持未证明。
+- RED 门禁：运行时观察新增 `selectedDecisiveGeometry`；320×568 所有场景要求主动作完整可见、实际矩形不与固定导航相交、触控高度不少于 44px；短横屏同时覆盖 `667×375` 与 `844×390`，要求动作的视觉位置在场景决定性几何之后。门禁在旧布局真实 RED：single/fleet 的 320/375 动作与导航相交，七场景短横屏动作均早于 route traffic、resource threshold 或关系证据。导航冲突检测只对主动作使用完整矩形，滚动区下方的对象队列仍按可见部分判断，避免把可滚动内容误判成首屏重叠。
+- 产品与 DOM 根修：对象动作不再是整个 focus 末尾的独立兄弟，再靠 CSS `order` 提前。它现在作为 `OpticalPatrolClaimGeometry` 的单一真实 action slot：route 在路径/路由表/流量后，resource 在当前值/阈值/连续样本后且在低优先级事实台账前，interface/collection/WAN/evidence 在事实与关系后、来源边界前。这样手机竖屏把动作上移到导航前，短横屏又保持“决定性证据→动作”，没有复制 CTA、没有视觉顺序与 DOM 顺序分叉。更新 build 后完整 63 格 smoke 由 RED 转为 green。
+- 视觉与无障碍精修：`.op__evidence-state` 改为不可压缩单行，667×375 不再逐字竖排；768 平板标题取消 `ch` 人工窄幅，使用真实列宽；hover 只在 `(hover:hover) and (pointer:fine)` 生效；对象选择按钮由“展开对象”改为“查看对象：状态”，不再暗示不存在的 disclosure 状态。静态无障碍门新增两项阻断断言，确保上述命名与触屏 hover 不回归。
+- 当前原图裁决：修复后 320 正常动作完整出现在固定导航上方；667 的证据状态保持横排，route/resource/interface 均先显示决定性几何再显示对象动作；768 资源标题与证据边界不再被人工窄宽拆碎。当前 full-63 运行已通过并用于主线程逐图复核，但本步骤治理写入会改变 fingerprint，因此它仍是迭代证据，不是最终复签工件。
+- 最终重生前回归：Step937 治理后的第一次 full-63 只在 `fleet@1199×900` 真实 RED，标题把“运行记录”拆成两行。根因不是视口特供，而是运行门禁已经把“运行记录”列为语义短语，渲染器的 protected phrase 集合却漏掉它；现已把同一短语加入显示分词合同，保持所有宽度由内容自然换行而不是重新缩窄平板列。该修复同样要求最终 exact 报告重新生成。
+- Emil Before/After/Why：
+
+| Before | After | Why |
+| --- | --- | --- |
+| 动作 DOM 在全部证据后，短横屏用 CSS order 抢到证据前 | 单一 action slot 放入场景决定性几何与低优先级来源之间 | 视觉顺序、键盘顺序和运维判断顺序一致，不用布局特供撒谎 |
+| `visibleRect` 被固定栏裁短后反而“不相交” | 主动作以完整 rect 校验完整可见、44px 和零相交 | 自动门禁必须抓住真实遮挡，不能让裁切帮助通过 |
+| 667 的证据状态逐字竖排 | 状态保持单行，时间/边界说明使用剩余空间自然换行 | 五秒巡检先看清鲜度，不能让响应式把证据含义拆散 |
+| 触摸设备继承 hover；“展开”却没有展开状态 | fine-pointer hover；对象按钮改为“查看” | 控件反馈和可访问名称必须准确描述真实行为 |
+
+- 独立门状态：`9a419…` 四路 VETO 保留为有效历史发现，不能转成 PASS。当前源代码、门禁、构建产物和治理均已变化，最终 exact fingerprint 尚未生成；Product、Design/Visual、Accessibility、Engineering 全部保持 pending，必须由四个新角色审查新 63 格与同一身份报告。
+- 决策仓库与 D 盘：`current-state`、current index、handoff、release journal、machine state 统一切到 Step937，再由同步器将 14 个 Markdown 映射逐字写入 `D:\想法\面板`。D 盘仍是可审阅镜像，不是第二运行时权威。
+- 发布边界：任务 active、`blocked=false`。当前不是 clean candidate；全 route/state/security/recovery、实体移动设备文字设置、真实 RouterOS soak、promotion authorization、GitHub Git Data API `force:false` 上传与同一远端 SHA 的 Linux/Windows/GHCR CL 均未关闭。GitHub 未上传、CL 未触发，`releaseEligible=false / releaseComplete=false`。
+- nextAction：在 Step937 全部治理同步后重跑 types/build、63 格 viewport 原图、responsive 10 图精确溯源、Overview 18、rendered-scale+200% computed-text reflow、page-scale 与 reduced-motion；确认同一 fingerprint 后由四个全新角色复签。任何 P0/P1 继续回修。
+- validForCommit：Step937 dirty-worktree third exact-review remediation and focused RED→green evidence only；not a release candidate，not public-release approval。
+- supersededBy：Step938
+
+## 第 938 步：第四轮精确评审发现响应式截图滚动错位；真实滚动 owner、首屏原点与工具栏 hover 门禁已回修
+
+- status：`optical-patrol-fourth-exact-review-p0p1-zero-local-signoff-closed-release-closed`
+- latestStepOutcome: `938:fourth-exact-review-p0p1-zero-local-signoff-closed-release-closed`
+- 触发/问题：Step937 治理后生成同一精确工件 `worktree-f8a12846eebd-2c89d9befe83`（fingerprint `2c89d9befe8393f10a35601606a5f95b389a89ca1560bd9ca0c5965b19529eab`）。types、1901-module build、63/63 Optical Patrol、10/10 responsive、Overview 18、rendered-scale、10 例 200% computed-text reflow、page-scale、reduced-motion 与截图哈希/尺寸均通过。四名全新只读角色逐张检查 63 张场景原图和报告绑定的 10 张边界图：Product `P0=0/P1=2/P2=1`，Design/Visual `0/0/1`，Accessibility `0/0/1`，Engineering `0/2/0`。两个 FAIL 角色共同指出 responsive phone 图在对象可达性探针后停留于滚动中段，图片没有证明报告中的初始首屏几何；Engineering 进一步证明旧探针只恢复 `window.scrollY`，而 599px 以下真实滚动 owner 是 `[data-optical-patrol-root].op`。
+- 裁决与拒绝项：`worktreeClean=false/releaseEvidenceEligible=false` 是有效的最终发布边界，但当前四路签收按 `local-independent-scope` 审查 dirty worktree 产品工件，记录本身也必须保持 `releaseEligible=false`；因此它不能被误写成当前产品代码 P1，也绝不能被拿来充当 clean-SHA 发布证据。真实 P1 是截图、几何和滚动状态并非同一时刻。平板左判断列空隙是 Product P2，实体 iOS Dynamic Type / Android 系统文字与 browser-toolbar zoom 是 Accessibility P2；两者继续显式保留，不冒充本轮已关闭。
+- RED→green 根修：响应式运行门新增统一 `resetViewportScroll`，同时归零并记录 window、document scroller、`.panel-app` 与 active Overview root。phone claim reachability 保存并恢复所有实际 scroll owner，不再只恢复 window。每个 cell 检查前、reachability 后和 PNG 捕获前都必须回到原点；报告把四类 scroll 坐标写入 cell 与 screenshot，任一坐标偏离 0 超过 1px 直接 fail。修复前 320/390/430 PNG 均从对象队列中段开始；修复后同三图从“当前证据→配置依赖异常→主对象→检查接口对象”首扫链开始，10/10 responsive browser gate 通过。
+- 导航语义收窄：旧字段把所有位于半透明固定导航下方的滚动续页控件笼统称作 `obscuredControls`，容易把 iOS 式可滚动内容延伸误报成主任务遮挡。报告现在记录带 `selected-action | follow-up-claim | other` 类型的 `navigationIntersections`；产品门仍严格要求选中对象动作初始完整可见且位于导航上方，所有 follow-up 必须能滚动至无覆盖位置并命中。它没有把“可滚动”降格成主动作首屏通过条件。
+- 视觉交互精修：Optical Patrol 内容按钮此前已按 fine pointer 门控 hover，但 runtime toolbar 的刷新/连接/更多按钮仍有全局 `:hover`。现统一放入 `(hover:hover) and (pointer:fine)`；静态无障碍门新增 runtime chrome 断言，触屏保留明确 `:active`，不再出现粘滞 hover 假状态。
+- Emil Before/After/Why：
+
+| Before | After | Why |
+| --- | --- | --- |
+| reachability 滚动 `.op` 后只恢复 window，截图停在对象队列中段 | 保存/恢复全部实际 scroll owner，捕获前强制并记录四类原点 | 视觉证据必须与几何断言属于同一个产品状态，不能让滚动副作用伪造“首屏” |
+| 报告用 `obscuredControls` 混写主动作和下方续页对象 | 主动作首屏零相交；续页对象单独分类并验证可滚动命中 | 固定导航安全要约束当前任务，不把正常滚动延伸或遮挡缺陷混为一谈 |
+| Optical 内容 hover 已受控，runtime toolbar 仍在触屏继承 hover | 所有移动工具栏 hover 仅在 fine pointer 生效 | 同一产品 chrome 必须共享一致、可预测的输入反馈 |
+
+- 当前验证：修复后的 focused build 仍为 1901 modules；Optical Patrol accessibility/static PASS；responsive 10/10、framework identity、git worktree identity 与 browser checks PASS。由于源码、构建、门禁和本 Step938 治理均已改变 fingerprint，`2c89…` 的四路结论保留为历史发现，不能生成当前 PASS 记录。
+- 最终精确复签：治理同步后生成工件 `worktree-f8a12846eebd-188e42d7e8c5`（fingerprint `188e42d7e8c5e8c53415d401f46d21773abc53d2e22c62aea90d779e533c193b`）。types、1901-module build、full-63、responsive 10 个零原点截图、Overview 18、rendered-scale、200% computed-text 10 例、page-scale 与 reduced-motion 全部同指纹通过；63+10 PNG 的路径、哈希、字节和尺寸零不一致。四个全新角色再次逐张检查全部 73 张绑定图片：Product `P0=0/P1=0/P2=1`、Design/Visual `0/0/0`、Accessibility `0/0/0`、Engineering `0/0/0`。四份 `independent-review/v1` 记录绑定同一 artifact、四个不同 agent、`scope=local-independent-scope`、`releaseEligible=false`，结构化签收门通过。Product 唯一 P2 是稀疏平板左轨呼吸空间；它不遮挡判断、证据、动作或导航，保留为后续密度实验，不冒充 P1。
+- 决策仓库与 D 盘：`current-state`、current index、handoff、release journal、machine state 统一记录 Step938 本地四角色 P0/P1 清零，再由同步器将 14 个 Markdown 映射逐字写入 `D:\想法\面板`。D 盘是可审阅镜像，不是第二运行时权威。
+- 发布边界：任务 active、`blocked=false`。完整 route/state/security/recovery、平板 P2 复核、实体移动设备文字、真实 RouterOS soak、clean exact SHA、promotion authorization、GitHub Git Data API `force:false` 上传与同一远端 SHA 的 Linux/Windows/GHCR CL 均未关闭。GitHub 未上传、CL 未触发，`releaseEligible=false / releaseComplete=false`。
+- 整产品门禁执行补记：首轮 `check:release-gates` 在 `browser-lifecycle-v2` 真实 RED，Windows Edge 的 `browserServer.close()` 在 500ms 内未结束，旧实现又只给 `taskkill /t /f` 不足 1 秒的剩余预算，最终留下自有 PID 并正确阻断后续门禁。没有把它标成环境噪声，也没有重复盲跑。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 浏览器退出边界 | 三个 graceful close 共用短截止时间，最后才执行的进程树清理会被前序超时吞掉预算 | 为 Windows Edge 进程树保留独立、总量受限的 5 秒终止预算；直接 managed close 的截止时间从调用 `close()` 时开始，并额外包含该强制清理预算 | 可复现门禁必须同时满足“有界结束”和“自有 PID 确实消失”，不能用更长无界等待或假成功掩盖残留进程 |
+| 失败诊断 | self-test fatal 只输出 message/stack，丢失 lifecycle code、PID 与 taskkill 结果 | fatal 报告保留 name/code/detail/lifecycleDiagnostics，并限制 stack 行数 | 下一次失败能够直接区分 graceful timeout、taskkill timeout 与真实残留，避免靠重复运行猜测 |
+
+- 验证：修复前聚合门禁稳定报 `PROCESS_TREE_RESIDUAL`，PID `52228`，`browser-server.close` 为 `STEP_TIMEOUT`，`taskkill` 为 `timedOut=true/residual=true`。修复后 `check:browser-lifecycle-v2` 七例全部通过；两轮 success/page-exception/timeout 均清理成功，延迟关闭例在 543ms 内完成且 `process-tree.verify residual=false`。两份 JS 均通过 `node --check`。
+- 后续门禁又发现一个旧所有权残留：`check-route-title-focus-visible.js` 仍读取已删除的 Linkboard `mobile-overview/styles/tokens.css` 和 `.lb__title`，所以聚合门禁以 `ENOENT` 停止。把门禁迁到 Optical 真实 owner 后，先得到有价值的 RED：Optical 判断标题只有私有属性，路由切换无法通过共享 `[data-panel-route-title]` 找到它；桌面标题同时声明 `:focus` 与 `:focus-visible`，程序化焦点也会留下装饰性轮廓。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 路由标题契约 | Optical 标题不属于共享 route-focus contract；门禁仍检查已删除的 `.lb__title` | Optical `h1` 同时声明共享与本地属性；门禁直接读取 Optical tokens/source 并验证真实 selector | 正式路由切换必须把语义焦点交给当前标题，门禁不能靠已删除 owner 假装覆盖 |
+| 焦点外观 | 桌面 `:focus` 让鼠标/程序化导航也显示蓝色矩形 | 只保留 `:focus-visible`；键盘仍有 2–3px 可见轮廓，程序化路由焦点不制造装饰框 | iOS 式克制不是移除可访问焦点，而是让反馈只在对应输入方式出现 |
+
+- 验证：新门禁先准确 RED 两项，再在产品修复后 5/5 PASS；`check:types` PASS；Optical model/architecture/accessibility-static/runtime 全部 PASS，六个运行时场景检查通过。`route-deep-interactions-v2` 与 responsive 10/10 也在新浏览器生命周期下无残留通过。
+- 连接/时间门禁继续暴露旧 owner 残留：`check-public-time-contract.js` 仍读取已删除的 `LinkboardTimeEvidence.tsx/linkboardModel.ts`。迁移到 Optical、当前桌面 WAN 图和通用 Section 时间序列后，门禁先准确 RED：桌面 WAN 曲线按数组下标等距绘点，而不是按样本时间差绘点；不规则采样会被视觉伪造成规则采样。
+- 同轮清理 `check:mobile-native-model` 与 `check-mobile-workspace-contract` 的 Pocket/Patrol 删除残留。更新后的真实契约发现 `--op-ink-muted: #64757c` 在 Optical 主画布 `#edf2f3` 上对比度仅 `4.248:1`，低于普通文字 4.5:1；没有把旧测试删除后直接改成 PASS。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 时间序列 | WAN 点位按 `index / (length - 1)` 等距展开 | 桌面 WAN 与 Section 图共用已测试的 `timeSeriesPointX(timestamp, start, end, left, right)`，并对窗外样本夹取 | 图形空间必须表达真实时间间隔，不能用整齐曲线伪造采样规律 |
+| 时间契约所有权 | 门禁绑定已删除的 Linkboard 手机图并输出“mobileChart…”假声明 | 手机只验证 Optical 原生 `<time dateTime>`、共享 RFC3339 格式器和当前测量原子 sample timestamp；图表契约绑定真实桌面/Section owner | Optical 首屏刻意没有装饰图，测试不能复活被否决的 UI，也不能宣称不存在的手机图 |
+| 工作区门禁 | 仍读取已删除 Patrol CSS、ledger、actions，并把旧 Fleet 当作无事故 | 门禁绑定 Optical 6 个 style owner、EvidenceDeck、关系/对象动作；Fleet 真实接口风险继续压过规模装饰 | 迁移测试必须保留产品真值，而不是为了旧断言把事故降级为正常 |
+| 弱文字对比度 | muted 文本在主画布为 4.248:1 | 轻微收深至 `#5f7077`，主画布 4.568:1、raised canvas 4.913:1 | 保持冷静灰阶，同时不把“克制”误解成难读 |
+
+- 验证：public RFC3339 contract PASS（3 个合法、5 个无时区/非法日期拒绝，DST/offset 三例一致）；`check:connection-backend-contracts` 前端、时间、Python 连接与 18 个公开后端测试全部 PASS；`check:mobile-native-model` 两层 PASS；`check:types` PASS；WAN axis source runtime build 1901 modules 且几何 PASS。timeSeries 纯函数继续验证 5s/30s 不规则样本位于 56/316，而不是等距中点。
+- 路由与只读工具链验证：RouterOS soak fixture 17/17 PASS，覆盖只读 GET、重定向/超限响应、陈旧/未来证据、commit 漂移、通道集合与报告篡改；bounded file snapshot 和 release-candidate evidence fixtures PASS。18 个业务路由全部保持 `bounded-readonly / automated-only / independentAcceptance=pending`，`more` 明确 unavailable，结构/恢复策略/服务日志门通过但 `publicReleasePass=false`。路由恢复视觉运行时完整捕获 `153/153`，无缺格。
+- 这里严格区分两类证据：fixture PASS 证明工具会拒绝坏证据，不等于真实 RouterOS soak；153 格证明恢复 UI 当前完整，不等于外部独立路由签收。真实设备最小权限、30 分钟 soak、external-release-scope 四角色记录仍是 release CLOSED 的硬边界。
+- nextAction：进入完整 route/state/security/recovery、公共矩阵、RouterOS 只读 soak、平板 P2/实体文字边界审计和本地 clean candidate 准备；提交后在 clean exact SHA 重新绑定发布证据。只有全部发布门通过并获得授权后才可 Git Data API `force:false` 上传并等待同一 SHA 的 Linux/Windows/GHCR CL。
+- validForCommit：Step938 exact local-independent Product/Design/Visual/Accessibility/Engineering P0/P1 closure for artifact `188e…`；release evidence remains ineligible，not public-release approval。
+- supersededBy：null
+
+## 第 939 步：旧精确评审降为历史证据，当前候选重新打开独立签收
+
+- status：`post-review-remediation-invalidates-step938-current-signoff-release-closed`
+- latestStepOutcome: `939:post-review-remediation-invalidates-step938-current-signoff-release-closed`
+- 触发/问题：`check:decision-system` 正确发现 Step938 四份评审仍绑定 `worktree-f8a12846eebd-188e42d7e8c5`，而当前 tracked worktree fingerprint 已变化。后续已经修改浏览器进程树清理、共享路由标题焦点、桌面时间轴几何、Optical 弱文字对比度、现役门禁所有权和决策历史入口；旧评审不能跨越这些改动继续声明 current。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 评审身份 | Step938 `188e…` 的四份 `releaseEligible=false` 本地记录仍被 current-state 与 machine gate 写成当前 PASS | 四份记录原样保留为历史本地证据；Product、Design/Visual、Accessibility、Engineering 回到 pending，等待最终 clean exact candidate 的新证据和新角色签收 | 评审只覆盖其绑定工件；修改后继续沿用 PASS 会把精确身份门禁变成装饰 |
+| 决策工具 | 独立评审检查默认把“当前决策步”当成“最新完整评审步”，导致决策一前进就寻找不存在的新记录，也迫使文档停留在旧步 | 检查器从四角色文件的完整集合推导最新已完成评审步，再与当前决策步比较；较旧集合自动成为 historical | 决策进度与签收进度必须解耦，才能诚实表达“正在修复、尚未复签” |
+| 历史导航 | current-state 缺少 `historical-index.md` 入口，compact gate 正确失败 | 当前权威页显式指向完整日志与历史索引，同时不复制历史流水 | 当前结论要短而可追溯，不能靠隐藏历史或堆叠旧步骤维持表面一致 |
+
+- 验证边界：后端安全 Python、后端 release blockers、collector regressions、npm backend-security 与 Node release blockers 均已通过；RouterOS soak/bounded-file/candidate fixtures 和 153/153 route recovery 仍仅是工具/运行时证据。完整 current-fingerprint matrix、clean candidate、新的四角色独立复核、真实 RouterOS 30 分钟 soak、最小权限、外部 route acceptance 和远端 CL 均未完成。
+- 决策仓库验证：`check:decision-system` 全链通过；独立评审检查输出 `step=938 / currentStep=939 / historicalRecord=true / currentEvidence=false`，machine Product/Design/Visual 均为 pending。语义步骤与 outcome 5/5 一致，D 盘 14/14 Markdown 字节一致且无多余/缺失文件。
+- 静态发布门禁继续先红后绿：第一次 `--static-only` 正确拒绝旧 framework input digest；正式 `npm run build` 后 1901 modules 通过，当前资产为 JS `519.14 kB`、CSS `90.10 kB`，hashed URL、gzip/brotli、ETag 与 immutable cache contract 通过。随后 readiness 暴露两处“代码写法而非语义”的陈旧断言：探针已真实计算并导出 `noFalseCurrentData`，但对象使用 shorthand；CI 又通过 `check:release-gates` 间接调用 `check:runtime-browser`。检查器改为验证计算式+blocking export，并解析 package script 验证直接或传递调用，不删减真实门禁。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 当前数据撤回检查 | readiness 只寻找 `noFalseCurrentData:` 字符串，无法识别等价且现役的对象 shorthand | 同时验证 `!forbidsCurrent || !geometry` 的计算式和 `checks` 中 blocking 导出 | 通过条件应绑定用户可观察真值，不绑定 JavaScript 表面写法 |
+| CI 运行时覆盖 | readiness 只接受 workflow 直接出现 `npm run check:runtime-browser`，忽略 `check:release-gates` 已包含该命令 | 读取 CI 与 `package.json`，接受可证明的一层传递调用；任一链接缺失仍失败 | 聚合脚本不是绕过；门禁必须验证调用图，而不是鼓励重复命令 |
+- 验证：`check:types` PASS；生产 build PASS；`check-static-assets.py` PASS；`check-public-release-readiness.js --static-only` 输出 `engineeringReadinessPass=true`；readiness 源 `node --check` PASS。
+- 发布边界：任务 active、`blocked=false`。GitHub 未上传；Step938 不被删除、不被改写成失败，但只能证明其原始 `188e…` 工件。当前 Product/Design/Visual/Accessibility/Engineering 为 pending，公众发布继续 FAIL/CLOSED。
+- nextAction：完成后端/静态/构建和完整 route/state/public 矩阵，清理 intended diff 并生成 clean exact candidate；随后重绑全部截图与报告，发起四个全新独立角色签收和真实 RouterOS soak。未获得 promotion authorization 且同一 SHA 的 Linux/Windows/GHCR CL 未闭环前禁止上传。
+- validForCommit：Step939 dirty-worktree decision-truth remediation；不是 clean candidate，不是 public-release approval。
+- supersededBy：null
+
+### Step939 执行补记：完整工程门通过后，首轮矩阵暴露能力门禁与恢复工作区语义断层
+
+- 事实核对：完整 `npm run check:release-gates` 已在当前工作树通过，耗时 `773.4s`；随后真实生成 Overview `28`、route responsive `76`、route-state `266` 三份 current-worktree 报告。三份报告都正确绑定实际 fingerprint `881cf996584d…`，也都因真实子项失败保持顶层 `pass=false`，没有把矩阵缺格改写成成功。
+- 首轮失败归因：Overview 的 14 个手机格并非缺少可见设备作用域，而是验收器只认 live runtime toolbar，静态公开快照实际由 Optical Patrol 的 standalone chrome 持有同一设备身份与“只读”边界；资源路由则真实缺少搜索；日志 workbench 被错误强制要求伪造 metric；只读诊断仍被旧文案断言卡住；无快照手机恢复态已经渲染四事实证据工作区和两条真实调查入口，却被旧 `.mdw-object-list/.mdw-empty` 选择器判为缺内容。
+- 产品根修：`trafficLoad/loadAudit` 恢复对象搜索；无快照手机不再显示无意义的“0 个对象 / 筛选”工具头，改为明确 `phone-evidence / compact-evidence / tablet-evidence` 能力布局；时间字段只使用 `observedAt` 并命名为“最近成功业务快照”，绝不回退到失败尝试的 `updatedAt`；没有成功记录时显示“未记录”。
+- 验收根修：作用域门根据 `runtimeManaged` 验证真实 owner，并同时要求可读设备身份和精确“只读”模式；日志 workbench 改验 `事件证据 / 相邻事件 / 记录身份` 或服务日志对应四段结构，不为通过门禁塞假指标；只读诊断只接受“已记录失败端点 0”的不歧义表达；恢复态必须同时具备四个唯一事实键、匹配 route/state 的恢复边界和至少两条真实入口，不能靠假空列表通过。Overview 对象动作的“新证据”检查也迁到现役 typed inspector（`.mdi-section + .mdi-facts`），并继续禁止重放首页断言。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 设备作用域 | 只认 live runtime toolbar，静态公开快照的真实 standalone chrome 被判缺失 | 按实际 owner 验证设备名与精确“只读”边界 | 同一产品语义可以有两种运行所有权，但不能没有可见身份或靠布尔标记自证 |
+| 无快照工作区 | `phone-list` 下仍出现“0 个对象 / 筛选”，最近时间混用失败尝试更新时间 | 独立 evidence layout；四事实与调查入口成为主任务；只显示最近成功业务快照 | 恢复页应回答“缺什么、影响什么、最后可信证据、去哪调查”，不能伪装成空列表 |
+| 日志能力 | 所有 tablet workbench 一律要求 metric | 日志验收结构化时间、来源、相邻事件和记录身份 | 运维密度来自有用的新证据，不来自给每个页面硬塞三项数字 |
+| 资源定位 | CPU/内存/磁盘只有筛选和排序，没有搜索 | 资源负载与采样审计均可按指标、来源和序列搜索 | 对象工作区的扫描效率必须随对象量增长，不能依赖当前 fixture 只有三行 |
+| Overview 纵深 | 新证据探针仍寻找旧 `dl/table/raw` DOM | 验证现役 typed inspector 的类别、结构段和至少两项事实 | 门禁应绑定真实详情价值，不能因所有权升级而把有效纵深误判为空 |
+
+- 聚焦证据：`check:types`、1901-module build、`check:overview` 18/18 通过；`focused-step939c-overview-detail`、`focused-step939d-resource-search`、`focused-step939e-log-evidence`、`focused-step939f-readonly-copy`、`focused-step939g-no-snapshot-recovery` 全部在各自显式 bounded scope 内通过。失败前的 `focused-step939a/b` 原样保留为 RED 证据，不改写。
+- 当前边界：这些是 dirty-worktree 聚焦工程证据，不是最终矩阵，更不是视觉或独立签收。Product、Design/Visual、Accessibility、Engineering 继续 pending；GitHub 未上传、CL 未触发、任务 active 且 `blocked=false`。
+- nextAction：按当前 fingerprint 顺序重跑 Overview 28、route responsive 76、route-state 266 三份完整矩阵；任何真实失败继续回到最早责任层修复，三份全部完整后再推进 readiness、clean exact candidate、全新四角色复签和真实 RouterOS soak。
+
+### Step939 执行补记：导航净空从“所有控件首屏零相交”校正为能力与几何共同判定
+
+- 第一轮回归事实：产品与能力门根修后，Overview 矩阵只剩 `fleet / all-offline / resource-full / interfaces-down` 四个窄屏格失败。失败并非主操作被导航遮挡，而是检查器把可继续滚动的后续对象按钮也按“初始首屏零相交”阻断；这与现役合同“当前选中对象的主操作必须初始安全可见，后续对象必须可滚动到导航上方”冲突。
+- 第一次校正：主操作和所有非 follow-up 控件继续执行严格几何零遮挡；只对真实可见的 follow-up 控件计算滚动可达性，隐藏控制不参与自证。该修改关闭四个窄屏误报，但第二份完整矩阵又使全部七个 `844×390` 格失败。
+- 第二轮根因：短横屏把 follow-up 放在左侧任务栏、导航位于右侧；二者横向完全不相交，报告也记录 `obscuredByNavigation=[]`，旧公式却只比较控件底边与导航顶边，凭纵坐标推导出不存在的遮挡。
+- 最终判定：先检查目标与导航的横向区间；横向不相交即为几何安全，只有横向相交的 follow-up 才进入纵向滚动可达性计算。非 follow-up 的真实相交、44px 触控、横向溢出和主操作初始可见要求均未放松。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 手机后续对象 | 所有初始与浮动导航相交的 follow-up 都直接阻断 | 可见 follow-up 必须有真实滚动余量，能移到导航上方 | 后续证据允许在折叠以下，但不能成为永远点不到的假入口 |
+| 主任务净空 | follow-up 与主操作共用同一宽泛判定 | 非 follow-up 和选中对象主操作继续零遮挡 | 不以修测试为名降低首要任务的可达性要求 |
+| 短横屏几何 | 只看纵坐标，把左右两栏误判为上下遮挡 | 先验证横向相交，再决定是否计算纵向滚动 | 遮挡是二维事实；一维公式会惩罚正确的分栏架构 |
+| 隐藏控件 | CSS 隐藏的重复控制也可能进入可达性集合 | 仅检查真实可见且可交互的 follow-up | 门禁应约束用户实际能看到和触发的表面 |
+
+- 验证证据：`inspect-overview-mobile.js` 语法通过；`focused-step939k-followup-horizontal` 的 `single/resource-full @ 844×390` 2/2 通过且 `navigationClearance=true`；完整 `_acceptance/release-matrix-step939-fixed3/report.json` 为 `28/28`、`complete=true`、`pass=true`、0 failure，绑定 fingerprint `2fc5ac784a7bf84ef06960c6bf2667c95cce34f78893024ee3ef06483527150e` 与 artifact `worktree-f8a12846eebd-2fc5ac784a7b`。
+- 当前边界：这是 dirty-worktree 的 Overview 工程矩阵，不是 clean candidate，也不替代 route responsive/state、视觉签收或真实 RouterOS 验收。Product、Design/Visual、Accessibility、Engineering 继续 pending；GitHub 未上传、CL 未触发、任务 active 且 `blocked=false`。
+- nextAction：运行当前工作树的 route responsive `76`；若出现失败，按具体 route/capability/viewport 回到最早责任层修复，禁止用降低通用门槛换绿。
+
+### Step939 执行补记：三组公开矩阵在同一运行时 fingerprint 下闭环
+
+- Overview：`7` 场景 × `4` 视口 = `28/28`，`complete=true`、`pass=true`、0 failure。
+- Route responsive：`19` 路由 × `4` 视口 = `76/76` 浏览器单元通过，`requestedComplete=true`、`boundedPass=true`、0 failure；由于该 shard 只请求 `single`，顶层 release completeness 明确保持 N/A/false，不把 bounded scope 冒充七场景发布矩阵。
+- Route state：`19` 路由 × `7` 场景 × `2` 视口 = `266/266`，`complete=true`、`pass=true`、0 failure。
+- 身份一致性：三份报告均绑定 fingerprint `2fc5ac784a7bf84ef06960c6bf2667c95cce34f78893024ee3ef06483527150e` 与 artifact `worktree-f8a12846eebd-2fc5ac784a7b`；未出现“报告目录名相同但内容身份不同”或 required matrix 缺格仍顶层通过。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 场景证据 | 聚焦修复只能证明个别 route/viewport | 28、76、266 按产品场景和能力边界分层闭环 | 聚焦测试定位根因，完整矩阵证明没有把修复局限在特供尺寸 |
+| Bounded shard | 单场景路由矩阵容易被误读为发布通过 | 只声明 `76/76 boundedPass`，保留 release completeness 非通过 | 范围诚实比绿色数字更重要 |
+| 报告身份 | 每次工作树变化都可能让旧截图失效 | 三组报告显式核对同一 fingerprint/artifact | 验收必须指向同一真实产品状态，不能拼接不同版本的绿灯 |
+
+- 当前边界：三组矩阵只关闭工程响应式与状态语义，不自动关闭视觉、产品、无障碍和工程独立签收；仍是 dirty-worktree 工件，不是 clean exact-SHA candidate。GitHub 未上传、CL 未触发、任务 active 且 `blocked=false`。
+- nextAction：运行 public release readiness 与安装/打包/容器/Windows preflight；清理 intended diff 后生成 clean candidate，再对精确 SHA 重跑门禁、四角色复签和真实 RouterOS 验收。
+
+### Step939 执行补记：真实 Edge 200% 从元素盒子烟测升级为文本碎片与七场景证据，当前工程 readiness 闭环
+
+- readiness 首轮真实 RED：Overview 生产探针已经迁移到 Optical Patrol 的 `evidenceBoundary / expandedClaim / claimControls / navigationClearance / responsiveComposition`，但发布消费者仍硬编码已退役字段，形成“生产者真实、消费者陈旧”的契约漂移。现在生产者导出完整 `requiredChecks`，readiness 同时比较 canonical、声明集合与实际 `checks` 键；缺字段、多字段、重复字段、旧字段复活或任一 `false` 都 fail-close，并补齐正反 fixture。
+- 可读性门禁不再根据元素总盒子推测。Overview 与实际 Edge 工具栏检查都遍历真实 Text node，用 `Range.getClientRects()` 验证每个渲染片段、12px 字号下限、祖先 x/y 裁切、视口横向裁切及 fixed UI 纵向裁切；仅排除真实 SR-only 几何和有意水平滚动的 route switcher，不以 DOM 数量或字符长度代理“信息密度”。
+- 真实 Edge v5 的聚焦 RED 连续暴露四个产品/运行时根因：资源场景运行栏“当前快照”仍为 11px；`no-snapshot` 被测试错误等待不存在的 `current`；360px 接口恢复说明被单行 ellipsis 截断；768px 关系证据说明同样被截断。对应修复为 12px 运行标签、按场景等待真实 `current | error` phase、窄屏接口说明换行、平板关系说明换行；每项均先在原失败格定点复现并通过，再回到完整矩阵。
+- 实际 Microsoft Edge 浏览器工具栏 200% v5：8 个基准视口的 `normal + interfaces-down route` 以及 390×844 的七个 Overview 场景，共 `22/22`；canonical Overview 包含 `single / fleet / all-offline / no-snapshot / collection-down / resource-full / interfaces-down`。22 格均为 0 clipped、0 unreadable，主操作与键盘焦点可达且不被导航遮挡，Windows 捕获与完整 renderer PNG 都有独立 SHA-256；捕获模式为 10 格 `screen-unobscured`、12 格 `screen-visible-segment`，范围声明明确不冒充 iOS Dynamic Type 或物理手机证据。
+- 当前绑定证据：artifact `worktree-f8a12846eebd-07d8b2b8daa7`，fingerprint `07d8b2b8daa722356416e08d689756e332e6a15dee1714ef13de39f9e4f7cb4a`。同一身份下 Overview `28/28`、route responsive `76/76 boundedPass`、route-state `266/266` 全部通过；`check-public-release-readiness.js --engineering-worktree` 输出 `engineeringReadinessPass=true`，同时仍明确 `release ineligible`。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 语义验收契约 | readiness 维护一份陈旧字段名单，生产探针换所有权后会误报或漏报 | canonical、producer 声明与实际键必须三方完全相等，任一缺失/多余/重复/false 都阻断 | 门禁应验证当前产品契约，而不是依赖消费者记住旧 DOM 命名 |
+| 200% 场景覆盖 | 8 视口 × 2 场景只能证明单一 Overview 正常态与接口路由 | 保留 16 个基准格，并给 390×844 增加其余六个 Overview 场景，形成 22 格 | 真实缩放必须覆盖异常语义，不只是正常首页皮肤 |
+| 文字可读性 | 元素盒子可见就算通过，内部 Text node 仍可能被 ellipsis 或祖先裁掉 | 按渲染文本片段检查字号、祖先边界与 fixed 视口边界 | 用户读的是字，不是元素矩形；不可读文字不能被“盒子存在”自证 |
+| 无快照 phase | 验收器一律等待 `current`，真实错误态因此只能超时 | `no-snapshot` 明确等待 `error`，其他场景等待真实 `current` | 测试不能要求异常态伪装成正常态才通过 |
+| 接口恢复说明 | 360px 与 768px 用单行省略隐藏完整判断依据 | 在各自能力断点内自然换行，保留紧凑间距与 12px 下限 | 运维说明可以次要，但不能被截成用户无法核对的半句话 |
+
+- 当前边界：这是 dirty-worktree 的工程发布证据闭环，不是 clean candidate，也不替代 Product、Design/Visual、Accessibility、Engineering 四个全新独立签收、真实 RouterOS soak、外部 route acceptance 或物理设备体验。GitHub 未上传、CL 未触发、任务 active 且 `blocked=false`。
+- nextAction：运行安装/打包/容器/Windows、安全与发布回归，审计 intended diff 并形成 clean candidate；随后在精确 SHA 上重生成全部证据、完成四角色独立复签与真实 RouterOS soak。未获得 promotion authorization 且同一远端 SHA 的 Linux/Windows/GHCR CL 未全部通过前禁止上传或宣称发布。
+
+### Step939 执行补记：聚合发布门全绿后，真实容器入口发现并关闭“健康但不可访问”的交付假绿
+
+- 聚合工程门：`npm run check:release-gates` 完整退出 `0`，覆盖 Overview 18 项、运行时浏览器与生命周期、移动无障碍、桌面资源密度、WAN 轴、离线信号、路由标题焦点、Edge 200% v5 fixture、workflow/exact-SHA/container fixture、连接/时间合同、RouterOS soak fixture、bounded file、candidate evidence、route maturity 与 recovery visual `153/153`。首轮聚合执行还真实发现两个恢复态消费者继续要求退役键 `last-evidence`；产品已统一为可验证的 `last-success / 最近成功业务快照`，两个 focused runtime 回归转绿后才重跑完整聚合门。
+- 输出恢复原则：桌面与静态检查曾在桌面应用回收并行单元后丢失终态输出；没有把“可能通过”写成证据，也没有重跑整套十余分钟聚合门，只重跑丢失的三个桌面运行时与静态子集。`desktop-v1030`、`desktop-no-snapshot`、`desktop-incident-hierarchy`，以及 report truth/quarantine/completeness、artifact identity、asset budget、matrix/semantic fixtures、LAN defaults、runtime schema、sections 均明确退出 `0`。
+- 容器首轮事实：RouterOS 友好 archive 成功构建为 `linux/amd64`，包含 `manifest.json`、`repositories` 与 13 个 `layer.tar`；镜像 `USER=panel`，容器内部 healthcheck 为 healthy。但宿主机通过 Docker 发布的 `127.0.0.1:<random>` 请求 `/api/health` 返回 `403 localhost_required`。原因不是应用未监听，而是 Docker NAT 令应用看到的 TCP peer 成为 bridge default gateway；原门禁只在容器命名空间内请求 `127.0.0.1`，因此“镜像健康”错误掩盖了“公众默认入口不可用”。
+- 安全裁决：拒绝“只要 `Host` 是 loopback 就放行”，因为同 bridge 的任意 sibling container 可伪造该 Host。新增显式 `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD`：基础镜像、Windows/Linux native 和 RouterOS token-forward 默认 `0`；Compose 与 Docker installer 默认 `1`。启用后只允许**精确等于容器 Linux 默认路由 gateway 的 peer**且原始 Host 为 loopback；普通 sibling、LAN peer、container-IP Host 继续拒绝。Docker gateway 模式与 trusted proxy headers、token-forward 模式互斥，避免两条信任例外叠加。
+- RED→green：collector focused test 先在 gateway peer + loopback Host 上真实 AssertionError；实现 `/proc/net/route` 默认网关解析、精确 peer 集合和互斥合同后，gateway 正例通过，sibling、非 loopback Host、默认关闭、畸形 route table 与重叠信任模式负例均通过。Compose/example/install/docs/static readiness 同步接线，Dockerfile 仍 fail-closed。
+- 真实运行验证：重建镜像后，以 `--pull=never`、随机宿主 loopback 端口、read-only rootfs、`cap-drop ALL`、`no-new-privileges`、pids 256、非 root 用户和隔离 data volume 启动；宿主机首页与 `/api/health` 返回 `200`、profile=`routeros_only`。同 bridge helper 使用伪造 `Host: 127.0.0.1:28646` 直接访问容器 IP，仍返回 `403 localhost_required`。测试容器与 volume 均按 UUID 所有权清理，没有 prune 或触碰其他资源。
+- 防回归门：新增 `tools/check-container-host-ingress-smoke.py`，用一个 120 秒全局 deadline 和每命令/HTTP 子超时验证镜像平台、loopback-only publish、容器健康、首页、health、session/CSRF cookies、session 复用、非 loopback Host、sibling forged Host、无 session 写入和有 session 无 CSRF 写入；失败只打印状态与最近日志，不打印 env。脚本自测与真实 Docker smoke 均通过，并接入 Linux CI 的 archive build 之后；不会 login、pull 或 push。
+- 资产身份：增加容器 smoke 的 npm 本地入口后，static readiness 正确拒绝旧 framework input digest `7f64fc…`；正式 build `1901 modules` 后 manifest 与当前输入 `6e5030726d2de5eabcd186934ddd255b7f2d81b6cf97c5f18cadfaea352f58a8` 完全一致，types、asset identity、asset budget 与 static readiness 转绿。此前 `07d8…` Edge/28/76/266 报告及容器 archive 因后续工具、后端、package 和资产变更成为历史 dirty-worktree 证据，最终候选必须一次性重生，不能拼接旧绿灯。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| Docker 可用性 | 只验证容器内部 healthcheck；宿主机默认 URL 实际 403 | 真实 host→published-port→container 路径成为发布门 | 用户访问的是宿主机入口，不是容器 namespace 内部 URL |
+| 本地边界 | 非 loopback TCP peer 一律拒绝，导致 Docker host 被误伤 | 仅 default gateway peer + loopback Host 的显式窄例外 | 修可用性但不把同 bridge 容器或 LAN 变成本地用户 |
+| 信任模式 | proxy、token 与 Docker NAT 例外可能被误配置叠加 | Docker gateway 模式与另外两种转发信任互斥 | 安全例外必须单一、可解释、可测试 |
+| 容器门禁 | tar 结构和 healthy 足以给绿灯 | 首页/API/session/CSRF/Host/sibling 全链运行验证 | 包装正确不等于入口可用，健康也不等于访问边界正确 |
+| 丢失输出 | 并行执行结束但终态输出被客户端回收 | 只重跑无法恢复的最小子集并保留明确 exit code | 验收证据不能靠推测，也不应为找回输出浪费整套重跑 |
+
+- 当前边界：任务 active、`blocked=false`。本轮关闭的是本地工程、安装和容器入口合同，不是最终产品/视觉签收。当前 Product、Design/Visual、Accessibility、Engineering 仍 pending；真实 RouterOS soak、最小权限、外部 route acceptance、clean exact candidate、最终 Edge/28/76/266 和四角色签收尚未完成。GitHub 未上传、CL 未触发、`releaseEligible=false / releaseComplete=false`。
+- latestStepOutcome: `939:post-review-remediation-invalidates-step938-current-signoff-release-closed`
+- nextAction：同步决策仓库与 `D:\想法\面板` 后审计 intended diff、删除非候选残留并形成 clean candidate；在该唯一精确身份上重建静态资产、容器 archive、Edge 22、Overview 28、route 76/266 与 engineering readiness，再进行四角色独立复签和真实 RouterOS 验收。未获明确 promotion authorization 前继续禁止上传。
+
+### Step939 执行补记：候选审计关闭失效验证面、容器资源边界与镜像可复现性，路由产品签收继续前移
+
+- 失效验证面：候选审计发现 `package.json` 仍有 `47` 个入口指向已删除的 Pocket/Patrol 文件，另有 `72` 个验证器继续读取退役 owner。现已迁移仍有产品价值的 mobile visual/fleet 契约，删除其余失效验证器，并新增 package-script/file-reference gate。该门当前核对 `97` 个 package scripts、`113` 个 JavaScript 验证器、`8` 个 Python 验证器与 `209` 个静态文件读取；不存在“命令名还在但真实文件已删”的假发布面。
+- Docker 网关信任继续收窄：Linux route table 只有在恰好解析出一个不同且有效的默认网关时才产生可信 peer；零个、多个或畸形默认网关都返回空集合并 fail-close。容器入口 smoke 的 `--self-test` 已与真实镜像参数解耦，解析器可独立执行 `7/7` 负面/正面合同。
+- 运行时内存边界：历史、活动连接、连接详情/搜索、DNS 预览/分页、路由器 profile 历史、诊断 worker 和状态 findings 等配置均进入有上限的整数解析。DNS 静态全量 REST 改为流式读取，默认 `4 MiB`、硬上限 `16 MiB`；畸形 `Content-Length`、超限 body 与非法 JSON 都保持 unavailable/error，绝不映射为空列表或零值。
+- 安装与资源边界：Compose 明确限制 `1536 MiB`、`1.5 CPU`、`256 pids`，并保留 read-only rootfs、cap-drop 与 no-new-privileges。普通 `--source-dir` 安装不再执行带删除语义的同步；只有显式 `--upgrade` 才允许清理目标树。真实安装 fixture、Compose config 和 LAN defaults 均通过。
+- Python 与 OCI 可复现性：Docker 两阶段固定到同一 `python:3.12.10-slim-bookworm@sha256:fd95fa…`，`requirements.lock` 对 `11` 个包执行 `--require-hashes`，并已验证 CPython 3.12 的 `linux/amd64`、`linux/arm64` wheels。GHCR workflow 产出 `ghcr-image-evidence-v1`，绑定候选 SHA、CI/container run、OCI index digest 及两个平台 descriptor digest；exact-SHA verifier 必须从 registry 读取真实 `Docker-Content-Digest` 并与该工件逐项一致。
+- 发布控制信任边界：仓库内 workflow 不能自行证明“管理员没有绕过 main 保护”。最终架构要求候选验证平面与外部 release-control 平面分离，由固定 GitHub App 身份成为 main、Release Admission check 与 GHCR promotion 的唯一写入者；外部签名证据、受保护环境和 exact-SHA 条件共同组成非循环发布授权。当前 GitHub 权限无法证明远端 ruleset 已存在，因此不把设计意图写成远端已配置事实；GitHub 仍未上传。
+- 路由产品审计：`trafficLoad` 与 `loadAudit` 的对象控制已从单一 All/单一排序扩展为证据驱动筛选和排序。资源负载支持超阈、异常、CPU/内存/磁盘、最近值缺失筛选，以及风险、最近值、连续超限、样本数排序；采样审计支持有效序列、最近值、仅序列、超阈、无有效序列筛选，以及样本数、证据时间、样本范围、压力排序。focused model 与 `check:types` 均通过。连接明确 IP 搜索、DNS 分页、Security findings 的真实前端 supplemental API 仍在本轮实现/验收，不能把后端已有 URL 冒充完成模块。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 验证所有权 | 大量脚本读取已删除组件，绿色入口可能根本没有运行现役产品 | 迁移仍有效合同、删除退役入口，并由文件引用 gate 阻断悬空脚本 | 测试数量不是安全感；只有指向真实 owner 的门禁才有发布意义 |
+| 容器信任 | 只要 route table 中出现默认路由就可能放行某个 gateway | 必须恰好一个有效默认网关，否则可信 peer 为空 | 本地访问例外必须唯一、窄且可解释，歧义时宁可拒绝 |
+| 大响应处理 | DNS/连接类数据可能先完整进入内存，再由页面做有限展示 | 读取阶段即流式限额，配置值也受硬上限约束 | UI 分页不能修复后端无界读取；资源边界要建立在最早输入层 |
+| 安装升级 | 普通来源安装可能以同步删除语义覆盖现有部署 | 默认保留目标树；只有显式 upgrade 开启删除 | 安装便利不能把用户已有配置和数据变成隐式清理对象 |
+| 镜像证明 | workflow success 与某个 tag 存在即可被拼成“容器已发布” | SHA、OCI index 和两个平台 descriptor digest 必须共同绑定 | 多架构发布是内容身份问题，不是三张互不相干的绿灯 |
+| 路由控制 | 资源与审计页面只能 All + 单排序，真实巡检无法收敛对象 | 筛选和排序直接消费资源证据字段，并以 fixture 证明分组/顺序变化 | iKuai 式效率来自可操作的对象密度，不来自把数据排成更多行 |
+
+- 当前边界：任务 active、`blocked=false`。当前工作树不是 clean candidate；Product、Design/Visual、Accessibility、Engineering 的最终独立签收、真实 RouterOS soak、外部 route acceptance、promotion authorization 与同一远端 SHA 的 Linux/Windows/GHCR CL 均未关闭。GitHub 未上传，CL 未触发。
+- nextAction：完成 connections/DNS/security 三条 supplemental 证据链的前端实现与手机/桌面生产 bundle 运行时验收；随后把新的 focused gates 接入聚合门，冻结 route source，再一次性重建资产和候选证据。不得用当前资源 focused green 提前结束整产品任务。
+
+### Step939 执行补记：supplemental 后端从“有 URL”升级为有界、脱敏、可判鲜度的公共证据契约
+
+- 独立安全/产品预审先给出 P0：三个后端 URL 虽已存在，但 DNS、connections、health findings 没有共享的版本化证据包络，旧前端只能把 HTTP 200 猜成 current；连接异常还会把 `str(exc)` 原样写入公共错误体，DNS cache miss 可并发放大全量 REST，health findings 会带出原始采集错误。该 P0 不以“页面尚未接入”降级。
+- 统一包络：三条响应现在都声明 `schemaVersion=1`、精确 `kind`、`readOnly=true`、RFC3339 `generatedAt/observedAt`、`evidenceMode`、`source/sourceStatus` 与 `coverage`。连接是 point-in-time 的 `bounded-sample`，即使 SSH 正常结束也不把它叫连接库存；DNS 区分 `rest-live / rest-cache / ssh-preview / unavailable`，分页数据与 revision/观测时点同代；health findings 使用 snapshot 观测时点并在来源失败时降 historical/unavailable。
+- 连接放大边界：请求只接受规范 IPv4/IPv6、单一 `target/source` 与 `1–50` limit；每个 peer 每 `60s` 最多 `6` 次、最多 `1` 个在途，状态表最多 `1024` peer 并按时间回收。错误响应只给稳定 code/泛化文案。进一步 RED 证明服务日志仍打印了包含 URL/密码样例的异常 message；`log_service_error` 现只保留异常类型及数值 errno/status，不再复制不可信 message。
+- 连接证据真值：公开行只保留 `srcIp/dstIp/protocol/timeout/origRateBps/replRateBps`，不输出原始 command row。缺失速率保持 `null`，显式观测零保持 `0`；row、byte 与 transport 边界分别记录，达到字节上限时 `capture.complete=false`。
+- DNS 边界：HTTP 只允许 `pageSize≤50`、对齐 offset、最多 `20` 页/`1000` 条。cache miss 在窄 refresh lock 内二次检查，确保并发只执行一次全量 REST。RouterOS 文本在公共响应前删除控制字符并按字段上限收口，comment 最多 `256` 字符；preview/cache 不得宣称 complete。
+- health findings 边界：最多 `20` 项、每项最多 `6` 个 evidence facts，标题/摘要/值有硬长度；原始异常、URL、凭据形态、内部命令与堆栈被替换为稳定的脱敏事实。`source=snapshot-health-analysis` 明确它是快照派生发现，不伪装为防火墙规则。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 请求成功与证据新鲜度 | HTTP 200 被前端当成 current | 包络分别表达请求结果、观测时间、来源状态与覆盖范围 | 网络成功只证明拿到响应，不证明数字当前、完整或可用于业务结论 |
+| 连接查询 | 宽 limit、无专属频率/在途边界，异常文本回显 | 规范 IP、50 行硬限、6/min、单在途、稳定错误码 | 只读不等于无成本；SSH 查询仍需防止浏览器把路由器拖慢 |
+| 连接速率 | 未返回 rate 被整数解析器改成 0 | `null` 与观测零分别保留 | “没取到”与“测得 0”是不同证据，不能为排版方便合并 |
+| DNS 分页 | 多个 cache miss 可重复枚举；preview 与 count 可能来自不同代 | single-flight、revision/observedAt 同代、page/preview 明确分界 | 分页元数据只有在同一次采集代内才可用于覆盖判断 |
+| 公开错误 | response 和 service log 都可能复制上游异常 | 响应泛化；日志仅保留异常类型和安全数字 | 诊断价值不能以泄露 RouterOS 地址、命令或凭据为代价 |
+
+- 聚焦验证：新增后端合同先稳定命中 `4` 类旧失败；主代理复核又新增“服务日志不得泄露”和“缺失速率不得归零/公开行最小化/字节截断不得 complete”红合同。当前 `tools/test_supplemental_api_contract.py` 为 `7/7`，collector regressions `22` 项、公开后端合同 `18` 项与 Python compile 通过。
+- 当前边界：只关闭 supplemental 后端 P1，不关闭前端。production-bundle 浏览器门已按手机 `390×844` 与桌面 `1366×768` 建立严格 RED：现有构建尚无完整的显式连接输入、DNS 翻页和 `data-supplemental-*` 证据面。Product/Visual/Accessibility/Engineering 仍 pending，任务 active、`blocked=false`，GitHub 未上传。
+- nextAction：完成并审查手机/桌面隔离的 supplemental presentation；对齐严格包络、首屏 IP 命令、DNS Back/Forward 分页、health 对象证据、error/empty/malformed 状态，再重建生产 bundle 使新浏览器门由 RED 转绿。
+
+### Step939 执行补记：DNS 页对象绑定采集代次，生产浏览器 fixture 停止伪造旧字段
+
+- 前后端契约复核发现一个可验证缺口：DNS 响应根对象已有 64 位内容 revision，但 `page` 子对象没有携带同一 revision。严格前端若只信根对象，无法证明当前 rows、offset、totalCount 与根 revision 来自同一采集代；若要求 page revision，则现役后端又会被全部拒绝。后端现把同一 revision 同时写入根与 page，frontend 必须比较二者相等，任一缺失或不一致均降为 unavailable。
+- 生产 bundle 浏览器 fixture 同步停止使用旧的 `origRate/replRate`、2 行 DNS 特供页和错误的 health 来源。连接 fixture 现在使用 `origRateBps/replRateBps`、完整 query/page/capture 边界；DNS 使用正式 50 行页、`0→50` offset、64 位 revision，并区分首个 `rest-live/current` 与后续 `rest-cache/historical`；health 固定为 `snapshot-health-analysis`，观测时间与 sourceUpdatedAt 同一时点。
+- DNS 成功态不再要求快照列表与 supplemental 列表重复共存；只有 supplemental 请求失败时，原快照对象必须继续作为回退证据。这个调整不是减少数据，而是消除同一规则被两份 UI 重复渲染的空间浪费。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| DNS 采集代 | 根 revision 与 page 行集之间只有隐含关系 | 根/page revision 必须同值，分页行才能被接受 | 分页元数据必须能证明同代，不能在刷新边界拼接两次采集 |
+| 测试 fixture | 旧字段、2 行特供分页、health 假来源可让测试绿而生产拒绝 | fixture 逐字段对齐生产公共包络与 50 行硬边界 | 浏览器门应测试真实合同，不应测试一套方便的平行协议 |
+| DNS 信息密度 | 成功态仍要求基础快照列表保持可见，造成重复清单 | current/historical supplemental 成为唯一分页清单；错误态恢复快照 | 密度来自单一可操作对象面，不来自把同一对象显示两遍 |
+
+- 聚焦证据：`tools/test_supplemental_api_contract.py` `7/7` 通过；两个 Node 浏览器/fixture 文件语法通过。production bundle 尚未重建，新的 supplemental runtime 仍保持未签收状态，不以 fixture 对齐冒充 UI 通过。
+- 当前边界：任务 active、`blocked=false`，GitHub 未上传、CL 未触发。下一步只审查并整合并行 frontend supplemental diff，再运行 strict schema、types、build 与真实 production-bundle 浏览器合同。
+
+### Step939 执行补记：独立契约复核关闭健康降级真值、空事实与 DNS 缩页边界
+
+- 独立只读复核没有发现新的伪造 current P0，但命中四个真实后端 P1：`starting + 无观测时点` 被写成 degraded/unavailable 而前端只接受 failed/unknown；已有旧快照且当前采集失败被写成 historical/failed；可选 health fact 的 `None` 会让严格前端拒绝整组 findings；DNS 在用户停留第 2 页而新采集代缩到 1 页时会返回一个 offset 超出 total 的矛盾页面。
+- HEALTH sourceStatus 现在只表达证据来源状态：有当前成功快照为 `ok`；有旧快照但当前采集非成功为 `degraded`；无观测时点且明确 error 为 `failed`；尚在启动等无观测状态为 `unknown`。当前失败事实仍留在 finding 对象里，不用 sourceStatus 毁掉仍可核对的历史证据。
+- `health_public_evidence` 直接跳过 `None` fact，不把“可选事实没有值”伪造成连字符，也不让一个空值使完整 findings envelope malformed。
+- DNS handler 在取到新代 total/revision 后检查请求 offset；非首页 offset 已不属于该代时返回稳定 `409 dns_page_out_of_range`，只携带安全的 `totalCount / lastPage / revision`。前端必须 replace 到最后有效页后重读，不能把数据缩页叫“协议损坏”，也不能继续显示 `第 2 / 1 页`。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 健康失败状态 | historical 数据与当前采集 failed 绑定，严格消费者只能全拒绝 | historical 表示仍可读的旧证据并配 degraded；失败本身进入 finding | 新鲜度与故障原因是两条轴，不能让当前失败抹掉历史证据 |
+| 首次采集 | starting/no timestamp 被称为 degraded | 无观测且未明确失败为 unknown/unavailable | “还没取到”不是“取到了但降级” |
+| 可选事实 | `None` 进入公共 evidence value | 无值 fact 被省略 | 缺字段要保持缺失，不能污染整条证据链 |
+| DNS 缩页 | 服务端返回 offset>total 的 200 页面，前端只能误判 malformed | 409 + 最后有效页 + 同代 revision，客户端受控 replace/refetch | 并发刷新是正常状态迁移，不是契约损坏，也不能拼接跨代页 |
+
+- RED→green：focused 后端测试先稳定得到 DNS `200 != 409` 与 health `failed != degraded` 两个失败；实现后 `tools/test_supplemental_api_contract.py` 恢复 `7/7`。测试同时覆盖 starting=`unknown/unavailable`、error without observation=`failed/unavailable`、historical=`degraded`、无 null facts 和 page/root revision 同值。
+- 独立复核还指出 frontend 的 Back/Forward 旧响应竞态、429/in-flight 语义丢失、重复 pager、桌面补充控件不足 44px，以及生产 bundle 尚未重建。这些已回送并行 frontend owner，仍是当前发布阻断；任务 active、`blocked=false`，GitHub 未上传。
+
+## 第 940 步：supplemental 路由从“后端有接口”闭合为可巡检、可追溯、可复签的手机/平板/桌面证据工作区
+
+#### 触发与问题
+
+- Step939 已经给 connections、DNS static 和 health findings 建立有界公共包络，但前端仍只是待验收的 presentation：连接可能和快照清单重复，DNS 翻页可能埋在第 50 行后，成功查询没有辅助技术完成播报，手机详情丢失任务上下文，短横屏几乎只剩一行结果，平板安全页把额外空间留空。
+- 第一轮 16 张生产 bundle 原图进一步证明，自动 `pass=true` 不能代替视觉裁决：844×390 的标题、状态、tabs、查询、证据和结果头吃掉约八成高度；768×1024 的连接详情时间被窄列挤碎；security 只有一条对象时没有形成对象列表 ↔ 详情工作区。
+- 同轮独立评审命中四个必须进入正式门禁的事实：清除查询为 36px；200% 后的窄横屏仍可能命中强制双列；成功结果无稳定 live status；DNS 唯一分页入口位于完整 50 行之后。
+
+#### 产品与架构决策
+
+- **数据状态共享，presentation 不共享。** `useRouteSupplementEvidence` 继续拥有请求、严格解析、竞态失效、429 延迟、Back/Forward 和清除查询；`MobileRouteSupplement` 与 `DesktopRouteSupplement` 各自拥有独立 DOM/CSS。拒绝再造一个两端共用的视觉组件，因为手机需要连续巡检/触控节奏，桌面需要表格比较/命令条。
+- **一个查询只允许一个可见集合。** accepted DNS 或连接结果成为当前集合 owner；原快照集合只在 supplemental 不可用时回退。拒绝“多显示一份更保险”，因为同一对象重复渲染既浪费首屏，也会让用户误判两份数据来自同一时点。
+- **证据条同时回答新鲜度、来源和覆盖。** 手机/桌面都显示本地化时点，同时把原始 RFC3339 留在 `<time dateTime>`；`current | historical | unavailable` 不由 HTTP 成功推断。连接缺失速率保持“未取得”，显式零保持 `0 bps`。
+- **远程读取必须显式。** 连接只有提交规范 IP 才发起一次有界查询；输入过程不隐式请求。DNS 页码放在列表顶部且 Back/Forward 恢复页代；健康发现明确标为“全局健康发现”，不再把 CPU 风险冒充安全对象。
+- **能力断点按任务预算，不按设备名称。** 390 手机详情先显示“连接跟踪 · 查询结果”，再显示字段与证据；844 短横屏压缩框架但保留 route、证据、列表和详情；768 平板用列表/详情工作区，并让 security 有界预览当前对象。低于 600px 的 200% 重排回到单列，禁止强制 `190px + 300px` 双列。
+
+#### 视觉 RED→green 与交互闭环
+
+- 手机连接首屏从“首条对象约在 y=389”收敛到完整显示 6 条查询结果；重复的独立快照状态行被并入“当前/历史 · 时点 / 来源 / 覆盖”证据条。详情把 route/query 上下文移到第一屏，证据条后置，避免从孤立元数据开始。
+- 844×390 连接列表现在可直接比较端点、协议/超时和“原/回”速率；详情保持左侧查询结果、选中态和右侧 6 项证据。DNS 顶部分页、security 的全局风险与安全对象均在初始视口可达。
+- 768×1024 连接详情改为两列外层、单列标签/值内层，RFC3339 本地显示不再竖向碎裂；security 默认展示真实 firewall 对象详情，新增信息来自规则、匹配条件、计数器和原始身份，而不是复制上方 CPU finding。
+- 手机/桌面清除查询均恢复 44px；查询完成、DNS 页读取和 health 读取由一个稳定、atomic 的 live status 播报，结果区用 `aria-busy` 描述在途状态。手机进入详情、Back、Forward 的焦点必须分别落在可见返回控件、来源行、返回控件；清除查询不得重发远程请求。
+
+| Emil 复核 | Before | After | Why |
+|---|---|---|---|
+| 手机首屏 | 设备、状态、tabs、查询说明、证据和结果头逐层常驻，框架先于对象 | 新鲜度并入证据条，查询说明收口，6 条真实对象可在 390 首屏扫描 | iOS 的轻量不等于留白；功能控制层应把空间还给当前任务 |
+| 短横屏 | 只把 PC/平板行横向排列，390px 高度只剩 1 条对象 | 标题/状态合并，详情隐藏编辑控件，列表和详情各自保留上下文与比较值 | 横屏是高度受限的巡检能力，不是缩矮的平板 |
+| DNS 分页 | 唯一翻页入口在 50 行之后 | 页码与前后箭头进入结果表头，初始视口即可操作 | “可滚到”不是高频运维入口的可达标准 |
+| 平板工作区 | 两栏或全宽只改变几何，低对象量留下无主空白 | 连接提供速率比较；security 用真实对象预览组成 master/detail | 平板多出的空间必须增加判断或调查价值，不能只拉宽旧布局 |
+| 证据时间 | 手机显示、桌面默认 DNS/连接结果遗漏 | 两端共同显示本地时间，原始 RFC3339 保留在语义属性 | 时点是监控可信度的一部分，不能只在点进详情后出现 |
+| 运行时门禁 | 单个生命周期顺序跑四视口，成功值、触控与焦点未成为阻断 | 每视口独立 mock/Edge 生命周期；12/12 同时阻断触控、live status、焦点、分页初始可达和重复请求 | 门禁要约束真实用户风险，不能只检查 data 属性存在 |
+| 视觉语言 | 试图用更多蓝灰表头表达专业 | 玻璃只用于顶部/底部命令导航，主体保留克制的 iKuai 对象/状态/流量扫描 | Liquid Glass 是功能控制材质，不应覆盖高密度数据面；iKuai 感来自对象效率而不是全屏染蓝 |
+
+#### 验证与独立裁决
+
+- 最终签署目录 `_acceptance/supplemental-route-visual/signed/`：390×844、844×390、768×1024、1366×768，每个视口 connections list/detail、DNS current、security current，共 `16` 张原图；生产 bundle 浏览器合同 `12/12`，无 page error，四个 owned Edge PID 最终均证明不存在。一次 phone `browser-server.close` 超过 6 秒后进入有界 forced recovery，process tree 终止且 residual=false；因此可声称清理闭环，不能声称每次都优雅关闭。
+- 独立手机 Product/Visual 复审：PASS，P0=0、P1=0，仅保留玻璃控制层与时间短格式等 P2；独立 Responsive/Tablet：PASS，P0=0、P1=0；独立 Engineering/Accessibility 初审发现桌面默认结果缺时点 P1，修复并重拍后终审 PASS，P0=0、P1=0、P2=0。
+- 聚焦工程：types/build、route supplement static contract、Overview 18、sections、static assets、supplemental backend `7/7`、backend public `18/18`、collector `22/22` 均通过。当前资产预算：JS `547466 / gzip 159109 / br 127955`，shared CSS `110787 / gzip 19135 / br 16332`，desktop CSS `33540 / gzip 5089 / br 4496`，均在固定上限内。
+
+#### 边界与心得
+
+- 本步关闭的是 **supplemental route 的本地产品/视觉/交互/工程 P1**，不是整产品的 exact-candidate 签收。当前工作树仍未冻结；Overview 63、Edge 200%、Overview 28、route 76/266 等旧 fingerprint 都必须在 clean candidate 上重生。
+- 这轮最重要的心得不是“把表格做得更好看”，而是：先确定一屏回答什么、哪个集合拥有当前事实、详情必须新增什么证据，再决定玻璃、颜色和分隔线。自动矩阵证明结构不坏，原图和独立角色才证明任务节奏成立。
+- latestStepOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
+- nextAction：冻结 intended source、清理非候选临时工件并形成唯一 clean exact candidate；在同一身份上重建 Edge 200%、Overview 28、Optical 63、route responsive 76、route-state 266、容器/Windows/readiness，然后完成四角色整产品复签与真实 RouterOS 只读 soak。未获得 promotion authorization 前继续禁止上传；上传后必须核验精确远端 SHA 的 Linux、Windows 与 GHCR CL。

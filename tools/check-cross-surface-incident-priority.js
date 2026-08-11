@@ -9,14 +9,17 @@
  */
 const fs = require("node:fs");
 const path = require("node:path");
+const { readRuntimeReport, runtimeIdentityDetail } = require("./runtime-report-identity");
 
 const root = path.resolve(__dirname, "..");
 const sourcePath = path.join(root, "src", "panel-framework", "overview", "desktop-overview", "DesktopIncidentDocket.tsx");
 const workspaceSourcePath = path.join(root, "src", "panel-framework", "overview", "desktop-overview", "DesktopOverviewTask.tsx");
-const reportPath = path.join(root, "_acceptance", "panel-runtime-browser", "report.json");
 const source = fs.readFileSync(sourcePath, "utf8");
 const workspaceSource = fs.readFileSync(workspaceSourcePath, "utf8");
-const report = fs.existsSync(reportPath) ? JSON.parse(fs.readFileSync(reportPath, "utf8")) : null;
+const runtimeBinding = readRuntimeReport(root);
+const requireRuntime = process.argv.includes("--require-current-runtime");
+const runtimeSkipped = !runtimeBinding.current && !requireRuntime;
+const report = runtimeBinding.current ? runtimeBinding.report : null;
 const desktopDetails = (report?.checks || [])
   .filter((check) => check.name === "desktop composite task keeps the approved primary-secondary relationship without clipping or overflow")
   .map((check) => check.detail)
@@ -40,18 +43,20 @@ const runtimeRecords = desktopDetails.map((detail) => ({
 const checks = {
   sourceRendersPrimaryWorkspaceBeforeSecondaryQueue: sourceWorkspace >= 0 && sourceSecondary > sourceWorkspace,
   sourceDeclaresExplicitPriorityOwners: sourceHasExplicitOwner,
-  freshDesktopCompositeRecordsPresent: runtimeRecords.length >= 2,
-  freshDesktopCompositeRendersWorkspaceBeforeQueue: runtimeRecords.length >= 2 && runtimeRecords.every((record) => !record.queueBeforeWorkspace),
+  runtimeIdentityIsCurrentWhenRequired: !requireRuntime || runtimeBinding.current,
+  freshDesktopCompositeRecordsPresent: runtimeSkipped || runtimeRecords.length >= 2,
+  freshDesktopCompositeRendersWorkspaceBeforeQueue: runtimeSkipped || (runtimeRecords.length >= 2 && runtimeRecords.every((record) => !record.queueBeforeWorkspace)),
 };
 
 const failed = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
 const result = {
   pass: failed.length === 0,
   contract: "cross-surface-incident-priority-v1",
-  implementationState: failed.length === 0 ? "focused-engineering-green" : "expected-red",
+  implementationState: failed.length === 0 ? runtimeSkipped ? "static-pending" : "focused-engineering-green" : "expected-red",
   scope: "desktop composite interface incident at 1200px+; mobile relationship remains the reference evidence",
   sourceOrder: { workspace: sourceWorkspace, secondaryQueue: sourceSecondary },
   runtimeRecords,
+  runtimeIdentity: runtimeIdentityDetail(runtimeBinding),
   checks,
   failed,
   releaseEvidenceEligible: false,

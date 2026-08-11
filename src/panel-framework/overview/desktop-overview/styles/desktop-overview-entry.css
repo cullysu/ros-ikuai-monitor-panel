@@ -163,3 +163,67 @@
     padding-bottom: 8px;
   }
 }
+
+@media (min-width: 1200px) {
+  /* P2 desktop: reserve the opening viewport for the object workbench, not header chrome. */
+  .do-shell.has-incident .do-incident {
+    margin-top: 8px;
+  }
+
+  .do-shell.has-incident .do-incident-facts > div {
+    padding: 8px 10px;
+  }
+
+  .do-shell.has-incident .do-incident-facts b {
+    font-size: 16px;
+  }
+
+  .do-shell.has-incident .do-resource-heading,
+  .do-shell.has-incident .do-task-focus > header,
+  .do-shell.has-incident .do-task-workspace-heading,
+  .do-shell.has-incident .do-task-actions > header {
+    min-height: 34px;
+    padding: 6px 10px 5px;
+  }
+
+  .do-shell.has-incident .do-resource-metrics > div {
+    padding: 5px 10px 6px;
+  }
+
+  .do-shell.has-incident .do-task-master-detail {
+    grid-template-columns: minmax(320px, 34%) minmax(0, 66%);
+  }
+
+  .do-shell.has-incident .do-task-object {
+    min-height: 56px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .do-shell.has-incident .do-task-inspector > p,
+  .do-shell.has-incident .do-task-source {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .do-shell.has-incident .do-task-inspector dl > div {
+    padding: 6px 8px;
+  }
+
+  .do-shell.has-normal-workbench .do-normal-workspace.is-fleet {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .do-shell.has-normal-workbench .do-normal-workspace.is-fleet .do-module-heading {
+    min-height: 40px;
+    padding-top: 6px;
+    padding-bottom: 5px;
+  }
+
+  .do-shell.has-normal-workbench .do-normal-workspace.is-fleet .do-ledger-row {
+    min-height: 40px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "schema": "independent-review/v1",
+  "step": 910,
+  "role": "accessibility-interaction",
+  "reviewerAgentId": "019fe646-e052-7801-8e7e-362ea340e048",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "scope": "local-independent-scope",
+  "releaseEligible": false,
+  "evidence": [
+    {
+      "kind": "runtime-report",
+      "path": "_acceptance/panel-runtime-browser/report.json",
+      "checksPassed": 271,
+      "screenshotsReviewed": 146,
+      "observation": "The bound production-runtime report has 271 passing checks and 146 original PNG records. Accessibility conclusions below were independently checked against the relevant details and source; the aggregate runtime pass is supporting evidence only."
+    },
+    {
+      "kind": "bounded-runtime-probe",
+      "path": "tools/check-mobile-accessibility-runtime-v2.js",
+      "observation": "A fresh read-only run passed across three bounded contexts: true browser page scale reached 2 with zero layout overflow and the Logs destination remained reachable; reduced-motion matched with zero active motion; forced-colors selection, AX headings, Back focus restoration and Forward detail restoration passed for all 15 detail-capable routes in the fixture."
+    },
+    {
+      "kind": "source",
+      "path": "src/panel-framework/mobile/MobilePatrolScreen.tsx",
+      "observation": "The visible current-evidence time is a time element bound to the machine-readable model.evidenceAt value via dateTime, while retaining the localized display text."
+    },
+    {
+      "kind": "source",
+      "path": "src/panel-framework/sections/PanelTaskNavigation.tsx",
+      "observation": "The four primary destinations are exposed in a named navigation landmark with one aria-current=page owner. They are route commands, so navigation semantics are appropriate instead of an ARIA tab pattern."
+    },
+    {
+      "kind": "source",
+      "path": "src/panel-framework/mobile/MobileDomainWorkspace.tsx",
+      "observation": "Workspace route commands expose aria-current; the on-demand filter owner exposes aria-expanded and a matching aria-controls target; detail entry and close/history transitions explicitly move focus to the detail heading and back to the triggering row."
+    },
+    {
+      "kind": "source",
+      "path": "src/panel-framework/routes/usePanelRoute.ts",
+      "observation": "Route history synchronizes canonical URLs and restores either the recorded originating control or the new route title with preventScroll, matching the browser-history evidence."
+    },
+    {
+      "kind": "original-png",
+      "path": "_acceptance/panel-runtime-browser/a11y-reflow320-overview.png",
+      "sha256": "4de31abe6ec250dea6ca05f50e866ce3d343f8a9824844986a9979769eb2a2ed",
+      "observation": "At 320 x 568 the current evidence, primary object, rates and chart remain readable, all four fixed-navigation destinations remain visible, and no horizontal clipping or navigation overlap is visible."
+    },
+    {
+      "kind": "original-png",
+      "path": "_acceptance/panel-runtime-browser/a11y-browser-zoom200-overview-844.png",
+      "sha256": "4e7376bca0cb0bbcb52800186d348d044cfdfe45b2c9383d7c98118b06f78f91",
+      "observation": "The browser-zoom-equivalent overview preserves the task surface, readable current evidence and reachable fixed navigation at half CSS geometry without clipped commands."
+    },
+    {
+      "kind": "original-png",
+      "path": "_acceptance/panel-runtime-browser/a11y-synthetic-text-stress200-resource-full-390.png",
+      "sha256": "e4386cbae8ee632964fed88fe881766537f5f21e111b7ab689163ae0f2c15196",
+      "observation": "Measured 200 percent text stress reflows the resource incident, metrics, chart, investigation actions and evidence boundary into a long readable order without horizontal clipping or hidden controls."
+    },
+    {
+      "kind": "original-png",
+      "path": "_acceptance/panel-runtime-browser/a11y-forced-colors-overview.png",
+      "sha256": "0dffe9a7629ed06967492290ca6bb04b3d3cd696c474d846baf9bb594d5fb723",
+      "observation": "Forced colors retain named commands, a visible keyboard focus ring, selected-route outline and non-color line-series differentiation."
+    },
+    {
+      "kind": "original-png",
+      "path": "_acceptance/panel-runtime-browser/mobile-composite-risk-375.png",
+      "sha256": "a0228bf6514a67e2437f5a53fb7bd75ff2901ca97d097b20d100d489ddaf4122",
+      "observation": "At 375 x 667 the primary object and investigation action remain above the concurrent risk plane and fixed navigation; all four navigation destinations are visible and touch-sized."
+    },
+    {
+      "kind": "original-png",
+      "path": "_acceptance/panel-runtime-browser/landscape-log-detail-844.png",
+      "sha256": "efd5f2da3e853fa4d61abbf0d0efae2133c161ee7363fa9210d4064eaddcb2d2",
+      "observation": "The 844-wide landscape log detail keeps its return command, evidence status, absolute zoned timestamp, event body and primary navigation visible without content collision."
+    }
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-f8a12846eebd-20a6c4555b4c",
+    "worktreeFingerprint": "20a6c4555b4cbdb59d6ad8bd93b06ddaaf3c21f6551896152909b300b174940d",
+    "generatedAt": "2026-08-09T12:23:01.989Z",
+    "commit": "f8a12846eebd8f6d89b4748b89e8808b23257e67",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "semantic-time-and-aria",
+      "result": "pass",
+      "summary": "Current evidence time has a machine-readable dateTime value. Main task and workspace navigation are named, current destinations and selected objects have explicit state, filter disclosure has an owned control target, and the runtime AX evidence contains no unnamed interactive controls in the covered routes."
+    },
+    {
+      "id": "keyboard-focus-and-history",
+      "result": "pass",
+      "summary": "Tab and Enter reach the four primary destinations, filtering, search, object inspection and return. Detail titles receive focus, closing or Back restores the exact triggering row, and Forward restores the exact detail and focus context."
+    },
+    {
+      "id": "text-reflow-and-zoom",
+      "result": "pass",
+      "summary": "All 18 covered routes pass measured synthetic 200 percent text stress with doubled text metrics, zero horizontal overflow, no clipped or covered controls and minimum 44 px targets. Separate browser-zoom-equivalent evidence at 2x preserves navigation, object detail, history and bottom geometry without claiming OS text scaling."
+    },
+    {
+      "id": "reduced-motion",
+      "result": "pass",
+      "summary": "The independent bounded runtime probe matched prefers-reduced-motion, found no running transform or position animation, and measured key workspace/row animation and transition durations at zero or 0.01 ms."
+    },
+    {
+      "id": "forced-colors",
+      "result": "pass",
+      "summary": "Forced-colors evidence covers all 18 routes and 15 detail-capable routes: focus remains visible, selected routes, filters and objects have named non-color outlines, chart series retain pattern differentiation, and object details expose AX headings."
+    },
+    {
+      "id": "touch-targets-and-fixed-navigation",
+      "result": "pass",
+      "summary": "The 320 route inventory reports a 44 px minimum target with no hidden, clipped, unnamed, orphaned or bottom-covered controls. The 375 composite view reports 48 px minimum task targets and a fixed 60 px navigation bar fully inside the viewport."
+    },
+    {
+      "id": "review-boundary",
+      "result": "pass",
+      "summary": "This is historical local Step910 accessibility evidence bound only to the reviewed dirty-worktree artifact. The runtime report marks releaseEvidenceEligible=false; this review does not claim a current clean-SHA release gate or release readiness."
+    }
+  ]
+}

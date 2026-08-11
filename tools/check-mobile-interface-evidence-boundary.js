@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-const fs = require("fs");
-const path = require("path");
+"use strict";
+
+const fs = require("node:fs");
+const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
-const componentPath = path.join(root, "src", "panel-framework", "mobile", "MobileInterfaceEvidenceBoundary.tsx");
-const parentPath = path.join(root, "src", "panel-framework", "mobile", "MobileDomainWorkspace.tsx");
-const stylePath = path.join(root, "src", "panel-framework", "mobile", "mobile-interface-recovery.css");
-const component = fs.existsSync(componentPath) ? fs.readFileSync(componentPath, "utf8") : "";
-const parent = fs.readFileSync(parentPath, "utf8");
-const style = fs.readFileSync(stylePath, "utf8");
+const read = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
+const component = read("src/panel-framework/sections/RouteEvidenceBoundary.tsx");
+const policy = read("src/panel-framework/sections/route-recovery/routeRecoveryPolicies.ts");
+const state = read("src/panel-framework/sections/route-recovery/routeRecoveryState.ts");
+const parent = read("src/panel-framework/mobile/MobileDomainWorkspace.tsx");
+const style = read("src/panel-framework/mobile/mobile-interface-recovery.css");
 const failures = [];
 
 function check(name, condition, detail) {
@@ -16,55 +18,78 @@ function check(name, condition, detail) {
 }
 
 check(
-  "route-specific component exists",
+  "shared route-specific component exists",
   Boolean(component),
-  "interfaces stale/unavailable evidence needs an owned recovery boundary"
+  "interfaces partial, historical and unavailable evidence need an owned recovery boundary",
 );
 check(
-  "parent imports and renders the boundary",
-  /MobileInterfaceEvidenceBoundary/.test(parent)
-    && /route === \"interfaces\"/.test(parent)
-    && /model\.evidenceMode !== \"current\"/.test(parent),
-  "the boundary must be mounted only for interfaces and non-current evidence"
+  "parent renders the shared boundary for interfaces",
+  /RouteEvidenceBoundary/.test(parent)
+    && /<RouteEvidenceBoundary route=\{route\}/.test(parent)
+    && !/MobileInterfaceEvidenceBoundary/.test(parent),
+  "the mobile workspace must use one recovery owner for interfaces and the other operational routes",
 );
 check(
   "stable recovery selectors exist",
-  /data-mobile-interface-recovery/.test(component)
-    && /data-mobile-interface-recovery-state/.test(component)
-    && /data-mobile-interface-recovery-action/.test(component),
-  "runtime and accessibility checks need stable state/action ownership"
+  /data-route-recovery=\{route\}/.test(component)
+    && /data-route-recovery-state=\{state\}/.test(component)
+    && /data-route-recovery-action=\{action\.route\}/.test(component),
+  "runtime and accessibility checks need stable state/action ownership",
 );
 check(
-  "historical and unavailable states stay distinct",
-  /historical/.test(component) && /unavailable/.test(component),
-  "stale history cannot be presented as unavailable, and unavailable cannot be presented as history"
+  "partial, historical and unavailable states stay distinct",
+  /state === "partial"/.test(component)
+    && /state === "historical"/.test(component)
+    && /evidenceMode === "unavailable"/.test(state),
+  "partial collection gaps, stale history and unavailable evidence cannot impersonate each other",
 );
 check(
-  "current interface numbers are not asserted",
-  /当前接口业务数字|历史快照不代表当前运行状态|不显示接口业务数字/.test(component),
-  "the recovery boundary must state the evidence limit instead of manufacturing a current value"
+  "missing interface values remain explicit",
+  /missingEvidenceLabels/.test(component) && /sectionRecoveryState/.test(component),
+  "the recovery boundary must name unavailable evidence instead of manufacturing a current value",
 );
 check(
   "diagnostics and logs are real destinations",
-  /onNavigate\(\"readonlyDiagnostics\"/.test(component)
-    && /onNavigate\(\"logs\"/.test(component),
-  "recovery must expose verifiable read-only investigation destinations"
+  /interfaces:\s*interfaceRecoveryPolicy/.test(policy)
+    && /readonlyDiagnostics/.test(policy)
+    && /logs/.test(policy),
+  "recovery must expose verifiable read-only investigation destinations",
 );
 check(
   "return route and evidence time are preserved",
-  (component.match(/returnRoute:\s*\"interfaces\"/g) || []).length >= 2
-    && /evidenceAt/.test(component),
-  "both investigation actions must preserve interfaces context and evidence time"
+  /returnRoute:\s*route/.test(component)
+    && /evidenceAt:\s*model\.observedAt/.test(component),
+  "both investigation actions must preserve interfaces context and evidence time",
+);
+check(
+  "partial and unavailable boundaries have one explicit primary action",
+  /primaryAction:\s*"[^"]+"/.test(policy)
+    && /const primaryActionRoute = copy\.primaryAction/.test(component)
+    && /data-route-recovery-action-level=\{actionLevel\}/.test(component),
+  "a recovery state must name its one best next investigation rather than render two equal choices",
+);
+check(
+  "phone primary and secondary actions have distinct hierarchy",
+  /\.is-mobile \.mdw-interface-recovery-actions button\.is-primary/.test(style)
+    && /\.is-mobile \.mdw-interface-recovery-actions button\.is-secondary/.test(style)
+    && /grid-template-columns:\s*minmax\(0, 1fr\)/.test(style),
+  "phone recovery should expose one prominent next action and retain cross-checks as secondary actions",
+);
+check(
+  "mobile and tablet keep one recovery decision path",
+  !/@media \(min-width: 700px\)[\s\S]*mdw-interface-recovery/.test(style)
+    && /\.is-mobile \.mdw-interface-recovery-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/s.test(style),
+  "tablet must not promote the secondary cross-check back to equal visual weight",
 );
 check(
   "scoped visual owner exists",
   /mdw-interface-recovery/.test(style),
-  "the route-specific boundary needs a restrained local layout owner"
+  "the shared recovery boundary needs a restrained local layout owner",
 );
 
 if (failures.length) {
-  console.error(JSON.stringify({ pass: false, contract: "mobile-interface-evidence-boundary-v1", failures }, null, 2));
+  console.error(JSON.stringify({ pass: false, contract: "mobile-interface-evidence-boundary-v2", failures }, null, 2));
   process.exit(1);
 }
 
-console.log(JSON.stringify({ pass: true, checks: 8, contract: "mobile-interface-evidence-boundary-v1" }, null, 2));
+console.log(JSON.stringify({ pass: true, checks: 11, contract: "mobile-interface-evidence-boundary-v2" }, null, 2));

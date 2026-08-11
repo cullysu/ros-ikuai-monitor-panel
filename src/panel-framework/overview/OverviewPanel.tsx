@@ -1,12 +1,12 @@
-import type { PanelRouteId } from "../routes/panelRoutes";
-import { MobilePatrolScreen } from "../mobile/MobilePatrolScreen";
+import type { PanelNavigate } from "../routes/panelRoutes";
 import { useMobilePanelSurface } from "../mobile/useMobilePanelSurface";
 import { type OverviewPanelProps } from "./index";
 import { DesktopOverviewScreen } from "./desktop-overview/DesktopOverviewScreen";
+import { MobileOverviewEntry } from "./mobile-overview/MobileOverviewEntry";
 import "./OverviewPanel.css";
 
 export interface OverviewPanelViewProps extends OverviewPanelProps {
-  onNavigate: (route: PanelRouteId) => void;
+  onNavigate: PanelNavigate;
   runtimeManaged?: boolean;
 }
 
@@ -30,8 +30,8 @@ export function OverviewPanel({
       data-overview-scene-key={state.scenario}
     >
       {mobile ? (
-        <div className="mobile-patrol-mount">
-          <MobilePatrolScreen
+        <div className="mobile-overview-mount">
+          <MobileOverviewEntry
             key={state.scenario}
             snapshot={snapshot}
             state={state}

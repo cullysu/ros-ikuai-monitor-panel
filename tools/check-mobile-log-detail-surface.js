@@ -8,6 +8,7 @@ const logInspector = read("src/panel-framework/mobile/mobile-inspector/TerminalL
 const workspace = read("src/panel-framework/mobile/MobileDomainWorkspace.tsx");
 const styles = read("src/panel-framework/mobile/mobile-domain.css");
 const runtime = read("tools/check-panel-runtime-browser.js");
+const workspaceRows = read("src/panel-framework/mobile/mobileWorkspaceRows.ts");
 
 const failures = [];
 const expect = (condition, message) => {
@@ -22,6 +23,8 @@ const hasStructuredMessage = /label:\s*"事件正文"/.test(logInspector) &&
 const messageNotUsedAsHeading = !/displayValue\(logEvidence\.message/.test(inspector);
 const hasDetailOwner = inspector.includes('data-mobile-log-detail="v1"') ||
   inspector.includes('data-mobile-log-detail={logEvidence ? "v1" : undefined}');
+const hasNaturalHeightLogDetailSurface =
+  /\[data-mobile-log-detail="v1"\][^{}]*\{[^{}]*min-height:\s*auto\b/.test(styles);
 
 expect(hasDetailOwner, "log detail has no explicit v1 surface owner");
 expect(inspector.includes("data-mobile-detail-novel-evidence"), "log detail has no novel-evidence marker");
@@ -32,9 +35,9 @@ expect(messageNotUsedAsHeading, "event message is still promoted into the object
 expect(messageReferences.length === 1, "event message is not constrained to one structured body reference");
 expect(!logInspector.includes("事件记录"), "generic log detail still contains a repeated event-record section");
 expect(workspace.includes('data-mobile-detail-surface={selectedRow?.evidence.kind === "log" ? "log" : undefined}'), "workspace does not bind the selected log to the detail surface");
-expect(styles.includes('.mdw-shell[data-mobile-log-detail="v1"]'), "mobile log detail has no natural-height surface CSS");
-expect(styles.includes("min-height: auto"), "mobile log detail does not release viewport-filler min-height");
+expect(hasNaturalHeightLogDetailSurface, "mobile log detail has no natural-height surface CSS");
 expect(runtime.includes("mobile-log-detail-surface-v1"), "runtime browser contract is not bound to mobile-log-detail-surface-v1");
+expect(workspaceRows.includes('.split(",")') && workspaceRows.includes('.join(" · ")'), "log topic atoms are still presented as raw comma-separated tags");
 
 const report = {
   pass: failures.length === 0,
@@ -50,8 +53,9 @@ const report = {
     singleStructuredMessage: messageReferences.length === 1,
     noEventRecordReplay: !logInspector.includes("事件记录"),
     workspaceBinding: workspace.includes('data-mobile-detail-surface={selectedRow?.evidence.kind === "log" ? "log" : undefined}'),
-    naturalHeight: styles.includes('.mdw-shell[data-mobile-log-detail="v1"]') && styles.includes("min-height: auto"),
+    naturalHeight: hasNaturalHeightLogDetailSurface,
     runtimeBinding: runtime.includes("mobile-log-detail-surface-v1"),
+    operationalTopicPresentation: workspaceRows.includes('.split(",")') && workspaceRows.includes('.join(" · ")'),
   },
 };
 

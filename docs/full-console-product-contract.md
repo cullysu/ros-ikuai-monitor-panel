@@ -3,15 +3,17 @@
 ## Status
 
 - status: `current-contract / acceptance-failed`
-- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- validForCommit: Step911 decision truth; Step910 reviews are historical local evidence only, not a release candidate
 - supersededBy: `null`
-- Latest independent review: Product `48/100`, Design `65/100`, 2026-07-18
+- Historical local review boundary: Step910 has four records bound only to artifact `worktree-f8a12846eebd-20a6c4555b4c` (`20a6c…`); they are not current or external acceptance and `releaseEligible=false`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
-- Product release gate: **FAIL — independent product/design/user acceptance is not closed**
-- Current loop stage: Remediate
+- Product release gate: **FAIL — current runtime and focus/security/workflow fixes require re-verification; engineering release evidence and final product/visual external acceptance are not closed**
+- Current loop stage: Verify release evidence
 - Baseline failure evidence: `_acceptance/review-ced6386-all-sections/report.json`
 
 The previous overview-only matrices are retained as regression evidence for the overview surface. They are not evidence that the full product is releasable.
+
+Step911 requires a final exact-SHA external four-role review, real RouterOS read-only soak, signed route acceptance, and Linux/Windows/GHCR CL. GitHub is not uploaded; the task is active with `blocked=false`; no previous local or historical engineering result opens release.
 
 ## Operator jobs
 
@@ -30,6 +32,14 @@ The previous overview-only matrices are retained as regression evidence for the 
 - Mobile and desktop may share route/data semantics but do not share a hidden presentation tree.
 - No RouterOS write API is introduced.
 - Public readiness remains false while any required route, state, viewport, accessibility, security, or exact-SHA CL cell is missing.
+
+## Release gate semantics
+
+`structuralPass` only means that the route registry and its local evidence records are internally consistent. It is an engineering result, never a public-release verdict. Ordinary readiness reports `engineeringReadinessPass` only.
+
+The versioned `bounded-public-release-v1` policy declares the 18 operational routes as `module` routes with minimum maturity `bounded-readonly`; `more` is explicitly a `directory` route with maturity `unavailable`. A public release additionally requires a clean exact-SHA candidate, the complete runtime matrix, external reviews, RouterOS read-only soak, and a trusted `public-release` signature. That signature binds the raw product-contract digest, raw route-policy digest, and a canonical 19-route manifest recomputed from `PANEL_ROUTE_IDS`, `PANEL_ROUTES`, and route-maturity evidence. The external review bundle must carry exactly those manifest bytes as `route-manifest.json`.
+
+The repository candidate checker can report only `candidateEvidencePass`; it always keeps `publicReleasePass=false` and `releaseComplete=false`. Promotion authorization belongs to a controller outside the candidate repository with a fixed trust root and promotion policy. Even that authorization is pre-publication evidence: `releaseComplete` remains false until the uploaded exact SHA passes Linux, Windows, and GHCR CL. Local `acceptanceRefs` are forbidden as acceptance proof.
 
 ## Route contract
 

@@ -17,7 +17,7 @@
     "tools/check-mobile-interface-evidence-dedup.js",
     "tools/check-mobile-interface-risk-object-focus.js",
     "tools/check-mobile-interface-route-evidence-runtime.js",
-    "tools/check-interfaces-route-maturity-expected-red.js"
+    "tools/check-interfaces-route-maturity-boundary.js"
   ],
   "runtimeSamples": [
     {

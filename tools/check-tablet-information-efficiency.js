@@ -1,19 +1,23 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { readRuntimeReport, runtimeIdentityDetail } = require("./runtime-report-identity");
 
 const ROOT = path.resolve(__dirname, "..");
-const reportPath = path.join(ROOT, "_acceptance", "panel-runtime-browser", "report.json");
-const report = fs.existsSync(reportPath)
-  ? JSON.parse(fs.readFileSync(reportPath, "utf8"))
-  : null;
+const runtimeBinding = readRuntimeReport(ROOT);
+const reportPath = runtimeBinding.reportPath;
+const report = runtimeBinding.current ? runtimeBinding.report : null;
 
 const checks = [];
 const requireCheck = (name, pass, detail) => {
   checks.push({ name, pass: Boolean(pass), detail });
 };
 
-requireCheck("fresh production browser report exists and is green", report?.pass === true, {
+requireCheck("production browser report belongs to the current worktree artifact", runtimeBinding.current, {
+  ...runtimeIdentityDetail(runtimeBinding),
+});
+requireCheck("current production browser report is green", report?.pass === true, {
   reportPath: path.relative(ROOT, reportPath).replaceAll("\\", "/"),
+  runtimeIdentity: runtimeIdentityDetail(runtimeBinding),
   reportPass: report?.pass ?? null,
 });
 

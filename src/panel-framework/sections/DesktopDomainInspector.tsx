@@ -222,13 +222,14 @@ function OtherEvidence({ row }: { row: WorkspaceRow }) {
   ]} />;
 }
 
-export function DesktopDomainInspector({ row, model, pinned, originRisk, originEvidenceAt, matchingCount, onUnpin, onReturn, titleRef }: {
+export function DesktopDomainInspector({ row, riskRows, model, pinned, originRisk, originEvidenceAt, onUnpin, onReturn, titleRef }: {
   row: WorkspaceRow | null; model: SectionModel; pinned: boolean; originRisk: PanelRiskContext | null;
-  originEvidenceAt: string | null; matchingCount: number; onUnpin: () => void; onReturn: () => void;
+  riskRows: WorkspaceRow[];
+  originEvidenceAt: string | null; onUnpin: () => void; onReturn: () => void;
   titleRef: RefObject<HTMLHeadingElement>;
 }) {
   const evidenceLabel = model.evidenceMode === "current" ? "当前证据" : model.evidenceMode === "historical" ? "历史证据" : "证据不可用";
-  if (!row) return <aside className="ddw-inspector is-empty" data-investigation-risk={originRisk || undefined} aria-label="对象证据"><div className="ddi-boundary"><span><b>{evidenceLabel}</b>{originRisk ? panelRiskOriginLabel(originRisk, originEvidenceAt) : model.updatedAt || "未记录成功时间"}</span>{originRisk ? <button type="button" onClick={onReturn}>返回运行概览</button> : null}</div><h2>未选择对象</h2><p>{originRisk ? `${matchingCount ? `${matchingCount} 个匹配对象` : "对象集合未取得"} · 未自动选择` : "从列表打开证据"}</p></aside>;
+  if (!row) return <aside className="ddw-inspector is-empty" data-investigation-risk={originRisk || undefined} aria-label="对象证据"><div className="ddi-boundary"><span><b>{evidenceLabel}</b>{originRisk ? panelRiskOriginLabel(originRisk, originEvidenceAt) : model.updatedAt || "未记录成功时间"}</span>{originRisk ? <button type="button" onClick={onReturn}>返回运行概览</button> : null}</div><h2>{originRisk ? "选择风险对象" : "未选择对象"}</h2><p>{originRisk ? `${riskRows.length} 个匹配对象；未自动选择。` : "从列表打开证据"}</p>{originRisk && riskRows.length ? <dl className="ddi-facts"><div><dt>匹配对象</dt><dd>{riskRows.map((item) => item.primary).join(" · ")}</dd></div><div><dt>选择方式</dt><dd>从左侧列表打开对象证据</dd></div></dl> : null}</aside>;
   const isLog = row.evidence.kind === "log";
   const diagnosticEvidence = row.evidence.kind === "diagnostic" ? row.evidence : null;
   const headingTitle = diagnosticEvidence ? diagnosticEvidence.objectName : row.primary;

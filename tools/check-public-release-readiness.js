@@ -2,13 +2,13 @@
 'use strict';
 
 const fs = require('fs');
-const crypto = require('crypto');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { RUNTIME_CHECK_CONTRACT, RUNTIME_SCREENSHOT_CONTRACT } = require('./runtime-screenshot-contract');
 const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
 const { assertFrameworkAssetBudget } = require('./framework-asset-budget');
 const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
+const { TOOLBAR_200_REQUIRED_CELLS, TOOLBAR_INCREMENTS, validWindowsCapture } = require('./check-browser-toolbar-zoom200');
+const { MOBILE_OVERVIEW_REQUIRED_CHECKS } = require('./acceptance/inspect-overview-mobile');
 
 const ROOT = path.resolve(__dirname, '..');
 const READINESS_CHILD_TIMEOUT_MS = 120000;
@@ -45,58 +45,7 @@ const ROUTE_STATE_VIEWPORTS = [
   { name: 'desktop', width: 1366, height: 768 },
   { name: 'narrow', width: 390, height: 844 },
 ];
-
-const RUNTIME_REQUIRED_CHECKS = Object.freeze([
-  'production runtime has no scenario fixture',
-  'validated snapshot renders the overview without overflow',
-  'Overview More opens the real directory and survives Back and Forward',
-  'automatic polling refreshes the validated snapshot',
-  'manual evidence disclosure survives viewport changes',
-  'browser Back closes and Forward restores the selected object',
-  'browser Back and Forward both restore route destinations',
-  'Back returns to overview and Forward restores the exact incident investigation context',
-  'stable business identity preserves the exact object across snapshot reorder',
-  'connections keeps its domain workspace and primary destination',
-  'routes opens a domain-specific evidence inspector',
-  'connections opens a domain-specific evidence inspector',
-  'dns4 opens a domain-specific evidence inspector',
-  'dns6 opens a domain-specific evidence inspector',
-  'security opens a domain-specific evidence inspector',
-  'terminals opens a domain-specific evidence inspector',
-  'logs opens a domain-specific evidence inspector',
-  'trafficLoad opens a domain-specific evidence inspector',
-  'dns4 keeps its domain workspace and primary destination',
-  'dns6 keeps its domain workspace and primary destination',
-  'security keeps its domain workspace and primary destination',
-  'terminals keeps its domain workspace and primary destination',
-  'logs keeps its domain workspace and primary destination',
-  'trafficLoad keeps its domain workspace and primary destination',
-  'all covered routes survive measured synthetic 200 percent text stress without claiming OS scaling',
-  'malformed snapshot is rejected while last valid evidence remains visible',
-  'snapshot API error never inserts a scenario fixture',
-  'old evidence is labeled historical and current traffic is withheld',
-  'navigator.onLine=false does not block a reachable same-origin snapshot',
-  'manual refresh remains operational while navigator reports offline',
-  'tablet overview selects incident evidence beside the full object list without navigation',
-  ...Object.values(RUNTIME_CHECK_CONTRACT),
-  'capability boundaries keep a single task grammar and do not create a 1365/1366 product cliff',
-  'selected object and Back/Forward stay continuous across the 1199/1200 surface transition',
-  'desktop connection owns a dedicated workspace',
-  'browser emitted no uncaught page errors',
-]);
-
-function runtimeScreenshotEvidenceMatches(actual, expected) {
-  if (expected === undefined) return true;
-  if (Array.isArray(expected)) {
-    return Array.isArray(actual) && actual.length === expected.length &&
-      expected.every((value, index) => runtimeScreenshotEvidenceMatches(actual[index], value));
-  }
-  if (expected && typeof expected === 'object') {
-    return Boolean(actual && typeof actual === 'object' && !Array.isArray(actual)) &&
-      Object.entries(expected).every(([key, value]) => runtimeScreenshotEvidenceMatches(actual[key], value));
-  }
-  return Object.is(actual, expected);
-}
+const TOOLBAR_ZOOM200_REPORT_RELATIVE = path.join('_acceptance', 'edge-toolbar-zoom200', 'report.json');
 
 function expectedMatrixCells(scenarios, routes, viewports) {
   return scenarios.flatMap((scenario) => routes.flatMap((section) => viewports.map((viewport) => ({
@@ -112,9 +61,20 @@ const ROUTE_RESPONSIVE_MATRIX_CELLS = expectedMatrixCells(['single'], PUBLIC_ROU
 const ROUTE_STATE_MATRIX_CELLS = expectedMatrixCells(FULL_MATRIX_SCENARIOS, PUBLIC_ROUTES, ROUTE_STATE_VIEWPORTS);
 
 function parseArgs(argv = process.argv.slice(2)) {
+  const candidateEvidencePrefixes = [
+    '--candidate-commit=',
+    '--independent-review-dir=',
+    '--soak-report=',
+    '--evidence-digest=',
+    '--min-soak-seconds=',
+    '--min-soak-samples=',
+    '--soak-verifier-timeout-ms=',
+  ];
   const args = {
     staticOnly: false,
     allowDirtyEngineering: false,
+    releaseCandidate: false,
+    candidateEvidenceArgs: [],
     help: false,
   };
   for (const item of argv) {
@@ -126,11 +86,23 @@ function parseArgs(argv = process.argv.slice(2)) {
     } else if (item === '--engineering-worktree' || item === '--allow-dirty-engineering') {
       args.staticOnly = false;
       args.allowDirtyEngineering = true;
+    } else if (item === '--release-candidate') {
+      args.staticOnly = false;
+      args.allowDirtyEngineering = false;
+      args.releaseCandidate = true;
+    } else if (candidateEvidencePrefixes.some((prefix) => item.startsWith(prefix))) {
+      args.candidateEvidenceArgs.push(item);
     } else if (item === '--help' || item === '-h') {
       args.help = true;
     } else {
       throw new Error(`Unknown argument: ${item}`);
     }
+  }
+  if (args.candidateEvidenceArgs.length && !args.releaseCandidate) {
+    throw new Error('Candidate evidence arguments require --release-candidate');
+  }
+  if (args.releaseCandidate && (args.staticOnly || args.allowDirtyEngineering)) {
+    throw new Error('--release-candidate cannot be combined with static-only or dirty engineering modes');
   }
   return args;
 }
@@ -138,7 +110,7 @@ function parseArgs(argv = process.argv.slice(2)) {
 function usage() {
   return `
 Usage:
-  node tools/check-public-release-readiness.js [--static-only|--require-matrix|--engineering-worktree]
+  node tools/check-public-release-readiness.js [--static-only|--require-matrix|--engineering-worktree|--release-candidate]
 
 Options:
   --static-only     Check static release markers only; skip local browser matrix evidence.
@@ -147,6 +119,8 @@ Options:
   --full-matrix     Alias for --require-matrix.
   --engineering-worktree  Validate current dirty-worktree engineering evidence without granting release eligibility.
   --allow-dirty-engineering  Alias for --engineering-worktree.
+  --release-candidate  Require clean exact-SHA matrices plus external review/RouterOS-soak candidate evidence; external promotion authority remains separate.
+  Candidate evidence options use --name=value and are forwarded to tools/check-release-candidate-evidence.js.
 `.trim();
 }
 
@@ -174,6 +148,16 @@ function assertMatches(relPath, pattern, label = pattern.toString()) {
   const text = readReleaseSurface(relPath);
   if (!pattern.test(text)) {
     throw new Error(`${relPath} is missing ${label}`);
+  }
+}
+
+function hasPinnedDockerBuildPushActionV7(workflowSource) {
+  return /^\s*uses:\s*docker\/build-push-action@[0-9a-f]{40}\s+#\s*v7(?:\s|$)/im.test(workflowSource);
+}
+
+function assertPinnedDockerBuildPushActionV7(relPath) {
+  if (!hasPinnedDockerBuildPushActionV7(readReleaseSurface(relPath))) {
+    throw new Error(`${relPath} is missing a SHA-pinned docker/build-push-action v7`);
   }
 }
 
@@ -483,32 +467,19 @@ const MAX_MATRIX_REPORT_CANDIDATES = 6;
 
 const MATRIX_REPORT_ALIAS_NAMES = {
   overview: new Set([
-    'panel-runtime-browser',
     'release-matrix-current',
     'release-matrix-working-tree',
     'release-matrix-worktree',
-    'release-overview-current',
-    'release-overview-working-tree',
-    'release-overview-worktree',
   ]),
   responsive: new Set([
-    'release-routes-responsive-current',
-    'release-routes-responsive-working-tree',
-    'release-routes-responsive-worktree',
-    'route-responsive-current',
-    'route-responsive-working-tree',
-    'route-responsive-worktree',
     'route-matrix-current',
     'route-matrix-working-tree',
     'route-matrix-worktree',
   ]),
   state: new Set([
-    'release-routes-state-current',
-    'release-routes-state-working-tree',
-    'release-routes-state-worktree',
-    'route-state-current',
-    'route-state-working-tree',
-    'route-state-worktree',
+    'route-state-matrix-current',
+    'route-state-matrix-working-tree',
+    'route-state-matrix-worktree',
   ]),
 };
 
@@ -520,9 +491,32 @@ function matrixReportKind(label) {
 }
 
 function reportNameMatchesKind(name, kind) {
-  if (kind === 'responsive') return name.includes('responsive') || name.startsWith('route-matrix-');
-  if (kind === 'state') return name.includes('route-state') || name.includes('routes-state');
-  return name.includes('overview') || name.includes('matrix') || name === 'panel-runtime-browser';
+  if (kind === 'responsive') return name.startsWith('route-matrix-');
+  if (kind === 'state') return name.startsWith('route-state-matrix-');
+  return name.startsWith('release-matrix-');
+}
+
+function assertPythonDependencyLockContract(rootDir = ROOT) {
+  const python = process.platform === 'win32' ? 'py' : 'python3';
+  const args = process.platform === 'win32'
+    ? ['-3', path.join(rootDir, 'tools', 'check-python-dependency-lock.py')]
+    : [path.join(rootDir, 'tools', 'check-python-dependency-lock.py')];
+  const result = runReadinessChild('python:dependency-lock', python, args, { cwd: rootDir });
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      `Python dependency lock contract failed ${readinessChildDiagnostic(result)}\n${String(result.stdout || '')}${String(result.stderr || '')}${result.error ? `\n${result.error.message}` : ''}`
+    );
+  }
+  let report;
+  try {
+    report = JSON.parse(String(result.stdout || ''));
+  } catch {
+    throw new Error('Python dependency lock contract did not return JSON.');
+  }
+  if (report?.pass !== true || report?.contract !== 'python-runtime-lock-v1' || report?.hashLocked !== true) {
+    throw new Error('Python dependency lock contract did not confirm the immutable runtime lock.');
+  }
+  return report;
 }
 
 function scoreCurrentMatrixReportCandidate(candidate, kind, head, requiredWorktreeIdentity) {
@@ -563,99 +557,80 @@ function findCurrentMatrixReport(rootDir, label, expectedCells, options = {}) {
   throw new Error(`No current ${label} evidence report was found for HEAD ${head || '(unknown)'}; report discovery was bounded to ${candidates.length}/${MAX_MATRIX_REPORT_CANDIDATES} candidates. ${detail}`);
 }
 
-function assertRuntimeEvidenceIdentity(report, currentIdentity) {
-  const fields = ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible'];
-  const mismatches = fields.filter((field) => report?.[field] !== currentIdentity?.[field]);
-  if (mismatches.length) {
-    throw new Error(`runtime browser report does not match current runtime worktree identity: ${mismatches.map((field) => `${field}=${JSON.stringify(report?.[field])}`).join(', ')}`);
+function assertToolbarZoom200Report(rootDir = ROOT, currentIdentity = gitWorktreeIdentity(rootDir)) {
+  const reportPath = path.join(rootDir, TOOLBAR_ZOOM200_REPORT_RELATIVE);
+  if (!fs.existsSync(reportPath)) {
+    throw new Error(`actual Edge toolbar 200% report is missing: ${path.relative(rootDir, reportPath)}`);
   }
-  return report;
-}
-
-function assertRuntimeBrowserReport(rootDir = ROOT, currentIdentity = gitWorktreeIdentity(rootDir)) {
-  const head = currentIdentity.commit || currentHead(rootDir);
-  const reportPath = path.join(rootDir, '_acceptance', 'panel-runtime-browser', 'report.json');
-  if (!fs.existsSync(reportPath)) throw new Error('panel-runtime-browser/report.json is missing');
-  const report = readJson(reportPath);
-  assertRuntimeEvidenceIdentity(report, currentIdentity);
-  const checks = Array.isArray(report.checks) ? report.checks : [];
-  const allChecksPass = checks.length > 0 && checks.every((check) => check && check.pass === true);
-  const checkNames = new Set(checks.map((check) => check?.name));
-  const missingChecks = RUNTIME_REQUIRED_CHECKS.filter((name) => !checkNames.has(name));
-  const screenshotMetadata = Array.isArray(report.screenshotMetadata) ? report.screenshotMetadata : [];
-  const requiredScreenshots = RUNTIME_SCREENSHOT_CONTRACT;
-  const metadataStates = screenshotMetadata.map((item) => item?.state);
-  const metadataByState = new Map(screenshotMetadata.map((item) => [item?.state, item]));
-  const screenshotErrors = [];
-  const runtimeDir = path.dirname(reportPath);
-  if (screenshotMetadata.length !== requiredScreenshots.length || new Set(metadataStates).size !== screenshotMetadata.length) {
-    screenshotErrors.push('runtime screenshot states must be present exactly once');
+  let report;
+  try {
+    report = readJson(reportPath);
+  } catch (error) {
+    throw new Error(`actual Edge toolbar 200% report is invalid JSON: ${error.message}`);
   }
-  const expectedFiles = requiredScreenshots.map((item) => item.file);
-  if (!Array.isArray(report.screenshots) || report.screenshots.length !== expectedFiles.length ||
-      expectedFiles.some((file, index) => report.screenshots[index] !== file)) {
-    screenshotErrors.push('runtime screenshot list does not match the required state order');
-  }
-  for (const expected of requiredScreenshots) {
-    const { state } = expected;
-    const item = metadataByState.get(state);
-    if (!item) {
-      screenshotErrors.push(`${state} metadata is missing`);
-      continue;
-    }
-    if (item.file !== expected.file || path.basename(String(item.path || '')) !== expected.file) {
-      screenshotErrors.push(`${state} is not bound to ${expected.file}`);
-      continue;
-    }
-    if (item.viewport?.width !== expected.viewport.width || item.viewport?.height !== expected.viewport.height) {
-      screenshotErrors.push(`${state} viewport does not match ${expected.viewport.width}x${expected.viewport.height}`);
-    }
-    if (!runtimeScreenshotEvidenceMatches(item.evidence, expected.evidence)) {
-      screenshotErrors.push(`${state} evidence metadata does not match the runtime screenshot contract`);
-    }
-    const filePath = path.resolve(rootDir, String(item.path || ''));
-    const relative = path.relative(runtimeDir, filePath);
-    if (path.isAbsolute(relative) || relative === '..' || relative.startsWith(`..${path.sep}`)) {
-      screenshotErrors.push(`${state} screenshot escapes the runtime report directory`);
-      continue;
-    }
-    let stat;
-    try {
-      stat = fs.lstatSync(filePath);
-    } catch {
-      screenshotErrors.push(`${state} screenshot is missing`);
-      continue;
-    }
-    if (!stat.isFile() || stat.isSymbolicLink()) {
-      screenshotErrors.push(`${state} screenshot is not a regular file`);
-      continue;
-    }
-    const dimensions = pngDimensions(filePath);
-    const expectedImage = item.image && typeof item.image === 'object' ? item.image : {};
-    const digest = crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
-    if (!dimensions || dimensions.width !== expectedImage.width || dimensions.height !== expectedImage.height) {
-      screenshotErrors.push(`${state} PNG dimensions do not match metadata`);
-    }
-    if (stat.size !== item.bytes || digest !== item.sha256) {
-      screenshotErrors.push(`${state} PNG bytes or SHA-256 do not match metadata`);
-    }
-  }
-  if (new Set(screenshotMetadata.map((item) => item?.sha256).filter(Boolean)).size !== requiredScreenshots.length) {
-    screenshotErrors.push('runtime states must not reuse the same screenshot bytes');
-  }
-  if (report.pass !== true || report.commit !== head || report.source !== 'playwright-production-runtime' || report.fixture !== false || !allChecksPass || missingChecks.length || screenshotErrors.length) {
-    throw new Error(`panel-runtime-browser report is not current Playwright production-runtime evidence: ${JSON.stringify({
-      head,
-      pass: report.pass,
-      commit: report.commit,
-      source: report.source,
-      fixture: report.fixture,
-      checkCount: checks.length,
-      missingChecks,
-      failedChecks: checks.filter((check) => !check || check.pass !== true).map((check) => check?.name || '(unnamed)'),
-      screenshotErrors,
+  const identity = report?.identity && typeof report.identity === 'object' ? report.identity : {};
+  const exactIdentityFields = ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible'];
+  const identityMismatches = exactIdentityFields.filter((field) => identity[field] !== currentIdentity[field]);
+  if (report?.pass !== true || report?.contract !== 'edge-toolbar-zoom200-windows-v5' || identityMismatches.length) {
+    throw new Error(`actual Edge toolbar 200% report is failed or stale: ${JSON.stringify({
+      pass: report?.pass,
+      contract: report?.contract,
+      identityMismatches,
     })}`);
   }
+  const expectedIds = TOOLBAR_200_REQUIRED_CELLS.map(({ viewport, scenario }) => `${viewport.id}::${scenario}`);
+  const cells = Array.isArray(report?.cells) ? report.cells : [];
+  const actualIds = cells.map((cell) => `${cell?.viewport?.id || ''}::${cell?.scenario || ''}`);
+  if (report?.matrix?.complete !== true || cells.length !== expectedIds.length ||
+      listDifference(actualIds, expectedIds).length || listDifference(expectedIds, actualIds).length) {
+    throw new Error(`actual Edge toolbar 200% matrix is incomplete: ${JSON.stringify({ expectedIds, actualIds, complete: report?.matrix?.complete })}`);
+  }
+  const stable = report?.stableIdentity && typeof report.stableIdentity === 'object' ? report.stableIdentity : {};
+  if (stable.commit !== currentIdentity.commit || typeof stable.fingerprint !== 'string' || stable.fingerprint.length !== 64) {
+    throw new Error('actual Edge toolbar 200% report lacks a valid stable worktree identity');
+  }
+  const failures = [];
+  for (const { viewport: expected, scenario } of TOOLBAR_200_REQUIRED_CELLS) {
+    const cell = cells.find((item) => item?.viewport?.id === expected.id && item?.scenario === scenario);
+    const observedViewport = cell?.viewport?.cssViewport;
+    if (!cell || observedViewport?.width !== expected.cssViewport.width || observedViewport?.height !== expected.cssViewport.height) {
+      failures.push(`${expected.id}/${scenario}: target CSS viewport is missing or wrong`);
+      continue;
+    }
+    if (cell?.zoomLevel?.verified !== true || cell?.zoomLevel?.expectedPercent !== 200 ||
+        cell?.zoomLevel?.toolbarIncrements !== TOOLBAR_INCREMENTS ||
+        cell?.windowsAutomation?.pass !== true || !Array.isArray(cell?.windowsAutomation?.steps) || cell.windowsAutomation.steps.length !== TOOLBAR_INCREMENTS) {
+      failures.push(`${expected.id}/${scenario}: actual Edge toolbar zoom level is not verified`);
+    }
+    for (const step of Array.isArray(cell?.windowsAutomation?.steps) ? cell.windowsAutomation.steps : []) {
+      const accepted = Array.isArray(step?.attempts)
+        ? step.attempts.find((attempt) => attempt?.action === step.acceptedAction && attempt?.changed === true)
+        : null;
+      if (!accepted || !['oem-plus', 'numpad-plus', 'menu-plus'].includes(step.acceptedAction)) {
+        failures.push(`${expected.id}/${scenario}: toolbar step ${step?.step || '?'} lacks a geometry-confirmed real Edge action`);
+      }
+    }
+    if (cell?.stableIdentity?.commit !== stable.commit || cell?.stableIdentity?.fingerprint !== stable.fingerprint) {
+      failures.push(`${expected.id}/${scenario}: stable worktree identity differs from the report`);
+    }
+    const surface = cell?.surface;
+    if (!surface || surface.overflowX > 1 || !Number.isFinite(surface.main?.horizontalOverflow) || surface.main.horizontalOverflow > 1 ||
+        !surface.primary?.present || !surface.primary?.visible || !surface.primary?.reachable || surface.primary?.withinMain !== true ||
+        surface.primary?.obscuredByNavigation !== false || surface.clippedOperationalText?.length !== 0 ||
+        surface.unreadableOperationalText?.length !== 0 ||
+        surface.keyboardFocus?.focusVisible !== true || surface.keyboardFocus?.fullyVisible !== true || surface.keyboardFocus?.withinMain !== true ||
+        surface.keyboardFocus?.obscuredByNavigation !== false ||
+        !surface.screenshot?.file || !/^[0-9a-f]{64}$/i.test(String(surface.screenshot?.sha256 || '')) ||
+        !surface.playwrightDiagnosticScreenshot?.file || !/^[0-9a-f]{64}$/i.test(String(surface.playwrightDiagnosticScreenshot?.sha256 || '')) ||
+        !validWindowsCapture(surface.windowsCapture, surface.windowsCapture?.windowHandle)) {
+      failures.push(`${expected.id}/${scenario}: task, navigation clearance, clipping, overflow, focus, or Windows screenshot evidence failed`);
+    }
+  }
+  if (!String(report?.proofBoundary?.doesNotProve || '').includes('iOS Dynamic Type') ||
+      !String(report?.proofBoundary?.doesNotProve || '').includes('CDP pageScale')) {
+    failures.push('toolbar report must retain its non-Dynamic-Type/non-CDP proof boundary');
+  }
+  if (failures.length) throw new Error(`actual Edge toolbar 200% report is incomplete: ${failures.join('; ')}`);
   return { reportPath, report };
 }
 
@@ -710,17 +685,45 @@ function collectGateDetailFailures(latest) {
         : {};
       if (check.pass !== true) pushFailure('mobileSemantic', 'check.pass', check.pass);
       if (detail.surface !== 'mobile-overview') pushFailure('mobileSemantic', 'surface', detail.surface);
-      if (probe.contract !== 'mobile-patrol-console-v3') pushFailure('mobileSemantic', 'contract', probe.contract);
+      if (probe.contract !== 'optical-patrol-v1') pushFailure('mobileSemantic', 'contract', probe.contract);
       if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
       assertProbeChecks('mobileSemantic', probe);
-      if (probe.checks?.adaptiveLedger !== true) {
-        pushFailure('mobileSemantic', 'checks.adaptiveLedger', probe.checks?.adaptiveLedger);
+      const reportedRequiredChecks = Array.isArray(probe.requiredChecks)
+        ? probe.requiredChecks.map((field) => String(field || '').trim()).filter(Boolean)
+        : [];
+      const duplicateRequiredChecks = [...new Set(reportedRequiredChecks.filter(
+        (field, index) => reportedRequiredChecks.indexOf(field) !== index
+      ))];
+      const actualCheckFields = Object.keys(probe.checks && typeof probe.checks === 'object' ? probe.checks : {});
+      const missingRequiredChecks = listDifference(reportedRequiredChecks, MOBILE_OVERVIEW_REQUIRED_CHECKS);
+      const unexpectedRequiredChecks = listDifference(MOBILE_OVERVIEW_REQUIRED_CHECKS, reportedRequiredChecks);
+      const missingActualChecks = listDifference(actualCheckFields, MOBILE_OVERVIEW_REQUIRED_CHECKS);
+      const unexpectedActualChecks = listDifference(MOBILE_OVERVIEW_REQUIRED_CHECKS, actualCheckFields);
+      if (duplicateRequiredChecks.length) {
+        pushFailure('mobileSemantic', 'requiredChecks.duplicates', duplicateRequiredChecks);
+      }
+      if (missingRequiredChecks.length) {
+        pushFailure('mobileSemantic', 'requiredChecks.missing', missingRequiredChecks);
+      }
+      if (unexpectedRequiredChecks.length) {
+        pushFailure('mobileSemantic', 'requiredChecks.unexpected', unexpectedRequiredChecks);
+      }
+      if (missingActualChecks.length) {
+        pushFailure('mobileSemantic', 'checks.missing', missingActualChecks);
+      }
+      if (unexpectedActualChecks.length) {
+        pushFailure('mobileSemantic', 'checks.unexpected', unexpectedActualChecks);
+      }
+      for (const field of MOBILE_OVERVIEW_REQUIRED_CHECKS) {
+        if (probe.checks?.[field] !== true) {
+          pushFailure('mobileSemantic', `checks.${field}`, probe.checks?.[field]);
+        }
       }
       if (parsed.scenario === 'no-snapshot') {
-        if (probe.evidenceMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'evidenceMode', probe.evidenceMode);
+        if (probe.truthMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'truthMode', probe.truthMode);
         if (probe.risk !== 'evidence') pushFailure('noSnapshotSemantic', 'risk', probe.risk);
-        if (probe.checks?.unavailableBoundary !== true) {
-          pushFailure('noSnapshotSemantic', 'checks.unavailableBoundary', probe.checks?.unavailableBoundary);
+        if (probe.checks?.noFalseCurrentData !== true) {
+          pushFailure('noSnapshotSemantic', 'checks.noFalseCurrentData', probe.checks?.noFalseCurrentData);
         }
       }
     }
@@ -801,7 +804,7 @@ function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
     ROUTE_STATE_MATRIX_CELLS,
     { requiredWorktreeIdentity: currentIdentity }
   ));
-  collect('runtimeBrowser', () => assertRuntimeBrowserReport(rootDir, currentIdentity));
+  collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
   if (failures.length) throw new Error(`Required current-HEAD release evidence is incomplete: ${failures.join(' | ')}`);
   evidence.matrixIdentity = assertMatrixEvidenceIdentity(evidence, currentIdentity);
   assertEvidenceModeEligibility(evidence.matrixIdentity, options);
@@ -837,19 +840,25 @@ function main(argv = process.argv.slice(2)) {
   assertNodeContract('tools/check-public-release-readiness-lifecycle.js');
   assertNodeContract('tools/test-framework-asset-budget.js');
   const routeMaturityReport = assertNodeContract('tools/check-route-maturity-contract.js', ['--contract-only']);
-  assertNodeContract('tools/check-interfaces-route-maturity-expected-red.js');
   assertNodeContract('tools/check-route-maturity-report.js');
   assertNodeContract('tools/test-local-predeploy-matrix-contract.js');
   assertNodeContract('tools/check-report-truth.js');
   assertNodeContract('tools/check-public-readiness-report-truth.js');
   assertNodeContract('tools/test-public-release-semantic-gates.js');
+  assertNodeContract('tools/test-browser-toolbar-zoom200-readiness.js');
 
-  const ghcrImage = 'ghcr.io/cullysu/ros-ikuai-monitor-panel:main';
+  const ghcrImage = 'ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>';
+  const immutableGhcrImagePattern = /ghcr\.io\/cullysu\/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>/;
 
   assertContains('.github/workflows/container-image.yml', 'packages: write');
-  assertContains('.github/workflows/container-image.yml', 'docker/build-push-action@v7');
+  assertPinnedDockerBuildPushActionV7('.github/workflows/container-image.yml');
   assertContains('.github/workflows/container-image.yml', 'platforms: linux/amd64,linux/arm64');
   assertContains('.github/workflows/container-image.yml', 'ghcr.io/${{ github.repository }}');
+  assertContains('.github/workflows/container-image.yml', 'name: ghcr-image-evidence-${{ github.event.workflow_run.head_sha }}');
+  assertContains('.github/workflows/container-image.yml', 'oci_index_digest: pushDigest');
+  assertContains('.github/workflows/container-image.yml', 'actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08');
+  assertContains('tools/check-exact-sha-release-cl.js', "REQUIRED_CONTAINER_IMAGE_EVIDENCE = 'ghcr-image-evidence'");
+  assertContains('tools/check-exact-sha-release-cl.js', "get('docker-content-digest')");
   assertContains('.github/workflows/ci.yml', '--scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
   assertContains('.github/workflows/ci.yml', '--sections overview');
   assertNotContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
@@ -859,9 +868,11 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.env.docker.example', 'ROS_PANEL_IMAGE=routeros-triage-panel:local');
   assertContains('.env.docker.example', `# ROS_PANEL_IMAGE=${ghcrImage}`);
   assertContains('install.sh', 'DEFAULT_LOCAL_IMAGE="routeros-triage-panel:local"');
-  assertContains('install.sh', `DEFAULT_PREBUILT_IMAGE="${ghcrImage}"`);
+  assertContains('install.sh', '[[ "$image" =~ ^ghcr\\.io/cullysu/ros-ikuai-monitor-panel:sha-[0-9a-f]{40}$ ]]');
+  assertContains('install.sh', '--prebuilt requires --image ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>');
   assertContains('install.sh', 'pull routeros-triage');
-  assertContains('install.sh', 'falling back to local Docker build');
+  assertContains('install.sh', 'Could not pull the requested immutable prebuilt image. Use --build-local to build from source.');
+  assertNotContains('install.sh', 'falling back to local Docker build');
   assertContains('install.sh', '--prebuilt');
   assertContains('install.sh', '--build-local');
   assertContains('install.sh', '--local-only');
@@ -869,6 +880,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('install.sh', '--lan is not supported by the public installer');
   assertContains('install.sh', 'exposure:   localhost-only');
   assertContains('install.sh', 'ROS_PANEL_TRUST_PROXY_HEADERS');
+  assertContains('install.sh', 'ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD');
   assertContains('install.sh', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
   assertContains('install.sh', 'ROS_PANEL_IP_ALIAS_WRITE_ENABLED');
   assertContains('install.sh', 'ROS_PANEL_EXPOSE_ADMIN_SESSIONS');
@@ -888,6 +900,12 @@ function main(argv = process.argv.slice(2)) {
 
   assertContains('tools/build-routeros-container-archive.sh', 'docker buildx build');
   assertContains('tools/build-routeros-container-archive.sh', 'docker save');
+  assertContains('tools/check-container-host-ingress-smoke.py', 'ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1');
+  assertContains('tools/check-container-host-ingress-smoke.py', 'session write without CSRF');
+  assertContains('tools/check-container-host-ingress-smoke.py', "headers={'Host':'127.0.0.1:28646'}");
+  assertContains('.github/workflows/ci.yml', 'Docker host-ingress smoke gate');
+  assertContains('.github/workflows/ci.yml', 'python3 tools/check-container-host-ingress-smoke.py');
+  assertContains('.github/workflows/ci.yml', 'python -m compileall -q app.py panel_backend tools');
   assertContains('tools/build-routeros-container-archive.sh', '--provenance=false');
   assertContains('tools/build-routeros-container-archive.sh', 'convert-oci-to-routeros-docker-archive.py');
   assertContains('tools/build-routeros-container-archive.sh', 'Use a client-local forwarder');
@@ -896,10 +914,10 @@ function main(argv = process.argv.slice(2)) {
   assertContains('DEPLOY_DOCKER.md', ghcrImage);
   assertContains('README.md', ghcrImage);
   assertContains('README.md', 'Default public path: build a RouterOS-friendly archive locally');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', ghcrImage);
+  assertMatches('DEPLOY_ROUTEROS_CONTAINER.md', immutableGhcrImagePattern);
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'The default public path is to build a RouterOS-friendly archive locally');
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Local archive, default public path');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Optional registry image, only after the GHCR package is public');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Optional registry image, only after the exact immutable GHCR package is public');
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'connect-routeros-container-localhost.ps1');
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'http://127.0.0.1:28646/');
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Host header guard');
@@ -912,9 +930,13 @@ function main(argv = process.argv.slice(2)) {
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', '/container/start [find where root-dir="disk1/routeros-triage"]');
   assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'YOUR_ORG/routeros-triage-panel:TAG');
   assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'remote-image~"routeros-triage-panel"');
+  assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', ':main');
+  assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', ':latest');
 
   assertContains('Dockerfile', 'USER panel');
+  assertPythonDependencyLockContract();
   assertContains('Dockerfile', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
+  assertContains('Dockerfile', 'ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=0');
   assertNotContains('Dockerfile', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=', 'forward token baked into image defaults');
   assertContains('Dockerfile', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0');
   assertContains('Dockerfile', 'chown -R root:root /app');
@@ -922,7 +944,10 @@ function main(argv = process.argv.slice(2)) {
   assertContains('Dockerfile', 'chown panel:panel /app/data');
   assertContains('Dockerfile', 'chmod 0750 /app/data');
   assertContains('compose.yml', 'read_only: true');
+  assertContains('compose.yml', '127.0.0.1:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}');
+  assertNotContains('compose.yml', '${ROS_PANEL_PUBLISHED_ADDR:-', 'overridable Docker host bind');
   assertContains('compose.yml', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD: "${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD:-0}"');
+  assertContains('compose.yml', 'ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD: "${ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD:-1}"');
   assertContains('compose.yml', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN: "${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"');
   assertContains('compose.yml', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED: "${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
   assertContains('compose.yml', 'no-new-privileges:true');
@@ -983,35 +1008,36 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/acceptance/inspect-panel-routes.js', 'history.forward()');
   assertContains('tools/acceptance/inspect-panel-routes.js', 'canonicalUnknown');
 
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-overview');
+  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-root');
+  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-evidence-mode');
+  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-expanded-claim');
+  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-action');
+  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-evidence-deck');
   assertContains('public/assets/framework/panel-framework.js', 'data-desktop-overview');
   assertContains('public/assets/framework/panel-framework.js', 'data-panel-route-content');
   assertContains('public/assets/framework/panel-framework.js', '当前业务状态不可判断');
   assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native');
   assertNotContains('public/assets/framework/panel-framework.js', 'mn-topology');
   assertNotContains('public/assets/framework/panel-framework.js', 'mn-sheet');
-  assertNotContains('public/assets/framework/panel-framework.js', 'role: "tablist"');
-
-  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-overview');
-  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'MobileProofStrip');
-  assertContains('src/panel-framework/mobile/MobileProofStrip.tsx', 'data-mobile-core-facts');
-  assertContains('src/panel-framework/mobile/MobileProofStrip.tsx', 'data-mobile-core-fact');
-  assertContains('src/panel-framework/mobile/MobileProofStrip.tsx', 'data-overview-task-focus="facts"');
-  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'MobileEvidenceLedger');
-  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'data-mobile-evidence-ledger');
-  assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-object');
-  assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-route');
-  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'userOverrideRef');
-  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'availableHeight');
-  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'requiredHeight');
-  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'ResizeObserver');
-  assertNotContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'fitsEvidence', 'retired fixed evidence-fit heuristic');
-  assertNotContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'roomyIncident', 'retired scenario-height heuristic');
-  assertNotContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'estimatedBody', 'retired row-height estimate');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'adaptiveLedger: adaptiveLedgerOk');
-  assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', 'preserveAspectRatio="xMidYMid meet"');
-  assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<title id="mp-traffic-chart-title">');
-  assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<desc id="mp-traffic-chart-desc">');
+  assertNotContains('public/assets/framework/panel-framework.js', 'data-linkboard-root');
+  assertNotContains('public/assets/framework/panel-framework.js', 'data-pocket-console-root', 'superseded Pocket Console owner');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'optical-patrol/OpticalPatrol');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'optical-patrol/buildOpticalPatrolModel');
+  assertNotContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'pocket-console', 'superseded Pocket Console entry');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx', 'data-optical-patrol-root');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx', 'data-optical-patrol-evidence-mode');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx', 'data-optical-patrol-forbids-current');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx', 'data-optical-patrol-expanded-claim');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx', 'data-optical-patrol-action');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolEvidenceDeck.tsx', 'data-optical-patrol-evidence-deck');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts', 'buildOpticalPatrolModel');
+  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts', 'forbidsCurrentData: evidence.evidenceMode !== "current"');
+  assertNotExists('src/panel-framework/overview/mobile-overview/pocket-console');
+  assertNotExists('src/panel-framework/overview/mobile-overview/MobileLinkboard.tsx');
+  assertNotExists('src/panel-framework/overview/mobile-overview/LinkboardTimeEvidence.tsx');
+  assertNotExists('src/panel-framework/overview/mobile-overview/linkboardModel.ts');
+  assertNotExists('src/panel-framework/overview/mobile-overview/scenes/NativeOperationsCanvas.tsx');
+  assertNotExists('src/panel-framework/overview/mobile-overview/scenes/operationsPrimitives.tsx');
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'type="search"');
   assertContains('src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx', 'data-mobile-object-detail');
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'pageSize = 20');
@@ -1039,7 +1065,9 @@ function main(argv = process.argv.slice(2)) {
     'mobile filter disclosure must expose a valid expanded-state aria-controls target',
   );
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'role="group"');
-  assertNotContains('src/panel-framework/mobile/mobile-patrol.css', '!important');
+  for (const style of ['tokens.css', 'shell.css', 'claims.css', 'workbench.css', 'responsive.css', 'motion.css']) {
+    assertNotContains(`src/panel-framework/overview/mobile-overview/optical-patrol/styles/${style}`, '!important');
+  }
   assertNotContains('src/panel-framework/mobile/mobile-domain.css', '!important');
   assertNotContains('src/panel-framework/sections/section-timeseries.css', '!important');
 
@@ -1058,13 +1086,34 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'resourceEvidenceWindow(snapshot)', 'Overview shared resource evidence consumer');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'Math.abs(snapshotAt - last.timestamp)');
   assertNotContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'rows[0]');
-  assertContains('tools/check-mobile-native-model.js', 'missing current rate must not produce a trend');
-  assertContains('tools/check-mobile-native-model.js', 'explicit zero observations remain valid');
+  assertContains('tools/check-optical-patrol-model.js', 'unavailable evidence must withdraw every current measurement');
+  assertContains('tools/check-optical-patrol-model.js', 'observed numeric zero must remain visible');
 
-  assertContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'mobile-patrol-console-v3'");
+  assertContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'optical-patrol-v1'");
+  assertNotContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'pocket-console-v1'", 'superseded Pocket Console runtime contract');
+  assertNotContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'linkboard-overview-v1'", 'retired Linkboard mobile report alias');
   assertContains('tools/acceptance/inspect-overview-mobile.js', 'Object.values(checks).every(Boolean)');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'stableTaskNavigation: taskButtons.length === 4');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'smallText.length === 0');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', '[data-optical-patrol-expanded-claim]');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', '[data-optical-patrol-action]');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', '[data-optical-patrol-evidence-deck]');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'data-optical-patrol-forbids-current');
+  assertContains('tools/check-optical-patrol-runtime.js', 'source: "optical-patrol-runtime"');
+  assertContains('tools/check-optical-patrol-runtime.js', 'contract: CONTRACT');
+  assertContains('tools/check-optical-patrol-runtime.js', 'writeReport(report)');
+  assertContains('tools/lib/optical-patrol-runtime/runtime.js', 'acceptanceDirectory(name = "optical-patrol-runtime")');
+  assertNotExists('tools/check-pocket-console-runtime.js');
+  assertNotExists('tools/lib/pocket-console-runtime/runtime.js');
+  assertMatches(
+    'tools/acceptance/inspect-overview-mobile.js',
+    /const noFalseCurrentData\s*=\s*!forbidsCurrent\s*\|\|\s*!optical\.querySelector\(/,
+    'runtime false-current-data check',
+  );
+  assertMatches(
+    'tools/acceptance/inspect-overview-mobile.js',
+    /const checks\s*=\s*\{[\s\S]{0,1200}\bnoFalseCurrentData,/,
+    'exported blocking false-current-data result',
+  );
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'targets44:');
   assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-overview-task-contract="overview-task-v1"');
   assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "getAttribute('data-overview-task-contract')");
   assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "taskContract === 'overview-task-v1'");
@@ -1073,7 +1122,17 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.github/workflows/ci.yml', 'node tools/test-public-release-semantic-gates.js');
   assertContains('.github/workflows/ci.yml', '--sections public-release');
   assertContains('.github/workflows/ci.yml', '_acceptance/route-matrix-${{ github.sha }}');
-  assertContains('.github/workflows/ci.yml', 'npm run check:runtime-browser');
+  {
+    const ciWorkflow = readReleaseSurface('.github/workflows/ci.yml');
+    const scripts = JSON.parse(readReleaseSurface('package.json')).scripts || {};
+    const invokesRuntimeBrowser = ciWorkflow.includes('npm run check:runtime-browser') || (
+      ciWorkflow.includes('npm run check:release-gates') &&
+      String(scripts['check:release-gates'] || '').includes('npm run check:runtime-browser')
+    );
+    if (!invokesRuntimeBrowser) {
+      throw new Error('.github/workflows/ci.yml does not invoke check:runtime-browser directly or through check:release-gates');
+    }
+  }
   assertContains('.github/workflows/ci.yml', 'python tools/check-backend-security.py');
   assertContains('.github/workflows/ci.yml', 'python tools/check-static-assets.py');
 
@@ -1167,7 +1226,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('panel_backend/snapshot_builder.py', 'passthrough');
 
   if (args.staticOnly) {
-    console.log('[ok] static public release engineering contracts are present');
+    console.log('[ok] static engineering contracts are present');
   } else {
     const evidence = assertRequiredMatrixEvidence(ROOT, {
       allowDirtyEngineering: args.allowDirtyEngineering,
@@ -1178,11 +1237,29 @@ function main(argv = process.argv.slice(2)) {
     ));
   }
 
-  if (routeMaturityReport?.releasePass !== true) {
-    throw new Error(`route maturity release gate remains closed\n${JSON.stringify(routeMaturityReport, null, 2)}`);
+  if (routeMaturityReport?.structuralPass !== true || routeMaturityReport?.routePolicyPass !== true) {
+    throw new Error(`route maturity engineering gate remains closed\n${JSON.stringify(routeMaturityReport, null, 2)}`);
   }
 
-  console.log('[ok] public release engineering contract checks passed');
+  if (args.releaseCandidate) {
+    const candidateEvidence = assertNodeContract(
+      'tools/check-release-candidate-evidence.js',
+      args.candidateEvidenceArgs
+    );
+    if (candidateEvidence?.candidateEvidencePass !== true || candidateEvidence?.publicReleasePass !== false) {
+      throw new Error(`release candidate evidence gate remains closed\n${JSON.stringify(candidateEvidence, null, 2)}`);
+    }
+    console.log(JSON.stringify({
+      engineeringReadinessPass: true,
+      candidateEvidencePass: true,
+      publicReleasePass: false,
+      releaseComplete: false,
+      promotionAuthority: 'external-controller-required',
+    }));
+    return;
+  }
+
+  console.log(JSON.stringify({ engineeringReadinessPass: true }));
 }
 
 if (require.main === module) {
@@ -1190,18 +1267,19 @@ if (require.main === module) {
 }
 
 module.exports = {
-  RUNTIME_REQUIRED_CHECKS,
+  MOBILE_OVERVIEW_REQUIRED_CHECKS,
+  MATRIX_REPORT_ALIAS_NAMES,
   assertDecisionLedgerFreshness,
   assertLatestFullMatrixReport,
   assertEvidenceModeEligibility,
   assertMatrixEvidenceIdentity,
   assertRequiredMatrixEvidence,
-  assertRuntimeBrowserReport,
-  assertRuntimeEvidenceIdentity,
+  assertToolbarZoom200Report,
   collectGateDetailFailures,
+  hasPinnedDockerBuildPushActionV7,
   matrixEvidenceStatusMessage,
   parseArgs,
-  runtimeScreenshotEvidenceMatches,
+  reportNameMatchesKind,
   FULL_MATRIX_CELLS,
   FULL_MATRIX_SCENARIOS,
   FULL_MATRIX_VIEWPORT_KEYS,

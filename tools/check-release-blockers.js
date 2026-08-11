@@ -19,8 +19,11 @@ function check(name, condition, detail) {
 const runtimeSource = source('src/panel-framework/runtime/usePanelRuntime.ts');
 const chromeSource = source('src/panel-framework/runtime/PanelRuntimeChrome.tsx');
 const indexSource = source('public/index.html');
-const chartSource = source('src/panel-framework/mobile/MobilePatrolTraffic.tsx');
 const sectionChartSource = source('src/panel-framework/sections/SectionTimeSeriesChart.tsx');
+const opticalPatrolSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx');
+const opticalPatrolModelSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts');
+const opticalPatrolClaimSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx');
+const opticalPatrolEvidenceDeckSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolEvidenceDeck.tsx');
 const sectionModelSource = source('src/panel-framework/sections/sectionModels.ts');
 const resourceHistorySource = source('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts');
 const resourceTimeSeriesSource = source('src/panel-framework/sections/resourceTimeSeries.ts');
@@ -28,6 +31,7 @@ const connectionSource = source('src/panel-framework/connection/RouterConnection
 const apiSchemaSource = source('panel_backend/api_schema.py');
 const browserGateSource = source('tools/check-panel-runtime-browser.js');
 const browserLifecycleSource = source('tools/check-runtime-browser-lifecycle.js');
+const browserLifecycleV2Source = source('tools/acceptance/browser-lifecycle-v2/browser-lifecycle.js');
 const mobileIncidentVisualWeightSource = source('tools/check-mobile-incident-visual-weight.js');
 const tabletRiskFocusSource = source('tools/check-tablet-risk-focus.js');
 const desktopBrowserGateSource = source('tools/check-resource-trend-balance.js');
@@ -88,13 +92,33 @@ check(
   '#dns is not a registered route; use dns4/dns6 through the React router'
 );
 check(
-  'mobile and section SVGs preserve their time axes and expose scale labels',
-  !/preserveAspectRatio=["']none["']/.test(chartSource + sectionChartSource) &&
-    chartSource.includes('mp-chart-scale') &&
-    chartSource.includes('mp-chart-time') &&
+  'shared section charts preserve scale, time, units, and accessible summaries',
+  !/preserveAspectRatio=["']none["']/.test(sectionChartSource) &&
+    sectionChartSource.includes('preserveAspectRatio="xMidYMid meet"') &&
     sectionChartSource.includes('section-timeseries-scale') &&
-    sectionChartSource.includes('section-timeseries-axis'),
-  'time-series charts must preserve their viewBox and expose time/unit scales'
+    sectionChartSource.includes('section-timeseries-axis') &&
+    sectionChartSource.includes('series.unit') &&
+    sectionChartSource.includes('visualization.accessibleSummary') &&
+    sectionChartSource.includes('aria-labelledby'),
+  'shared section chart evidence must preserve aspect ratio, retain time/unit labels, and expose summaries'
+);
+check(
+  'Optical Patrol is the only current mobile overview owner and withdraws non-current data',
+  opticalPatrolSource.includes('data-optical-patrol-root') &&
+    opticalPatrolSource.includes('data-optical-patrol-evidence-mode') &&
+    opticalPatrolSource.includes('data-optical-patrol-forbids-current') &&
+    opticalPatrolClaimSource.includes('data-optical-patrol-expanded-claim') &&
+    opticalPatrolClaimSource.includes('data-optical-patrol-action') &&
+    opticalPatrolEvidenceDeckSource.includes('data-optical-patrol-evidence-deck') &&
+    opticalPatrolModelSource.includes('buildOpticalPatrolModel') &&
+    /forbidsCurrentData:\s*evidence\.evidenceMode\s*!==\s*"current"/.test(opticalPatrolModelSource) &&
+    !/PocketConsole|pocketConsole|data-pocket|MobileLinkboard|NativeOperationsCanvas/.test([
+      opticalPatrolSource,
+      opticalPatrolClaimSource,
+      opticalPatrolEvidenceDeckSource,
+      opticalPatrolModelSource,
+    ].join('\n')),
+  'Optical Patrol must expose claim/evidence current-data boundaries without retaining Pocket, Linkboard, or Native Operations Canvas ownership'
 );
 check(
   'resource visualization requires timestamped samples',
@@ -122,19 +146,26 @@ check(
     localPredeploySource.includes("path.join(ROOT, '_acceptance', 'python-deps')") &&
     (localPredeploySource.match(/await launchBrowser\(args, report\)/g) || []).length === 1 &&
     /async function runBrowserChecks[\s\S]*?const browser = await launchBrowser\(args, report\);[\s\S]*?try\s*\{[\s\S]*?for \(const profile/.test(localPredeploySource) &&
-    localPredeploySource.includes('await context.close().catch(() => {})') &&
-    localPredeploySource.includes("await withTimeout(browser.stop(), 30000, 'browser stop')"),
-  'the matrix must use the real Python runtime and reuse one Playwright browser with per-cell context cleanup'
+    localPredeploySource.includes('launchManagedBrowser') &&
+    localPredeploySource.includes('lifecycleBounded') &&
+    localPredeploySource.includes('await withTimeout(cdp.closeTarget(), 12_000, targetLabel)') &&
+    localPredeploySource.includes("record(report, targetLabel, false") &&
+    localPredeploySource.includes("await withTimeout(browser.stop(), 30_000, 'browser stop')") &&
+    !localPredeploySource.includes('await context.close().catch(() => {})'),
+  'the matrix must use the real Python runtime and one managed browser with bounded per-cell cleanup'
 );
 check(
   'runtime browser gate uses Playwright with a bounded lifecycle',
-  browserGateSource.includes("require('playwright-core')") &&
+  browserGateSource.includes('launchManagedBrowser') &&
      /const testTimeout\s*=\s*Number\.isFinite\(configuredTestTimeout\)[\s\S]*?:\s*480000;/.test(browserGateSource) &&
      /Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*480000\)/.test(browserGateSource) &&
     browserGateSource.includes('Promise.race([main(), timeout])') &&
     browserGateSource.includes('cleanupRuntime') &&
     browserGateSource.includes('context.close') &&
-    browserGateSource.includes('browser.close') &&
+    browserGateSource.includes('Promise.allSettled') &&
+    browserGateSource.includes('browserRuntime.close') &&
+    browserLifecycleV2Source.includes("require('playwright-core')") &&
+    browserLifecycleV2Source.includes('process-tree.verify') &&
     !browserGateSource.includes('new WebSocket') &&
     !browserGateSource.includes('remote-debugging-port'),
   'runtime validation must use one bounded Playwright lifecycle with explicit cleanup'
@@ -157,6 +188,28 @@ check(
   tabletRiskFocusSource.includes("tablet-risk-focus-v1") &&
     packageJson.scripts['check:tablet-risk-focus'] === 'node --max-old-space-size=2048 tools/check-tablet-risk-focus.js',
   'the tablet risk-object focus must remain an explicit regression contract'
+);
+check(
+  'runtime browser invokes the current Optical Patrol aggregate exactly once',
+  packageJson.scripts['check:mobile-linkboard'] === undefined &&
+    packageJson.scripts['check:mobile-pocket-console'] === undefined &&
+    typeof packageJson.scripts['check:mobile-optical-patrol'] === 'string' &&
+    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-model.js') &&
+    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-architecture.js') &&
+    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-accessibility-static.js') &&
+    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-runtime.js') &&
+    (packageJson.scripts['check:runtime-browser'].match(/check:mobile-optical-patrol/g) || []).length === 1,
+  'the current Optical Patrol aggregate must include model, semantic architecture, accessibility-static, and runtime checks exactly once without retaining Pocket/Linkboard command aliases'
+);
+check(
+  'the current Optical Patrol runtime owns its report namespace and the retired Pocket runtime is absent',
+  fs.existsSync(path.join(root, 'tools', 'check-optical-patrol-runtime.js')) &&
+    fs.existsSync(path.join(root, 'tools', 'lib', 'optical-patrol-runtime', 'runtime.js')) &&
+    source('tools/check-optical-patrol-runtime.js').includes('source: "optical-patrol-runtime"') &&
+    source('tools/lib/optical-patrol-runtime/runtime.js').includes('acceptanceDirectory(name = "optical-patrol-runtime")') &&
+    !fs.existsSync(path.join(root, 'tools', 'check-pocket-console-runtime.js')) &&
+    !fs.existsSync(path.join(root, 'tools', 'lib', 'pocket-console-runtime', 'runtime.js')),
+  'the release runtime must use only the Optical Patrol report namespace; Pocket runtime files are historical artifacts, not executable gates'
 );
 check(
   'focused desktop browser gates use one bounded Playwright lifecycle',

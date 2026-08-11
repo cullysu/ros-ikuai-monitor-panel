@@ -13,10 +13,15 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const ROOT = path.resolve(__dirname, "..");
-const patrolCss = fs.readFileSync(path.join(ROOT, "src/panel-framework/mobile/mobile-patrol-foundation.css"), "utf8")
-  + "\n"
-  + fs.readFileSync(path.join(ROOT, "src/panel-framework/mobile/mobile-patrol.css"), "utf8");
-const navigationCss = fs.readFileSync(path.join(ROOT, "src/panel-framework/sections/section-console.css"), "utf8");
+const opticalRoot = path.join(ROOT, "src/panel-framework/overview/mobile-overview/optical-patrol");
+const patrolCss = [
+  "styles/tokens.css",
+  "styles/shell.css",
+  "styles/claims.css",
+  "styles/workbench.css",
+  "styles/responsive.css",
+  "styles/motion.css",
+].map((file) => fs.readFileSync(path.join(opticalRoot, file), "utf8")).join("\n");
 
 function block(source, selector) {
   const start = source.indexOf(selector);
@@ -25,41 +30,41 @@ function block(source, selector) {
   return end < 0 ? source.slice(start) : source.slice(start, end + 1);
 }
 
-const normalRow = block(patrolCss, ".mp-decision-ledger-row.is-ok");
-const neutralRow = /\.mp-decision-ledger-row\s*\{[\s\S]*?background\s*:\s*(?:none|transparent|var\(--mp-surface-(?:base|raised|quiet)\))/.test(patrolCss);
-const activeNavigation = block(navigationCss, ".panel-task-navigation button.is-active {");
+const evidenceBoundary = block(patrolCss, ".op__evidence-boundary");
+const selectedClaim = block(patrolCss, ".op__claim-state");
+const activeTask = block(patrolCss, ".op__task-nav li[aria-current=\"page\"]");
 const checks = [
   {
-    name: "mobile surface tiers are explicit",
-    pass: ["--mp-surface-base:", "--mp-surface-raised:", "--mp-surface-quiet:", "--mp-accent-wash:"].every((token) => patrolCss.includes(token)),
-    detail: "base/raised/quiet/accent-wash tokens must be declared by the mobile surface owner",
+    name: "Optical Patrol declares a restrained surface and state token system",
+    pass: ["--op-canvas:", "--op-canvas-raised:", "--op-line:", "--op-state:", "--op-target:"].every((token) => patrolCss.includes(token)),
+    detail: "current mobile owner must declare canvas, raised surface, boundary, state, and target tokens",
   },
   {
-    name: "normal decision rows do not use accent wash",
-    pass: Boolean(normalRow) && !/background\s*:\s*rgba\(47\s*,\s*113\s*,\s*143\s*,\s*0\.045\s*\)/.test(normalRow),
-    detail: normalRow || "normal decision-row rule is missing",
+    name: "evidence boundary uses a compact neutral reading surface",
+    pass: Boolean(evidenceBoundary) && /font-variant-numeric\s*:\s*tabular-nums/.test(evidenceBoundary) && !/background\s*:/.test(evidenceBoundary),
+    detail: evidenceBoundary || "Optical Patrol evidence boundary rule is missing",
   },
   {
-    name: "normal decision rows resolve to a neutral surface",
-    pass: neutralRow,
-    detail: normalRow || "normal decision-row rule is missing",
+    name: "selected object state is state-led rather than a decorative wash",
+    pass: Boolean(selectedClaim) && /color\s*:\s*var\(--op-state\)/.test(selectedClaim) && !/background\s*:/.test(selectedClaim),
+    detail: selectedClaim || "Optical Patrol selected-claim state rule is missing",
   },
   {
-    name: "active navigation owns a selected surface",
-    pass: Boolean(activeNavigation) && /background\s*:\s*(var\(--mobile-nav-active-surface\)|#[0-9a-fA-F]{6})/.test(activeNavigation) && /border-radius\s*:\s*(10|11|12|13|14|15|16)px/.test(activeNavigation),
-    detail: activeNavigation || "active navigation rule is missing",
+    name: "active task owns a selected surface",
+    pass: Boolean(activeTask) && /background\s*:\s*rgba\(255\s*,\s*255\s*,\s*255\s*,\s*0\.62\)/.test(activeTask) && /border-color\s*:/.test(activeTask),
+    detail: activeTask || "Optical Patrol active task rule is missing",
   },
   {
-    name: "active navigation has no decorative underline pseudo-element",
-    pass: !/\.panel-task-navigation button\.is-active::before\s*\{[\s\S]*?background\s*:\s*#2f718f/.test(navigationCss),
-    detail: "active state must be a usable selected surface, not a top/side decoration line",
+    name: "mobile content has no legacy Patrol namespace",
+    pass: !/\b(?:mp__|mp-|mobile-patrol|MobilePatrol)\b/.test(patrolCss),
+    detail: "the current mobile surface must not retain the retired Patrol namespace",
   },
 ];
 
 const failed = checks.filter((check) => !check.pass);
 const report = {
   pass: failed.length === 0,
-  contract: "mobile-visual-surface-v1",
+  contract: "mobile-visual-surface-v2-optical-patrol",
   checks,
   failures: failed.map((check) => check.name),
 };

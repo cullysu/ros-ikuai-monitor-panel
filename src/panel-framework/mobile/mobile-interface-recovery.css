@@ -11,13 +11,14 @@
   gap: 12px;
   padding: 0 12px;
   border-bottom: 1px solid var(--mdw-line);
+  color: var(--mdw-blue);
 }
 .mdw-interface-recovery-heading > span {
   display: inline-flex;
   min-width: 0;
   align-items: center;
   gap: 7px;
-  color: var(--mdw-blue);
+  color: inherit;
 }
 .mdw-interface-recovery-heading b {
   color: var(--mdw-ink);
@@ -30,8 +31,7 @@
   font-size: 12px;
   font-weight: 650;
 }
-.mdw-interface-recovery[data-mobile-interface-recovery-state="unavailable"] .mdw-interface-recovery-heading,
-.mdw-interface-recovery[data-mobile-interface-recovery-state="unavailable"] .mdw-interface-recovery-heading > span {
+.mdw-interface-recovery.is-unavailable .mdw-interface-recovery-heading {
   color: var(--mdw-danger);
 }
 .mdw-interface-recovery-copy {
@@ -80,4 +80,51 @@
 .mdw-interface-recovery-actions button:focus-visible {
   outline: 3px solid rgba(11, 103, 140, 0.28);
   outline-offset: -3px;
+}
+
+/*
+ * A phone recovery boundary has one next investigation step. Secondary
+ * cross-checks remain available, but do not compete with the decision path.
+ * Desktop retains its compact two-column presentation below.
+ */
+.is-mobile .mdw-interface-recovery-actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+.is-mobile .mdw-interface-recovery-actions button.is-primary {
+  min-height: 48px;
+  color: #fff;
+  background: var(--mdw-blue);
+  font-size: 13px;
+}
+.is-mobile .mdw-interface-recovery-actions button.is-secondary {
+  color: var(--mdw-muted);
+}
+.is-mobile .mdw-interface-recovery-actions button + button {
+  border-top: 1px solid var(--mdw-line);
+  border-left: 0;
+}
+.is-mobile .mdw-interface-recovery-actions button.is-primary:active {
+  background: #1b4f65;
+}
+
+/*
+ * Historical rows have already answered the user's first question. Do not
+ * spend another panel re-stating the same boundary: one compact explanation
+ * follows the list, then two equally-weighted ways to inspect the record.
+ */
+.is-historical .mdw-interface-recovery-copy {
+  padding-block: 7px;
+}
+.is-historical .mdw-interface-recovery-copy p {
+  margin: 0;
+}
+.is-historical .mdw-interface-recovery-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.is-historical .mdw-interface-recovery-actions button {
+  min-height: 44px;
+}
+.is-historical .mdw-interface-recovery-actions button + button {
+  border-top: 0;
+  border-left: 1px solid var(--mdw-line);
 }

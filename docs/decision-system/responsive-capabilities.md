@@ -1,7 +1,7 @@
 # Responsive capability table
 
-- status: `active-remediation-product-visual-fail`
-- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- status: `active-step938-local-exact-signoff-pass-release-open`
+- validForCommit: Step938 active scroll-owner restoration, screenshot-origin provenance and local independent P0/P1 closure; release evidence open
 - supersededBy: `null`
 - owner: Product Design + Frontend Architecture
 
@@ -10,7 +10,7 @@ This is the only current responsive direction. Numeric thresholds express minimu
 | Available width | Required capability | Navigation | Object/detail relationship | Minimums and fallback |
 |---|---|---|---|---|
 | 320–599 | phone patrol | four stable bottom destinations plus More | one active layer; object opens a full destination with Back/Forward | 44px targets; no persistent rail or inspector |
-| 600–767 | compact two-layer | persistent compact rail | show object list or inspector; below 768px the compact task stack owns the full reading order | list min 280px; detail owns the remaining width; no squeezed split |
+| 600–767 | compact workbench | persistent compact rail | 600–659 keeps the active risk/object above its selected evidence in one deliberate reading stack; 660–767 keeps that same selection in an inline master/detail workbench | split only from 660px with a 210px list and 280px evidence minimum; large text always returns to the immediate evidence stack |
 | 768–1199 | adaptive tablet workbench | persistent compact rail | normal Overview follows its own 620/700px container capabilities; domain navigator and inspector coexist when the 268px/420px minimums fit; resource trafficLoad uses a single-column two-layer flow at 768–799px and a bounded two-pane list/inspector task at 800px+ | domain navigator 268–336px; inspector min 420px when split; resource 768–799px is an explicit capacity fallback; below 768px compact mode stacks; no duplicate DOM or filler |
 | 1200+ | dense operations workbench | desktop navigation using the same task vocabulary | comparison list/table and inspector coexist; Overview may add dense evidence modules | no giant-title mode; layout gains columns/density without changing route semantics or object identity |
 
@@ -19,7 +19,7 @@ This is the only current responsive direction. Numeric thresholds express minimu
 - 1199/1200 and 1365/1366 must preserve the same task grammar, navigation vocabulary, selected object, evidence priority, and URL state.
 - A breakpoint may reposition or collapse panes; it may not replace a task with an unrelated dashboard/table product.
 - Tablet arrangement is container-capability driven, not a viewport label. A normal Overview split requires 620px for 260px+340px task columns; list+inspector master/detail remains a different capability requiring 700px for 280px+400px. Both use one DOM and truthful fallback.
-- A domain may stack at an explicit capacity fallback when its minimum panes do not fit; it must not be forced into a squeezed split. trafficLoad stacks at 768–799px after the 64px rail leaves only 704–735px of content, and splits at 800px+ when the 268px navigator plus 420px inspector fit. 600–767px remains the compact full-width flow.
+- A domain may stack at an explicit capacity fallback when its minimum panes do not fit; it must not be forced into a squeezed split. trafficLoad stacks at 768–799px after the 64px rail leaves only 704–735px of content, and splits at 800px+ when the 268px navigator plus 420px inspector fit. The Overview compact workbench stacks selected evidence at 600–659px and splits active object/evidence from 660–767px; it is not a widened phone.
 - Incident order is risk-driven, not component-driven: the highest-risk object precedes comparison signals on phone, portrait tablet, and short landscape. Interface incidents do not render a WAN chart merely because current samples exist; WAN context may follow only when it changes the next decision. Fleet scale never outranks an active incident.
 - No-snapshot coverage may use three columns in the tablet capability band when width permits; phone and large-text modes fall back to one column rather than shrinking type or targets.
 - Mobile and desktop presentation roots may remain separate only where interaction truly differs. Typed rows, inspectors, route maturity, action context, evidence language, and tokens are shared when their contracts match.
@@ -28,7 +28,7 @@ This is the only current responsive direction. Numeric thresholds express minimu
 
 ## Current verification boundary
 
-Current focused runtime proves the active capability boundaries directly: actual-container 619/620 and 699/700 pairs, exact normal and incident DOM cardinality, 899/900 semantic continuity, real 200% text reflow at 844/1199, and the resource 768/799/844 capacity fallback all pass in the current fresh runtime (251 checks / 98 screenshots / 122 snapshotApiCalls). Historical 599/600, 767/768, 1199/1200 and 1365/1366 reports remain evidence only for their original slices. Current engineering evidence is still dirty/release-ineligible; Product, Design and Visual remain failed, while Architecture/Code signoff is limited to focused contracts.
+Step938 exact artifact `188e…` proves ten production boundaries from a single initial state: phone 320/390/430, short-landscape 667/844, tablet 768/899/900/1199 and desktop 1200. The checker restores the real `.op` scroll owner after every reachability probe, records window/document/panel-app/active-root scroll in both cell and screenshot evidence, and fails any capture away from zero. Selected actions are initially complete and clear of fixed navigation; every follow-up scrolls clear and remains hittable. The run passed 10/10 with screenshot dimensions/hashes and both identities, and all four local independent roles returned P0/P1=0 after inspecting the complete 63+10 image set. Product retains one non-blocking sparse-tablet spacing P2. Evidence remains dirty/release-ineligible and cannot open release.
 
 ### Historical Step 192 domain-workspace capability correction — superseded by Step609
 

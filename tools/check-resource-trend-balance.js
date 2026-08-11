@@ -124,8 +124,23 @@ function atomicTrafficSamples(timestamps, downlink, uplink) {
   }));
 }
 
+function resourceSamples(timestamps, cpu, memory, disk) {
+  return timestamps.map((timestamp, index) => ({
+    timestamp,
+    cpu: cpu[index],
+    memory: memory[index],
+    disk: disk[index],
+    source: 'desktop-focused:resource',
+    evidenceMode: 'current',
+  }));
+}
+
 function resourceFullSnapshot() {
   const now = new Date().toISOString();
+  const timestamps = sampleTimestamps(now);
+  const cpu = [88, 91, 94, 96, 96, 96];
+  const memory = [86, 89, 90, 91, 92, 92];
+  const disk = [91, 93, 95, 96, 97, 97];
   return {
     status: 'ok',
     updatedAt: now,
@@ -148,12 +163,13 @@ function resourceFullSnapshot() {
       memoryUsage: 92,
       diskUsage: 97,
       history: {
-        timestamps: sampleTimestamps(now),
+        timestamps,
         downlink: [4400, 5200, 6100, 7200, 6900, 7600],
         uplink: [1300, 1600, 1900, 2100, 2000, 2300],
-        cpu: [88, 91, 94, 96, 96, 96],
-        memory: [86, 89, 90, 91, 92, 92],
-        disk: [91, 93, 95, 96, 97, 97]
+        cpu,
+        memory,
+        disk,
+        resourceSamples: resourceSamples(timestamps, cpu, memory, disk),
       }
     },
     wan: [{ name: 'pppoe-out10', parent: 'ether1', running: true, upRate: 1200, downRate: 3400 }],

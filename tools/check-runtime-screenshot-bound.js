@@ -7,8 +7,17 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'tools/check-panel-runtime-browser.js'), 'utf8');
 const helper = fs.readFileSync(path.join(root, 'tools/capture-runtime-screenshot.js'), 'utf8');
+const lifecycle = fs.readFileSync(
+  path.join(root, 'tools/acceptance/browser-lifecycle-v2/browser-lifecycle.js'),
+  'utf8'
+);
 const checks = [];
 const check = (name, pass, detail) => checks.push({ name, pass: Boolean(pass), detail });
+
+function after(haystack, before, needle) {
+  const start = haystack.indexOf(before);
+  return start >= 0 ? haystack.indexOf(needle, start + before.length) : -1;
+}
 
 check(
   'screenshot-has-per-shot-timeout',
@@ -28,9 +37,28 @@ check(
 );
 check(
   'long-screenshot-batch-uses-isolated-browser',
-    /openIsolatedContext[\s\S]*isolatedBrowser[\s\S]*const tabletContext = await openIsolatedContext/.test(source) &&
-    /isolated-browser\.close\.after-tablet-batch/.test(source),
-  'the long tablet/task screenshot batch must run in a separately closed browser process'
+  (() => {
+    const isolatedFactory = source.indexOf('const openIsolatedContext = async (options) => {');
+    const isolatedLaunch = after(source, 'const openIsolatedContext = async (options) => {', 'isolatedBrowserRuntime = await launchBrowser();');
+    const isolatedContext = after(source, 'isolatedBrowserRuntime = await launchBrowser();', 'isolatedBrowserRuntime.openContext(options)');
+    const tabletBatch = source.indexOf('const tabletContext = await openIsolatedContext({');
+    const taskBatch = source.indexOf('const taskDesktopContext = await openIsolatedContext({');
+    const closeContext = source.indexOf('await tabletContext.close();');
+    const closeBatch = source.indexOf("boundedCleanup('isolated-browser.lifecycle.close.after-tablet-batch'");
+    const closeRuntime = after(source, "boundedCleanup('isolated-browser.lifecycle.close.after-tablet-batch'", 'await isolatedBrowserRuntime.close();');
+    const returnsToPrimary = source.indexOf("await page.locator('.panel-runtime-actions button').nth(1).click();");
+    const managedLaunch = source.indexOf('const launchBrowser = () => launchManagedBrowser({');
+    const ownsServerProcess = /chromium\.launchServer\([\s\S]*ownedBrowserPid[\s\S]*browserServer\.process/.test(lifecycle);
+    const verifiedTreeCleanup = /terminateOwnedProcessTree\([\s\S]*process-tree\.verify/.test(lifecycle);
+    const lateTreeCleanupIsAwaited = /const termination = await terminateOwnedProcessTree\(latePid, cleanupTimeoutMs\)/.test(lifecycle);
+
+    return isolatedFactory >= 0 && managedLaunch >= 0 &&
+      isolatedLaunch > isolatedFactory && isolatedContext > isolatedLaunch &&
+      tabletBatch > isolatedContext && taskBatch > tabletBatch &&
+      closeContext > taskBatch && closeBatch > closeContext && closeRuntime > closeBatch &&
+      returnsToPrimary > closeRuntime && ownsServerProcess && verifiedTreeCleanup && lateTreeCleanupIsAwaited;
+  })(),
+  'the tablet/task batch launches an owned browser-server process, uses it only for the isolated contexts, verifies its process tree on close, and closes it before returning to the primary browser'
 );
 check(
   'connection-tail-uses-process-isolation',

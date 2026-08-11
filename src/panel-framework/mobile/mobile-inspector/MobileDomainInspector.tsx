@@ -1,6 +1,5 @@
 import { ArrowLeft } from "lucide-react";
 import type { RefObject } from "react";
-import { formatRfc3339Local } from "../../timeContract";
 import { PANEL_RISK_CONTEXT, PANEL_ROUTES, type PanelNavigate, type PanelRiskContext, type PanelRouteId } from "../../routes/panelRoutes";
 import { diagnosticChannelLabel, diagnosticFailureLabel } from "../../sections/diagnosticFailureModel";
 import type { SectionModel } from "../../sections/sectionModels";
@@ -68,7 +67,7 @@ function DomainInspectorBody({
   if (row.evidence.kind === "log") return <LogInspector row={row} model={model} preview={preview} />;
   if (row.evidence.kind === "security") return <SecurityInspector row={row} model={model} />;
   if (row.evidence.kind === "dns") return <DnsInspector row={row} model={model} />;
-  if (row.evidence.kind === "resource") return <ResourceInspector row={row} relatedRows={relatedRows} onNavigate={onNavigate} currentRoute={currentRoute} returnRoute={returnRoute} evidenceAt={originEvidenceAt} />;
+  if (row.evidence.kind === "resource") return <ResourceInspector row={row} relatedRows={relatedRows} onNavigate={onNavigate} currentRoute={currentRoute} returnRoute={returnRoute} evidenceAt={originEvidenceAt} evidenceMode={model.evidenceMode} />;
   if (row.evidence.kind === "connection") return <ConnectionInspector row={row} model={model} onNavigate={onNavigate} evidenceAt={originEvidenceAt || model.observedAt} />;
   if (row.evidence.kind === "arp-alert") return <ArpAlertInspector row={row} />;
   if (row.evidence.kind === "diagnostic") return <DiagnosticInspector row={row} current={model.evidenceMode === "current"} />;
@@ -158,7 +157,6 @@ export function MobileDomainInspector({
         : row.trailing;
   const resolvedReturnRoute = returnRoute || route;
   const originRoute = returnRoute && returnRoute !== route ? returnRoute : null;
-  const originTime = originRoute ? formatRfc3339Local(originEvidenceAt) || "" : "";
   const supportsRelatedRail = row.evidence.kind === "interface" || row.evidence.kind === "route" ||
     row.evidence.kind === "terminal" || row.evidence.kind === "connection";
   return (
@@ -178,18 +176,14 @@ export function MobileDomainInspector({
         {onClose ? (
           <button type="button" onClick={onClose}><ArrowLeft aria-hidden="true" size={18} />返回{PANEL_ROUTES[resolvedReturnRoute].shortTitle}</button>
         ) : <span>{preview ? previewLabel || "证据预览" : "所选对象"}</span>}
-        {originRisk ? null : <span>{originRoute ? `来自${PANEL_ROUTES[originRoute].shortTitle}${originTime ? ` · ${originTime}` : ""}` : row.table}</span>}
+        {originRisk ? null : <span>{originRoute ? `来自${PANEL_ROUTES[originRoute].shortTitle}` : row.table}</span>}
       </header>
       {preview ? null : <EvidenceBoundary model={model} />}
       <section className="mdi-object-heading">
         <div style={{ minWidth: 0 }}>
           <small>{originRisk ? `来自运行概览 · ${PANEL_RISK_CONTEXT[originRisk][1]}` : headingContext}</small>
           <h2 id="mdw-detail-title" tabIndex={-1} ref={titleRef}>{heading}</h2>
-          {originRisk || headingSubtitle ? (
-            <p>{originRisk
-              ? [headingSubtitle, originTime].filter(Boolean).join(" · ")
-              : headingSubtitle}</p>
-          ) : null}
+          {originRisk || headingSubtitle ? <p>{headingSubtitle}</p> : null}
         </div>
         <b className={row.meta.attention ? "is-attention" : ""}>{stateLabel}</b>
       </section>

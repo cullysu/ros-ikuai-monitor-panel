@@ -1,13 +1,51 @@
 'use strict';
 
+/*
+ * Runtime acceptance for the isolated Optical Patrol Overview surface.
+ *
+ * This module is stringified into the browser by inspect-section-browser.js.
+ * Keep both exported functions self-contained: they cannot rely on Node APIs
+ * or outer-scope helpers once they run in the page.
+ */
+
+const MOBILE_OVERVIEW_REQUIRED_CHECKS = Object.freeze([
+  'mounted',
+  'scenario',
+  'evidenceTruth',
+  'risk',
+  'composition',
+  'scope',
+  'evidenceBoundary',
+  'decision',
+  'expandedClaim',
+  'claimControls',
+  'objectAction',
+  'currentDataBoundary',
+  'noFalseCurrentData',
+  'targets44',
+  'navigationClearance',
+  'noHorizontalOverflow',
+  'responsiveComposition',
+  'readableText',
+  'noLegacyPresentation',
+  'isolatedTree',
+  'interaction',
+  'keyboard',
+  'selectionHistory',
+  'navigationHistory',
+  'novelDetail',
+  'desktopDomAbsent',
+  'viewport',
+]);
+
 async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scaleScenario }) {
-  const normalizeText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
   const result = {
     nativeMobileInteractionOk: true,
     nativeMobileInteractionProbe: null,
     nativeMobileFocusKeyboardOk: true,
     nativeMobileFocusKeyboardProbe: null,
     nativeMobileObjectSelectionOk: true,
+    nativeMobileObjectSelectionProbe: null,
     nativeMobileObjectNavigationOk: true,
     nativeDetailSectionCount: 0,
     nativeDetailRawEvidenceCount: 0,
@@ -15,111 +53,113 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
     nativeDetailNoHomeReplay: true,
   };
   if (sectionName !== 'overview') return result;
-  const canonicalInteractionCell = scaleScenario === 'single' && window.innerWidth === 390 && window.innerHeight === 844;
-  const tabletInspectorCell = scaleScenario === 'interfaces-down' && window.innerWidth === 768 && window.innerHeight === 1024;
-  if (tabletInspectorCell) {
-    const tabletRoot = sectionRoot?.querySelector('[data-mobile-overview]');
-    const rows = Array.from(tabletRoot?.querySelectorAll('[data-mobile-incident-object]') || []);
-    const selectedRow = rows[1];
-    const selectedId = selectedRow?.getAttribute('data-mobile-incident-object') || '';
-    const initialUrl = `${location.pathname}${location.search}${location.hash}`;
-    selectedRow?.click();
-    await new Promise((resolve) => setTimeout(resolve, 40));
-    const inspector = tabletRoot?.querySelector('[data-mobile-incident-inspector]');
-    const selected = Boolean(
-      selectedId &&
-      selectedRow?.getAttribute('aria-current') === 'true' &&
-      inspector?.getAttribute('data-mobile-incident-inspector') === selectedId
-    );
-    const stayedOnOverview = `${location.pathname}${location.search}${location.hash}` === initialUrl &&
-      document.querySelector('[data-panel-app]')?.getAttribute('data-active-section') === 'overview';
-    result.nativeMobileInteractionOk = selected && stayedOnOverview;
-    result.nativeMobileObjectSelectionOk = result.nativeMobileInteractionOk;
-    result.nativeMobileInteractionProbe = {
-      exercised: true,
-      mode: 'tablet-master-detail',
-      selectedId,
-      selected,
-      stayedOnOverview,
-    };
+
+  const optical = sectionRoot?.querySelector?.('[data-optical-patrol-root]');
+  if (!optical) {
+    result.nativeMobileInteractionOk = false;
+    result.nativeMobileFocusKeyboardOk = false;
+    result.nativeMobileObjectSelectionOk = false;
+    result.nativeMobileObjectNavigationOk = false;
+    result.nativeMobileInteractionProbe = { exercised: false, reason: 'Optical Patrol root is absent' };
     return result;
   }
-  if (!canonicalInteractionCell) {
+
+  const canonical = scaleScenario === 'single' && window.innerWidth === 390 && window.innerHeight === 844;
+  if (!canonical) {
     result.nativeMobileInteractionProbe = {
       exercised: false,
-      reason: 'interaction is exercised at single 390x844, interfaces-down 768x1024, and by check:runtime-browser',
+      reason: 'stateful history is exercised at single 390x844; every viewport runs Optical Patrol semantic and geometry gates',
     };
     return result;
   }
-  const waitFor = (predicate, timeout = 1200) => {
-    const started = performance.now();
-    return new Promise((resolve) => {
-      const inspect = () => {
-        if (predicate()) return resolve(true);
-        if (performance.now() - started >= timeout) return resolve(Boolean(predicate()));
-        setTimeout(inspect, 20);
-      };
-      inspect();
-    });
-  };
 
-  const root = sectionRoot?.querySelector('[data-mobile-overview]');
-  const destination = root?.querySelector('[data-mobile-incident-route], [data-mobile-destination]');
-  if (!root || !destination) {
-    result.nativeMobileInteractionOk = false;
-    result.nativeMobileObjectNavigationOk = false;
-    result.nativeMobileInteractionProbe = { reason: 'no real overview destination is available' };
-    return result;
+  const waitFor = (predicate, timeout = 1600) => new Promise((resolve) => {
+    const started = performance.now();
+    const tick = () => {
+      if (predicate()) return resolve(true);
+      if (performance.now() - started >= timeout) return resolve(Boolean(predicate()));
+      setTimeout(tick, 20);
+    };
+    tick();
+  });
+  const selectedClaim = () => optical.querySelector('[data-optical-patrol-expanded-claim]');
+  const selectedId = () => selectedClaim()?.getAttribute('data-optical-patrol-expanded-claim') || '';
+  const selectedFocusId = () => selectedClaim()?.id || '';
+  const initialId = selectedId();
+  const claimControl = optical.querySelector('button[data-optical-patrol-claim-control]');
+  let nativeClaimControl = false;
+  let claimFocusRestored = false;
+  let selectionHistory = false;
+  let nextId = '';
+
+  if (initialId && claimControl instanceof HTMLButtonElement) {
+    nativeClaimControl = claimControl.type === 'button';
+    claimControl.focus({ preventScroll: true });
+    claimControl.click();
+    const opened = await waitFor(() => selectedId() && selectedId() !== initialId);
+    nextId = selectedId();
+    claimFocusRestored = opened && document.activeElement === selectedClaim() &&
+      selectedFocusId() === `optical-claim-${encodeURIComponent(nextId)}`;
+    history.back();
+    const backed = await waitFor(() => selectedId() === initialId && document.activeElement === selectedClaim());
+    history.forward();
+    const forwarded = await waitFor(() => selectedId() === nextId && document.activeElement === selectedClaim());
+    selectionHistory = backed && forwarded;
   }
 
-  const expectedRoute = destination.getAttribute('data-mobile-incident-route') ||
-    destination.getAttribute('data-mobile-destination') || '';
-  const expectedObjectId = destination.getAttribute('data-mobile-object-id') || '';
-  const expectedEvidenceAt = destination.getAttribute('data-mobile-evidence-at') || '';
-  const initialUrl = `${location.pathname}${location.search}${location.hash}`;
-  destination.focus({ preventScroll: true });
-  destination.click();
-  const opened = await waitFor(() => (
-    document.querySelector('[data-panel-app]')?.getAttribute('data-active-section') === expectedRoute &&
-    Boolean(document.querySelector('[data-mobile-domain-workspace]')) &&
-    (!expectedObjectId || document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-object-detail') === expectedObjectId) &&
-    (!expectedEvidenceAt || document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-origin-evidence-at') === expectedEvidenceAt)
-  ));
-  const openedInspectorText = normalizeText(document.querySelector('[data-mobile-object-detail]')?.textContent || '');
-  const openedObjectEvidence = !expectedObjectId || (
-    /活动判据/.test(openedInspectorText) &&
-    /路径/.test(openedInspectorText) &&
-    /关联接口/.test(openedInspectorText)
-  );
-  history.back();
-  const backed = await waitFor(() => (
-    `${location.pathname}${location.search}${location.hash}` === initialUrl &&
-    Boolean(document.querySelector('[data-mobile-overview]'))
-  ));
-  history.forward();
-  const forwarded = await waitFor(() => (
-    document.querySelector('[data-panel-app]')?.getAttribute('data-active-section') === expectedRoute &&
-    Boolean(document.querySelector('[data-mobile-domain-workspace]')) &&
-    (!expectedObjectId || document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-object-detail') === expectedObjectId) &&
-    (!expectedEvidenceAt || document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-origin-evidence-at') === expectedEvidenceAt)
-  ));
-  history.back();
-  const restored = await waitFor(() => (
-    `${location.pathname}${location.search}${location.hash}` === initialUrl &&
-    Boolean(document.querySelector('[data-mobile-overview]'))
-  ));
+  const action = optical.querySelector('[data-optical-patrol-action]');
+  const returnFocusId = selectedFocusId();
+  const overviewUrl = `${location.pathname}${location.search}${location.hash}`;
+  let openedRoute = false;
+  let backedRoute = false;
+  let forwardedRoute = false;
+  let restored = false;
+  if (action instanceof HTMLButtonElement || action instanceof HTMLAnchorElement) {
+    action.focus({ preventScroll: true });
+    action.click();
+    openedRoute = await waitFor(() => (
+      document.querySelector('[data-panel-app]')?.getAttribute('data-active-section') !== 'overview' &&
+      Boolean(document.querySelector('[data-mobile-domain-workspace], [data-panel-route-content]'))
+    ));
+    if (openedRoute) {
+      const details = document.querySelectorAll('[data-mobile-domain-workspace], [data-panel-route-content]');
+      result.nativeDetailSectionCount = details.length;
+      const detail = document.querySelector('[data-mobile-object-detail], [data-desktop-object-detail]');
+      const evidenceNodes = detail?.querySelectorAll?.(
+        'dl, table, [data-evidence-source], [data-raw-evidence], .mdi-facts > div, .ddi-block'
+      ) || [];
+      const typedSections = detail?.querySelectorAll?.('.mdi-section, .ddi-block') || [];
+      const detailKind = detail?.getAttribute?.('data-domain-inspector-kind') || '';
+      result.nativeDetailRawEvidenceCount = evidenceNodes.length;
+      result.nativeDetailHasNovelEvidence = Boolean(
+        detail && detailKind && typedSections.length >= 1 && evidenceNodes.length >= 2
+      );
+      result.nativeDetailNoHomeReplay = !detail?.querySelector?.('[data-optical-patrol-expanded-claim]');
+      history.back();
+      backedRoute = await waitFor(() => (
+        `${location.pathname}${location.search}${location.hash}` === overviewUrl &&
+        Boolean(document.querySelector('[data-optical-patrol-root]'))
+      ));
+      restored = await waitFor(() => !returnFocusId || document.activeElement?.id === returnFocusId);
+      history.forward();
+      forwardedRoute = await waitFor(() => document.querySelector('[data-panel-app]')?.getAttribute('data-active-section') !== 'overview');
+      history.back();
+      restored = restored && await waitFor(() => Boolean(document.querySelector('[data-optical-patrol-root]')));
+    }
+  }
 
-  result.nativeMobileInteractionOk = Boolean(expectedRoute && opened && openedObjectEvidence && backed && forwarded && restored);
-  result.nativeMobileObjectNavigationOk = result.nativeMobileInteractionOk;
+  result.nativeMobileFocusKeyboardOk = nativeClaimControl && claimFocusRestored;
+  result.nativeMobileObjectSelectionOk = claimFocusRestored && selectionHistory;
+  result.nativeMobileObjectNavigationOk = Boolean(action && openedRoute && backedRoute && forwardedRoute && restored);
+  result.nativeMobileInteractionOk = result.nativeMobileFocusKeyboardOk && result.nativeMobileObjectSelectionOk && result.nativeMobileObjectNavigationOk;
+  result.nativeMobileFocusKeyboardProbe = { nativeClaimControl, claimFocusRestored, selectionHistory };
+  result.nativeMobileObjectSelectionProbe = { selectedBefore: initialId, selectedAfter: nextId };
   result.nativeMobileInteractionProbe = {
     exercised: true,
-    expectedRoute,
-    expectedObjectId,
-    expectedEvidenceAt,
-    opened,
-    openedObjectEvidence,
-    backed,
-    forwarded,
+    action: Boolean(action),
+    opened: openedRoute,
+    backed: backedRoute,
+    forwarded: forwardedRoute,
     restored,
   };
   return result;
@@ -141,641 +181,340 @@ function inspectMobileNativeOverview({
   normalize,
   nativeMobileInteractionOk,
   nativeMobileInteractionProbe,
+  nativeMobileFocusKeyboardOk,
+  nativeMobileFocusKeyboardProbe,
+  nativeMobileObjectSelectionOk,
+  nativeMobileObjectSelectionProbe,
+  nativeMobileObjectNavigationOk,
+  nativeDetailSectionCount,
+  nativeDetailRawEvidenceCount,
+  nativeDetailHasNovelEvidence,
+  nativeDetailNoHomeReplay,
 }) {
   if (sectionName !== 'overview') return null;
-  const mobileRoot = sectionRoot?.querySelector('[data-mobile-overview]');
-  if (!mobileRoot) return null;
+  const optical = sectionRoot?.querySelector?.('[data-optical-patrol-root]');
+  if (!optical) return null;
 
   const expected = {
-    single: { mode: 'current', risk: 'none', facts: ['route', 'wan', 'collection'], title: '默认出口与采集已核实', priority: 0, traffic: true, resource: false, ledger: ['target', 'boundary'] },
-    fleet: { mode: 'current', risk: 'interfaces', facts: ['route', 'wan', 'collection'], title: '3 个出口依赖接口未运行', priority: 3, priorityLabel: '配置依赖接口', priorityTitle: '核对受影响配置依赖', traffic: false, resource: false, ledger: ['target', 'boundary'] },
-    'all-offline': { mode: 'current', risk: 'wan', facts: [], focus: 'outage', title: '全部', priority: 8, priorityLabel: '离线 WAN', priorityTitle: '逐条核对 WAN 链路', traffic: false, ledger: ['target', 'boundary'] },
-    'no-snapshot': { mode: 'unavailable', risk: 'evidence', facts: [], focus: 'coverage', title: '当前业务状态不可判断', priority: 2, priorityLabel: '恢复入口', priorityTitle: '恢复当前快照', traffic: false, ledger: ['failures', 'boundary'] },
-    'collection-down': { mode: 'historical', risk: 'collection', facts: [], focus: 'planes', title: '', priority: 2, priorityLabel: '断链通道', priorityTitle: '定位断开的采集通道', traffic: false, ledger: ['target', 'failures', 'boundary'] },
-    'resource-full': { mode: 'current', risk: 'resource', facts: ['resource-breaches', 'resource-trailing', 'resource-samples'], title: '资源策略已触发', priority: 1, priorityLabel: '资源对象', priorityTitle: '检查超限资源', traffic: false, resource: true, ledger: ['target', 'boundary'] },
-    'interfaces-down': { mode: 'current', risk: 'interfaces', facts: ['route', 'wan', 'collection'], title: '3 个出口依赖接口未运行', priority: 3, priorityLabel: '配置依赖接口', priorityTitle: '核对受影响配置依赖', traffic: false, resource: false, ledger: ['target', 'boundary'] },
+    single: { mode: 'current', risk: 'none', scene: 'single' },
+    fleet: { mode: 'current', risk: 'interfaces', scene: 'interfaces-down' },
+    'all-offline': { mode: 'current', risk: 'wan', scene: 'all-offline' },
+    'no-snapshot': { mode: 'unavailable', risk: 'evidence', scene: 'no-snapshot' },
+    'collection-down': { mode: 'historical', risk: 'collection', scene: 'collection-down' },
+    'resource-full': { mode: 'current', risk: 'resource', scene: 'resource-full' },
+    'interfaces-down': { mode: 'current', risk: 'interfaces', scene: 'interfaces-down' },
   }[scaleScenario] || null;
-
+  const runtimeMode = optical.getAttribute('data-optical-patrol-evidence-mode') || '';
+  const sceneKind = optical.getAttribute('data-optical-patrol-scene') || '';
+  const riskKind = optical.getAttribute('data-optical-patrol-risk') || '';
+  const forbidsCurrent = optical.getAttribute('data-optical-patrol-forbids-current') === 'true';
   const rect = (node) => {
     if (!node) return null;
     const value = node.getBoundingClientRect();
-    return {
-      top: Math.round(value.top),
-      right: Math.round(value.right),
-      bottom: Math.round(value.bottom),
-      left: Math.round(value.left),
-      width: Math.round(value.width),
-      height: Math.round(value.height),
-    };
+    return { top: value.top, right: value.right, bottom: value.bottom, left: value.left, width: value.width, height: value.height };
   };
-  const isVisible = (node) => {
+  const visible = (node) => {
     if (!node) return false;
     const box = node.getBoundingClientRect();
     const style = getComputedStyle(node);
     return box.width > 0 && box.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
   };
-
-  const verdict = mobileRoot.querySelector('[data-mobile-verdict]');
-  const verdictTitle = verdict?.querySelector('h1');
-  const evidenceLine = mobileRoot.querySelector('.mp-evidence-line');
-  const facts = Array.from(mobileRoot.querySelectorAll('[data-mobile-core-fact]'));
-  const factKeys = facts.map((node) => node.getAttribute('data-mobile-core-fact') || '');
-  const scenarioFocus = mobileRoot.querySelector('[data-mobile-scenario-focus]');
-  const scenarioFocusItems = Array.from(scenarioFocus?.querySelectorAll('[data-mobile-scenario-focus-item]') || []);
-  const scenarioFocusActions = Array.from(scenarioFocus?.querySelectorAll('[data-mobile-scenario-action]') || []);
-  const scenarioFocusEvidence = Array.from(scenarioFocus?.querySelectorAll('[data-mobile-scenario-evidence]') || []);
-  const incidentCount = mobileRoot.querySelector('[data-mobile-incident-count]');
-  const incidentLabel = mobileRoot.querySelector('[data-mobile-incident-center] .mp-section-kicker');
-  const incidentTitle = mobileRoot.querySelector('[data-mobile-incident-center] h2');
-  const incidentRows = Array.from(mobileRoot.querySelectorAll('[data-mobile-incident-object]'));
-  const nextDecision = mobileRoot.querySelector('[data-mobile-next-decision]');
-  const nextDecisionButton = nextDecision?.querySelector('button[data-mobile-destination]');
-  const traffic = mobileRoot.querySelector('[data-mobile-traffic-signal]');
-  const chart = mobileRoot.querySelector('.mp-chart');
-  const resourceSignal = mobileRoot.querySelector('[data-mobile-resource-signal]');
-  const resourceHistory = mobileRoot.querySelector('[data-mobile-resource-history]');
-  const resourceChart = mobileRoot.querySelector('[data-section-time-series]');
-  const ledger = mobileRoot.querySelector('[data-mobile-evidence-ledger]');
-  const ledgerRows = Array.from(ledger?.querySelectorAll('dl > div') || []);
-  const ledgerKeys = ledgerRows.map((node) => node.getAttribute('data-mobile-evidence-row') || '');
-  const patrolActions = mobileRoot.querySelector('.mp-actions');
-  const patrolActionButtons = Array.from(mobileRoot.querySelectorAll('.mp-actions button[id], [data-mobile-incident-follow-up-context] button[id]'));
-  const workspacePrimary = mobileRoot.querySelector('.mp-workspace-primary');
-  const workspaceContext = mobileRoot.querySelector('.mp-workspace-context');
-  const workspaceBody = mobileRoot.querySelector('.mp-workspace-body');
-  const tabletSteady = mobileRoot.querySelector('.mp-tablet-steady');
-  const tabletRouteColumn = mobileRoot.querySelector('.mp-tablet-route-column');
-  const tabletSteadySupport = mobileRoot.querySelector('.mp-tablet-steady-support');
-  const focusDossier = mobileRoot.querySelector('.mp-route-dossier[data-overview-task-focus="active-object"]');
-  const steadyObject = nextDecision || focusDossier;
-  const focusSignal = steadyObject?.querySelector('.mp-focus-signal');
-  const focusSignalMetrics = Array.from(focusSignal?.querySelectorAll('.mp-focus-signal-metric') || []);
-  const focusIdentityTitle = steadyObject?.querySelector('.mp-focus-copy > b');
-  const focusIdentityNote = steadyObject?.querySelector('.mp-focus-copy > em');
-  const incidentCenter = mobileRoot.querySelector('[data-mobile-incident-center]');
-  const incidentInspector = mobileRoot.querySelector('[data-mobile-incident-inspector]');
-  const tabletMasterDetail = mobileRoot.querySelector('.mp-tablet-master-detail');
-  const tabletSupport = mobileRoot.querySelector('.mp-tablet-support');
-  const taskNavigation = document.querySelector('.panel-task-navigation');
-  const taskButtons = Array.from(taskNavigation?.querySelectorAll('button') || []);
-  const mobileText = normalize(mobileRoot.textContent || '');
-  const pageText = normalize(document.body.textContent || '');
-  const mobileRect = rect(mobileRoot);
-  const sectionRect = rect(sectionRoot);
-  const verdictRect = rect(verdict);
-  const factsRect = rect(mobileRoot.querySelector('[data-mobile-core-facts]'));
-  const scenarioFocusRect = rect(scenarioFocus);
-  const supportingDecisionRect = scenarioFocusRect || factsRect;
-  const nextDecisionRect = rect(nextDecision);
-  const focusDossierRect = rect(focusDossier);
-  const focusSignalRect = rect(focusSignal);
-  const firstIncidentRect = rect(incidentRows[0]);
-  const firstIncidentReason = incidentRows[0]?.querySelector('.mp-incident-copy p');
-  const firstIncidentReasonRect = rect(firstIncidentReason);
-  const firstIncidentChevron = incidentRows[0]?.querySelector('.mp-window svg');
-  const decisionRect = firstIncidentRect || supportingDecisionRect;
-  const trafficRect = rect(traffic);
-  const resourceSignalRect = rect(resourceSignal);
-  const primaryAction = incidentRows[0] ||
-    scenarioFocus ||
-    (expected?.resource ? resourceSignal : null) ||
-    traffic ||
-    mobileRoot.querySelector('.mp-load');
-  const primaryRect = rect(primaryAction);
-  const navRect = rect(taskNavigation);
-
-  const visibleText = Array.from(mobileRoot.querySelectorAll('h1, h2, p, b, small, em, time, button, summary, dt, dd, span'))
-    .filter((node) => normalize(node.textContent || '') && isVisible(node));
-  const smallText = visibleText
-    .filter((node) => Number.parseFloat(getComputedStyle(node).fontSize || '0') < 12)
-    .map((node) => ({ text: normalize(node.textContent || '').slice(0, 40), size: getComputedStyle(node).fontSize }));
-  const smallTargets = Array.from(mobileRoot.querySelectorAll('button, summary'))
-    .filter(isVisible)
-    .filter((node) => node.getBoundingClientRect().height < 44)
-    .map((node) => ({
-      text: normalize(node.textContent || '').slice(0, 40),
-      height: Math.round(node.getBoundingClientRect().height),
-      tag: node.tagName.toLowerCase(),
-      className: typeof node.className === 'string' ? node.className : '',
-      ancestors: Array.from({ length: 5 }, (_, index) => {
-        let current = node;
-        for (let step = 0; step <= index && current; step += 1) current = current.parentElement;
-        return current ? `${current.tagName.toLowerCase()}.${typeof current.className === 'string' ? current.className : ''}` : '';
-      }).filter(Boolean),
-    }));
-  const ariaControlsValid = Array.from(mobileRoot.querySelectorAll('[aria-controls]')).every((node) => {
-    const id = node.getAttribute('aria-controls');
-    return Boolean(id && document.getElementById(id));
-  });
-
-  const factPairs = facts.map((node) => normalize(`${node.querySelector('small')?.textContent || ''}::${node.querySelector('b')?.textContent || ''}`));
-  const objectPairs = incidentRows.map((node) => normalize(`${node.querySelector('small')?.textContent || ''}::${node.querySelector('em')?.textContent || ''}`));
-  const repeatedPairs = objectPairs.filter((pair) => factPairs.includes(pair));
-  const priorityTotal = Number(incidentCount?.textContent || 0);
-  const tabletCapability = window.innerWidth >= 768 && window.innerWidth < 1200 && window.innerHeight >= 700;
-  const expectedPriorityVisible = tabletCapability ? expected?.priority || 0 : Math.min(3, expected?.priority || 0);
-  const priorityRoutesValid = incidentRows.every((node) => Boolean(node.getAttribute('data-mobile-incident-route')));
-  const priorityLabelsValid = incidentRows.every((node) => Boolean(node.getAttribute('aria-label')));
-  const clippedIncidentIdentities = incidentRows
-    .map((node) => ({
-      objectId: node.getAttribute('data-mobile-incident-object') || '',
-      identity: node.querySelector('.mp-incident-copy b'),
-    }))
-    .filter(({ identity }) => Boolean(
-      identity && isVisible(identity) && (
-        identity.scrollWidth > identity.clientWidth + 1 ||
-        identity.scrollHeight > identity.clientHeight + 1
-      )
-    ))
-    .map(({ objectId, identity }) => ({
-      objectId,
-      text: normalize(identity?.textContent || ''),
-      client: [identity?.clientWidth || 0, identity?.clientHeight || 0],
-      scroll: [identity?.scrollWidth || 0, identity?.scrollHeight || 0],
-    }));
-  const currentRateText = /\b\d+(?:\.\d+)?\s*(?:[KMG]?bps)\b/i.test(mobileText);
-  const shouldShowNextDecision = scaleScenario === 'single' && expected?.mode === 'current' && expected?.risk === 'none';
-  const canonicalNextDecisionCell = window.innerWidth === 390 && window.innerHeight === 844;
-  const nextDecisionViewportBottom = navRect && navRect.width >= window.innerWidth * 0.7 ? navRect.top : window.innerHeight;
-  const nextDecisionText = normalize(nextDecision?.textContent || '');
-  const nextDecisionClippedText = Array.from(nextDecision?.querySelectorAll('b, em, time') || [])
-    .filter((node) => node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1)
-    .map((node) => normalize(node.textContent || ''));
-  const nextDecisionOk = shouldShowNextDecision
-    ? tabletSteady
-      ? Boolean(
-        !nextDecision &&
-        focusDossier?.getAttribute('data-overview-task-focus-object') &&
-        focusDossier.querySelector('time[datetime]')?.getAttribute('datetime') &&
-        /当前出口/.test(normalize(focusDossier.textContent || '')) &&
-        /活动默认路由/.test(normalize(focusDossier.textContent || '')) &&
-        /当前承载/.test(normalize(focusDossier.textContent || ''))
-      )
-      : Boolean(
-      nextDecision &&
-      nextDecisionButton &&
-      nextDecision.getAttribute('data-mobile-next-decision') &&
-      nextDecisionButton.getAttribute('data-mobile-destination') === 'routes' &&
-      nextDecisionButton.getAttribute('data-mobile-object-id') &&
-      nextDecisionButton.getAttribute('data-mobile-evidence-at') &&
-      /当前核对对象/.test(nextDecisionText) &&
-      /活动默认路由/.test(nextDecisionText) &&
-      /当前承载/.test(nextDecisionText) &&
-      nextDecisionClippedText.length === 0 &&
-      nextDecisionRect &&
-      decisionRect &&
-      (!verdictRect || nextDecisionRect.top >= verdictRect.bottom - 2) &&
-      (!factsRect || nextDecisionRect.bottom <= factsRect.top + 2) &&
-      (!trafficRect || nextDecisionRect.bottom <= trafficRect.top + 2) &&
-      (canonicalNextDecisionCell ? nextDecisionRect.top <= 320 : nextDecisionRect.bottom <= nextDecisionViewportBottom)
-      )
-    : !nextDecision;
-  const fleetPatrol = Boolean(
-    scaleScenario === 'fleet' && expected?.mode === 'current' && expected?.risk === 'interfaces'
+  const readable = (node) => Boolean(node && visible(node) && normalize(node.getAttribute('aria-label') || node.textContent || ''));
+  const precedes = (left, right) => Boolean(left && right && (left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING));
+  const text = normalize(optical.textContent || '');
+  const evidenceBoundary = optical.querySelector('[data-optical-patrol-evidence-boundary]');
+  const decision = optical.querySelector('[data-optical-patrol-decision]');
+  const decisionTitle = optical.querySelector('[data-optical-patrol-route-title]');
+  const expandedClaim = optical.querySelector('[data-optical-patrol-expanded-claim]');
+  const claimControls = Array.from(optical.querySelectorAll('[data-optical-patrol-claim-control]'));
+  const action = optical.querySelector('[data-optical-patrol-action]');
+  const followups = optical.querySelector('.op__followups');
+  const evidenceDeck = optical.querySelector('[data-optical-patrol-evidence-deck]');
+  const runtimeManaged = optical.getAttribute('data-optical-patrol-runtime-managed') === 'true';
+  const runtimeScope = app?.querySelector?.('[data-panel-runtime-toolbar="mobile"]');
+  const standaloneScope = optical.querySelector(':scope > [data-optical-patrol-chrome]');
+  const scopeOwner = runtimeManaged ? runtimeScope : standaloneScope;
+  const scopeIdentity = runtimeManaged
+    ? runtimeScope?.querySelector?.('.panel-runtime-device b')
+    : standaloneScope?.querySelector?.('.op__device-copy strong');
+  const scopeReadonly = runtimeManaged
+    ? runtimeScope?.querySelector?.('[aria-label="只读监控模式"]')
+    : standaloneScope?.querySelector?.('.op__readonly');
+  const scopeContractOk = Boolean(
+    readable(scopeOwner) && readable(scopeIdentity) && readable(scopeReadonly) &&
+    normalize(scopeReadonly?.textContent || '') === '只读'
   );
-  const compactIncidentViewport = window.innerWidth >= 600 && window.innerWidth < 772 && window.innerHeight < 700;
-  const shouldShowPatrolActions = Boolean(
-    fleetPatrol ||
-    tabletCapability ||
-    expected?.risk !== 'none' ||
-    expected?.risk === 'evidence' ||
-    expected?.risk === 'collection' ||
-    (compactIncidentViewport && priorityTotal > 0)
-  );
-  const expectedPatrolActionCount = shouldShowPatrolActions ? 3 : 0;
-  const patrolActionRoutes = patrolActionButtons.map((button) => button.id);
-  const patrolActionsOk = shouldShowPatrolActions
-    ? Boolean(patrolActions && patrolActionButtons.length === expectedPatrolActionCount && patrolActionRoutes.every(Boolean))
-    : !patrolActions && patrolActionButtons.length === 0;
-  const tabletWorkspaceOk = window.innerWidth < 768 || window.innerHeight < 700 || (() => {
-    const largeTextMode = mobileRoot.classList.contains('is-large-text');
-    if (priorityTotal === 0) {
-      if (!tabletSteady || !tabletRouteColumn || !traffic || !tabletSteadySupport) return false;
-      const steadyBounds = tabletSteady.getBoundingClientRect();
-      const routeBounds = tabletRouteColumn.getBoundingClientRect();
-      const trafficBounds = traffic.getBoundingClientRect();
-      const supportBounds = tabletSteadySupport.getBoundingClientRect();
-      const supportChildren = Array.from(tabletSteadySupport.children)
-        .map((node) => node.getBoundingClientRect())
-        .filter((bounds) => bounds.width > 0 && bounds.height > 0);
-      const supportVisualWidth = supportBounds.width > 0
-        ? supportBounds.width
-        : supportChildren.length
-          ? Math.max(...supportChildren.map((bounds) => bounds.right)) - Math.min(...supportChildren.map((bounds) => bounds.left))
-          : 0;
-      return steadyBounds.width >= 620 && routeBounds.width >= 240 && trafficBounds.width >= 320 &&
-        Math.abs(routeBounds.top - trafficBounds.top) <= 2 && supportVisualWidth >= steadyBounds.width - 2;
+  const interactive = Array.from(optical.querySelectorAll('button, a[href], summary, input, select, textarea')).filter(visible);
+  const taskNavigation = optical.querySelector('[data-optical-patrol-task-navigation]');
+  const operationalScopes = [
+    ['chrome', scopeOwner],
+    ['evidence-boundary', evidenceBoundary],
+    ['decision', decision],
+    ['object-action', action],
+    ...claimControls.map((control, index) => [`claim-control-${index + 1}`, control]),
+    ['evidence-deck', evidenceDeck],
+    ['expanded-claim', expandedClaim],
+    ['task-navigation', taskNavigation],
+  ].filter((entry) => entry[1] instanceof HTMLElement && visible(entry[1]));
+  const seenTextNodes = new Set();
+  const unreadableText = [];
+  const clippedOperationalText = [];
+  const auditedTextScopes = [];
+  const isVisuallyHidden = (owner, boundary) => {
+    for (let current = owner; current instanceof HTMLElement; current = current.parentElement) {
+      const style = getComputedStyle(current);
+      const box = current.getBoundingClientRect();
+      const clipped = (style.clipPath && style.clipPath !== 'none') ||
+        (style.clip && style.clip !== 'auto');
+      const standardScreenReaderGeometry = /^(absolute|fixed)$/.test(style.position) &&
+        box.width <= 2 && box.height <= 2 && clipped &&
+        /(hidden|clip)/.test(style.overflowX) && /(hidden|clip)/.test(style.overflowY);
+      if (current.matches('.op__sr-only, [data-visually-hidden="true"], [hidden]') ||
+          style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' ||
+          style.contentVisibility === 'hidden' || Number.parseFloat(style.opacity || '1') === 0 ||
+          standardScreenReaderGeometry) return true;
+      if (current === boundary) break;
     }
-    if (!workspaceBody || !tabletMasterDetail || !tabletSupport || !incidentCenter || !ledger || !patrolActions) return false;
-    const bodyBounds = workspaceBody.getBoundingClientRect();
-    const splitCapable = bodyBounds.width >= 640;
-    const objectsBounds = incidentCenter.getBoundingClientRect();
-    const inspectorBounds = incidentInspector?.getBoundingClientRect() || null;
-    const masterDetailBounds = tabletMasterDetail.getBoundingClientRect();
-    const supportBounds = tabletSupport.getBoundingClientRect();
-    const ledgerBounds = ledger.getBoundingClientRect();
-    const actionsBounds = patrolActions.getBoundingClientRect();
-    const masterDetail = !inspectorBounds
-      ? objectsBounds.width >= 400
-      : largeTextMode || !splitCapable
-        ? objectsBounds.width >= 400 && inspectorBounds.width >= 400 && inspectorBounds.top >= objectsBounds.bottom - 2
-        : objectsBounds.width >= 240 && inspectorBounds.width >= 400 && Math.abs(objectsBounds.top - inspectorBounds.top) <= 2;
-    const supportRegions = masterDetailBounds.width >= bodyBounds.width - 2 && supportBounds.width >= bodyBounds.width - 2 &&
-      ledgerBounds.width >= supportBounds.width - 2 && actionsBounds.width >= supportBounds.width - 2;
-    return masterDetail && supportRegions;
-  })();
-  const shortLandscape = window.innerWidth >= 600 && window.innerWidth < 1200 && window.innerHeight < 700;
-  const splitGridTracks = (value) => {
-    const tracks = [];
-    let current = '';
-    let depth = 0;
-    for (const character of String(value || '')) {
-      if (character === '(') depth += 1;
-      if (character === ')') depth = Math.max(0, depth - 1);
-      if (/\s/.test(character) && depth === 0) {
-        if (current.trim()) tracks.push(current.trim());
-        current = '';
-      } else {
-        current += character;
+    return false;
+  };
+  const containsFragment = (boundary, fragment, axis) => {
+    if (axis === 'x') return fragment.left >= boundary.left - 1 && fragment.right <= boundary.right + 1;
+    return fragment.top >= boundary.top - 1 && fragment.bottom <= boundary.bottom + 1;
+  };
+  const clientRect = (node) => {
+    const box = node.getBoundingClientRect();
+    const left = box.left + node.clientLeft;
+    const top = box.top + node.clientTop;
+    return { left, top, right: left + node.clientWidth, bottom: top + node.clientHeight };
+  };
+  for (const [scopeId, scope] of operationalScopes) {
+    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+    let textNodes = 0;
+    let fragments = 0;
+    for (let textNode = walker.nextNode(); textNode; textNode = walker.nextNode()) {
+      const value = normalize(textNode.nodeValue || '');
+      if (!value || seenTextNodes.has(textNode)) continue;
+      seenTextNodes.add(textNode);
+      const owner = textNode.parentElement;
+      if (!(owner instanceof HTMLElement) || isVisuallyHidden(owner, scope)) continue;
+      textNodes += 1;
+      const style = getComputedStyle(owner);
+      const fontSize = Number.parseFloat(style.fontSize || '0');
+      if (!Number.isFinite(fontSize) || fontSize < 12) {
+        unreadableText.push({ scope: scopeId, tag: owner.tagName.toLowerCase(), text: value.slice(0, 100), fontSize });
+      }
+      const range = document.createRange();
+      range.selectNodeContents(textNode);
+      const renderedFragments = Array.from(range.getClientRects()).filter((fragment) => fragment.width > 0.5 && fragment.height > 0.5);
+      fragments += renderedFragments.length;
+      if (!renderedFragments.length) {
+        clippedOperationalText.push({ scope: scopeId, tag: owner.tagName.toLowerCase(), text: value.slice(0, 100), reason: 'no-rendered-fragment' });
+        continue;
+      }
+      for (const fragment of renderedFragments) {
+        let fixedToViewport = false;
+        let failure = null;
+        for (let current = owner; current instanceof HTMLElement && current !== optical.parentElement; current = current.parentElement) {
+          const currentStyle = getComputedStyle(current);
+          const boundary = clientRect(current);
+          if (/(hidden|clip)/.test(currentStyle.overflowX) && !containsFragment(boundary, fragment, 'x')) {
+            failure = { axis: 'x', boundary: normalize(current.getAttribute('class') || current.tagName), boundaryRect: boundary };
+            break;
+          }
+          if (/(hidden|clip)/.test(currentStyle.overflowY) && !containsFragment(boundary, fragment, 'y')) {
+            failure = { axis: 'y', boundary: normalize(current.getAttribute('class') || current.tagName), boundaryRect: boundary };
+            break;
+          }
+          if (currentStyle.position === 'fixed') {
+            fixedToViewport = true;
+            break;
+          }
+        }
+        const viewportX = fragment.left >= -1 && fragment.right <= window.innerWidth + 1;
+        const viewportY = fragment.top >= -1 && fragment.bottom <= window.innerHeight + 1;
+        if (!failure && (!viewportX || (fixedToViewport && !viewportY))) {
+          failure = { axis: !viewportX ? 'viewport-x' : 'viewport-y', boundary: 'viewport' };
+        }
+        if (failure) {
+          clippedOperationalText.push({
+            scope: scopeId,
+            tag: owner.tagName.toLowerCase(),
+            text: value.slice(0, 100),
+            fontSize,
+            fragment: { left: fragment.left, top: fragment.top, right: fragment.right, bottom: fragment.bottom },
+            ...failure,
+          });
+          break;
+        }
       }
     }
-    if (current.trim()) tracks.push(current.trim());
-    return tracks;
-  };
-  const workspaceColumns = workspaceBody
-    ? splitGridTracks(getComputedStyle(workspaceBody).gridTemplateColumns)
-    : [];
-  const shortLandscapePatrolOk = !shortLandscape || Boolean(
-    !tabletMasterDetail &&
-    !incidentInspector &&
-    (!workspaceBody || workspaceColumns.length <= 1)
+    auditedTextScopes.push({ scope: scopeId, textNodes, fragments });
+  }
+  const undersizedTargets = interactive.map((node) => ({
+    label: normalize(node.getAttribute('aria-label') || node.textContent || node.tagName),
+    width: node.getBoundingClientRect().width,
+    height: node.getBoundingClientRect().height,
+  })).filter((target) => target.width < 44 || target.height < 44);
+  const selectedId = expandedClaim?.getAttribute('data-optical-patrol-expanded-claim') || '';
+  const selectedHeadingId = expandedClaim?.getAttribute('aria-labelledby') || '';
+  const selectedHeading = selectedHeadingId ? document.getElementById(selectedHeadingId) : null;
+  const selectedFocusContract = Boolean(
+    selectedId && expandedClaim?.id === `optical-claim-${encodeURIComponent(selectedId)}` &&
+    expandedClaim.getAttribute('tabindex') === '-1' && selectedHeading && expandedClaim.contains(selectedHeading)
   );
-  const expectedFocusCounts = expected?.focus === 'coverage'
-    ? { action: 2, evidence: 1 }
-    : expected?.focus === 'planes' || expected?.focus === 'outage'
-      ? { action: 2, evidence: 2 }
-      : { action: 0, evidence: 0 };
-  const scenarioFocusSemanticsOk = expected?.focus
-    ? scenarioFocusItems.length === scenarioFocusActions.length + scenarioFocusEvidence.length &&
-      scenarioFocusActions.length === expectedFocusCounts.action &&
-      scenarioFocusActions.length <= 2 &&
-      scenarioFocusActions.every((node) => node.tagName === 'BUTTON' && Boolean(node.getAttribute('data-mobile-destination'))) &&
-      scenarioFocusEvidence.length === expectedFocusCounts.evidence &&
-      scenarioFocusEvidence.every((node) => (
-        node.tagName !== 'BUTTON' &&
-        !node.hasAttribute('data-mobile-destination') &&
-        getComputedStyle(node.querySelector('em')).whiteSpace !== 'nowrap'
-      ))
-    : !scenarioFocus && scenarioFocusActions.length === 0 && scenarioFocusEvidence.length === 0;
-
-  const chartStatus = traffic?.querySelector('.mp-traffic-body')?.classList.contains('is-ready') ? 'ready' : traffic ? 'accumulating' : '';
-  const chartSvg = chart?.querySelector('svg');
-  const chartTruthOk = !traffic || chartStatus === 'accumulating' || Boolean(
-    chartSvg &&
-    chartSvg.getAttribute('preserveAspectRatio') !== 'none' &&
-    chartSvg.querySelector('title') &&
-    chartSvg.querySelector('desc') &&
-    chart.querySelector('.mp-chart-time') &&
-    /下载/.test(mobileText) && /上传/.test(mobileText) && /峰值/.test(mobileText)
-  );
-  const chartModeOk = expected?.traffic === true ? Boolean(traffic && chartTruthOk) : !traffic && !currentRateText;
-  const resourceStatus = resourceSignal?.getAttribute('data-mobile-resource-signal') || '';
-  const resourceSvg = resourceChart?.querySelector('svg');
-  const resourceMeters = Array.from(resourceSignal?.querySelectorAll('[role="meter"]') || []);
-  const firstIncidentText = normalize(incidentRows[0]?.textContent || '');
-  const resourceMeterLabels = resourceMeters.map((meter) => normalize(meter.closest('div')?.querySelector('b')?.textContent || ''));
-  const resourceTruthOk = !resourceSignal || Boolean(
-    resourceMeters.length >= 2 &&
-    resourceMeterLabels.every((label, index) => label && resourceMeterLabels.indexOf(label) === index && !firstIncidentText.includes(label)) &&
-    resourceMeters.every((meter) => (
-      Number(meter.getAttribute('aria-valuenow')) >= 0 &&
-      Number(meter.getAttribute('aria-valuenow')) <= 100 &&
-      /阈值/.test(meter.getAttribute('aria-label') || '')
-    )) &&
-    Boolean(resourceHistory) &&
-    (!resourceSvg || (
-      resourceSvg.getAttribute('preserveAspectRatio') !== 'none' &&
-      resourceSvg.querySelector('title') &&
-      resourceSvg.querySelector('desc') &&
-      resourceSvg.querySelector('.section-series-threshold') &&
-      resourceChart.querySelector('.section-timeseries-axis')
-    ))
-  );
-  const resourceModeOk = expected?.resource === true
-    ? Boolean(resourceSignal && resourceTruthOk)
-    : !resourceSignal;
-  const riskEvidenceOrderOk = Boolean(expected && (
-    expected.risk === 'interfaces'
-      ? firstIncidentRect && (!trafficRect || firstIncidentRect.top < trafficRect.top)
-      : expected.risk === 'resource'
-        ? resourceSignalRect && firstIncidentRect && firstIncidentRect.top < resourceSignalRect.top
-        : true
+  const nativeClaimControls = claimControls.every((control) => (
+    control instanceof HTMLButtonElement && control.type === 'button' &&
+    !control.hasAttribute('aria-pressed') && Boolean(normalize(control.getAttribute('aria-label') || control.textContent || ''))
   ));
-  const visualContractViewport = (
-    (window.innerWidth === 390 && window.innerHeight === 844) ||
-    (window.innerWidth === 768 && window.innerHeight === 1024) ||
-    (window.innerWidth === 844 && window.innerHeight === 390)
+  const semanticModeCopy = runtimeMode === 'current'
+    ? /当前|本次|已观测/.test(text)
+    : runtimeMode === 'historical'
+      ? /历史|上次|不代表当前|当前值已撤回/.test(text)
+      : /不可用|无法|不显示|当前值已撤回/.test(text);
+  const currentDataBoundary = runtimeMode === 'current' ? !forbidsCurrent : forbidsCurrent;
+  const noFalseCurrentData = !forbidsCurrent || !optical.querySelector(
+    '[data-optical-patrol-traffic-geometry], [data-optical-patrol-resource-geometry]'
   );
-  const steadyObjectRect = nextDecisionRect || focusDossierRect;
-  const steadySignalBalanceOk = !visualContractViewport || scaleScenario !== 'single' || Boolean(
-    steadyObjectRect &&
-    trafficRect &&
-    trafficRect.height <= 230 &&
-    (
-      window.innerWidth === 768
-        ? steadyObjectRect.top <= trafficRect.top + 2
-        : steadyObjectRect.bottom <= trafficRect.top + 2
-    )
+  const opticalRect = rect(optical);
+  const summary = optical.querySelector('.op__summary');
+  const summaryRect = rect(summary);
+  const expandedRect = rect(expandedClaim);
+  const followupsRect = visible(followups) ? rect(followups) : null;
+  const evidenceDeckRect = visible(evidenceDeck) ? rect(evidenceDeck) : null;
+  const tablet = window.innerWidth >= 768 && window.innerWidth < 1200;
+  const phone = window.innerWidth < 768;
+  const phoneLayout = !phone || Boolean(
+    precedes(summary, expandedClaim) && (!followups || precedes(expandedClaim, followups)) &&
+    (!evidenceDeck || precedes(expandedClaim, evidenceDeck))
   );
-  const scenarioObjectStageOk = !visualContractViewport || !expected?.focus || Boolean(
-    firstIncidentRect &&
-    scenarioFocusRect &&
-    firstIncidentRect.top < scenarioFocusRect.top &&
-    firstIncidentRect.bottom <= window.innerHeight
+  const tabletLayout = !tablet || Boolean(
+    summaryRect && expandedRect && summaryRect.left < expandedRect.left && summaryRect.right <= expandedRect.left + 1 &&
+    (!followupsRect || followupsRect.right <= expandedRect.left + 1) &&
+    (!evidenceDeckRect || evidenceDeckRect.top >= Math.min(expandedRect.bottom, followupsRect?.bottom ?? expandedRect.bottom) - 1)
   );
-  const bottomNavigation = Boolean(navRect && navRect.width >= window.innerWidth * 0.7);
-  const firstViewportBottom = bottomNavigation ? navRect.top : window.innerHeight;
-  const narrowCurrentIncident = window.innerWidth < 360 && expected?.mode === 'current' && expected.priority > 0 && expected.facts.length > 0;
-  const narrowIncidentObjectFirstOk = !narrowCurrentIncident || Boolean(
-    firstIncidentRect &&
-    factsRect &&
-    firstIncidentReason &&
-    firstIncidentReasonRect &&
-    firstIncidentChevron &&
-    firstIncidentRect.top < factsRect.top &&
-    firstIncidentRect.bottom <= firstViewportBottom &&
-    firstIncidentReasonRect.bottom <= firstViewportBottom &&
-    firstIncidentReason.scrollWidth <= firstIncidentReason.clientWidth + 1 &&
-    firstIncidentReason.scrollHeight <= firstIncidentReason.clientHeight + 1
+  const noHorizontalOverflow = overflowX <= 1 && Boolean(opticalRect && (
+    opticalRect.left >= -1 && opticalRect.right <= window.innerWidth + 1 && optical.scrollWidth <= optical.clientWidth + 1
+  ));
+  const navigation = document.querySelector('.panel-task-navigation');
+  const navigationRect = visible(navigation) ? rect(navigation) : null;
+  const overlapsNavigation = (node) => {
+    const target = rect(node);
+    return Boolean(target && navigationRect && target.left < navigationRect.right && target.right > navigationRect.left &&
+      target.top < navigationRect.bottom && target.bottom > navigationRect.top);
+  };
+  const horizontallyOverlapsNavigation = (target) => Boolean(
+    target && navigationRect && target.left < navigationRect.right && target.right > navigationRect.left
   );
-
-  const focusSignalLabels = focusSignalMetrics.map((node) => normalize(node.querySelector('small')?.textContent || ''));
-  const focusSignalValues = focusSignalMetrics.map((node) => normalize(node.querySelector('b')?.textContent || ''));
-  const focusSignalValuesTruthful = focusSignalValues.length === 2 && focusSignalValues.every((value) => /^(?:0|\d+(?:\.\d+)?)\s*(?:bps|Kbps|Mbps|Gbps)$/.test(value));
-  const focusSignalReadingsSingleLine = focusSignalMetrics.length === 2 && focusSignalMetrics.every((node) => {
-    const reading = node.querySelector('b');
-    if (!reading) return false;
-    const readingStyle = getComputedStyle(reading);
-    const lineHeight = Number.parseFloat(readingStyle.lineHeight) || Number.parseFloat(readingStyle.fontSize) * 1.2;
-    const readingRect = reading.getBoundingClientRect();
-    return reading.scrollWidth <= reading.clientWidth + 1 && readingRect.height <= lineHeight * 1.35;
+  const obscuredTargets = navigationRect ? interactive.filter((node) => {
+    return overlapsNavigation(node);
+  }) : [];
+  const obscuredNonFollowups = obscuredTargets.filter((node) => !node.hasAttribute('data-optical-patrol-claim-control'));
+  const maxOpticalScroll = Math.max(0, optical.scrollHeight - optical.clientHeight);
+  const documentScroller = document.scrollingElement;
+  const maxDocumentScroll = Math.max(0, (documentScroller?.scrollHeight || 0) - window.innerHeight);
+  const maxAppScroll = Math.max(0, (app?.scrollHeight || 0) - (app?.clientHeight || 0));
+  const maxReachableScroll = Math.max(maxOpticalScroll, maxDocumentScroll, maxAppScroll);
+  const followupReachability = claimControls.filter(visible).map((node) => {
+    const target = rect(node);
+    if (!target || !navigationRect || !opticalRect) return { node, reachable: Boolean(target) };
+    if (!horizontallyOverlapsNavigation(target)) {
+      return { node, reachable: true, requiredScroll: 0, maxScroll: maxReachableScroll, projectedTop: target.top };
+    }
+    const requiredScroll = Math.max(0, target.bottom - navigationRect.top + 1);
+    const projectedTop = target.top - requiredScroll;
+    return {
+      node,
+      reachable: requiredScroll <= maxReachableScroll + 1 && projectedTop >= opticalRect.top - 1,
+      requiredScroll,
+      maxScroll: maxReachableScroll,
+      projectedTop,
+    };
   });
-  const focusIdentityTitleSize = Number.parseFloat(focusIdentityTitle ? getComputedStyle(focusIdentityTitle).fontSize : '0');
-  const trafficTitle = traffic?.querySelector('h2');
-  const trafficTitleSize = Number.parseFloat(trafficTitle ? getComputedStyle(trafficTitle).fontSize : '0');
-  const focusIdentityClipped = Boolean(
-    focusIdentityNote && focusIdentityNote.scrollWidth > focusIdentityNote.clientWidth + 1
+  const navigationClearanceOk = obscuredNonFollowups.length === 0 && followupReachability.every((item) => item.reachable);
+  const selectionHistoryOk = typeof nativeMobileObjectSelectionOk === 'boolean'
+    ? nativeMobileObjectSelectionOk
+    : typeof nativeMobileFocusKeyboardProbe?.selectionHistory === 'boolean'
+      ? nativeMobileFocusKeyboardProbe.selectionHistory
+      : Boolean(nativeMobileFocusKeyboardOk);
+  const actionOk = Boolean(
+    action && readable(action) &&
+    (action instanceof HTMLButtonElement || action instanceof HTMLAnchorElement)
   );
-  const tabletRouteRect = rect(tabletRouteColumn);
-  const trafficCurrentPair = traffic?.querySelector('.mp-rate-pair');
-  const objectSignalDossierOk = !visualContractViewport || scaleScenario !== 'single' || Boolean(
-    steadyObjectRect &&
-    focusSignalRect &&
-    focusSignalMetrics.length === 2 &&
-    focusSignalLabels.join('|') === '下载|上传' &&
-    focusSignalValuesTruthful &&
-    !trafficCurrentPair &&
-    focusIdentityTitleSize >= trafficTitleSize &&
-    focusSignalRect.top >= steadyObjectRect.top - 1 &&
-    focusSignalRect.bottom <= steadyObjectRect.bottom + 1 &&
-    (
-      window.innerWidth === 768
-        ? tabletRouteRect && trafficRect && tabletRouteRect.width >= trafficRect.width * 0.8 && !focusIdentityClipped && focusSignalReadingsSingleLine
-        : focusSignalRect.bottom <= firstViewportBottom
-    )
+  const noLegacyPresentation = !sectionRoot?.querySelector(
+    '[data-pocket-console-root], [data-linkboard-root], [data-mobile-native-console], [class*="pc__"], [class*="lb__"], [class*="mn-"], [class*="mo-"]'
   );
-
-  const firstViewportOk = Boolean(
-    verdictRect && decisionRect &&
-    verdictRect.top >= 0 &&
-    decisionRect.bottom <= firstViewportBottom &&
-    (expected?.priority > 0 ? primaryRect : decisionRect)?.top < firstViewportBottom
-  );
-
-  const ledgerSummary = ledger?.querySelector('summary');
-  const ledgerBody = ledger?.querySelector('dl');
-  const ledgerBox = ledger?.getBoundingClientRect();
-  const ledgerSummaryBox = ledgerSummary?.getBoundingClientRect();
-  const ledgerBodyBox = ledgerBody?.getBoundingClientRect();
-  const ledgerBottomBoundary = bottomNavigation && navRect ? navRect.top : window.innerHeight - 16;
-  const availableLedgerHeight = ledgerBox ? Math.max(0, ledgerBottomBoundary - ledgerBox.top) : 0;
-  const requiredLedgerHeight = (ledgerSummaryBox?.height || 0) + (ledgerBodyBox?.height || 0);
-  const ledgerSummaryRect = rect(ledgerSummary);
-  const ledgerSummaryInViewport = Boolean(
-    ledgerSummaryRect && ledgerSummaryRect.bottom > 0 && ledgerSummaryRect.top < window.innerHeight
-  );
-  const followingPrimaryTask = mobileRoot.querySelector(
-    '[data-mobile-primary-task-proximity], [data-mobile-phone-next-step]'
-  );
-  const reservedPrimaryTaskHeight = followingPrimaryTask?.getBoundingClientRect().height || 0;
-  const evidenceBoundaryClearOfNavigation = !bottomNavigation || !ledgerSummaryInViewport ||
-    Boolean(ledgerSummaryRect && navRect && ledgerSummaryRect.bottom <= navRect.top + 1);
-  const explicitAutoOpen = ledger?.getAttribute('data-auto-open') === 'true';
-  const shouldOpenLedger = explicitAutoOpen
-    ? Boolean(ledgerRows.length)
-    : Boolean(
-      ledgerRows.length &&
-      requiredLedgerHeight > 0 &&
-      requiredLedgerHeight + reservedPrimaryTaskHeight <= availableLedgerHeight
-    );
-  const adaptiveLedgerOk = Boolean(
-    ledger &&
-    (explicitAutoOpen
-      ? ledger.open === true
-      : ledgerBodyBox && ledgerBodyBox.height > 0 && ledger.open === shouldOpenLedger)
-  );
-  const expectedLedgerKeys = expected?.ledger.filter((key) => key !== 'failures' || ledgerKeys.includes('failures')) || [];
-  const novelLedgerOk = Boolean(
-    expected &&
-    ledgerKeys.length === expectedLedgerKeys.length &&
-    ledgerKeys.every((key, index) => key === expectedLedgerKeys[index]) &&
-    !ledgerKeys.includes('success') &&
-    ledgerRows.every((row) => row.getAttribute('data-mobile-evidence-row') !== 'failures' || /已记录\s+[1-9]\d*/.test(normalize(row.textContent || '')))
-  );
-
   const checks = {
-    mounted: Boolean(mobileRoot),
-    scenario: mobileRoot.getAttribute('data-mobile-overview-scenario') === scaleScenario,
-    desktopDomAbsent: !sectionRoot?.querySelector('.ro-desktop-grid, .ro-status-bus'),
-    evidenceMode: Boolean(expected && mobileRoot.getAttribute('data-mobile-evidence-mode') === expected.mode),
-    evidenceCopy: Boolean(expected && evidenceLine && (
-      expected.mode === 'current' ? /当前证据/.test(mobileText) :
-      expected.mode === 'historical' ? /历史证据/.test(mobileText) :
-      /证据不可用/.test(mobileText)
-    )),
-    riskPriority: Boolean(expected && mobileRoot.getAttribute('data-mobile-overview-risk') === expected.risk),
-    verdict: Boolean(expected && verdictTitle && (!expected.title || normalize(verdictTitle.textContent || '').includes(expected.title))),
-    compactVerdict: Boolean(verdictRect && verdictRect.height >= 58 && verdictRect.height <= 96),
-    threeFacts: Boolean(expected && (
-      expected.focus
-        ? facts.length === 0
-        : facts.length === 3 && expected.facts.every((key) => factKeys.includes(key))
-    )),
-    scenarioFocus: Boolean(expected && (
-      expected.focus
-        ? scenarioFocus?.getAttribute('data-mobile-scenario-focus') === expected.focus && scenarioFocusItems.length >= 3
-        : !scenarioFocus
-    )),
-    scenarioFocusSemantics: scenarioFocusSemanticsOk,
-    nextDecision: nextDecisionOk,
-    noFactQueueReplay: repeatedPairs.length === 0,
-    priorityCount: Boolean(expected && priorityTotal === expected.priority && incidentRows.length === expectedPriorityVisible),
-    priorityTaskCopy: Boolean(expected && (
-      expected.priority === 0
-        ? !incidentLabel && !incidentTitle
-        : normalize(incidentLabel?.textContent || '') === expected.priorityLabel && normalize(incidentTitle?.textContent || '') === expected.priorityTitle
-    )),
-    priorityRoutes: priorityRoutesValid && priorityLabelsValid,
-    priorityIdentitiesVisible: clippedIncidentIdentities.length === 0,
-    patrolActions: patrolActionsOk,
-    tabletWorkspace: tabletWorkspaceOk,
-    shortLandscapePatrol: shortLandscapePatrolOk,
-    chartTruth: chartTruthOk && chartModeOk && resourceTruthOk && resourceModeOk,
-    riskEvidenceOrder: riskEvidenceOrderOk,
-    steadySignalBalance: steadySignalBalanceOk,
-    scenarioObjectStage: scenarioObjectStageOk,
-    objectSignalDossier: objectSignalDossierOk,
-    narrowIncidentObjectFirst: narrowIncidentObjectFirstOk,
-    unavailableBoundary: expected?.mode !== 'unavailable' || (!currentRateText && !/出口路径已核实|默认路由已核实/.test(mobileText)),
-    historicalBoundary: expected?.mode !== 'historical' || (!currentRateText && !/出口路径已核实/.test(mobileText)),
-    novelLedger: novelLedgerOk,
-    adaptiveLedger: adaptiveLedgerOk,
-    interaction: nativeMobileInteractionOk,
-    accessibility: Boolean(verdictTitle?.id && mobileRoot.querySelectorAll('h1').length === 1 && ariaControlsValid),
-    readableType: smallText.length === 0,
-    touchTargets: smallTargets.length === 0,
-    evidenceBoundaryClearOfNavigation,
-    readonly: /只读/.test(pageText),
-    firstViewport: firstViewportOk,
-    noHorizontalOverflow: overflowX <= 1,
-    noRejectedPatterns: !mobileRoot.querySelector('[role="tab"], [role="tablist"], [role="tabpanel"], [role="listbox"], .mn-grabber, .mo-verdict, canvas'),
-    stableTaskNavigation: taskButtons.length === 4 && ['overview', 'interfaces', 'terminals', 'logs'].every((route) => taskButtons.some((button) => button.getAttribute('data-section') === route)),
-    isolatedTree: !sectionRoot?.querySelector('[data-mobile-native-console], [class*="mn-"], [class*="mo-"]'),
-    viewport: Boolean(mobileRect && sectionRect && Math.abs(mobileRect.left - sectionRect.left) <= 1 && mobileRect.width >= sectionRect.width - 2),
+    mounted: true,
+    scenario: Boolean(expected && optical.getAttribute('data-optical-patrol-scenario') === scaleScenario),
+    evidenceTruth: Boolean(expected && runtimeMode === expected.mode && semanticModeCopy),
+    risk: Boolean(expected && riskKind === expected.risk),
+    composition: Boolean(expected && sceneKind === expected.scene),
+    scope: scopeContractOk,
+    evidenceBoundary: Boolean(evidenceBoundary && readable(evidenceBoundary)),
+    decision: Boolean(decision && readable(decisionTitle) && readable(decision)),
+    expandedClaim: selectedFocusContract && readable(selectedHeading),
+    claimControls: nativeClaimControls,
+    objectAction: actionOk,
+    currentDataBoundary,
+    noFalseCurrentData,
+    targets44: undersizedTargets.length === 0,
+    navigationClearance: navigationClearanceOk,
+    noHorizontalOverflow,
+    responsiveComposition: phoneLayout && tabletLayout,
+    readableText: unreadableText.length === 0 && clippedOperationalText.length === 0,
+    noLegacyPresentation,
+    isolatedTree: !sectionRoot?.querySelector('[data-pocket-console-root], [data-desktop-overview]'),
+    interaction: Boolean(nativeMobileInteractionOk),
+    keyboard: Boolean(nativeMobileFocusKeyboardOk),
+    selectionHistory: selectionHistoryOk,
+    navigationHistory: Boolean(nativeMobileObjectNavigationOk),
+    novelDetail: Boolean(nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay),
+    desktopDomAbsent: !sectionRoot?.querySelector('[data-desktop-overview]'),
+    viewport: Boolean(opticalRect && opticalRect.left >= -1 && opticalRect.right <= window.innerWidth + 1),
   };
   const pass = Boolean(app && active && (requested || active.id === sectionName) && !hasBadLiteral && scaleMetaOk && Object.values(checks).every(Boolean));
   const mobileOverviewAppHomeGateProbe = {
     appHomePass: pass,
-    contract: 'mobile-patrol-console-v3',
-    evidenceMode: mobileRoot.getAttribute('data-mobile-evidence-mode') || '',
-    risk: mobileRoot.getAttribute('data-mobile-overview-risk') || '',
-    factKeys,
-    scenarioFocus: scenarioFocus?.getAttribute('data-mobile-scenario-focus') || '',
-    scenarioFocusItems: scenarioFocusItems.map((node) => node.getAttribute('data-mobile-scenario-focus-item') || ''),
-    scenarioFocusSemantics: {
-      actions: scenarioFocusActions.map((node) => node.getAttribute('data-mobile-scenario-focus-item') || ''),
-      evidence: scenarioFocusEvidence.map((node) => node.getAttribute('data-mobile-scenario-focus-item') || ''),
+    contract: 'optical-patrol-v1',
+    truthMode: runtimeMode,
+    runtimeMode,
+    scenario: optical.getAttribute('data-optical-patrol-scenario') || '',
+    risk: riskKind,
+    composition: sceneKind,
+    scope: {
+      runtimeManaged,
+      owner: runtimeManaged ? 'runtime-toolbar' : 'standalone-chrome',
+      runtimeToolbar: Boolean(runtimeScope),
+      standaloneChrome: Boolean(standaloneScope),
+      identity: normalize(scopeIdentity?.textContent || ''),
+      readonly: normalize(scopeReadonly?.textContent || ''),
     },
-    priorityTotal,
-    priorityVisible: incidentRows.length,
-    priorityLabel: normalize(incidentLabel?.textContent || ''),
-    priorityTitle: normalize(incidentTitle?.textContent || ''),
-    clippedIncidentIdentities,
-    nextDecision: nextDecisionRect ? {
-      text: nextDecisionText,
-      top: nextDecisionRect.top,
-      bottom: nextDecisionRect.bottom,
-      route: nextDecisionButton?.getAttribute('data-mobile-destination') || '',
-      objectId: nextDecisionButton?.getAttribute('data-mobile-object-id') || '',
-      evidenceAt: nextDecisionButton?.getAttribute('data-mobile-evidence-at') || '',
-      clippedText: nextDecisionClippedText,
-    } : null,
-    ledger: {
-      keys: ledgerKeys,
-      open: Boolean(ledger?.open),
-      requiredHeight: Math.round(requiredLedgerHeight),
-      availableHeight: Math.round(availableLedgerHeight),
-      reservedPrimaryTaskHeight: Math.round(reservedPrimaryTaskHeight),
-      explicitAutoOpen,
-      expectedOpen: shouldOpenLedger,
-      override: ledger?.getAttribute('data-user-override') || '',
-      summary: ledgerSummaryRect,
-      summaryInViewport: ledgerSummaryInViewport,
-      clearOfNavigation: evidenceBoundaryClearOfNavigation,
+    evidence: { label: normalize(evidenceBoundary?.textContent || ''), forbidsCurrent },
+    selectedClaim: { id: selectedId, focusId: expandedClaim?.id || '', headingId: selectedHeadingId },
+    claimControls: claimControls.map((control) => ({ tag: control.tagName, label: normalize(control.getAttribute('aria-label') || control.textContent || '') })),
+    textReadability: { scopes: auditedTextScopes, unreadable: unreadableText, clipped: clippedOperationalText },
+    tablet: { applicable: tablet, summary: summaryRect, expanded: expandedRect, followups: followupsRect, evidenceDeck: evidenceDeckRect, pass: phoneLayout && tabletLayout },
+    targets: {
+      undersized: undersizedTargets,
+      obscuredByNavigation: obscuredTargets.map((node) => normalize(node.getAttribute('aria-label') || node.textContent || node.tagName)),
+      obscuredNonFollowups: obscuredNonFollowups.map((node) => normalize(node.getAttribute('aria-label') || node.textContent || node.tagName)),
+      followupReachability: followupReachability.map((item) => ({
+        label: normalize(item.node.getAttribute('aria-label') || item.node.textContent || item.node.tagName),
+        reachable: item.reachable,
+        requiredScroll: Math.round(item.requiredScroll || 0),
+        maxScroll: Math.round(item.maxScroll || 0),
+      })),
     },
-    tabletLayout: workspaceBody ? {
-      bodyWidth: Math.round(workspaceBody.getBoundingClientRect().width),
-      gridTemplateColumns: getComputedStyle(workspaceBody).gridTemplateColumns,
-      direction: getComputedStyle(workspaceBody).direction,
-      writingMode: getComputedStyle(workspaceBody).writingMode,
-      primaryWidth: Math.round(workspacePrimary?.getBoundingClientRect().width || 0),
-      contextWidth: Math.round(workspaceContext?.getBoundingClientRect().width || 0),
-      masterDetailWidth: Math.round(tabletMasterDetail?.getBoundingClientRect().width || 0),
-      supportWidth: Math.round(tabletSupport?.getBoundingClientRect().width || 0),
-      objects: incidentCenter ? {
-        top: Math.round(incidentCenter.getBoundingClientRect().top),
-        width: Math.round(incidentCenter.getBoundingClientRect().width),
-      } : null,
-      inspector: incidentInspector ? {
-        top: Math.round(incidentInspector.getBoundingClientRect().top),
-        width: Math.round(incidentInspector.getBoundingClientRect().width),
-      } : null,
-      ledgerWidth: Math.round(ledger?.getBoundingClientRect().width || 0),
-      actionsWidth: Math.round(patrolActions?.getBoundingClientRect().width || 0),
-    } : null,
-    shortLandscape: {
-      expected: shortLandscape,
-      workspaceColumns,
-      tabletMasterDetail: Boolean(tabletMasterDetail),
-      incidentInspector: Boolean(incidentInspector),
-    },
-    traffic: chartStatus,
-    resource: resourceStatus,
-    evidenceOrder: {
-      firstIncident: firstIncidentRect,
-      scenarioFocus: scenarioFocusRect,
-      steadyObject: steadyObjectRect,
-      traffic: trafficRect,
-      resource: resourceSignalRect,
-    },
-    objectSignalDossier: {
-      focusSignal: focusSignalRect,
-      metricLabels: focusSignalLabels,
-      metricValues: focusSignalValues,
-      readingsSingleLine: focusSignalReadingsSingleLine,
-      trafficCurrentPair: Boolean(trafficCurrentPair),
-      objectTitleSize: focusIdentityTitleSize,
-      trafficTitleSize,
-      identityClipped: focusIdentityClipped,
-      tabletRouteWidth: tabletRouteRect?.width || 0,
-      trafficWidth: trafficRect?.width || 0,
-    },
-    narrowIncidentObjectFirst: {
-      applicable: narrowCurrentIncident,
-      facts: factsRect,
-      firstIncident: firstIncidentRect,
-      reason: firstIncidentReasonRect,
-      reasonClipped: Boolean(firstIncidentReason && (
-        firstIncidentReason.scrollWidth > firstIncidentReason.clientWidth + 1 ||
-        firstIncidentReason.scrollHeight > firstIncidentReason.clientHeight + 1
-      )),
-      chevronVisible: Boolean(firstIncidentChevron && isVisible(firstIncidentChevron)),
-      firstViewportBottom,
-    },
-    verdictHeight: verdictRect?.height || 0,
-    firstViewport: {
-      bottom: Math.round(firstViewportBottom),
-      bottomNavigation,
-      verdict: verdictRect ? {
-        top: Math.round(verdictRect.top),
-        bottom: Math.round(verdictRect.bottom),
-        height: Math.round(verdictRect.height),
-      } : null,
-      decision: decisionRect ? {
-        top: Math.round(decisionRect.top),
-        bottom: Math.round(decisionRect.bottom),
-        height: Math.round(decisionRect.height),
-      } : null,
-      primary: primaryRect ? {
-        top: Math.round(primaryRect.top),
-        bottom: Math.round(primaryRect.bottom),
-        height: Math.round(primaryRect.height),
-      } : null,
-    },
-    smallText,
-    smallTargets,
-    repeatedPairs,
     interaction: nativeMobileInteractionProbe,
+    detail: {
+      sections: nativeDetailSectionCount,
+      evidenceNodes: nativeDetailRawEvidenceCount,
+      novel: nativeDetailHasNovelEvidence,
+      noHomeReplay: nativeDetailNoHomeReplay,
+    },
+    keyboard: nativeMobileFocusKeyboardProbe,
+    selection: nativeMobileObjectSelectionProbe,
+    requiredChecks: Object.keys(checks),
     checks,
   };
   return {
@@ -791,15 +530,14 @@ function inspectMobileNativeOverview({
     title: normalize(document.querySelector('[data-panel-route-title]')?.textContent || ''),
     url: location.href,
     overflowX: Math.round(overflowX),
-    scroll: {
-      width: root.scrollWidth,
-      height: root.scrollHeight,
-      viewportWidth: window.innerWidth,
-      viewportHeight: window.innerHeight,
-    },
+    scroll: { width: root.scrollWidth, height: root.scrollHeight, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight },
     hasBadLiteral,
     scaleMetaOk,
   };
 }
 
-module.exports = { inspectMobileNativeOverview, inspectOverviewMobileInteraction };
+module.exports = {
+  MOBILE_OVERVIEW_REQUIRED_CHECKS,
+  inspectMobileNativeOverview,
+  inspectOverviewMobileInteraction,
+};

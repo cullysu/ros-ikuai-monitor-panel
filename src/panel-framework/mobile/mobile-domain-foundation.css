@@ -38,6 +38,15 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
+  .mdw-shell :is(.mdw-more > div, .mdw-controls, .mdw-pagination, .mdw-inspector > header, .mdw-directory-group, .mdw-empty) button,
+  .mdw-tools-toggle,
+  .mdw-reset-controls,
+  .mdw-object-list > button {
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
   .mdw-shell .sr-only {
     position: absolute;
     width: 1px;
@@ -46,6 +55,10 @@
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+  .mdw-shell :is(small, em) {
+    font-size: 12px;
+    font-style: normal;
   }
   .mdw-header {
     width: min(100%, 1120px);
@@ -60,7 +73,8 @@
     align-items: center;
     gap: 8px;
   }
-  .mdw-title-icon {
+  .mdw-title-icon,
+  .mdw-directory-icon {
     display: grid;
     width: 24px;
     height: 32px;
@@ -70,21 +84,23 @@
   .mdw-title-row small {
     display: block;
     color: var(--mdw-muted);
-    font-size: 12px;
     font-weight: 650;
     line-height: 1.25;
   }
   .mdw-title-row h1 {
+    width: fit-content;
+    max-width: 100%;
     margin: 1px 0 0;
     color: var(--mdw-ink);
     font-size: 21px;
     font-weight: 730;
-    letter-spacing: 0;
     line-height: 1.14;
   }
-  .mdw-title-row h1:focus,
-  .mdi-object-heading h2:focus {
+  .mdw-title-row h1:focus-visible,
+  .mdi-object-heading h2:focus-visible {
     outline: none;
+    padding-left: 8px;
+    box-shadow: inset 3px 0 var(--mdw-blue);
   }
   .mdw-more {
     position: relative;
@@ -100,10 +116,17 @@
     cursor: pointer;
     list-style: none;
   }
-  .mdw-more summary::-webkit-details-marker {
+  .mdw-more summary::-webkit-details-marker,
+  .mdw-route-switcher::-webkit-scrollbar,
+  .mdi-disclosure summary::-webkit-details-marker,
+  .mdw-inspector.is-boundary,
+  .mdw-shell.has-selection .mdw-header,
+  .mdw-shell.has-selection .mdw-list-pane {
     display: none;
   }
-  .mdw-more summary:active {
+  .mdw-more summary:active,
+  .mdw-tools-toggle:active,
+  .mdw-tools-toggle.is-active {
     background: var(--mdw-blue-soft);
   }
   .mdw-more > div {
@@ -124,18 +147,18 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 13px;
-    border: 0;
     color: var(--mdw-text);
-    background: transparent;
     font-size: 13px;
     font-weight: 630;
     text-align: left;
-    cursor: pointer;
   }
-  .mdw-more > div button + button {
+  .mdw-more > div button + button,
+  .mdw-object-list > button + button,
+  .mdw-directory-group button + button {
     border-top: 1px solid var(--mdw-line);
   }
-  .mdw-more > div button:active {
+  .mdw-more > div button:active,
+  .mdw-directory-group button:active {
     background: var(--mdw-surface-tonal);
   }
   .mdw-status-row {
@@ -152,11 +175,19 @@
     gap: 5px;
     color: var(--mdw-blue);
   }
-  .mdw-evidence.is-danger {
+  .mdw-evidence.is-danger,
+  .mdw-row-state.is-attention,
+  .mdw-metrics > div.is-danger b,
+  .mdi-facts .is-danger b {
     color: var(--mdw-danger);
   }
   .mdw-evidence.is-warn,
-  .mdw-evidence.is-missing {
+  .mdw-evidence.is-missing,
+  .mdw-metrics > div.is-warn b,
+  .mdw-metrics > div.is-missing b,
+  .mdi-facts .is-warn b,
+  .mdi-relations .is-warn em,
+  .mdi-relations .is-danger em {
     color: var(--mdw-warn);
   }
   .mdw-evidence span,
@@ -193,9 +224,6 @@
     border-top: 1px solid var(--mdw-line);
     scrollbar-width: none;
   }
-  .mdw-route-switcher::-webkit-scrollbar {
-    display: none;
-  }
   .mdw-route-switcher button {
     position: relative;
     min-width: 62px;
@@ -226,7 +254,6 @@
     background: var(--mdw-blue);
   }
   .mdw-layout {
-    width: 100%;
     max-width: 1120px;
     margin: 0 auto;
     border-top: 1px solid var(--mdw-line-strong);
@@ -235,7 +262,6 @@
   }
   .mdw-list-pane {
     min-width: 0;
-    background: var(--mdw-surface);
   }
   .mdw-list-heading {
     display: grid;
@@ -267,22 +293,14 @@
   .mdw-tools-toggle {
     display: inline-flex;
     min-width: 62px;
-    min-height: 44px;
     align-items: center;
     justify-content: center;
     gap: 5px;
     padding: 0 8px;
-    border: 0;
     border-radius: 6px;
     color: var(--mdw-blue);
-    background: transparent;
     font-size: 12px;
     font-weight: 690;
-    cursor: pointer;
-  }
-  .mdw-tools-toggle:active,
-  .mdw-tools-toggle.is-active {
-    background: var(--mdw-blue-soft);
   }
   .mdw-controls {
     padding: 10px 12px;
@@ -319,11 +337,8 @@
     width: 44px;
     height: 44px;
     place-items: center;
-    border: 0;
     border-radius: 6px;
     color: var(--mdw-muted);
-    background: transparent;
-    cursor: pointer;
   }
   .mdw-filter-row {
     display: flex;
@@ -341,15 +356,11 @@
   }
   .mdw-filter-row button {
     min-width: 48px;
-    min-height: 44px;
     padding: 0 10px;
-    border: 0;
     border-radius: 6px;
     color: var(--mdw-muted);
-    background: transparent;
     font-size: 12px;
     font-weight: 650;
-    cursor: pointer;
   }
   .mdw-filter-row button[aria-pressed="true"] {
     color: var(--mdw-blue);
@@ -378,15 +389,11 @@
     font-size: 12px;
   }
   .mdw-reset-controls {
-    min-height: 44px;
     margin-top: 4px;
     padding: 0 8px;
-    border: 0;
     color: var(--mdw-blue);
-    background: transparent;
     font-size: 12px;
     font-weight: 680;
-    cursor: pointer;
   }
   .mdw-object-list > button {
     display: grid;
@@ -396,14 +403,8 @@
     align-items: center;
     gap: 9px;
     padding: 7px 11px 7px 0;
-    border: 0;
     color: inherit;
-    background: transparent;
     text-align: left;
-    cursor: pointer;
-  }
-  .mdw-object-list > button + button {
-    border-top: 1px solid var(--mdw-line);
   }
   .mdw-object-list > button:active,
   .mdw-object-list > button.is-selected,
@@ -438,45 +439,34 @@
   .mdw-row-mark.is-error {
     background: var(--mdw-danger);
   }
-  .mdw-row-copy,
-  .mdw-row-copy b,
-  .mdw-row-copy small {
-    display: block;
-    min-width: 0;
-  }
   .mdw-row-copy b {
-    overflow: hidden;
     color: var(--mdw-ink);
     font-size: 14px;
     font-weight: 700;
-    line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   .mdw-row-copy small {
     margin-top: 2px;
-    overflow: hidden;
     color: var(--mdw-muted);
     font-size: 12px;
+  }
+  .mdw-row-copy :is(b, small) {
     line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
   .mdw-row-state {
-    max-width: 132px;
-    overflow: hidden;
+    max-width: none;
     color: var(--mdw-muted);
     font-size: 12px;
     font-weight: 650;
     line-height: 1.3;
-    text-align: right;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-align: left;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
-  .mdw-row-state.is-attention {
-    color: var(--mdw-danger);
-  }
-  .mdw-object-list > button > svg {
+  .mdw-object-list > button > svg,
+  .mdw-directory-group button > svg,
+  .mdw-search input::placeholder {
     color: var(--mdw-faint);
   }
   .mdw-empty {
@@ -488,7 +478,8 @@
     color: var(--mdw-muted);
     text-align: center;
   }
-  .mdw-empty > svg {
+  .mdw-empty > svg,
+  .mdi-facts .is-trust b {
     color: var(--mdw-blue);
   }
   .mdw-empty h2 {
@@ -502,15 +493,11 @@
     line-height: 1.45;
   }
   .mdw-empty button {
-    min-height: 44px;
     margin-top: 8px;
     padding: 0 10px;
-    border: 0;
     color: var(--mdw-blue);
-    background: transparent;
     font-size: 13px;
     font-weight: 690;
-    cursor: pointer;
   }
   .mdw-pagination {
     display: grid;
@@ -521,16 +508,12 @@
   }
   .mdw-pagination button {
     display: inline-flex;
-    min-height: 44px;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    border: 0;
     color: var(--mdw-blue);
-    background: transparent;
     font-size: 12px;
     font-weight: 680;
-    cursor: pointer;
   }
   .mdw-pagination button:disabled {
     color: var(--mdw-faint);
@@ -555,59 +538,70 @@
     min-width: 0;
     padding: 9px 10px 10px;
   }
-  .mdw-metrics > div + div {
+  .mdw-metrics > div + div,
+  .mdi-readings > div + div {
     border-left: 1px solid var(--mdw-line);
   }
+  .mdw-evidence-workspace > header > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mdw-row-copy,
+  .mdw-row-copy b,
+  .mdw-row-copy small,
   .mdw-metrics small,
   .mdw-metrics b,
-  .mdw-metrics em {
+  .mdw-metrics em,
+  .mdi-evidence span,
+  .mdi-evidence b,
+  .mdi-evidence small,
+  .mdi-facts small,
+  .mdi-facts b,
+  .mdi-facts em,
+  .mdi-relations span,
+  .mdi-relations b,
+  .mdi-relations small,
+  .mdi-disclosure summary span,
+  .mdi-disclosure summary b,
+  .mdi-disclosure summary small,
+  .mdw-directory-copy,
+  .mdw-directory-copy b,
+  .mdw-directory-copy small {
     display: block;
     min-width: 0;
   }
   .mdw-metrics small {
-    overflow: hidden;
     color: var(--mdw-muted);
     font-size: 12px;
     font-weight: 620;
     line-height: 1.3;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
   .mdw-metrics b {
     margin-top: 3px;
-    overflow: hidden;
     color: var(--mdw-ink);
     font-family: var(--mono);
     font-size: 15px;
     font-variant-numeric: var(--t);
     font-weight: 720;
     line-height: 1.3;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .mdw-metrics > div.is-danger b {
-    color: var(--mdw-danger);
-  }
-  .mdw-metrics > div.is-warn b,
-  .mdw-metrics > div.is-missing b {
-    color: var(--mdw-warn);
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
   .mdw-metrics em {
     margin-top: 2px;
-    overflow: hidden;
     color: var(--mdw-faint);
     font-size: 12px;
     font-style: normal;
     line-height: 1.3;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
   .mdw-inspector {
     min-width: 0;
     background: var(--mdw-canvas);
-  }
-  .mdw-inspector.is-boundary {
-    display: none;
   }
   .mdw-inspector > header {
     display: flex;
@@ -632,7 +626,9 @@
     font-weight: 680;
     cursor: pointer;
   }
-  .mdw-inspector > header > span {
+  .mdw-list-heading > span,
+  .mdw-inspector > header > span,
+  .mdi-readings small {
     color: var(--mdw-muted);
     font-size: 12px;
   }
@@ -651,15 +647,10 @@
     color: var(--mdw-warn);
     background: var(--mdw-warn-soft);
   }
-  .mdi-evidence.is-unavailable {
+  .mdi-evidence.is-unavailable,
+  .mdi-object-heading > b.is-attention {
     color: var(--mdw-danger);
     background: var(--mdw-danger-soft);
-  }
-  .mdi-evidence span,
-  .mdi-evidence b,
-  .mdi-evidence small {
-    display: block;
-    min-width: 0;
   }
   .mdi-evidence b {
     font-size: 12px;
@@ -703,6 +694,8 @@
     font-weight: 630;
   }
   .mdi-object-heading h2 {
+    width: fit-content;
+    max-width: 100%;
     margin: 2px 0 3px;
     overflow-wrap: anywhere;
     color: var(--mdw-ink);
@@ -727,10 +720,6 @@
     font-weight: 720;
     line-height: 1.3;
     text-align: right;
-  }
-  .mdi-object-heading > b.is-attention {
-    color: var(--mdw-danger);
-    background: var(--mdw-danger-soft);
   }
   .mdi-domain-body {
     margin: 0;
@@ -777,12 +766,6 @@
   .mdi-facts > div {
     min-width: 0;
   }
-  .mdi-facts small,
-  .mdi-facts b,
-  .mdi-facts em {
-    display: block;
-    min-width: 0;
-  }
   .mdi-facts small {
     color: var(--mdw-muted);
     font-size: 12px;
@@ -790,32 +773,16 @@
   }
   .mdi-facts b {
     margin-top: 3px;
-    overflow-wrap: anywhere;
-    color: var(--mdw-ink);
-    font-family: inherit;
     font-size: 12px;
     font-weight: 650;
     line-height: 1.4;
   }
   .mdi-facts > .is-value-machine b,
-  .mdi-facts > .is-value-numeric b {
-    font-family: var(--mono);
-    font-variant-numeric: var(--t);
-  }
-  .mdi-facts .is-trust b {
-    color: var(--mdw-blue);
-  }
-  .mdi-facts .is-warn b {
-    color: var(--mdw-warn);
-  }
-  .mdi-facts .is-danger b {
-    color: var(--mdw-danger);
-  }
+  .mdi-facts > .is-value-numeric b,
+  .mdi-readings .is-value-machine b,
+  .mdi-readings .is-value-numeric b,
   .mdi-facts em {
-    margin-top: 2px;
     color: var(--mdw-faint);
-    font-size: 12px;
-    font-style: normal;
     line-height: 1.3;
   }
   .mdi-readings {
@@ -830,37 +797,18 @@
     min-width: 0;
     padding: 9px 10px;
   }
-  .mdi-readings > div + div {
-    border-left: 1px solid var(--mdw-line);
-  }
-  .mdi-readings small,
   .mdi-readings b,
   .mdi-readings em {
     display: block;
   }
-  .mdi-readings small {
-    color: var(--mdw-muted);
-    font-size: 12px;
-  }
   .mdi-readings b {
     margin-top: 3px;
-    overflow-wrap: anywhere;
-    color: var(--mdw-ink);
-    font-family: inherit;
     font-size: 21px;
     font-weight: 700;
     line-height: 1.25;
   }
-  .mdi-readings .is-value-machine b,
-  .mdi-readings .is-value-numeric b {
-    font-family: var(--mono);
-    font-variant-numeric: var(--t);
-  }
   .mdi-readings em {
-    margin-top: 2px;
     color: var(--mdw-muted);
-    font-size: 12px;
-    font-style: normal;
   }
   .mdi-relations {
     margin-top: 2px;
@@ -877,16 +825,7 @@
   .mdi-relations > div:first-child {
     border-top: 0;
   }
-  .mdi-relations span,
-  .mdi-relations b,
-  .mdi-relations small {
-    display: block;
-    min-width: 0;
-  }
   .mdi-relations b {
-    overflow-wrap: anywhere;
-    color: var(--mdw-ink);
-    font-family: inherit;
     font-size: 12px;
     line-height: 1.35;
   }
@@ -895,10 +834,23 @@
     font-family: var(--mono);
     font-variant-numeric: var(--t);
   }
-  .mdi-relations small {
+  .mdi-relations small,
+  .mdi-disclosure summary small {
     margin-top: 2px;
     color: var(--mdw-muted);
     font-size: 12px;
+  }
+  .mdi-facts b,
+  .mdi-readings b,
+  .mdi-relations b {
+    overflow-wrap: anywhere;
+    color: var(--mdw-ink);
+  }
+  .mdi-facts em,
+  .mdi-readings em {
+    margin-top: 2px;
+    font-size: 12px;
+    font-style: normal;
   }
   .mdi-relations em {
     flex: 0 0 auto;
@@ -907,11 +859,8 @@
     font-style: normal;
     font-weight: 680;
   }
-  .mdi-relations .is-warn em,
-  .mdi-relations .is-danger em {
-    color: var(--mdw-warn);
-  }
   .mdi-message {
+    margin: 0;
     padding: 10px;
     overflow-wrap: anywhere;
     color: var(--mdw-ink);
@@ -946,22 +895,8 @@
     cursor: pointer;
     list-style: none;
   }
-  .mdi-disclosure summary::-webkit-details-marker {
-    display: none;
-  }
-  .mdi-disclosure summary span,
-  .mdi-disclosure summary b,
-  .mdi-disclosure summary small {
-    display: block;
-    min-width: 0;
-  }
   .mdi-disclosure summary b {
     color: var(--mdw-ink);
-    font-size: 12px;
-  }
-  .mdi-disclosure summary small {
-    margin-top: 2px;
-    color: var(--mdw-muted);
     font-size: 12px;
   }
   .mdi-disclosure summary > svg {
@@ -1030,30 +965,8 @@
     align-items: center;
     gap: 9px;
     padding: 7px 12px;
-    border: 0;
     color: var(--mdw-text);
-    background: transparent;
     text-align: left;
-    cursor: pointer;
-  }
-  .mdw-directory-group button + button {
-    border-top: 1px solid var(--mdw-line);
-  }
-  .mdw-directory-group button:active {
-    background: var(--mdw-surface-tonal);
-  }
-  .mdw-directory-icon {
-    display: grid;
-    width: 24px;
-    height: 32px;
-    place-items: center;
-    color: var(--mdw-blue);
-  }
-  .mdw-directory-copy,
-  .mdw-directory-copy b,
-  .mdw-directory-copy small {
-    display: block;
-    min-width: 0;
   }
   .mdw-directory-copy b {
     color: var(--mdw-ink);
@@ -1069,9 +982,6 @@
     line-height: 1.35;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .mdw-directory-group button > svg {
-    color: var(--mdw-faint);
   }
   :is(
     .mdw-more summary,
@@ -1090,9 +1000,5 @@
   .mdw-search:focus-within {
     outline: 3px solid rgba(11, 103, 140, 0.28);
     outline-offset: 1px;
-  }
-  .mdw-shell.has-selection .mdw-header,
-  .mdw-shell.has-selection .mdw-list-pane {
-    display: none;
   }
 }

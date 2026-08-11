@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { assertIndependentReviewRecords } = require("./check-independent-review-records");
 
 const root = path.resolve(__dirname, "..");
 const read = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
@@ -23,12 +24,16 @@ check("R23 declares scores opinion-only", /opinion only|意见摘要/.test(r23),
 check("R23 keeps governance as a next action", /numeric-score governance contract/.test(r23), r23.match(/- nextAction:.*$/m)?.[0] || "missing nextAction");
 
 const state = JSON.parse(read(".product-loop/state.json"));
+const independentReview = assertIndependentReviewRecords({ root });
+const currentState = read("docs/decision-system/current-state.md");
+const scorePattern = /(?:total_score|综合评分|设计评分|产品分|\b\d{1,3}\/100\b)/i;
 for (const gate of ["product", "design", "visual-qa"]) {
   const status = state.gates?.[gate]?.status;
-  check(`${gate} is not signed by a score`, !["pass", "passed", "complete"].includes(status), status);
+  const note = String(state.gates?.[gate]?.note || "");
+  const acceptedWithoutScore = independentReview.pass && !scorePattern.test(note);
+  check(`${gate} is not signed by a score`, !["pass", "passed", "complete"].includes(status) || acceptedWithoutScore, { status, acceptedWithoutScore });
 }
 
-const currentState = read("docs/decision-system/current-state.md");
 const currentConclusionStart = currentState.indexOf("## Current conclusion");
 const currentConclusionEnd = currentState.indexOf("\n## ", currentConclusionStart + 1);
 const currentConclusion = currentConclusionStart >= 0

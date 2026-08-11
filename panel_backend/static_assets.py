@@ -114,7 +114,12 @@ def _resolve_public_root(public_dir: Path) -> Path:
 
 def _optional_contained_sidecar(root: Path, identity_path: Path, suffix: str, name: str) -> Path | None:
     candidate = Path(f"{identity_path}.{suffix}")
-    if not candidate.exists() and not candidate.is_symlink():
+    if candidate.is_symlink():
+        # Sidecars are build outputs, never indirections. Reject even an
+        # in-root link so a later replacement cannot redirect a compressed
+        # variant after the identity asset has passed containment checks.
+        raise StaticAssetNotFound(name)
+    if not candidate.exists():
         return None
     return _resolve_contained_file(root, candidate, name)
 

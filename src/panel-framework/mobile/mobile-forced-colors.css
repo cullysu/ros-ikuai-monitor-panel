@@ -14,48 +14,12 @@
 
   .mdw-route-switcher button[aria-current="page"],
   .mdw-filter-row button[aria-pressed="true"],
-  .mdw-object-list > button[aria-current="true"],
-  .mp-incident-row[aria-current="true"] {
+  .mdw-object-list > button[aria-current="true"] {
     outline: 2px solid ButtonText;
     outline-offset: -2px;
   }
 
-  .mdw-row-mark,
-  .mp-scenario-focus-mark,
-  .mp-incident-mark {
+  .mdw-row-mark {
     border: 1px solid ButtonText;
-  }
-
-  .mp-incident[data-mobile-incident-task-role="primary-risk"] {
-    border-top: 2px solid ButtonText;
-    background: Canvas;
-  }
-
-  .mp-risk-queue[data-mobile-incident-task-role="secondary-risk"],
-  .mp-actions[data-mobile-incident-task-role="follow-up"] {
-    border-left: 1px solid ButtonText;
-    background: Canvas;
-  }
-
-  .mp-incident > header > b, .mp-incident-copy em, .mp-action-icon {
-    border: 0;
-    border-radius: 0;
-    color: ButtonText;
-    background: Canvas;
-  }
-
-  .mp-chart-down,
-  .mp-chart-up {
-    stroke: CanvasText;
-  }
-
-  .mp-chart-up {
-    stroke-dasharray: 9 4;
-  }
-
-  .mp-traffic footer i.is-up {
-    height: 0;
-    border-top: 2px dashed ButtonText;
-    background: none;
   }
 }

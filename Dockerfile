@@ -1,13 +1,13 @@
-FROM python:3.12.10-slim-bookworm AS wheels
+FROM python:3.12.10-slim-bookworm@sha256:fd95fa221297a88e1cf49c55ec1828edd7c5a428187e67b5d1805692d11588db AS wheels
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1
 
 WORKDIR /build
-COPY requirements.txt .
-RUN python -m pip wheel --wheel-dir /wheels -r requirements.txt
+COPY requirements.txt requirements.lock .
+RUN python -m pip wheel --require-hashes --wheel-dir /wheels -r requirements.txt
 
-FROM python:3.12.10-slim-bookworm AS runtime
+FROM python:3.12.10-slim-bookworm@sha256:fd95fa221297a88e1cf49c55ec1828edd7c5a428187e67b5d1805692d11588db AS runtime
 
 LABEL org.opencontainers.image.title="RouterOS Read-only Semantic Triage Console" \
       org.opencontainers.image.description="Read-only RouterOS semantic triage panel" \
@@ -21,6 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ROS_PANEL_PORT=28646 \
     ROS_PANEL_TARGET_IP=127.0.0.1 \
     ROS_PANEL_TRUST_PROXY_HEADERS=0 \
+    ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=0 \
     ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0 \
     ROS_PANEL_PROFILE=routeros_only \
     ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0 \
@@ -33,8 +34,8 @@ RUN groupadd --system panel \
     && useradd --system --gid panel --home-dir /app --shell /usr/sbin/nologin panel
 
 COPY --from=wheels /wheels /wheels
-COPY requirements.txt .
-RUN python -m pip install --no-index --find-links=/wheels -r requirements.txt \
+COPY requirements.txt requirements.lock .
+RUN python -m pip install --require-hashes --no-index --find-links=/wheels -r requirements.txt \
     && rm -rf /wheels
 
 COPY app.py ./

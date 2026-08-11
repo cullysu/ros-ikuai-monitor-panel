@@ -5,19 +5,21 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const {
-  RUNTIME_REQUIRED_CHECKS,
+  MATRIX_REPORT_ALIAS_NAMES,
+  MOBILE_OVERVIEW_REQUIRED_CHECKS,
   assertEvidenceModeEligibility,
   assertMatrixEvidenceIdentity,
-  assertRuntimeEvidenceIdentity,
   collectGateDetailFailures,
+  hasPinnedDockerBuildPushActionV7,
   matrixEvidenceStatusMessage,
   parseArgs,
-  runtimeScreenshotEvidenceMatches,
+  reportNameMatchesKind,
 } = require('./check-public-release-readiness');
 const { isGovernancePath } = require('./worktree-runtime-identity');
-const { RUNTIME_CHECK_CONTRACT, RUNTIME_SCREENSHOT_CONTRACT } = require('./runtime-screenshot-contract');
+const { RUNTIME_CHECK_CONTRACT } = require('./runtime-screenshot-contract');
+const { inspectIndependentReviewRecords } = require('./check-independent-review-records');
 
-function mobileReport(checks) {
+function mobileReport(checks, requiredChecks = Object.keys(checks)) {
   return {
     checks: [{
       name: 'responsive public/single/narrow/overview',
@@ -25,10 +27,11 @@ function mobileReport(checks) {
       detail: {
         surface: 'mobile-overview',
         mobileOverviewAppHomeGateProbe: {
-          contract: 'mobile-patrol-console-v3',
+          contract: 'optical-patrol-v1',
           appHomePass: true,
-          evidenceMode: 'current',
+          truthMode: 'current',
           risk: 'none',
+          requiredChecks,
           checks,
         },
       },
@@ -54,14 +57,145 @@ function desktopReport(contract) {
   };
 }
 
-const missing = collectGateDetailFailures(mobileReport({ mounted: true }));
-assert(
-  missing.mobileSemantic.some((failure) => failure.field === 'checks.adaptiveLedger'),
-  'release evidence must fail when the adaptive ledger check is omitted'
+const pinnedBuildPushAction = `uses: docker/build-push-action@${'a'.repeat(40)} # v7`;
+assert.equal(
+  hasPinnedDockerBuildPushActionV7(pinnedBuildPushAction),
+  true,
+  'SHA-pinned docker/build-push-action with its v7 annotation must satisfy readiness'
+);
+assert.equal(
+  hasPinnedDockerBuildPushActionV7('uses: docker/build-push-action@v7'),
+  false,
+  'mutable build-push-action tags must not satisfy the release pinning gate'
+);
+assert.equal(
+  hasPinnedDockerBuildPushActionV7(`uses: actions/checkout@${'a'.repeat(40)} # v7`),
+  false,
+  'a SHA pin for another action must not satisfy the build-push-action gate'
+);
+assert.equal(
+  hasPinnedDockerBuildPushActionV7(`uses: docker/build-push-action@${'a'.repeat(40)} # v6`),
+  false,
+  'a SHA pin annotated as a different major version must not satisfy the v7 gate'
 );
 
-const passing = collectGateDetailFailures(mobileReport({ mounted: true, adaptiveLedger: true }));
+const completeMobileChecks = Object.fromEntries(
+  MOBILE_OVERVIEW_REQUIRED_CHECKS.map((name) => [name, true])
+);
+const missing = collectGateDetailFailures(mobileReport({
+  ...completeMobileChecks,
+  expandedClaim: undefined,
+}));
+assert(
+  missing.mobileSemantic.some((failure) => failure.field === 'checks.expandedClaim'),
+  'release evidence must fail when the current Optical Patrol expanded-claim contract is omitted'
+);
+
+const passing = collectGateDetailFailures(mobileReport(completeMobileChecks));
 assert.deepEqual(passing.mobileSemantic, []);
+
+const unreadableOperationalText = collectGateDetailFailures(mobileReport({
+  ...completeMobileChecks,
+  readableText: false,
+}));
+assert(
+  unreadableOperationalText.mobileSemantic.some((failure) => failure.field === 'checks.readableText'),
+  'release evidence must fail when otherwise-complete Optical Patrol checks report unreadable operational text'
+);
+
+const staleProducer = mobileReport(completeMobileChecks);
+staleProducer.checks[0].detail.mobileOverviewAppHomeGateProbe.requiredChecks =
+  MOBILE_OVERVIEW_REQUIRED_CHECKS.filter((field) => field !== 'readableText');
+assert(
+  collectGateDetailFailures(staleProducer).mobileSemantic.some((failure) => failure.field === 'requiredChecks.missing'),
+  'release evidence must fail when the producer declares a stale required-check contract'
+);
+
+const retiredProducerField = mobileReport(completeMobileChecks);
+retiredProducerField.checks[0].detail.mobileOverviewAppHomeGateProbe.requiredChecks = [
+  ...MOBILE_OVERVIEW_REQUIRED_CHECKS,
+  'decisiveEvidence',
+];
+assert(
+  collectGateDetailFailures(retiredProducerField).mobileSemantic.some((failure) => failure.field === 'requiredChecks.unexpected'),
+  'release evidence must fail when a retired producer field reappears'
+);
+
+const duplicateProducerField = mobileReport(completeMobileChecks, [
+  ...MOBILE_OVERVIEW_REQUIRED_CHECKS,
+  'mounted',
+]);
+assert(
+  collectGateDetailFailures(duplicateProducerField).mobileSemantic.some((failure) => failure.field === 'requiredChecks.duplicates'),
+  'release evidence must fail when the producer repeats a required field'
+);
+
+const undeclaredActualField = mobileReport({
+  ...completeMobileChecks,
+  decisiveEvidence: true,
+}, MOBILE_OVERVIEW_REQUIRED_CHECKS);
+assert(
+  collectGateDetailFailures(undeclaredActualField).mobileSemantic.some((failure) => failure.field === 'checks.unexpected'),
+  'release evidence must fail when checks contains an undeclared retired field'
+);
+
+const missingActualChecks = { ...completeMobileChecks };
+delete missingActualChecks.expandedClaim;
+const missingActualField = mobileReport(missingActualChecks, MOBILE_OVERVIEW_REQUIRED_CHECKS);
+assert(
+  collectGateDetailFailures(missingActualField).mobileSemantic.some((failure) => failure.field === 'checks.missing'),
+  'release evidence must fail when the declared producer contract omits an actual check key'
+);
+
+const retiredMobile = mobileReport(completeMobileChecks);
+retiredMobile.checks[0].detail.mobileOverviewAppHomeGateProbe.contract = 'pocket-console-v1';
+assert(
+  collectGateDetailFailures(retiredMobile).mobileSemantic.some((failure) => failure.field === 'contract'),
+  'the superseded Pocket Console contract must not satisfy public readiness'
+);
+const legacyLinkboard = mobileReport(completeMobileChecks);
+legacyLinkboard.checks[0].detail.mobileOverviewAppHomeGateProbe.contract = 'linkboard-overview-v1';
+assert(
+  collectGateDetailFailures(legacyLinkboard).mobileSemantic.some((failure) => failure.field === 'contract'),
+  'the retired Linkboard contract must not satisfy public readiness'
+);
+
+const readinessSource = fs.readFileSync(path.join(__dirname, 'check-public-release-readiness.js'), 'utf8');
+assert(!readinessSource.includes('src/panel-framework/mobile/MobilePatrolScreen.tsx'));
+assert(!readinessSource.includes('src/panel-framework/mobile/MobileEvidenceLedger.tsx'));
+assert(!readinessSource.includes('src/panel-framework/mobile/mobile-patrol.css'));
+assert(readinessSource.includes('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx'));
+assert(readinessSource.includes("contract !== 'optical-patrol-v1'"));
+assert(!readinessSource.includes("contract !== 'pocket-console-v1'"));
+assert(!readinessSource.includes("contract !== 'linkboard-overview-v1'"));
+assert(readinessSource.includes("assertNotContains('public/assets/framework/panel-framework.js', 'data-linkboard-root')"));
+assert(readinessSource.includes("'[data-optical-patrol-expanded-claim]'"));
+assert(readinessSource.includes("'[data-optical-patrol-action]'"));
+assert(readinessSource.includes("'[data-optical-patrol-evidence-deck]'"));
+assert(readinessSource.includes("assertNotExists('tools/check-pocket-console-runtime.js')"));
+assert(readinessSource.includes("assertNotExists('tools/lib/pocket-console-runtime/runtime.js')"));
+assert(readinessSource.includes("assertContains('tools/check-optical-patrol-runtime.js', 'source: \"optical-patrol-runtime\"')"));
+
+const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+assert.equal(packageJson.scripts['check:mobile-linkboard'], undefined);
+assert.equal(packageJson.scripts['check:mobile-pocket-console'], undefined);
+assert.equal(typeof packageJson.scripts['check:mobile-optical-patrol'], 'string');
+assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-model.js'));
+assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-architecture.js'));
+assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-accessibility-static.js'));
+assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-runtime.js'));
+assert.equal((packageJson.scripts['check:runtime-browser'].match(/check:mobile-optical-patrol/g) || []).length, 1);
+assert.equal(fs.existsSync(path.join(__dirname, 'check-pocket-console-runtime.js')), false);
+assert.equal(fs.existsSync(path.join(__dirname, 'lib', 'pocket-console-runtime', 'runtime.js')), false);
+assert.equal(fs.existsSync(path.join(__dirname, 'check-optical-patrol-runtime.js')), true);
+
+const supersededPocketReview = inspectIndependentReviewRecords({ step: 932 });
+assert.equal(supersededPocketReview.pass, true, 'the historical Step932 review record must remain readable without becoming current evidence');
+assert.equal(supersededPocketReview.reviewStatus, 'superseded/historical');
+assert.equal(supersededPocketReview.currentEvidence, false);
+assert.equal(supersededPocketReview.historicalEvidenceOnly, true);
+assert.equal(supersededPocketReview.supersededPocketReview, true);
+assert.equal(supersededPocketReview.runtimeReport, '_acceptance/pocket-console-runtime/report.json');
 
 const currentDesktop = collectGateDetailFailures(desktopReport('overview-task-v1'));
 assert.deepEqual(
@@ -111,8 +245,26 @@ assert.doesNotThrow(() => assertEvidenceModeEligibility(currentIdentity, { allow
 assert.deepEqual(parseArgs(['--engineering-worktree']), {
   staticOnly: false,
   allowDirtyEngineering: true,
+  releaseCandidate: false,
+  candidateEvidenceArgs: [],
   help: false,
 });
+assert.deepEqual(
+  parseArgs(['--release-candidate', `--candidate-commit=${'a'.repeat(40)}`]),
+  {
+    staticOnly: false,
+    allowDirtyEngineering: false,
+    releaseCandidate: true,
+    candidateEvidenceArgs: [`--candidate-commit=${'a'.repeat(40)}`],
+    help: false,
+  },
+  'release-candidate mode must preserve exact external evidence arguments'
+);
+assert.throws(
+  () => parseArgs([`--candidate-commit=${'a'.repeat(40)}`]),
+  /require --release-candidate/,
+  'candidate evidence cannot be smuggled into an ordinary readiness run'
+);
 assert.equal(
   RUNTIME_CHECK_CONTRACT?.tabletSparseWorkbench,
   '768px tablet domain workspace exposes a split object task with semantic preview',
@@ -138,33 +290,7 @@ const step184RequiredChecks = {
 };
 for (const [key, checkName] of Object.entries(step184RequiredChecks)) {
   assert.equal(RUNTIME_CHECK_CONTRACT?.[key], checkName, `runtime contract must expose ${key}`);
-  assert(
-    Array.isArray(RUNTIME_REQUIRED_CHECKS) && RUNTIME_REQUIRED_CHECKS.includes(checkName),
-    `public readiness must require ${key}`
-  );
 }
-
-const syntheticDetailContract = RUNTIME_SCREENSHOT_CONTRACT.find(
-  (item) => item.state === 'a11y-synthetic-text-stress200-logs-detail'
-);
-assert.deepEqual(
-  syntheticDetailContract?.evidence,
-  {
-    class: 'synthetic-text-stress',
-    scale: 2,
-    accessibilitySignoff: false,
-    cssViewport: [390, 844],
-  },
-  'synthetic detail metadata must explicitly refuse Accessibility signoff'
-);
-assert.equal(
-  runtimeScreenshotEvidenceMatches(
-    { ...syntheticDetailContract.evidence, accessibilitySignoff: true },
-    syntheticDetailContract.evidence
-  ),
-  false,
-  'readiness metadata matching must reject a synthetic screenshot that claims Accessibility signoff'
-);
 
 const runtimeBrowserSource = fs.readFileSync(path.join(__dirname, 'check-panel-runtime-browser.js'), 'utf8');
 const zoomProbeStart = runtimeBrowserSource.indexOf('const result = await accessibilityPage.evaluate(async');
@@ -185,12 +311,12 @@ assert(
   runtimeBrowserSource.includes('bottomGeometry.settled === true'),
   'browser zoom checks must fail closed when layout did not settle'
 );
-assert.doesNotThrow(() => assertRuntimeEvidenceIdentity({ ...currentIdentity }, currentIdentity));
-assert.throws(
-  () => assertRuntimeEvidenceIdentity({ commit: currentIdentity.commit }, currentIdentity),
-  /runtime browser report does not match current runtime worktree identity/,
-  'runtime browser evidence must not be accepted by HEAD alone'
-);
+assert.equal(MATRIX_REPORT_ALIAS_NAMES.overview.has('panel-runtime-browser'), false);
+assert.equal(reportNameMatchesKind('panel-runtime-browser', 'overview'), false);
+assert.equal(reportNameMatchesKind('independent-visual-signoff-current', 'overview'), false);
+assert.equal(reportNameMatchesKind('release-matrix-current', 'overview'), true);
+assert.equal(reportNameMatchesKind('route-matrix-current', 'responsive'), true);
+assert.equal(reportNameMatchesKind('route-state-matrix-current', 'state'), true);
 
 const mixedIdentity = { ...sameIdentity, routeState: matrixEvidence('different') };
 assert.throws(

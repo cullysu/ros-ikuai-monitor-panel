@@ -1,7 +1,7 @@
 # Document authority inventory
 
 - status: `current-authority-inventory`
-- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- validForCommit: Step938 exact local-independent P0/P1 closure; full release evidence remains open
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md` owns the current product conclusion; this file owns the machine-readable document registry.
 

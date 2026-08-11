@@ -26,6 +26,19 @@ def _finite_resource_number(value):
     return number if math.isfinite(number) else None
 
 
+def _observed_counter(value):
+    """Keep missing RouterOS counters unknown while preserving an observed zero."""
+    number = _finite_resource_number(value)
+    if number is None or number < 0:
+        return None
+    return int(number)
+
+
+def _observed_counter_total(*values):
+    observed = [_observed_counter(value) for value in values]
+    return sum(observed) if all(value is not None for value in observed) else None
+
+
 def _resource_observation(resource):
     cpu = _finite_resource_number(resource.get("cpu-load"))
     total_memory = _finite_resource_number(resource.get("total-memory"))
@@ -212,7 +225,14 @@ class SnapshotBuilderMixin:
             "onlineTerminals": terminal_count,
             "connectionTotal": ssh["counts"]["all"],
             "systemLoadLevel": _runtime.rate_level(max(observed_pressures) / 100) if observed_pressures else "unknown",
-            "history": {key: list(values) for key, values in self.history.items()},
+            # Public trend evidence is intentionally atomic.  The collector may
+            # retain implementation-local state, but the panel must never have
+            # to zip parallel metric arrays with timestamps and guess whether
+            # they still describe the same observation.
+            "history": {
+                "resourceSamples": list(self.history["resourceSamples"]),
+                "trafficSamples": list(self.history["trafficSamples"]),
+            },
         }
 
     def build_interfaces(self, rest, rates, addresses_by_interface, quality):
@@ -227,9 +247,15 @@ class SnapshotBuilderMixin:
             parent_hint = _runtime.interface_parent_hint(item)
             group_key = _runtime.interface_quality_group_key(item)
             is_derived = _runtime.interface_is_derived(name, iface_type)
-            drop_total = _runtime.to_int(item.get("rx-drop")) + _runtime.to_int(item.get("tx-drop"))
-            error_total = _runtime.to_int(item.get("rx-error")) + _runtime.to_int(item.get("tx-error"))
-            packet_total = _runtime.to_int(item.get("rx-packet")) + _runtime.to_int(item.get("tx-packet"))
+            rx_drop = _observed_counter(item.get("rx-drop"))
+            tx_drop = _observed_counter(item.get("tx-drop"))
+            rx_error = _observed_counter(item.get("rx-error"))
+            tx_error = _observed_counter(item.get("tx-error"))
+            rx_packets = _observed_counter(item.get("rx-packet"))
+            tx_packets = _observed_counter(item.get("tx-packet"))
+            drop_total = _observed_counter_total(item.get("rx-drop"), item.get("tx-drop"))
+            error_total = _observed_counter_total(item.get("rx-error"), item.get("tx-error"))
+            packet_total = _observed_counter_total(item.get("rx-packet"), item.get("tx-packet"))
             quality_row = copy.deepcopy(quality.get(name, {}))
             quality_row.setdefault("packetTotal", packet_total)
             quality_row.setdefault("packetDelta", 0)
@@ -266,14 +292,14 @@ class SnapshotBuilderMixin:
                     "ips": [row.get("address", "-") for row in addresses_by_interface.get(name, [])],
                     "networks": [row.get("network", "-") for row in addresses_by_interface.get(name, [])],
                     "gateways": [row.get("dst-address", "-") for row in gateway_rows.get(name, [])[:4]],
-                    "rxBytes": _runtime.to_int(item.get("rx-byte")),
-                    "txBytes": _runtime.to_int(item.get("tx-byte")),
-                    "rxPackets": _runtime.to_int(item.get("rx-packet")),
-                    "txPackets": _runtime.to_int(item.get("tx-packet")),
-                    "rxDrop": _runtime.to_int(item.get("rx-drop")),
-                    "txDrop": _runtime.to_int(item.get("tx-drop")),
-                    "rxError": _runtime.to_int(item.get("rx-error")),
-                    "txError": _runtime.to_int(item.get("tx-error")),
+                    "rxBytes": _observed_counter(item.get("rx-byte")),
+                    "txBytes": _observed_counter(item.get("tx-byte")),
+                    "rxPackets": rx_packets,
+                    "txPackets": tx_packets,
+                    "rxDrop": rx_drop,
+                    "txDrop": tx_drop,
+                    "rxError": rx_error,
+                    "txError": tx_error,
                     "rxRate": rates.get(name, {}).get("rxBps"),
                     "txRate": rates.get(name, {}).get("txBps"),
                     **quality_row,
@@ -496,23 +522,50 @@ class SnapshotBuilderMixin:
             refined_alerts.sort(key=lambda row: (_runtime.ACTION_SEVERITY_RANK.get(row.get("severity"), 3), row.get("kind", ""), str(row.get("value", ""))))
             alerts = refined_alerts
 
-        terminal_stats = defaultdict(lambda: {"up": 0.0, "down": 0.0, "connections": 0, "sessionBytes": 0})
+        # A connection-rate field is an observation, not a counter.  In
+        # particular, a missing RouterOS ``*-rate`` field must remain unknown:
+        # treating it as zero makes an unavailable measurement look idle.
+        terminal_stats = defaultdict(
+            lambda: {
+                "up": 0,
+                "down": 0,
+                "upComplete": True,
+                "downComplete": True,
+                "rateRows": 0,
+                "connections": 0,
+                "sessionBytes": 0,
+            }
+        )
+
+        def complete_terminal_rate(stats, direction):
+            if not stats["rateRows"] or not stats[f"{direction}Complete"]:
+                return None
+            return stats[direction]
+
         active_rows = []
         for conn in ssh["active_connections"]:
             local_ip, remote_ip, local_key = self.extract_local_ip(conn, local_networks, router_ips)
             if not local_ip:
                 continue
             if local_key in {"src-address", "dst-address"}:
-                up_rate = _runtime.to_int(conn.get("orig-rate"))
-                down_rate = _runtime.to_int(conn.get("repl-rate"))
+                up_rate = _observed_counter(conn.get("orig-rate"))
+                down_rate = _observed_counter(conn.get("repl-rate"))
             else:
-                up_rate = _runtime.to_int(conn.get("repl-rate"))
-                down_rate = _runtime.to_int(conn.get("orig-rate"))
-            terminal_stats[local_ip]["up"] += up_rate
-            terminal_stats[local_ip]["down"] += down_rate
-            terminal_stats[local_ip]["connections"] += 1
+                up_rate = _observed_counter(conn.get("repl-rate"))
+                down_rate = _observed_counter(conn.get("orig-rate"))
+            stats = terminal_stats[local_ip]
+            stats["rateRows"] += 1
+            if up_rate is None:
+                stats["upComplete"] = False
+            else:
+                stats["up"] += up_rate
+            if down_rate is None:
+                stats["downComplete"] = False
+            else:
+                stats["down"] += down_rate
+            stats["connections"] += 1
             session_bytes = _runtime.to_int(conn.get("orig-bytes")) + _runtime.to_int(conn.get("repl-bytes"))
-            terminal_stats[local_ip]["sessionBytes"] += session_bytes
+            stats["sessionBytes"] += session_bytes
             active_rows.append(
                 {
                     "localIp": local_ip,
@@ -522,7 +575,7 @@ class SnapshotBuilderMixin:
                     "downRate": down_rate,
                     "timeout": conn.get("timeout", "-"),
                     "mark": conn.get("connection-mark", "-"),
-                    "totalRate": up_rate + down_rate,
+                    "totalRate": up_rate + down_rate if up_rate is not None and down_rate is not None else None,
                     "sessionBytes": session_bytes,
                 }
             )
@@ -575,6 +628,8 @@ class SnapshotBuilderMixin:
                 continue
             seen.add(ip_addr)
             stats = terminal_stats[ip_addr]
+            up_rate = complete_terminal_rate(stats, "up")
+            down_rate = complete_terminal_rate(stats, "down")
             terminals.append(
                 {
                     "ip": ip_addr,
@@ -582,8 +637,8 @@ class SnapshotBuilderMixin:
                     "hostname": row["hostname"],
                     "status": row["status"],
                     "lastSeen": row["lastSeen"],
-                    "upRate": stats["up"],
-                    "downRate": stats["down"],
+                    "upRate": up_rate,
+                    "downRate": down_rate,
                     "connections": stats["connections"],
                     "sessionBytes": stats["sessionBytes"],
                 }
@@ -594,6 +649,8 @@ class SnapshotBuilderMixin:
             seen.add(ip_addr)
             arp_row = arp_by_ip.get(ip_addr, {})
             lease = leases_by_ip.get(ip_addr) or leases_by_mac.get(arp_row.get("mac"))
+            up_rate = complete_terminal_rate(stats, "up")
+            down_rate = complete_terminal_rate(stats, "down")
             terminals.append(
                 {
                     "ip": ip_addr,
@@ -601,8 +658,8 @@ class SnapshotBuilderMixin:
                     "hostname": arp_row.get("hostname") or (lease or {}).get("host-name", "-"),
                     "status": arp_row.get("status") or "active",
                     "lastSeen": arp_row.get("lastSeen") or (lease or {}).get("last-seen", "-"),
-                    "upRate": stats["up"],
-                    "downRate": stats["down"],
+                    "upRate": up_rate,
+                    "downRate": down_rate,
                     "connections": stats["connections"],
                     "sessionBytes": stats["sessionBytes"],
                 }
@@ -613,6 +670,8 @@ class SnapshotBuilderMixin:
                 continue
             seen.add(ip_addr)
             stats = terminal_stats[ip_addr]
+            up_rate = complete_terminal_rate(stats, "up")
+            down_rate = complete_terminal_rate(stats, "down")
             terminals.append(
                 {
                     "ip": ip_addr,
@@ -620,14 +679,21 @@ class SnapshotBuilderMixin:
                     "hostname": row["hostname"],
                     "status": row["status"],
                     "lastSeen": row["lastSeen"],
-                    "upRate": stats["up"],
-                    "downRate": stats["down"],
+                    "upRate": up_rate,
+                    "downRate": down_rate,
                     "connections": stats["connections"],
                     "sessionBytes": stats["sessionBytes"],
                 }
             )
-        terminals.sort(key=lambda row: (row["upRate"] + row["downRate"], row["connections"]), reverse=True)
-        active_rows.sort(key=lambda row: row["totalRate"], reverse=True)
+        terminals.sort(
+            key=lambda row: (
+                row["upRate"] is not None or row["downRate"] is not None,
+                (row["upRate"] or 0) + (row["downRate"] or 0),
+                row["connections"],
+            ),
+            reverse=True,
+        )
+        active_rows.sort(key=lambda row: (row["totalRate"] is not None, row["totalRate"] or 0), reverse=True)
         protocol_buckets = {}
         for row in active_rows:
             protocol = str(row.get("protocol") or "-").upper()
@@ -640,21 +706,42 @@ class SnapshotBuilderMixin:
                     "protocol": protocol,
                     "mark": mark or "-",
                     "connections": 0,
-                    "upRate": 0.0,
-                    "downRate": 0.0,
-                    "totalRate": 0.0,
+                    "upRate": 0,
+                    "downRate": 0,
+                    "upComplete": True,
+                    "downComplete": True,
+                    "rateRows": 0,
                     "sessionBytes": 0,
                     "source": "active-connection-sample",
                 }
             bucket = protocol_buckets[bucket_key]
             bucket["connections"] += 1
-            bucket["upRate"] += _runtime.to_int(row.get("upRate"))
-            bucket["downRate"] += _runtime.to_int(row.get("downRate"))
-            bucket["totalRate"] += _runtime.to_int(row.get("totalRate"))
+            bucket["rateRows"] += 1
+            if row.get("upRate") is None:
+                bucket["upComplete"] = False
+            else:
+                bucket["upRate"] += row["upRate"]
+            if row.get("downRate") is None:
+                bucket["downComplete"] = False
+            else:
+                bucket["downRate"] += row["downRate"]
             bucket["sessionBytes"] += _runtime.to_int(row.get("sessionBytes"))
+        for bucket in protocol_buckets.values():
+            if not bucket["upComplete"]:
+                bucket["upRate"] = None
+            if not bucket["downComplete"]:
+                bucket["downRate"] = None
+            bucket["totalRate"] = (
+                bucket["upRate"] + bucket["downRate"]
+                if bucket["upRate"] is not None and bucket["downRate"] is not None
+                else None
+            )
+            del bucket["upComplete"]
+            del bucket["downComplete"]
+            del bucket["rateRows"]
         protocol_top_rows = sorted(
             protocol_buckets.values(),
-            key=lambda row: (row["totalRate"], row["connections"], row["sessionBytes"]),
+            key=lambda row: (row["totalRate"] is not None, row["totalRate"] or 0, row["connections"], row["sessionBytes"]),
             reverse=True,
         )[:20]
         arp_items = sorted(arp_rows, key=lambda row: _runtime.ip_sort_key(row["ip"]))[:120]
@@ -1037,7 +1124,11 @@ class SnapshotBuilderMixin:
     def build_logs(self, rest):
         groups = {"system": [], "firewall": [], "dhcp": [], "dns": [], "all": []}
         for item in rest["logs"][:200]:
-            row = {"time": item.get("time", "-"), "topics": item.get("topics", "-"), "message": item.get("message", "-")}
+            row = {
+                "observedAt": _runtime.optional_rfc3339_timestamp(item.get("observedAt") or item.get("time")),
+                "topics": item.get("topics", "-"),
+                "message": item.get("message", "-"),
+            }
             groups["all"].append(row)
             topics = str(item.get("topics", ""))
             if "firewall" in topics:
@@ -1052,8 +1143,23 @@ class SnapshotBuilderMixin:
 
     def build_snapshot(self, rest, ssh, fresh_counter_sample=False):
         connection_counts = copy.deepcopy(ssh.get("counts", {}))
-        counted_total = _runtime.to_int(connection_counts.get("tcp")) + _runtime.to_int(connection_counts.get("udp")) + _runtime.to_int(connection_counts.get("icmp"))
-        connection_counts["all"] = max(_runtime.to_int(connection_counts.get("all")), counted_total)
+        reported_total = _observed_counter(connection_counts.get("all"))
+        protocol_counts = {
+            protocol: _observed_counter(connection_counts.get(protocol))
+            for protocol in ("tcp", "udp", "icmp")
+        }
+        connection_counts.update(protocol_counts)
+        breakdown_total = sum(protocol_counts.values()) if all(value is not None for value in protocol_counts.values()) else None
+        protocol_summary_observed = _runtime.optional_rfc3339_timestamp(ssh.get("protocolUpdatedAt")) is not None
+        connection_counts["all"] = (
+            max(reported_total, breakdown_total)
+            if reported_total is not None and breakdown_total is not None
+            else breakdown_total
+            if breakdown_total is not None
+            else reported_total
+            if protocol_summary_observed
+            else None
+        )
         ssh = {**ssh, "counts": connection_counts}
         has_counter_sample = bool(
             fresh_counter_sample
@@ -1113,7 +1219,7 @@ class SnapshotBuilderMixin:
                 **terminals.get("meta", {}).get("activeConnections", _runtime.list_scale_meta(active_connection_shown, active_connection_shown, sampled=True)),
                 "actualCount": ssh["counts"]["all"],
                 "totalCount": ssh["counts"]["all"],
-                "hasMore": active_connection_shown < ssh["counts"]["all"],
+                "hasMore": active_connection_shown < ssh["counts"]["all"] if ssh["counts"]["all"] is not None else None,
             },
             "dnsStatic": _runtime.list_scale_meta(
                 _runtime.dns_static_total_count_from_meta(rest.get("dns_static_meta", {}), _runtime.DNS_STATIC_PREVIEW_LIMIT),
@@ -1160,10 +1266,6 @@ class SnapshotBuilderMixin:
         observation = _resource_observation(resource)
         snapshot_timestamp = _runtime.format_iso_now()
         if all(observation[key] is not None for key in ("cpu", "memory", "disk")):
-            self.history["cpu"].append(observation["cpu"])
-            self.history["memory"].append(observation["memory"])
-            self.history["disk"].append(observation["disk"])
-            self.history["timestamps"].append(snapshot_timestamp)
             self.history["resourceSamples"].append(
                 {
                     "timestamp": snapshot_timestamp,
@@ -1297,7 +1399,7 @@ class SnapshotBuilderMixin:
                 "protocolTop": terminals["protocolTop"],
                 "topIps": terminals["topIpConnections"],
                 "active": terminals["activeConnections"],
-                "thresholdLevel": _runtime.rate_level(min(ssh["counts"]["all"] / 120000, 1)),
+                "thresholdLevel": _runtime.rate_level(min(ssh["counts"]["all"] / 120000, 1)) if ssh["counts"]["all"] is not None else "unknown",
                 "protocolUpdatedAt": ssh.get("protocolUpdatedAt"),
                 "detailUpdatedAt": ssh.get("detailUpdatedAt"),
                 "protocolError": ssh.get("protocolError"),

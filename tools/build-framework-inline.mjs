@@ -59,7 +59,12 @@ await build(defineConfig({
     "process.env.NODE_ENV": JSON.stringify("production")
   },
   build: {
-    minify: "esbuild",
+    minify: "terser",
+    terserOptions: {
+      compress: { passes: 2 },
+      format: { comments: false },
+      mangle: true,
+    },
     cssMinify: true,
     outDir: frameworkDir,
     emptyOutDir: false,

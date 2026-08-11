@@ -55,6 +55,8 @@ def normalize_router_host(value):
         if len(hostname) > 253 or hostname.endswith("."):
             raise ValueError("RouterOS hostname is invalid")
         labels = hostname.split(".")
+        if len(labels) == 4 and all(label.isdigit() for label in labels):
+            raise ValueError("RouterOS IPv4 address is invalid")
         if any(
             not label
             or len(label) > 63

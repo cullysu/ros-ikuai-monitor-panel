@@ -92,6 +92,26 @@ def assert_unit_contract() -> None:
                 if sidecar.is_symlink() or sidecar.exists():
                     sidecar.unlink()
 
+        in_root_sidecar_target = public / "prebuilt-sidecar"
+        in_root_sidecar_target.write_bytes(b"must-not-be-served-through-a-link")
+        for suffix, encoding in (("gz", "gzip"), ("br", "br")):
+            sidecar = Path(f"{hashed}.{suffix}")
+            try:
+                sidecar.symlink_to(in_root_sidecar_target)
+            except OSError:
+                # Windows can forbid symlink creation without Developer Mode or elevation.
+                continue
+            try:
+                try:
+                    resolve_static_asset(public, f"/{hashed.name}", encoding)
+                except StaticAssetNotFound:
+                    pass
+                else:
+                    raise AssertionError(f"symlinked .{suffix} sidecar was served")
+            finally:
+                if sidecar.is_symlink() or sidecar.exists():
+                    sidecar.unlink()
+
         # public-root symlink must not become a trusted root after resolve().
         external_public = public.parent / f"external-public-root-{public.name}"
         external_public.mkdir()

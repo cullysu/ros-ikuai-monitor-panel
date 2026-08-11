@@ -4,6 +4,25 @@ import { RESOURCE_METRIC_DEFINITIONS } from "./resourceHistorySamples";
 import type { OverviewEvidenceMode, OverviewRiskTask } from "./overviewEvidenceTypes";
 
 type OverviewRiskTaskSeed = Omit<OverviewRiskTask, "targetObjectId">;
+type OverviewUnrankedRiskTask = Omit<OverviewRiskTaskSeed, "priorityScore" | "priorityReason">;
+export const OVERVIEW_RISK_PRIORITY = {
+  evidence: { score: 600, reason: "当前快照不可用，停止当前状态判断" },
+  collection: { score: 550, reason: "当前采集证据已失效，停止当前状态判断" },
+  wan: { score: 500, reason: "全部 WAN 未运行，直接影响出口路径" },
+  interfaces: { score: 400, reason: "已确认默认路由依赖接口未运行" },
+  route: { score: 300, reason: "无法核实活动默认路由" },
+  resource: { score: 200, reason: "资源持续超限，但未证明网络中断" },
+  "interface-review": { score: 100, reason: "接口未运行，但影响关系尚未建立" },
+} as const satisfies Record<OverviewRiskTask["risk"], { score: number; reason: string }>;
+
+function rankedTask(task: OverviewUnrankedRiskTask): OverviewRiskTaskSeed {
+  const rule = OVERVIEW_RISK_PRIORITY[task.risk];
+  return { ...task, priorityScore: rule.score, priorityReason: rule.reason };
+}
+
+function compareRiskTasks(left: OverviewRiskTaskSeed, right: OverviewRiskTaskSeed): number {
+  return right.priorityScore - left.priorityScore || left.risk.localeCompare(right.risk);
+}
 
 export function overviewRiskTaskNavigation(
   task: OverviewRiskTask,
@@ -22,24 +41,24 @@ export function buildOverviewRiskQueue(
   state: OverviewDerivedState,
   route: OverviewRawRoute | null,
 ): OverviewRiskTaskSeed[] {
-  if (mode === "unavailable") return [{
+  if (mode === "unavailable") return [rankedTask({
     risk: "evidence",
     label: "当前快照",
     value: "不可用",
     note: "不作当前业务判断",
     tone: "danger",
     route: "readonlyDiagnostics",
-  }];
-  if (mode === "historical") return [{
+  })];
+  if (mode === "historical") return [rankedTask({
     risk: "collection",
     label: "采集状态",
     value: "当前不可确认",
     note: "只保留上次成功记录",
     tone: "warn",
     route: "readonlyDiagnostics",
-  }];
+  })];
 
-  const queue: OverviewRiskTaskSeed[] = [];
+  const queue: OverviewUnrankedRiskTask[] = [];
   if (state.facts.wan.allOffline) queue.push({
     risk: "wan",
     label: "WAN 运行",
@@ -87,5 +106,5 @@ export function buildOverviewRiskQueue(
     tone: "warn",
     route: "routes",
   });
-  return queue;
+  return queue.map(rankedTask).sort(compareRiskTasks);
 }

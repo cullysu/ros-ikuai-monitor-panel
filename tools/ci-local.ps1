@@ -5,9 +5,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$env:CODEX_MEMORY_LIMIT_MB = '2048'
+$env:NODE_OPTIONS = '--max-old-space-size=2048'
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 Push-Location $RepoRoot
 try {
+  npm ci
   python -m py_compile app.py panel_backend/rate_evidence.py tools/check-collector-regressions.py tools/check-decision-ledger-sync.py tools/test-decision-ledger-sync.py .agents/skills/router-panel-product-loop/scripts/merge_matrix_reports.py .agents/skills/router-panel-product-loop/scripts/release_checkpoint.py .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py
   python tools/check-collector-regressions.py
   python tools/test-decision-ledger-sync.py -v
@@ -28,6 +31,7 @@ try {
   node tools/check-report-completeness-quarantine.js
   node tools/check-acceptance-artifact-identity.js
   node tools/test-local-predeploy-matrix-contract.js
+  npm run check:release-gates
   docker compose --env-file .env.docker.example config --quiet
   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-packaging-preflight.ps1 -StrictInstall
 

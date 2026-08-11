@@ -1,28 +1,66 @@
 name: Container image
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
-    tags: ["v*"]
-  workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   packages: write
 
 jobs:
   build-and-publish:
     name: Build and publish GHCR image
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
+    env:
+      CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+      CI_RUN_ID: ${{ github.event.workflow_run.id }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
+      - name: Validate CI candidate identity
+        shell: bash
+        run: |
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CI_RUN_ID" =~ ^[0-9]+$ ]]
+
+      - name: Check out exact CI candidate
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Verify exact-main CI success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+          git fetch --no-tags origin main
+          test "$(git rev-parse origin/main)" = "$CANDIDATE_SHA"
+
+          gh api --method GET "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}" \
+            --jq '.head_sha == env.CANDIDATE_SHA and .head_branch == "main" and .event == "push" and .conclusion == "success"' | grep -Fx true
+
+          for check_name in "Linux validation" "Windows packaging"; do
+            export CHECK_NAME="$check_name"
+            conclusion="$(gh api --method GET \
+              "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}/jobs" \
+              -f per_page=100 \
+              --jq '.jobs | map(select(.name == env.CHECK_NAME)) | sort_by(.completed_at) | last | .conclusion')"
+            test "$conclusion" = "success"
+          done
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Log in to GHCR
-        uses: docker/login-action@v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -30,22 +68,110 @@ jobs:
 
       - name: Docker metadata
         id: meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=sha,prefix=sha-
+            type=raw,value=sha-${{ github.event.workflow_run.head_sha }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v7
+      - name: Re-verify main immediately before GHCR push
+        shell: bash
+        run: |
+          git fetch --no-tags origin main
+          test "$(git rev-parse origin/main)" = "$CANDIDATE_SHA"
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+
+      - name: Build and push exact CI candidate
+        id: push
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          annotations: |
+            index:org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
+          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Verify published GHCR OCI index
+        env:
+          IMAGE_REFERENCE: ghcr.io/${{ github.repository }}:sha-${{ github.event.workflow_run.head_sha }}
+          PUSH_DIGEST: ${{ steps.push.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$PUSH_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+
+          docker buildx imagetools inspect "$IMAGE_REFERENCE" --format '{{json .Manifest}}' > "$RUNNER_TEMP/tag-manifest.json"
+          node - "$RUNNER_TEMP/tag-manifest.json" "$PUSH_DIGEST" <<'NODE'
+          'use strict';
+
+          const fs = require('node:fs');
+          const [manifestPath, pushDigest] = process.argv.slice(2);
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          if (manifest.digest !== pushDigest) {
+            throw new Error('Resolved sha tag digest does not match the build-push digest output');
+          }
+          NODE
+
+          docker buildx imagetools inspect --raw "$IMAGE_REFERENCE" > "$RUNNER_TEMP/published-oci-index.json"
+          node - "$RUNNER_TEMP/published-oci-index.json" "$CANDIDATE_SHA" "$PUSH_DIGEST" "$CI_RUN_ID" "$GITHUB_RUN_ID" "$IMAGE_REFERENCE" "$RUNNER_TEMP/ghcr-image-evidence.json" <<'NODE'
+          'use strict';
+
+          const fs = require('node:fs');
+          const [indexPath, candidateSha, pushDigest, ciRunId, containerRunId, imageReference, evidencePath] = process.argv.slice(2);
+          const fail = (message) => {
+            throw new Error(`Published OCI index contract failed: ${message}`);
+          };
+
+          const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+          if (index.mediaType !== 'application/vnd.oci.image.index.v1+json') {
+            fail(`expected OCI index media type, received ${index.mediaType || '<missing>'}`);
+          }
+          if (index.annotations?.['org.opencontainers.image.revision'] !== candidateSha) {
+            fail('index revision annotation does not match the CI candidate SHA');
+          }
+
+          const expectedPlatforms = new Set(['linux/amd64', 'linux/arm64']);
+          if (!Array.isArray(index.manifests) || index.manifests.length !== expectedPlatforms.size) {
+            fail('index must contain exactly the linux/amd64 and linux/arm64 manifests');
+          }
+          for (const manifest of index.manifests) {
+            const platform = manifest.platform || {};
+            const platformName = `${platform.os}/${platform.architecture}`;
+            if (platform.variant || !expectedPlatforms.delete(platformName)) {
+              fail(`unexpected index platform ${platformName}${platform.variant ? `/${platform.variant}` : ''}`);
+            }
+          }
+          if (expectedPlatforms.size !== 0) {
+            fail(`missing index platforms: ${[...expectedPlatforms].join(', ')}`);
+          }
+
+          const platforms = Object.fromEntries(index.manifests.map((manifest) => [
+            `${manifest.platform.os}/${manifest.platform.architecture}`,
+            manifest.digest,
+          ]));
+          fs.writeFileSync(evidencePath, JSON.stringify({
+            schema: 'ghcr-image-evidence-v1',
+            candidate_sha: candidateSha,
+            ci_run_id: Number(ciRunId),
+            container_run_id: Number(containerRunId),
+            image: imageReference,
+            oci_index_digest: pushDigest,
+            index_revision: index.annotations['org.opencontainers.image.revision'],
+            platforms,
+          }, null, 2) + '\n', { encoding: 'utf8', mode: 0o600 });
+          NODE
+
+      - name: Persist immutable GHCR index evidence
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: ghcr-image-evidence-${{ github.event.workflow_run.head_sha }}
+          path: ${{ runner.temp }}/ghcr-image-evidence.json
+          if-no-files-found: error
+          retention-days: 90

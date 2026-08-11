@@ -26,6 +26,12 @@ require.extensions[".tsx"] = loadTypeScript;
 const { buildOverviewEvidenceModel } = require(
   path.join(root, "src", "panel-framework", "overview", "evidence-model", "buildOverviewEvidenceModel.ts")
 );
+const { OVERVIEW_RISK_PRIORITY } = require(
+  path.join(root, "src", "panel-framework", "overview", "evidence-model", "buildOverviewRiskQueue.ts")
+);
+const { buildOpticalPatrolModel } = require(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "buildOpticalPatrolModel.ts")
+);
 const { buildOverviewComparisonObjects } = require(
   path.join(root, "src", "panel-framework", "overview", "evidence-model", "buildOverviewComparisonObjects.ts")
 );
@@ -77,16 +83,16 @@ function rowsFromModel(route, model) {
   });
   return rowsFromSectionModel(route, { ...model, tables });
 }
-const mobilePatrolSource = fs.readFileSync(
-  path.join(root, "src", "panel-framework", "mobile", "MobilePatrolScreen.tsx"),
+const opticalPatrolSource = fs.readFileSync(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "OpticalPatrol.tsx"),
   "utf8",
 );
-const tabletRelationSource = fs.readFileSync(
-  path.join(root, "src", "panel-framework", "mobile", "MobileTabletRelationRail.tsx"),
+const opticalGeometrySource = fs.readFileSync(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "OpticalPatrolClaimGeometry.tsx"),
   "utf8",
 );
-assert.match(mobilePatrolSource, /MobileTabletRelationRail/, "normal tablet must mount the relation evidence rail");
-assert.match(tabletRelationSource, /data-overview-task-landmark=\"relation-evidence\"/, "relation rail must expose a semantic task landmark");
+assert.match(opticalPatrolSource, /OpticalPatrolEvidenceDeck/, "tablet Optical Patrol must mount its evidence workbench");
+assert.match(opticalGeometrySource, /data-optical-patrol-relationship/, "Optical Patrol must expose object relationships as semantic evidence");
 
 const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot));
@@ -166,7 +172,7 @@ assert.equal(
 );
 assert.equal(
   routeUrl("interfaces", { pathname: "/panel", search: "?mode=public" }, { objectId: "interface-ether9" }),
-  "/panel?mode=public&section=interfaces&object=interface-ether9",
+  "/panel?section=interfaces&object=interface-ether9",
   "new navigation emits one canonical query URL without a duplicate hash route",
 );
 const contextualRoute = routeUrl(
@@ -180,7 +186,7 @@ const contextualRoute = routeUrl(
 );
 assert.equal(
   contextualRoute,
-  "/panel?mode=public&section=interfaces&object=interface-ether9&from=overview&evidenceAt=2026-07-18T07%3A03%3A01Z",
+  "/panel?section=interfaces&object=interface-ether9&from=overview&evidenceAt=2026-07-18T07%3A03%3A01Z",
   "object navigation must preserve its source route and timezone-qualified evidence time",
 );
 assert.deepEqual(
@@ -198,7 +204,7 @@ const riskContextRoute = routeUrl(
 );
 assert.equal(
   riskContextRoute,
-  "/panel?mode=public&section=interfaces&risk=interfaces&from=overview&evidenceAt=2026-07-18T07%3A03%3A01Z",
+  "/panel?section=interfaces&risk=interfaces&from=overview&evidenceAt=2026-07-18T07%3A03%3A01Z",
   "a collection risk must preserve source and evidence time without inventing an object",
 );
 assert.deepEqual(
@@ -210,7 +216,7 @@ assert.equal(
     pathname: "/panel",
     search: "?mode=public&risk=not-a-risk&from=overview&evidenceAt=2026-07-18%2007%3A03%3A01",
   }),
-  "/panel?mode=public&section=interfaces",
+  "/panel?section=interfaces",
   "unknown risks and timezone-free evidence times cannot create navigation context",
 );
 assert.equal(
@@ -218,7 +224,7 @@ assert.equal(
     pathname: "/panel",
     search: "?mode=public&object=interface-ether9&from=not-a-route&evidenceAt=2026-07-18%2007%3A03%3A01",
   }),
-  "/panel?mode=public&object=interface-ether9&section=interfaces",
+  "/panel?section=interfaces&object=interface-ether9",
   "invalid return routes and timezone-free evidence timestamps must be removed during canonicalization",
 );
 assert.equal(
@@ -536,7 +542,7 @@ const fleetWorkspaceUrl = routeUrl(
 );
 assert.equal(
   fleetWorkspaceUrl,
-  `/panel?mode=public&section=interfaces&from=overview&evidenceAt=${encodeURIComponent(fleetCoverageModel.evidenceAt)}`,
+  `/panel?section=interfaces&from=overview&evidenceAt=${encodeURIComponent(fleetCoverageModel.evidenceAt)}`,
   "a collection-level Fleet handoff preserves source and evidence time without inventing object or risk",
 );
 assert.deepEqual(
@@ -817,13 +823,14 @@ resource.overview.history.memory = resourceMemory.map(() => 0);
 resource.overview.history.disk = resourceDisk.map(() => 0);
 const resourceModel = modelFor(resource);
 assert.equal(resourceModel.risk, "resource");
-assert.deepEqual(resourceModel.facts.map((row) => row.key), ["resource-breaches", "resource-trailing", "resource-samples"]);
-assert.deepEqual(resourceModel.facts.map((row) => row.value), ["3 / 3", "25 秒", "原子序列"]);
+assert.deepEqual(resourceModel.facts.map((row) => row.key), ["resource-breaches", "resource-sample", "collection"]);
+assert.deepEqual(resourceModel.facts.map((row) => row.value), ["3 / 3", "完整", "2 / 2"]);
 assert.equal(resourceModel.priorityObjects.length, 1);
 assert.equal(resourceModel.priorityObjects[0].route, "trafficLoad");
 assert.equal(resourceModel.priorityObjects[0].name, "CPU", "resource incident ownership belongs to the leading breached metric, not the router");
-assert.match(resourceModel.priorityObjects[0].state, /96%.*85%/, "resource incident state carries current value and threshold once");
-assert.match(resourceModel.priorityObjects[0].reason, /高出 11 个百分点.*连续 6 \/ 6 个样本.*25 秒/, "resource incident adds threshold delta and per-metric time evidence");
+assert.match(resourceModel.priorityObjects[0].state, /96%.*85%.*\+11pp/, "resource incident state carries current value, threshold and excess once");
+assert.equal(resourceModel.priorityObjects[0].reason, "当前样本已越过策略阈值；趋势与持续性见历史证据。");
+assert.deepEqual(resourceModel.priorityObjects[0].attributes, [], "resource incident summary must not replay temporal evidence");
 assert.equal(resourceModel.traffic, null, "resource incidents must not be displaced by an unrelated WAN chart");
 assert.equal(resourceModel.resource.status, "ready");
 assert.deepEqual(
@@ -938,6 +945,12 @@ assert.equal(cpuResourceRow.evidence.delta, 11);
 assert.equal(cpuResourceRow.evidence.trailing, 6);
 assert.equal(cpuResourceRow.evidence.durationSeconds, 25);
 assert.match(cpuResourceRow.evidence.evidenceAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/);
+assert.match(cpuResourceRow.secondary, /高出阈值 11 个百分点 · 连续 6 \/ 6/);
+const normalResourceRows = rowsFromModel("trafficLoad", buildSectionModel("trafficLoad", OVERVIEW_SCENARIO_FIXTURES.single));
+const belowThresholdResourceRow = normalResourceRows.find((row) => row.evidence.kind === "resource" && row.evidence.delta !== null && row.evidence.delta < 0);
+assert.ok(belowThresholdResourceRow, "normal resource workspace exposes a below-threshold object");
+assert.match(belowThresholdResourceRow.secondary, /低于阈值 \d+ 个百分点/);
+assert.doesNotMatch(belowThresholdResourceRow.secondary, /高出(?:阈值)? -\d+/);
 
 const interruptedResource = clone(resource);
 interruptedResource.overview.history.resourceSamples = interruptedResource.overview.history.resourceSamples.slice(0, 5).map((sample, index) => ({
@@ -947,10 +960,9 @@ interruptedResource.overview.history.resourceSamples = interruptedResource.overv
   disk: 20,
 }));
 const interruptedModel = modelFor(interruptedResource);
-assert.equal(interruptedModel.facts.find((row) => row.key === "resource-trailing").value, "未取得");
-assert.equal(interruptedModel.facts.find((row) => row.key === "resource-samples").value, "未取得");
-assert.equal(interruptedModel.priorityObjects[0].state, "96% · 阈值 85%");
-assert.match(interruptedModel.priorityObjects[0].reason, /连续性未取得/);
+assert.equal(interruptedModel.facts.find((row) => row.key === "resource-sample").value, "完整");
+assert.equal(interruptedModel.priorityObjects[0].state, "96% · 阈值 85% · +11pp");
+assert.doesNotMatch(interruptedModel.priorityObjects[0].reason, /连续\s*\d|秒|样本范围/);
 const interruptedSection = buildSectionModel("trafficLoad", interruptedResource);
 const interruptedCpuRow = rowsFromModel("trafficLoad", interruptedSection).find((row) => row.primary === "CPU");
 assert.ok(interruptedCpuRow, "mismatched history still exposes the current CPU object");
@@ -966,8 +978,8 @@ staleResource.overview.history.resourceSamples = staleResource.overview.history.
   timestamp: new Date(staleAnchor - (rows.length - 1 - index) * 5000).toISOString(),
 }));
 const staleResourceModel = modelFor(staleResource);
-assert.equal(staleResourceModel.facts.find((row) => row.key === "resource-trailing").value, "未取得");
-assert.match(staleResourceModel.priorityObjects[0].reason, /连续性未取得/);
+assert.equal(staleResourceModel.facts.find((row) => row.key === "resource-sample").value, "完整");
+assert.doesNotMatch(staleResourceModel.priorityObjects[0].reason, /连续\s*\d|秒|样本范围/);
 const staleCpuRow = rowsFromModel("trafficLoad", buildSectionModel("trafficLoad", staleResource)).find((row) => row.primary === "CPU");
 assert.equal(staleCpuRow.evidence.latest, 96);
 assert.equal(staleCpuRow.evidence.sampleCount, 0, "stale history cannot become current continuity");
@@ -976,9 +988,9 @@ const highPollStaleResource = clone(staleResource);
 highPollStaleResource.meta.pollSeconds = 300;
 const highPollStaleModel = modelFor(highPollStaleResource);
 assert.equal(
-  highPollStaleModel.facts.find((row) => row.key === "resource-trailing").value,
-  "未取得",
-  "a legal slow poll interval cannot turn ten-minute-old history into current continuity",
+  highPollStaleModel.facts.find((row) => row.key === "resource-sample").value,
+  "完整",
+  "historical staleness must not rewrite the separately observed current sample",
 );
 const highPollStaleCpuRow = rowsFromModel("trafficLoad", buildSectionModel("trafficLoad", highPollStaleResource)).find((row) => row.primary === "CPU");
 assert.equal(highPollStaleCpuRow.evidence.sampleCount, 0, "the absolute stale cap also applies to direct resource deep links");
@@ -986,7 +998,7 @@ assert.equal(highPollStaleCpuRow.evidence.sampleCount, 0, "the absolute stale ca
 const incompleteMetricResource = clone(resource);
 incompleteMetricResource.overview.history.resourceSamples[incompleteMetricResource.overview.history.resourceSamples.length - 1].memory = null;
 const incompleteMetricModel = modelFor(incompleteMetricResource);
-assert.equal(incompleteMetricModel.facts.find((row) => row.key === "resource-trailing").value, "25 秒", "missing memory does not erase CPU continuity");
+assert.equal(incompleteMetricModel.facts.find((row) => row.key === "resource-sample").value, "完整", "a missing historical memory point does not erase the current sample");
 const partialSection = buildSectionModel("trafficLoad", incompleteMetricResource);
 const partialRows = rowsFromModel("trafficLoad", partialSection);
 const partialCpu = partialRows.find((row) => row.primary === "CPU");
@@ -1029,20 +1041,38 @@ assert.equal(collectionModel.priorityLabel, "断链通道");
 assert.equal(collectionModel.priorityTitle, "定位断开的采集通道");
 assert.deepEqual(collectionModel.evidenceRows.map((row) => row.key), ["target", "failures", "boundary"]);
 
-const fleetModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES.fleet));
-assert.equal(fleetModel.risk, "none");
+const fleetSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.fleet);
+const fleetState = deriveOverviewState(fleetSnapshot);
+const fleetModel = buildOverviewEvidenceModel(fleetSnapshot, fleetState);
+assert.equal(fleetModel.risk, "interfaces", "real interface risk must outrank fleet scale");
 assert.equal(fleetModel.traffic.status, "ready");
-assert.deepEqual(fleetModel.facts.map((row) => row.key), ["route", "wan", "interfaces"]);
-assert.equal(fleetModel.focusObject.route, "routes");
+assert.match(fleetModel.verdictTitle, /^\d+ 个出口依赖接口未运行$/);
+assert.equal(fleetModel.verdictSummary, "先核对出口冗余；不据此声明互联网中断。");
+assert.deepEqual(fleetModel.facts.map((row) => row.key), ["route", "wan", "collection"]);
+assert.equal(fleetModel.priorityObjects[0].route, "interfaces", "the first fleet risk object must route to interfaces");
+const fleetOpticalModel = buildOpticalPatrolModel(fleetModel, fleetState);
+assert.equal(fleetOpticalModel.claims[0].kind, "interface", "the default fleet claim must follow the highest verified risk");
+assert.equal(fleetOpticalModel.claims[0].action.route, "interfaces", "the default fleet action must inspect the highest-risk object");
+assert.ok(fleetModel.coverageObjects.some((row) => row.category === "WAN"));
+assert.ok(fleetModel.coverageObjects.some((row) => row.category === "接口"));
 
-const singleModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES.single));
+const singleSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+const singleState = deriveOverviewState(singleSnapshot);
+const singleModel = buildOverviewEvidenceModel(singleSnapshot, singleState);
 assert.equal(singleModel.verdictLabel, "当前出口证据");
-assert.equal(singleModel.verdictTitle, "默认出口与采集已核实");
-assert.equal(singleModel.verdictSummary, "已核实默认路由、采集通道与当前证据；外部业务未探测。");
+assert.equal(singleModel.verdictTitle, "当前管理证据已核实");
+assert.equal(singleModel.verdictSummary, "外部业务未探测；不据此声明互联网可用。");
 assert.doesNotMatch(singleModel.verdictTitle, /出口路径已核实/);
 assert.equal(singleModel.scenarioFocus, null);
 assert.equal(singleModel.focusObject.category, "活动默认路由");
 assert.equal(singleModel.focusObject.route, "routes");
+assert.deepEqual(singleModel.facts.map((row) => row.key), ["route", "wan", "collection"], "shared/desktop facts retain route verification");
+const singleOpticalModel = buildOpticalPatrolModel(singleModel, singleState);
+assert.equal(singleOpticalModel.evidence.mode, "current", "Optical Patrol must preserve the shared current evidence boundary");
+assert.equal(singleOpticalModel.evidence.observedAt, singleModel.evidenceAt, "Optical Patrol must preserve the qualified observation timestamp");
+assert.equal(singleOpticalModel.claims[0].kind, "route", "normal Optical Patrol must lead with the verified route object");
+assert.ok(singleOpticalModel.claims.some((claim) => claim.kind === "collection"), "collection evidence remains a distinct follow-up claim");
+assert.equal(singleOpticalModel.defaultSelectedId, singleOpticalModel.claims[0].id, "the default inspection object must follow evidence priority");
 assert.deepEqual(
   singleModel.focusObject.attributes,
   [
@@ -1067,8 +1097,8 @@ assert.deepEqual(
 );
 assert.deepEqual(
   fleetModel.secondaryDecisions.map((row) => row.id),
-  ["decision-resource", "decision-connections"],
-  "Fleet omits the interface count already owned by Proof",
+  [],
+  "a real fleet incident must suppress scale decoration and unrelated secondary decisions",
 );
 for (const [name, unavailableModel] of [
   ["no-snapshot", noSnapshotModel],
@@ -1118,6 +1148,13 @@ assert.equal(
 );
 assert.equal(
   routerOsNetworkPriority(deriveOverviewState(clone(OVERVIEW_SCENARIO_FIXTURES.fleet))),
+  "interface-down",
+  "the public Fleet fixture keeps its real interface dependency incident above scale",
+);
+const calmFleetSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.fleet);
+calmFleetSnapshot.interfaces = calmFleetSnapshot.interfaces.map((row) => ({ ...row, running: true }));
+assert.equal(
+  routerOsNetworkPriority(deriveOverviewState(calmFleetSnapshot)),
   "normal",
   "an incident-free Fleet remains a normal scope presentation",
 );
@@ -1125,9 +1162,9 @@ assert.equal(
 const offlineModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["all-offline"]));
 assert.equal(offlineModel.risk, "wan");
 assert.equal(offlineModel.scenarioFocus?.kind, "outage");
-assert.deepEqual(offlineModel.scenarioFocus?.items.map((item) => item.key), ["impact", "route", "last-success", "recovery"]);
-assert.deepEqual(offlineModel.scenarioFocus?.items.map((item) => item.actionable), [true, true, false, false]);
-assert.equal(offlineModel.scenarioFocus?.items.filter((item) => item.actionable).length, 2, "scenario focus exposes at most two first-layer actions");
+assert.deepEqual(offlineModel.scenarioFocus?.items.map((item) => item.key), ["last-success", "recovery"]);
+assert.deepEqual(offlineModel.scenarioFocus?.items.map((item) => item.actionable), [false, false]);
+assert.equal(offlineModel.scenarioFocus?.items.filter((item) => item.actionable).length, 0, "scenario focus adds recovery evidence without replaying incident actions");
 assert.equal(offlineModel.priorityTotal, 8);
 assert.equal(offlineModel.priorityObjects.length, 3);
 assert.equal(offlineModel.priorityObjectsAll.length, 8, "tablet owns the complete incident object list");
@@ -1227,6 +1264,10 @@ const compositeInterfaceTask = compositeModel.riskQueue[0];
 assert.ok(compositeInterfaceTask.targetObjectId, "one proved interface risk may deep-link to that exact object");
 assert.equal(typeof compositeInterfaceTask.targetObjectId, "string");
 assert.ok(compositeInterfaceTask.targetObjectId.length > 0);
+assert.equal(compositeInterfaceTask.priorityScore, OVERVIEW_RISK_PRIORITY.interfaces.score);
+assert.equal(compositeInterfaceTask.priorityReason, OVERVIEW_RISK_PRIORITY.interfaces.reason);
+assert.equal(compositeModel.investigationActions[0].navigation.risk, compositeModel.risk, "first action must carry the same highest-risk context as the verdict");
+assert.equal(compositeModel.priorityObjects[0].route, compositeModel.investigationActions[0].route, "first inspectable object and first action must belong to the highest-risk route");
 
 const outletAndResource = clone(resource);
 for (const rows of [outletAndResource.wan, outletAndResource.pppoe]) for (const row of rows) row.running = false;
@@ -1251,11 +1292,17 @@ const mixedInterfaceAndRouteModel = modelFor(mixedInterfaceAndRoute);
 assert.equal(mixedInterfaceAndRouteModel.risk, "interfaces");
 assert.deepEqual(
   mixedInterfaceAndRouteModel.riskQueue.map((item) => item.risk),
-  ["interfaces", "interface-review", "route"],
-  "all independent current risks remain ordered and discoverable",
+  ["interfaces", "route", "interface-review"],
+  "all independent current risks remain explicitly ranked and discoverable",
 );
-const mixedReviewTask = mixedInterfaceAndRouteModel.riskQueue[1];
-const mixedRouteTask = mixedInterfaceAndRouteModel.riskQueue[2];
+assert.deepEqual(
+  mixedInterfaceAndRouteModel.riskQueue.map((item) => item.priorityScore),
+  [OVERVIEW_RISK_PRIORITY.interfaces.score, OVERVIEW_RISK_PRIORITY.route.score, OVERVIEW_RISK_PRIORITY["interface-review"].score],
+  "risk queue scores must be descending and auditable",
+);
+assert.equal(mixedInterfaceAndRouteModel.riskQueue.every((item) => item.priorityReason.length > 0), true);
+const mixedRouteTask = mixedInterfaceAndRouteModel.riskQueue[1];
+const mixedReviewTask = mixedInterfaceAndRouteModel.riskQueue[2];
 assert.ok(mixedReviewTask.targetObjectId, "one unverified interface observation may identify its exact object");
 assert.ok(mixedReviewTask.targetObjectId);
 assert.equal(mixedRouteTask.targetObjectId, undefined, "an unverified route concept must not fabricate an object ID");
@@ -1321,7 +1368,11 @@ for (const [scenario, fixture] of Object.entries(OVERVIEW_SCENARIO_FIXTURES)) {
   assert.equal(model.priorityObjects.length <= 3, true, `${scenario}: first queue is Top 3`);
   assert.equal(model.priorityObjects.every((row) => row.route && row.sourcePath), true, `${scenario}: every preview object has real ownership and source`);
   assert.equal(model.priorityObjectsAll.every((row) => row.route && row.sourcePath), true, `${scenario}: every tablet object has real ownership and source`);
-  assert.equal(model.priorityObjectsAll.every((row) => row.attributes.length >= 3), true, `${scenario}: every tablet object exposes novel inspector evidence`);
+  assert.equal(
+    model.priorityObjectsAll.every((row) => row.route === "trafficLoad" ? row.attributes.length === 0 : row.attributes.length >= 3),
+    true,
+    `${scenario}: preview attributes add novel evidence and resource history remains owned by its inspector`,
+  );
   const factPairs = new Set(model.facts.map((row) => `${row.label}::${row.value}`));
   assert.equal(model.priorityObjects.some((row) => factPairs.has(`${row.category}::${row.state}`)), false, `${scenario}: queue must not replay a fact pair`);
   const failureEvidence = model.evidenceRows.find((row) => row.key === "failures");

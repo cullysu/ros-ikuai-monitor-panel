@@ -28,6 +28,7 @@ dist/
 /_local*.log
 /_playwright_*.log
 /_playwright_test.html
+/tools/acceptance/browser-lifecycle-v2/.artifacts/
 /_sample*.json
 /_live_snapshot*.json
 /app.py.bak-*

@@ -69,29 +69,17 @@ function appendPoint(
 }
 
 export function resourceHistoryPoints(history: OverviewRawHistory): OverviewResourcePoint[] {
-  if (Object.prototype.hasOwnProperty.call(history, "resourceSamples")) {
-    if (!Array.isArray(history.resourceSamples)) return [];
-    const points: OverviewResourcePoint[] = [];
-    for (const sample of history.resourceSamples) {
-      if (
-        !sample ||
-        typeof sample !== "object" ||
-        sample.evidenceMode !== "current" ||
-        typeof sample.source !== "string" ||
-        !sample.source.trim() ||
-        !appendPoint(points, sample.timestamp, sample.cpu, sample.memory, sample.disk)
-      ) return [];
-    }
-    return points;
-  }
-
-  const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
-  const cpu = Array.isArray(history.cpu) ? history.cpu : [];
-  const memory = Array.isArray(history.memory) ? history.memory : [];
-  const disk = Array.isArray(history.disk) ? history.disk : [];
+  if (!Object.prototype.hasOwnProperty.call(history, "resourceSamples") || !Array.isArray(history.resourceSamples)) return [];
   const points: OverviewResourcePoint[] = [];
-  for (let index = 0; index < timestamps.length; index += 1) {
-    if (!appendPoint(points, timestamps[index], cpu[index], memory[index], disk[index])) return [];
+  for (const sample of history.resourceSamples) {
+    if (
+      !sample ||
+      typeof sample !== "object" ||
+      sample.evidenceMode !== "current" ||
+      typeof sample.source !== "string" ||
+      !sample.source.trim() ||
+      !appendPoint(points, sample.timestamp, sample.cpu, sample.memory, sample.disk)
+    ) return [];
   }
   return points;
 }

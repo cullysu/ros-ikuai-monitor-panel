@@ -79,6 +79,38 @@
     margin-top: 12px;
     align-items: stretch;
   }
+  .do-fleet-preview {
+    display: grid;
+    gap: 6px;
+  }
+  .do-fleet-preview,
+  .do-fleet-preview-content {
+    min-width: 0;
+  }
+  .do-fleet-preview-disclosure {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 2px;
+    color: var(--do-muted);
+    font-size: 12px;
+  }
+  .do-fleet-preview-disclosure button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+    min-height: 30px;
+    padding: 4px 7px;
+    border: 1px solid var(--do-line);
+    border-radius: 3px;
+    color: var(--do-blue);
+    background: var(--do-surface);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
   .do-module-heading h2,
   .do-module-heading p {
     margin: 0;
@@ -141,59 +173,6 @@
   .do-wan-empty h2,
   .do-wan-empty p {
     margin: 0;
-  }
-  .do-incident-heading {
-    display: grid;
-    grid-template-columns: 34px minmax(0, 1fr) auto;
-    gap: 10px;
-    align-items: start;
-    padding: 11px 13px;
-    border-bottom: 1px solid var(--do-line);
-    background: var(--do-surface-soft);
-  }
-  .do-incident-heading > span {
-    display: grid;
-    width: 30px;
-    height: 30px;
-    place-items: center;
-    color: var(--do-warn);
-  }
-  .do-incident.is-danger .do-incident-heading > span {
-    color: var(--do-danger);
-  }
-  .do-incident-heading small,
-  .do-incident-heading h2,
-  .do-incident-heading p {
-    margin: 0;
-  }
-  .do-incident-heading small {
-    color: var(--do-muted);
-    font-size: 12px;
-    font-weight: 700;
-  }
-  .do-incident-heading h2 {
-    font-size: 15px;
-    font-weight: 740;
-  }
-  .do-incident-heading p {
-    margin-top: 2px;
-    color: var(--do-copy);
-    font-size: 12px;
-  }
-  .do-incident-heading > b {
-    color: var(--do-danger);
-    font-size: 13px;
-  }
-  .do-incident-facts small,
-  .do-incident-facts b,
-  .do-incident-facts span {
-    display: block;
-    overflow-wrap: anywhere;
-  }
-  .do-incident-facts small {
-    color: var(--do-muted);
-    font-size: 12px;
-    font-weight: 700;
   }
   .do-normal-focus-column > .do-task-actions.is-normal-primary-first {
     display: grid;

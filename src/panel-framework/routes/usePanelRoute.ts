@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   isPanelEvidenceTimestamp,
   PANEL_ROUTES,
@@ -6,6 +6,7 @@ import {
   routeUrl,
   type PanelNavigateOptions,
   type PanelRouteId,
+  withoutPanelWorkspaceHistoryState,
 } from "./panelRoutes";
 
 function syncDocumentRoute(route: PanelRouteId) {
@@ -25,14 +26,19 @@ function syncDocumentRoute(route: PanelRouteId) {
 function normalizeCurrentUrl(route: PanelRouteId) {
   const canonical = routeUrl(route);
   const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-  if (canonical !== current) window.history.replaceState({ ...(window.history.state || {}), panelRoute: route }, "", canonical);
+  const currentState = window.history.state || {};
+  const hasWorkspace = Object.prototype.hasOwnProperty.call(currentState, "panelWorkspace");
+  const state = hasWorkspace && currentState.panelWorkspace?.route !== route
+    ? withoutPanelWorkspaceHistoryState(currentState)
+    : currentState;
+  if (canonical !== current || state !== currentState) window.history.replaceState({ ...state, panelRoute: route }, "", canonical);
 }
 
 export function usePanelRoute() {
   const [route, setRoute] = useState<PanelRouteId>(() => typeof window === "undefined" ? "overview" : routeFromLocation(window.location));
   const overviewReturnFocusRef = useRef<string | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const sync = () => {
       const next = routeFromLocation(window.location);
       normalizeCurrentUrl(next);
@@ -41,7 +47,11 @@ export function usePanelRoute() {
     };
     sync();
     window.addEventListener("popstate", sync);
-    return () => window.removeEventListener("popstate", sync);
+    window.addEventListener("hashchange", sync);
+    return () => {
+      window.removeEventListener("popstate", sync);
+      window.removeEventListener("hashchange", sync);
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -85,19 +95,25 @@ export function usePanelRoute() {
       returnRoute: contextual ? options.returnRoute || null : null,
       evidenceAt: contextual ? options.evidenceAt || null : null,
     });
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     if (next === route && currentUrl === targetUrl) return;
     if (!options.replace && route === "overview") overviewReturnFocusRef.current = focusId;
+    const previousState = next === route
+      ? (window.history.state || {})
+      : withoutPanelWorkspaceHistoryState(window.history.state);
     const state = {
-      ...(window.history.state || {}),
+      ...previousState,
       panelRoute: next,
       panelContextEntry: contextual,
       panelObject: objectId,
       panelFocus: null,
     };
 
-    if (options.replace) window.history.replaceState(state, "", targetUrl);
+    const currentCanonicalUrl = `${window.location.pathname}${window.location.search}`;
+    const replaceHashOnlyUrl = next === route && Boolean(window.location.hash) && currentCanonicalUrl === targetUrl;
+    if (options.replace || replaceHashOnlyUrl) window.history.replaceState(state, "", targetUrl);
     else window.history.pushState(state, "", targetUrl);
+    if (!replaceHashOnlyUrl) window.scrollTo({ left: 0, top: 0, behavior: "auto" });
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
   }, [route]);
 

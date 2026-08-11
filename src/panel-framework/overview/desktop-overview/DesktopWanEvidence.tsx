@@ -1,14 +1,16 @@
 import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
+import { timeSeriesPointX } from "../../sections/timeSeriesGeometry";
 import type { OverviewTrafficInstrument, OverviewTrafficPoint } from "../evidence-model/overviewEvidenceTypes";
 
 const WIDTH = 760;
 const HEIGHT = 136;
 const BASE_PLOT = { left: 54, right: 18, top: 14, bottom: 28 };
+const AXIS_LABEL_GAP = 12;
 
 function estimateSvgTextWidth(value: string): number {
   return Array.from(value).reduce((width, character) => (
-    width + (character.charCodeAt(0) > 255 ? 10 : 7)
+    width + (character.charCodeAt(0) > 255 ? 12 : 8)
   ), 0);
 }
 
@@ -20,8 +22,10 @@ function pathFor(
 ): string {
   const width = WIDTH - plot.left - plot.right;
   const height = HEIGHT - plot.top - plot.bottom;
+  const startTime = points.length ? Math.min(...points.map((point) => point.timestamp)) : 0;
+  const endTime = points.length ? Math.max(...points.map((point) => point.timestamp)) : startTime;
   return points.map((point, index) => {
-    const x = plot.left + (points.length === 1 ? width : (index / (points.length - 1)) * width);
+    const x = timeSeriesPointX(point.timestamp, startTime, endTime, plot.left, plot.left + width);
     const y = plot.top + height - (point[key] / peak) * height;
     return `${index === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`;
   }).join(" ");
@@ -40,10 +44,7 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
   const peakLabelRef = useRef<SVGTextElement>(null);
   const hasTrend = traffic.status === "ready" && traffic.points.length >= 2;
   const estimatedPeakLabelWidth = estimateSvgTextWidth(traffic.peak);
-  const initialPlotLeft = Math.min(
-    Math.floor(WIDTH * 0.28),
-    Math.max(BASE_PLOT.left, Math.ceil(estimatedPeakLabelWidth + 16)),
-  );
+  const initialPlotLeft = Math.max(BASE_PLOT.left, Math.ceil(estimatedPeakLabelWidth + AXIS_LABEL_GAP));
   const [plotLeft, setPlotLeft] = useState(initialPlotLeft);
   const fallbackPoint: OverviewTrafficPoint = { timestamp: Date.now(), down: 0, up: 0 };
   const rawPeak = Math.max(1, ...traffic.points.flatMap((point) => [point.down, point.up]));
@@ -53,8 +54,10 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
   const first = traffic.points[0] ?? fallbackPoint;
   const middle = traffic.points[Math.floor((traffic.points.length - 1) / 2)] ?? fallbackPoint;
   const last = traffic.points[traffic.points.length - 1] ?? fallbackPoint;
+  const startTime = traffic.points.length ? Math.min(...traffic.points.map((point) => point.timestamp)) : last.timestamp;
+  const endTime = traffic.points.length ? Math.max(...traffic.points.map((point) => point.timestamp)) : last.timestamp;
   const plotHeight = HEIGHT - plot.top - plot.bottom;
-  const latestX = WIDTH - plot.right;
+  const latestX = timeSeriesPointX(last.timestamp, startTime, endTime, plot.left, WIDTH - plot.right);
   const latestDownY = plot.top + plotHeight - (last.down / rawPeak) * plotHeight;
   const latestUpY = plot.top + plotHeight - (last.up / rawPeak) * plotHeight;
   const titleId = "do-wan-chart-title";
@@ -63,7 +66,7 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
   useLayoutEffect(() => {
     const measured = peakLabelRef.current?.getComputedTextLength() || 0;
     if (!measured) return;
-    const next = Math.min(Math.floor(WIDTH * 0.28), Math.max(BASE_PLOT.left, Math.ceil(measured + 16)));
+    const next = Math.max(initialPlotLeft, Math.ceil(measured + AXIS_LABEL_GAP));
     setPlotLeft(next);
   }, [traffic.peak, initialPlotLeft]);
 
@@ -104,6 +107,7 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
          preserveAspectRatio="xMidYMid meet"
          data-unit={traffic.unit}
          data-axis-left={plot.left}
+         data-axis-label-gap={AXIS_LABEL_GAP}
        >
         <title id={titleId}>WAN 下载与上传吞吐时间序列</title>
         <desc id={descId}>{traffic.accessibleSummary}</desc>
@@ -113,8 +117,8 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
         })}
         <line className="do-chart-axis" x1={plot.left} x2={plot.left} y1={plot.top} y2={HEIGHT - plot.bottom} />
         <line className="do-chart-axis" x1={plot.left} x2={WIDTH - plot.right} y1={HEIGHT - plot.bottom} y2={HEIGHT - plot.bottom} />
-        <text ref={peakLabelRef} className="do-chart-label" x={plot.left - 8} y={plot.top + 4} textAnchor="end" data-chart-peak-label>{traffic.peak}</text>
-        <text className="do-chart-label" x={plot.left - 8} y={HEIGHT - plot.bottom + 4} textAnchor="end">0</text>
+        <text ref={peakLabelRef} className="do-chart-label" x={plot.left - AXIS_LABEL_GAP} y={plot.top + 4} textAnchor="end" data-chart-peak-label>{traffic.peak}</text>
+        <text className="do-chart-label" x={plot.left - AXIS_LABEL_GAP} y={HEIGHT - plot.bottom + 4} textAnchor="end">0</text>
         <path className="do-chart-line is-down" d={downPath} />
         <path className="do-chart-line is-up" d={upPath} />
         <circle className="do-chart-point is-down" cx={latestX} cy={latestDownY} r="4" />

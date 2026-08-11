@@ -1,5 +1,5 @@
-import { Activity, CircleAlert, LockKeyhole, Router, ShieldCheck } from "lucide-react";
-import { useMemo } from "react";
+import { Activity, ChevronDown, ChevronUp, CircleAlert, LockKeyhole, Router, ShieldCheck } from "lucide-react";
+import { useId, useMemo, useState } from "react";
 import type { PanelNavigate } from "../../routes/panelRoutes";
 import type { OverviewPanelProps } from "../index";
 import type { OverviewEvidenceModel } from "../evidence-model/overviewEvidenceTypes";
@@ -8,6 +8,8 @@ import { DesktopLedger } from "./DesktopLedger";
 import { DesktopWanEvidence } from "./DesktopWanEvidence";
 import { buildDesktopOverviewModel, type DesktopLedgerRow } from "./desktopOverviewModel";
 import { DesktopFocusObject, DesktopInvestigationActions } from "./DesktopOverviewTask";
+
+const FLEET_PREVIEW_LIMIT = 12;
 
 function VerdictIcon({ model }: { model: OverviewEvidenceModel }) {
   if (model.verdictTone !== "ok") return <CircleAlert aria-hidden="true" size={24} />;
@@ -47,10 +49,16 @@ export interface DesktopOverviewScreenProps extends OverviewPanelProps {
 
 export function DesktopOverviewScreen({ snapshot, state, onNavigate, runtimeManaged = false }: DesktopOverviewScreenProps) {
   const view = useMemo(() => buildDesktopOverviewModel(snapshot, state), [snapshot, state]);
+  const [fleetExpanded, setFleetExpanded] = useState(false);
+  const fleetPreviewId = useId();
   const model = view.evidence;
   const incident = model.risk !== "none";
   const showTraffic = !incident && state.scale !== "fleet" && Boolean(model.traffic);
   const provenance = sourceRows(model);
+  const fleetPreviewRows = state.scale === "fleet" && !fleetExpanded
+    ? view.objectRows.slice(0, FLEET_PREVIEW_LIMIT)
+    : view.objectRows;
+  const fleetHiddenCount = view.objectRows.length - fleetPreviewRows.length;
 
   return (
     <main
@@ -131,15 +139,33 @@ export function DesktopOverviewScreen({ snapshot, state, onNavigate, runtimeMana
               {showTraffic && model.traffic ? (
                 <DesktopWanEvidence traffic={model.traffic} onOpen={() => onNavigate("trafficAudit")} />
               ) : state.scale === "fleet" ? (
-                <DesktopLedger
-                  title="当前对象覆盖"
-                  subtitle="Fleet 只表示范围；对象异常仍按实际风险排序"
-                  rows={view.objectRows}
-                  onNavigate={onNavigate}
-                  module="fleet-coverage"
-                  taskLandmark="object-details"
-                  evidenceAt={model.evidenceAt}
-                />
+                <div className="do-fleet-preview" data-desktop-fleet-preview data-desktop-fleet-preview-limit={FLEET_PREVIEW_LIMIT}>
+                  <div className="do-fleet-preview-content" id={fleetPreviewId}>
+                    <DesktopLedger
+                      title="当前对象覆盖"
+                      subtitle={`按严重程度优先；已显示 ${fleetPreviewRows.length} / ${view.objectRows.length} 项；已隐藏 ${fleetHiddenCount} 项`}
+                      rows={fleetPreviewRows}
+                      onNavigate={onNavigate}
+                      module="fleet-coverage"
+                      taskLandmark="object-details"
+                      evidenceAt={model.evidenceAt}
+                    />
+                  </div>
+                  {view.objectRows.length > FLEET_PREVIEW_LIMIT ? (
+                    <div className="do-fleet-preview-disclosure">
+                      <span>{`当前范围共 ${view.objectRows.length} 项；已隐藏 ${fleetHiddenCount} 项`}</span>
+                      <button
+                        type="button"
+                        aria-expanded={fleetExpanded}
+                        aria-controls={fleetPreviewId}
+                        onClick={() => setFleetExpanded((current) => !current)}
+                      >
+                        {fleetExpanded ? <ChevronUp aria-hidden="true" size={15} /> : <ChevronDown aria-hidden="true" size={15} />}
+                        {fleetExpanded ? "收起对象" : `显示全部 ${view.objectRows.length} 项`}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               ) : (
                 <section className="do-wan-empty" data-desktop-wan-unavailable aria-labelledby="do-wan-empty-title">
                   <Activity aria-hidden="true" size={22} />

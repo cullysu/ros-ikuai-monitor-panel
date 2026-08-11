@@ -74,6 +74,7 @@ export interface DiagnosticFailureRow extends UnknownRecord {
 export interface DiagnosticChannelSummary {
   channel: DiagnosticChannelId;
   label: string;
+  observed: boolean;
   failureCount: number;
   error: string | null;
   observedAt: string | null;
@@ -104,12 +105,16 @@ export function diagnosticChannelSummaries(meta: OverviewRawMeta | undefined): D
   const failures = diagnosticFailureRows(meta);
   return CHANNELS.map((spec) => {
     const channelFailures = failures.filter((item) => item.channel === spec.channel);
+    const channelError = stringValue(source[spec.error]);
+    const channelObservedAt = observedAt({}, source[spec.observedAt]) || latestRecordedAt(channelFailures.map((item) => item.at));
+    const failureFieldObserved = channelFailures.length > 0;
     return {
       channel: spec.channel,
       label: spec.label,
+      observed: failureFieldObserved || channelError !== null || channelObservedAt !== null,
       failureCount: channelFailures.length,
-      error: stringValue(source[spec.error]),
-      observedAt: observedAt({}, source[spec.observedAt]) || latestRecordedAt(channelFailures.map((item) => item.at)),
+      error: channelError,
+      observedAt: channelObservedAt,
     };
   });
 }

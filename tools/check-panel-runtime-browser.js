@@ -5,10 +5,9 @@ const crypto = require('crypto');
 const fs = require('fs');
 const fsp = require('fs/promises');
 const http = require('http');
-const net = require('net');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
-const { chromium } = require('playwright-core');
+const { launchManagedBrowser } = require('./acceptance/browser-lifecycle-v2/browser-lifecycle');
 const { RUNTIME_CHECK_CONTRACT, RUNTIME_SCREENSHOT_CONTRACT } = require('./runtime-screenshot-contract');
 const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
 const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
@@ -41,6 +40,7 @@ const runtimeProgress = {
   screenshotFailure: null,
   cleanupTimeouts: [],
   cleanupErrors: [],
+  browserLifecycle: [],
 };
 
 function setRuntimePhase(phase) {
@@ -49,13 +49,16 @@ function setRuntimePhase(phase) {
 }
 
 function boundedCleanup(label, operation, timeoutMs = 5000) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let settled = false;
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
       runtimeProgress.cleanupTimeouts.push(label);
-      resolve();
+      const error = new Error(`${label} cleanup exceeded ${timeoutMs}ms`);
+      error.code = 'CLEANUP_TIMEOUT';
+      runtimeProgress.cleanupErrors.push(`${label}: ${error.message}`);
+      reject(error);
     }, timeoutMs);
     Promise.resolve()
       .then(operation)
@@ -71,7 +74,7 @@ function boundedCleanup(label, operation, timeoutMs = 5000) {
           settled = true;
           clearTimeout(timer);
           runtimeProgress.cleanupErrors.push(`${label}: ${String(error && error.message || error)}`);
-          resolve();
+          reject(error);
         }
       );
   });
@@ -81,23 +84,134 @@ function utc(offsetMs) {
   return new Date(Date.now() + (offsetMs || 0)).toISOString();
 }
 
-async function freePort() {
+const WINDOWS_MOCK_PORT_START = 18000;
+const WINDOWS_MOCK_PORT_SPAN = 1000;
+const WINDOWS_MOCK_PORT_ATTEMPTS = 64;
+let nextWindowsMockPortOffset = process.pid % WINDOWS_MOCK_PORT_SPAN;
+let nextMockPipeId = 0;
+
+function nextWindowsMockPort() {
+  const port = WINDOWS_MOCK_PORT_START + nextWindowsMockPortOffset;
+  nextWindowsMockPortOffset = (nextWindowsMockPortOffset + 1) % WINDOWS_MOCK_PORT_SPAN;
+  return port;
+}
+
+function listenServer(server, port, host) {
   return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.once('error', reject);
-    server.listen(0, '127.0.0.1', () => {
-      const address = server.address();
-      server.close(() => resolve(address.port));
-    });
+    const onError = (error) => {
+      server.off('listening', onListening);
+      reject(error);
+    };
+    const onListening = () => {
+      server.off('error', onError);
+      resolve();
+    };
+    server.once('error', onError);
+    server.once('listening', onListening);
+    server.listen(port, host);
   });
 }
 
-function sendJson(response, status, payload) {
+async function listenMockServer(server) {
+  if (process.platform !== 'win32') {
+    await listenServer(server, 0, '127.0.0.1');
+    return '127.0.0.1';
+  }
+
+  const failures = [];
+  // Prefer IPv6 loopback on Windows. Local IPv4 client-port exhaustion from an
+  // unrelated process must not prevent a bounded browser acceptance server
+  // from starting. Windows 11 and GitHub Windows runners expose ::1; IPv4 is a
+  // compatibility fallback when the IPv6 stack is unavailable.
+  for (const host of ['::1', '127.0.0.1']) {
+    for (let attempt = 0; attempt < WINDOWS_MOCK_PORT_ATTEMPTS; attempt += 1) {
+      const port = nextWindowsMockPort();
+      try {
+        await listenServer(server, port, host);
+        return host;
+      } catch (error) {
+        failures.push({ host, port, code: error?.code || null });
+        if (!['EADDRINUSE', 'EACCES', 'ENOBUFS', 'EADDRNOTAVAIL', 'EAFNOSUPPORT'].includes(error?.code)) throw error;
+        if (['ENOBUFS', 'EADDRNOTAVAIL', 'EAFNOSUPPORT'].includes(error?.code)) break;
+      }
+    }
+  }
+  const error = new Error(`mock server could not bind a safe Windows loopback port after ${failures.length} attempts`);
+  error.code = 'MOCK_PORT_UNAVAILABLE';
+  error.failures = failures;
+  throw error;
+}
+
+function nextWindowsMockPipeIdentity() {
+  nextMockPipeId += 1;
+  const id = `${process.pid}-${Date.now()}-${nextMockPipeId}`;
+  return {
+    path: `\\\\.\\pipe\\ros-ikuai-panel-${id}`,
+    url: `http://panel-${id}.test/`,
+  };
+}
+
+function listenPipeServer(server, pipePath) {
+  return new Promise((resolve, reject) => {
+    const onError = (error) => {
+      server.off('listening', onListening);
+      reject(error);
+    };
+    const onListening = () => {
+      server.off('error', onError);
+      resolve();
+    };
+    server.once('error', onError);
+    server.once('listening', onListening);
+    server.listen(pipePath);
+  });
+}
+
+function requestPipeResponse(socketPath, browserRequest) {
+  return new Promise((resolve, reject) => {
+    const target = new URL(browserRequest.url());
+    const body = browserRequest.postDataBuffer();
+    const request = http.request({
+      socketPath,
+      path: `${target.pathname}${target.search}`,
+      method: browserRequest.method(),
+      headers: {
+        ...browserRequest.headers(),
+        host: target.host,
+        ...(body ? { 'content-length': String(body.length) } : {}),
+      },
+    }, (response) => {
+      const chunks = [];
+      let bytes = 0;
+      response.on('data', (chunk) => {
+        bytes += chunk.length;
+        if (bytes > 16 * 1024 * 1024) {
+          response.destroy(new Error('mock pipe response exceeded 16 MiB'));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.once('error', reject);
+      response.once('end', () => {
+        const headers = Object.fromEntries(Object.entries(response.headers)
+          .filter(([, value]) => typeof value !== 'undefined')
+          .map(([name, value]) => [name, Array.isArray(value) ? value.join(', ') : String(value)]));
+        resolve({ status: response.statusCode || 500, headers, body: Buffer.concat(chunks) });
+      });
+    });
+    request.once('error', reject);
+    request.setTimeout(8_000, () => request.destroy(new Error('mock pipe request timed out')));
+    request.end(body || undefined);
+  });
+}
+
+function sendJson(response, status, payload, extraHeaders = {}) {
   const body = Buffer.from(JSON.stringify(payload), 'utf8');
   response.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': body.length,
     'Cache-Control': 'no-store',
+    ...extraHeaders,
   });
   response.end(body);
 }
@@ -411,7 +525,132 @@ async function requestBody(request) {
   return chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {};
 }
 
-async function startMock() {
+function supplementalEnvelope(kind, options = {}) {
+  const now = options.observedAt === undefined ? utc() : options.observedAt;
+  return {
+    schemaVersion: 1,
+    kind,
+    readOnly: true,
+    generatedAt: utc(),
+    observedAt: now,
+    evidenceMode: options.evidenceMode || 'current',
+    source: options.source || 'rest-live',
+    sourceStatus: options.sourceStatus || 'ok',
+    coverage: options.coverage || 'page',
+  };
+}
+
+function defaultSupplementalState() {
+  const healthObservedAt = utc();
+  return {
+    requests: [],
+    connectionSearch: {
+      mode: 'success',
+      delayMs: 0,
+      body: {
+        ...supplementalEnvelope('connection-search', { source: 'routeros-ssh', coverage: 'bounded-sample' }),
+        targetIp: '192.0.2.42',
+        sourceIp: null,
+        limit: 40,
+        query: { targetIp: '192.0.2.42', sourceIp: null },
+        page: { requestedLimit: 40, returnedCount: 2, maxLimit: 50 },
+        matchCount: 2,
+        transport: 'ssh',
+        capture: {
+          complete: false,
+          capturedBytes: 4096,
+          firstOutputSeconds: 0.03,
+          truncatedByRows: true,
+          truncatedByBytes: false,
+          timedOut: false,
+          incompleteTransport: false,
+          truncatedByLimit: true,
+        },
+        rows: [
+          { srcIp: '192.0.2.42', dstIp: '1.1.1.1', protocol: 'tcp', timeout: '00:00:18', origRateBps: null, replRateBps: 0 },
+          { srcIp: '192.0.2.42', dstIp: '8.8.8.8', protocol: 'udp', timeout: '00:00:04', origRateBps: 125000, replRateBps: 64000 },
+        ],
+      },
+    },
+    dnsStatic: {
+      mode: 'success',
+      delayMs: 0,
+      pages: new Map([
+        [0, {
+          ...supplementalEnvelope('dns-static', { coverage: 'page' }),
+          revision: 'd'.repeat(64),
+          offset: 0,
+          limit: 50,
+          totalCount: 51,
+          visibleRuleCount: 2,
+          page: { offset: 0, pageSize: 50, returnedCount: 2, totalCount: 51, revision: 'd'.repeat(64), maxPageSize: 50, maxVisibleRows: 1000, maxVisiblePages: 20 },
+          rows: [
+            { name: 'nas.example', type: 'A', value: '192.0.2.8', ttl: '5m', comment: '', disabled: false },
+            { name: 'old.example', type: 'A', value: '192.0.2.9', ttl: '1h', comment: 'legacy', disabled: true },
+          ],
+        }],
+        [50, {
+          ...supplementalEnvelope('dns-static', { evidenceMode: 'historical', source: 'rest-cache', sourceStatus: 'degraded', coverage: 'page' }),
+          revision: 'd'.repeat(64),
+          offset: 50,
+          limit: 50,
+          totalCount: 51,
+          visibleRuleCount: 1,
+          page: { offset: 50, pageSize: 50, returnedCount: 1, totalCount: 51, revision: 'd'.repeat(64), maxPageSize: 50, maxVisibleRows: 1000, maxVisiblePages: 20 },
+          rows: [{ name: 'vpn.example', type: 'A', value: '192.0.2.10', ttl: '10m', comment: '', disabled: false }],
+        }],
+      ]),
+    },
+    healthFindings: {
+      mode: 'success',
+      delayMs: 0,
+      body: {
+        ...supplementalEnvelope('health-findings', { source: 'snapshot-health-analysis', coverage: 'bounded-sample', observedAt: healthObservedAt }),
+        status: 'critical',
+        sourceUpdatedAt: healthObservedAt,
+        limit: 20,
+        counts: { critical: 1, warning: 0, info: 0 },
+        findings: [{
+          id: 'system.resource_pressure',
+          severity: 'critical',
+          domain: 'resources',
+          title: '路由器资源压力偏高',
+          summary: 'CPU 已超过告警阈值。',
+          source: 'collector-health-v1',
+          priority: 1,
+          evidence: [{ label: 'CPU', value: '96%' }],
+        }],
+      },
+    },
+  };
+}
+
+async function respondSupplemental(response, state, kind, requestData, source) {
+  state.supplemental.requests.push({ kind, ...requestData });
+  if (source.delayMs > 0) await new Promise((resolve) => setTimeout(resolve, source.delayMs));
+  if (source.mode === 'error') {
+    sendJson(
+      response,
+      source.status || 502,
+      source.errorBody || { code: source.code || 'supplement_unavailable', error: 'mock supplemental endpoint unavailable' },
+      source.headers || {},
+    );
+    return;
+  }
+  if (source.mode === 'malformed') {
+    sendJson(response, 200, source.body || { malformed: true });
+    return;
+  }
+  if (source.mode === 'empty') {
+    const body = typeof source.emptyBody === 'function' ? source.emptyBody(requestData) : source.emptyBody;
+    sendJson(response, 200, body || { ...(typeof source.body === 'object' ? source.body : {}), rows: [], findings: [] });
+    return;
+  }
+  const body = typeof source.body === 'function' ? source.body(requestData) : source.body;
+  sendJson(response, 200, body);
+}
+
+async function startMock({ transport = 'tcp' } = {}) {
   const state = {
     configured: false,
     loginAttempts: 0,
@@ -426,6 +665,7 @@ async function startMock() {
     lastLoginBody: null,
     connectionStatusDelayMs: 0,
     connectionStatusError: false,
+    supplemental: defaultSupplementalState(),
   };
 
   const server = http.createServer(async (request, response) => {
@@ -563,6 +803,32 @@ async function startMock() {
         return;
       }
 
+      if (request.method === 'GET' && url.pathname === '/api/connection-search') {
+        await respondSupplemental(response, state, 'connection-search', {
+          target: url.searchParams.get('target'),
+          source: url.searchParams.get('source'),
+          limit: url.searchParams.get('limit'),
+        }, state.supplemental.connectionSearch);
+        return;
+      }
+
+      if (request.method === 'GET' && url.pathname === '/api/dns-static') {
+        const offset = Number(url.searchParams.get('offset') || '0');
+        const limit = Number(url.searchParams.get('limit') || '0');
+        const dns = state.supplemental.dnsStatic;
+        const page = dns.pages instanceof Map ? dns.pages.get(offset) : null;
+        const responseSource = page && page.__mockResponse === true
+          ? { ...dns, ...page }
+          : { ...dns, body: page || dns.body };
+        await respondSupplemental(response, state, 'dns-static', { offset, limit }, responseSource);
+        return;
+      }
+
+      if (request.method === 'GET' && url.pathname === '/api/health-findings') {
+        await respondSupplemental(response, state, 'health-findings', {}, state.supplemental.healthFindings);
+        return;
+      }
+
       if (request.method === 'GET' && url.pathname === '/api/snapshot') {
         state.snapshotCalls += 1;
         if (!state.configured) {
@@ -608,6 +874,57 @@ async function startMock() {
           pollSeconds: state.pollSeconds,
         });
         scaleSnapshotTraffic(payload, state.rateScale);
+        if (state.scenario === 'all-offline') {
+          payload.meta = { ...payload.meta, scaleScenario: 'all-offline' };
+          payload.wan = Array.from({ length: 8 }, (_, index) => ({
+            name: `pppoe-wan${index + 1}`,
+            interface: `pppoe-wan${index + 1}`,
+            running: false,
+            disabled: false,
+            downRate: 0,
+            upRate: 0,
+          }));
+          payload.pppoe = payload.wan.map((row) => ({ ...row }));
+          payload.routes = {
+            defaultRoutes: [1, 2, 3].map((distance) => ({
+              dstAddress: '0.0.0.0/0',
+              default: true,
+              gateway: `pppoe-wan${distance}`,
+              active: false,
+              disabled: false,
+              distance,
+              table: 'main',
+            })),
+          };
+        }
+        if (state.scenario === 'no-snapshot') {
+          const failureObservedAt = utc();
+          Object.assign(payload, {
+            status: 'error',
+            error: '设备当前不可达',
+            overview: {},
+            wan: [],
+            pppoe: [],
+            interfaces: [],
+            routes: { defaultRoutes: [] },
+            connections: {},
+            terminals: [],
+          });
+          payload.meta = {
+            scaleScenario: 'no-snapshot',
+            configuredIdentity: 'RouterOS',
+            target: '10.0.0.1',
+            routerHost: '10.0.0.1',
+            pollSeconds: state.pollSeconds,
+            realtimeError: '设备当前不可达',
+            staticError: '静态 REST 采集失败',
+            connectionDetailError: '连接明细 REST 采集失败',
+            realtimeEndpointFailures: [{ channel: 'realtime-rest', group: '实时 REST', name: 'system_resource', endpoint: '/rest/system/resource', message: '设备当前不可达', at: failureObservedAt }],
+            staticEndpointFailures: [{ channel: 'static-rest', group: '静态 REST', name: 'system_resource', endpoint: '/rest/system/resource', message: '静态 REST 端点读取失败', at: failureObservedAt }],
+            detailEndpointFailures: [{ channel: 'detail-rest', group: '连接明细 REST', name: 'connections', endpoint: '/rest/ip/firewall/connection', message: '连接明细 REST 端点读取失败', at: failureObservedAt }],
+            capabilities: { restTrusted: false, sshRead: false, routerosWrite: false },
+          };
+        }
         if (state.scenario === 'comparison-multi') {
           payload.interfaces.push(
             { name: 'ether2', type: 'ether', role: 'LAN', parent: 'switch1', running: true, disabled: false, rxRate: 3100000, txRate: 1200000 },
@@ -630,7 +947,23 @@ async function startMock() {
             { name: 'ether7', type: 'ether', role: 'LAN', parent: 'switch1', running: true, disabled: false, rxRate: 1500000, txRate: 400000 },
           );
         }
-        if (state.scenario === 'interfaces-down' || state.scenario === 'interface-review') {
+        if (state.scenario === 'fleet') {
+          payload.meta = {
+            ...payload.meta,
+            scaleScenario: 'fleet',
+            configuredIdentity: 'Fleet-Core',
+          };
+          payload.wan.push(...Array.from({ length: 7 }, (_, index) => ({
+            name: `pppoe-wan${index + 2}`,
+            interface: `pppoe-wan${index + 2}`,
+            running: true,
+            disabled: false,
+            downRate: 18000000 - (index * 900000),
+            upRate: 9000000 - (index * 400000),
+          })));
+          payload.pppoe = payload.wan.map((row) => ({ ...row }));
+        }
+        if (state.scenario === 'fleet' || state.scenario === 'interfaces-down' || state.scenario === 'interface-review') {
           payload.interfaces.push(
             { name: 'ether9', type: 'ether', role: 'LAN', parent: 'switch1', running: false, disabled: false },
             { name: 'vlan30', type: 'vlan', role: 'LAN', parent: 'ether9', vlan: 30, running: false, disabled: false },
@@ -645,7 +978,7 @@ async function startMock() {
             { name: 'vlan30', type: 'vlan', role: 'LAN', parent: 'ether9', vlan: 30, running: false, disabled: false },
           );
         }
-        if (state.scenario === 'interfaces-down') {
+        if (state.scenario === 'fleet' || state.scenario === 'interfaces-down') {
           payload.routes.defaultRoutes.push(
             { dstAddress: '0.0.0.0/0', default: true, gateway: 'ether9', active: false, disabled: false, distance: 2, table: 'main' },
             { dstAddress: '0.0.0.0/0', default: true, gateway: 'vlan30', active: false, disabled: false, distance: 3, table: 'main' },
@@ -754,16 +1087,57 @@ async function startMock() {
     }
   });
 
-  const port = await freePort();
-  await new Promise((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(port, '127.0.0.1', resolve);
-  });
+  let mockUrl = '';
+  let installRoute = null;
+  let socketPath = null;
+  if (transport === 'pipe') {
+    if (process.platform !== 'win32') throw new Error('mock pipe transport is only supported on Windows');
+    const pipe = nextWindowsMockPipeIdentity();
+    await listenPipeServer(server, pipe.path);
+    mockUrl = pipe.url;
+    socketPath = pipe.path;
+    installRoute = async (context) => {
+      await context.route(`${pipe.url}**`, async (route) => {
+        const response = await requestPipeResponse(pipe.path, route.request());
+        await route.fulfill(response);
+      });
+    };
+  } else if (transport === 'tcp') {
+    // Bind the real server once. Windows uses a bounded low port range outside
+    // its default dynamic client range because Edge can reject loopback servers
+    // allocated inside that range with ERR_ADDRESS_IN_USE. Other platforms let
+    // the OS allocate the real listener directly. Neither path probes then
+    // rebinds a released port.
+    const listenHost = await listenMockServer(server);
+    const address = server.address();
+    if (!address || typeof address === 'string') {
+      await new Promise((resolve) => server.close(resolve));
+      throw new Error('mock server did not expose a TCP listen address');
+    }
+    mockUrl = `http://${listenHost.includes(':') ? `[${listenHost}]` : listenHost}:${address.port}/`;
+  } else {
+    throw new Error(`unsupported mock transport: ${transport}`);
+  }
 
+  let stopped = false;
   return {
     state,
-    url: 'http://127.0.0.1:' + port + '/',
-    stop: () => new Promise((resolve) => server.close(resolve)),
+    url: mockUrl,
+    transport,
+    installRoute,
+    socketPath,
+    stop: () => {
+      if (stopped) return Promise.resolve();
+      stopped = true;
+      return new Promise((resolve, reject) => {
+        server.close((error) => {
+          if (error && error.code !== 'ERR_SERVER_NOT_RUNNING') reject(error);
+          else resolve();
+        });
+        server.closeIdleConnections?.();
+        server.closeAllConnections?.();
+      });
+    },
   };
 }
 
@@ -1012,6 +1386,7 @@ async function inspectCompositeRiskSurface(page) {
     const trafficChart = mobile ? document.querySelector('[data-mobile-traffic-signal] .mp-chart svg') : null;
     const proof = mobile ? document.querySelector('[data-mobile-core-facts]') : null;
     const primaryRisk = mobile ? document.querySelector('[data-mobile-incident-task-role="primary-risk"]') : null;
+    const primaryRiskContract = mobile ? primaryRisk : document.querySelector('.do-incident[data-desktop-primary-risk]');
     const secondaryRisk = mobile ? document.querySelector('[data-mobile-incident-task-role="secondary-risk"]') : null;
     const investigation = mobile ? document.querySelector('[data-mobile-incident-task-role="follow-up"]') : null;
     const primaryObject = mobile ? document.querySelector('[data-mobile-incident-center]') : null;
@@ -1024,7 +1399,16 @@ async function inspectCompositeRiskSurface(page) {
       : null;
     const rhythmSecondaryActions = mobile
       ? [...document.querySelectorAll('.mp-actions button[data-mobile-action-priority="secondary"], [data-mobile-incident-follow-up-context] button[data-mobile-action-priority="secondary"]')]
+        .filter((node) => {
+          const bounds = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return style.display !== 'none' && style.visibility !== 'hidden' && bounds.width > 0 && bounds.height > 0;
+        })
       : [];
+    const rhythmSecondaryDisclosure = mobile
+      ? document.querySelector('[data-mobile-secondary-action-disclosure]')
+      : null;
+    const rhythmSecondaryDisclosureSummary = rhythmSecondaryDisclosure?.querySelector(':scope > summary') || null;
     const mobileNavigation = mobile ? document.querySelector('.panel-task-navigation') : null;
     const primaryAction = mobile
       ? selectedInspector?.querySelector('button[data-mobile-destination]') || primaryObject
@@ -1119,6 +1503,13 @@ async function inspectCompositeRiskSurface(page) {
     const desktopWorkspaceRect = rect(desktopWorkspace);
     const desktopActionsRect = rect(desktopActions);
     const taskRects = tasks.map(rect).filter(Boolean);
+    const documentHeight = Math.max(
+      document.documentElement.scrollHeight,
+      document.body?.scrollHeight || 0,
+      innerHeight
+    );
+    const queueDocumentTop = queueRect ? queueRect.top + scrollY : null;
+    const queueDocumentBottom = queueRect ? queueRect.bottom + scrollY : null;
     const compactText = (node) => (node?.textContent || '').replace(/\s+/g, ' ').trim();
     const isVisible = (node) => {
       if (!node) return false;
@@ -1136,8 +1527,17 @@ async function inspectCompositeRiskSurface(page) {
       surface: mobile ? 'mobile' : 'desktop',
       viewport: { width: innerWidth, height: innerHeight },
       risk: root?.getAttribute(mobile ? 'data-mobile-overview-risk' : 'data-desktop-overview-risk') || '',
+      verdictTitle: document.querySelector(mobile ? '.mp-command h1' : '.do-verdict h1')?.textContent?.replace(/\s+/g, ' ').trim() || '',
+      riskPriority: root?.getAttribute('data-mobile-risk-priority') || primaryRiskContract?.getAttribute('data-desktop-risk-priority') || '',
+      riskPriorityReason: root?.getAttribute('data-mobile-risk-priority-reason') || primaryRiskContract?.getAttribute('data-desktop-risk-priority-reason') || '',
+      primaryRiskContract: primaryRiskContract?.getAttribute(mobile ? 'data-mobile-incident-task-role' : 'data-desktop-primary-risk') || '',
+      primaryRiskPriority: primaryRiskContract?.getAttribute(mobile ? 'data-mobile-risk-priority' : 'data-desktop-risk-priority') || '',
+      actionRisk: investigation?.getAttribute('data-mobile-action-risk') ||
+        selectedInspector?.querySelector('[data-mobile-action-risk]')?.getAttribute('data-mobile-action-risk') ||
+        primaryRiskContract?.getAttribute('data-desktop-primary-risk') || '',
       count: mobile ? queue?.getAttribute('data-mobile-secondary-risks') || '' : String(tasks.length),
       taskRisks: mobile ? tasks.map((node) => node.getAttribute('data-mobile-secondary-risk') || '') : [],
+      taskPriorities: tasks.map((node) => node.getAttribute(mobile ? 'data-mobile-risk-priority' : 'data-desktop-risk-priority') || ''),
       destinations: mobile ? tasks.map((node) => node.getAttribute('data-mobile-destination') || '') : [],
       secondaryText: tasks.map((node) => (node.textContent || '').replace(/\s+/g, ' ').trim()).join(' | '),
       resourceText: (resource?.textContent || '').replace(/\s+/g, ' ').trim(),
@@ -1159,11 +1559,20 @@ async function inspectCompositeRiskSurface(page) {
       primaryActionVisual: rhythmPrimaryAction?.getAttribute('data-mobile-primary-action-visual') || '',
       primaryActionColor: rhythmPrimaryAction ? getComputedStyle(rhythmPrimaryAction.querySelector('.mp-action-icon') || rhythmPrimaryAction).color : '',
       secondaryActionMinHeights: rhythmSecondaryActions.map((node) => Math.round(node.getBoundingClientRect().height)),
+      secondaryDisclosureRect: rect(rhythmSecondaryDisclosure),
+      secondaryDisclosureSummaryRect: rect(rhythmSecondaryDisclosureSummary),
+      secondaryDisclosureOpen: rhythmSecondaryDisclosure instanceof HTMLDetailsElement
+        ? rhythmSecondaryDisclosure.open
+        : null,
       navigationRect,
       actionVisibleRatio: phoneActionVisibleRatio,
       actionAboveNavigation: Boolean(
         phonePrimaryActionRect && navigationRect && phonePrimaryActionRect.top >= 0 &&
           phonePrimaryActionRect.bottom <= navigationRect.top + 1
+      ),
+      secondaryRiskAboveNavigation: Boolean(
+        secondaryRiskRect && navigationRect && secondaryRiskRect.top >= 0 &&
+          secondaryRiskRect.bottom <= navigationRect.top + 1
       ),
       primaryRiskRect,
       secondaryRiskRect,
@@ -1214,6 +1623,13 @@ async function inspectCompositeRiskSurface(page) {
       ),
       desktopWorkspaceTop: !mobile && lowerRect ? lowerRect.top : null,
       withinFirstViewport: Boolean(queueRect && queueRect.top >= 0 && queueRect.bottom <= innerHeight),
+      secondaryRiskReachable: Boolean(
+        queueRect && queueRect.height > 0 && queueDocumentTop !== null && queueDocumentBottom !== null &&
+          queueDocumentTop >= 0 && queueDocumentBottom <= documentHeight + 1
+      ),
+      documentHeight,
+      queueDocumentTop,
+      queueDocumentBottom,
       tabletFullWidth: innerWidth !== 768 || Boolean(
         queueRect && bodyRect && Math.abs(queueRect.left - bodyRect.left) <= 1 && Math.abs(queueRect.width - bodyRect.width) <= 2
       ),
@@ -1313,6 +1729,14 @@ function contractCheck(results, failures, name, pass, detail) {
   if (!item.pass) failures.push({ name, detail: item.detail });
 }
 
+function cleanupErrorDetail(error) {
+  return {
+    name: error?.name || 'Error',
+    code: error?.code || null,
+    message: String(error?.message || error),
+  };
+}
+
 async function main() {
   const frameworkAssetIdentity = assertFrameworkAssetIdentity(root);
   await fsp.rm(outDir, { recursive: true, force: true });
@@ -1325,6 +1749,8 @@ async function main() {
   const executablePath = browserExecutable();
   let browser;
   let isolatedBrowser = null;
+  let browserRuntime = null;
+  let isolatedBrowserRuntime = null;
   const contexts = new Set();
   const checks = [];
   const step196ContractFailures = [];
@@ -1336,12 +1762,58 @@ async function main() {
     if (!cleanupPromise) {
       cleanupPromise = (async () => {
         setRuntimePhase('cleanup');
-        await Promise.all([...contexts].map((context, index) => (
+        const cleanupFailures = [];
+        const contextResults = await Promise.allSettled([...contexts].map((context, index) => (
           boundedCleanup(`context.close:${index}`, () => context.close())
         )));
-        if (browser) await boundedCleanup('browser.close', () => browser.close());
-        if (isolatedBrowser) await boundedCleanup('isolated-browser.close', () => isolatedBrowser.close());
-        await boundedCleanup('mock.stop', () => mock.stop());
+        contextResults.forEach((result) => {
+          if (result.status === 'rejected') cleanupFailures.push(result.reason);
+        });
+        const browserResults = await Promise.allSettled([
+          browserRuntime && boundedCleanup('browser.lifecycle.close', async () => {
+            try {
+              await browserRuntime.close();
+            } finally {
+              runtimeProgress.browserLifecycle.push(browserRuntime.diagnostics);
+            }
+          }, 20000),
+          isolatedBrowserRuntime && boundedCleanup('isolated-browser.lifecycle.close', async () => {
+            try {
+              await isolatedBrowserRuntime.close();
+            } finally {
+              runtimeProgress.browserLifecycle.push(isolatedBrowserRuntime.diagnostics);
+            }
+          }, 20000),
+        ].filter(Boolean));
+        browserResults.forEach((result) => {
+          if (result.status === 'rejected') cleanupFailures.push(result.reason);
+        });
+        try {
+          await boundedCleanup('mock.stop', () => mock.stop());
+        } catch (error) {
+          cleanupFailures.push(error);
+        }
+        try {
+          await boundedCleanup('lifecycle-diagnostic.write', () => fsp.writeFile(
+            path.join(outDir, 'lifecycle.json'),
+            JSON.stringify({
+              contract: 'panel-runtime-browser-lifecycle-v2',
+              generatedAt: utc(),
+              progress: runtimeProgress,
+              cleanupFailures: cleanupFailures.map(cleanupErrorDetail),
+              mock: {
+                snapshotCalls: mock.state.snapshotCalls,
+                logoutCalls: mock.state.logoutCalls,
+              },
+            }, null, 2) + '\n',
+            'utf8'
+          ));
+        } catch (error) {
+          cleanupFailures.push(error);
+        }
+        if (cleanupFailures.length) {
+          throw new AggregateError(cleanupFailures, 'panel runtime cleanup failed');
+        }
       })();
     }
     return cleanupPromise;
@@ -1351,23 +1823,27 @@ async function main() {
   try {
     if (!executablePath) throw new Error('Edge/Chrome executable not found');
     runtimeProgress.browser = path.basename(executablePath);
-    const launchBrowser = () => chromium.launch({
+    const launchBrowser = () => launchManagedBrowser({
       executablePath,
-      headless: true,
       args: process.platform === 'linux' ? ['--no-sandbox'] : [],
-      timeout: 15000,
+      launchTimeoutMs: 15000,
+      cleanupTimeoutMs: 6000,
     });
-    browser = await launchBrowser();
+    browserRuntime = await launchBrowser();
+    browser = browserRuntime.browser;
 
     const openContext = async (options) => {
-      const context = await browser.newContext(options);
+      const context = await browserRuntime.openContext(options);
       contexts.add(context);
       context.on('close', () => contexts.delete(context));
       return context;
     };
     const openIsolatedContext = async (options) => {
-      if (!isolatedBrowser) isolatedBrowser = await launchBrowser();
-      const context = await isolatedBrowser.newContext(options);
+      if (!isolatedBrowserRuntime) {
+        isolatedBrowserRuntime = await launchBrowser();
+        isolatedBrowser = isolatedBrowserRuntime.browser;
+      }
+      const context = await isolatedBrowserRuntime.openContext(options);
       contexts.add(context);
       context.on('close', () => contexts.delete(context));
       return context;
@@ -2030,7 +2506,7 @@ async function main() {
       { route: 'security', primary: 'interfaces', workspace: '安全工作区', placeholder: '告警、链、动作或说明', kind: 'security', sections: 3, evidence: ['规则判据', '匹配条件', '计数器'] },
       { route: 'terminals', primary: 'terminals', workspace: '终端工作区', placeholder: '终端名、IP 或 MAC', kind: 'terminal', sections: 4, evidence: ['身份依据', 'DHCP / ARP 证据'] },
       { route: 'logs', primary: 'logs', workspace: '事件时间线', placeholder: '内容、主题或时间', kind: 'log', sections: 2, evidence: ['事件证据', '相邻事件'], autoPreview: true },
-      { route: 'trafficLoad', primary: 'overview', workspace: '资源工作区', placeholder: '', kind: 'resource', sections: 2, evidence: ['变化证据', '样本范围'] },
+      { route: 'trafficLoad', primary: 'overview', workspace: '资源工作区', placeholder: '', searchable: false, kind: 'resource', sections: 3, evidence: ['样本判断', '当前样本', '策略阈值', '变化范围', '连续性', '相关资源比较', '较当前对象', '依赖与来源', '采样来源', '对象序列', '只描述资源压力，不推断网络中断'] },
     ];
     for (const contract of domainRouteContracts) {
       const target = new URL(mock.url);
@@ -3845,7 +4321,7 @@ async function main() {
       const abnormalKeyboardTarget = new URL(mock.url);
       abnormalKeyboardTarget.searchParams.set('section', 'overview');
       await accessibilityPage.goto(abnormalKeyboardTarget.toString(), { waitUntil: 'domcontentloaded' });
-      await waitForPhase(accessibilityPage, 'current', 12000);
+      await waitForPhase(accessibilityPage, scenario === 'no-snapshot' ? 'error' : 'current', 12000);
       await accessibilityPage.locator('[data-mobile-overview]').waitFor();
       await accessibilityPage.evaluate(() => {
         if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
@@ -3921,7 +4397,105 @@ async function main() {
     await accessibilityPage.close();
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.locator('[data-section="overview"]').click();
+    for (const scenario of ['all-offline', 'no-snapshot']) {
+      mock.state.scenario = scenario;
+      const visualScenarioTarget = new URL(mock.url);
+      visualScenarioTarget.searchParams.set('section', 'overview');
+      await page.goto(visualScenarioTarget.toString(), { waitUntil: 'domcontentloaded' });
+      await waitForPhase(page, scenario === 'no-snapshot' ? 'error' : 'current', 12000);
+      await page.locator('[data-mobile-overview]').waitFor();
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const visualScenarioState = await page.evaluate(() => {
+        const root = document.querySelector('[data-mobile-overview]');
+        return {
+          risk: root?.getAttribute('data-mobile-overview-risk') || '',
+          evidenceMode: root?.getAttribute('data-mobile-evidence-mode') || '',
+          title: document.querySelector('.mp-command h1')?.textContent?.trim() || '',
+          currentRateOwners: document.querySelectorAll('[data-mobile-current-rate-owner]').length,
+        };
+      });
+      check(
+        checks,
+        `${scenario} visual evidence renders the real abnormal state before capture`,
+        scenario === 'all-offline'
+          ? visualScenarioState.risk === 'wan' && visualScenarioState.evidenceMode === 'current' && visualScenarioState.title.includes('WAN')
+          : visualScenarioState.evidenceMode === 'unavailable' && visualScenarioState.currentRateOwners === 0,
+        visualScenarioState
+      );
+      screenshots.push(await screenshot(page, `overview-${scenario}-390.png`, `overview-${scenario}-390`));
+      if (scenario === 'all-offline') {
+        const aggregateTrigger = page.locator('[data-mobile-incident-expand]');
+        await aggregateTrigger.click();
+        await page.locator('[data-mobile-incident-aggregate]').waitFor();
+        const aggregateUrl = page.url();
+        const aggregateState = await page.evaluate(() => {
+          const query = new URLSearchParams(location.search);
+          const rows = [...document.querySelectorAll('[data-mobile-incident-aggregate-row]')];
+          const first = rows[0];
+          return {
+            section: query.get('section'),
+            view: query.get('view'),
+            groups: document.querySelectorAll('.mia-domain').length,
+            rows: rows.length,
+            firstDestination: first?.getAttribute('data-mobile-destination') || '',
+            firstText: first?.textContent?.replace(/\s+/g, ' ').trim() || '',
+            firstName: first?.getAttribute('aria-label') || '',
+            firstGroupText: first?.closest('.mia-domain')?.querySelector('.mia-domain-summary')
+              ?.textContent?.replace(/\s+/g, ' ').trim() || '',
+            backLabel: document.querySelector('.mia-back')?.getAttribute('aria-label') || '',
+            overflow: document.documentElement.scrollWidth - innerWidth,
+          };
+        });
+        check(
+          checks,
+          'all-offline 查看全部 opens a real grouped incident URL with evidence-bearing destinations',
+          aggregateState.section === 'overview' && aggregateState.view === 'incidents' &&
+            aggregateState.groups >= 1 && aggregateState.rows >= 8 &&
+            aggregateState.firstDestination === 'lineStatus' &&
+            /严重|注意|缺失/.test(aggregateState.firstName) && /未运行/.test(aggregateState.firstName) &&
+            /严重|注意|缺失/.test(aggregateState.firstGroupText) && /未运行/.test(aggregateState.firstGroupText) &&
+            aggregateState.backLabel === '返回概览' && aggregateState.overflow <= 1,
+          { aggregateUrl, aggregateState },
+        );
+        screenshots.push(await screenshot(page, 'overview-all-offline-incidents-390.png', 'overview-all-offline-incidents-390'));
+        await page.locator('[data-mobile-incident-aggregate-row]').first().click();
+        await page.locator('[data-mobile-domain-workspace="lineStatus"]').waitFor();
+        const aggregateDestination = new URL(page.url());
+        check(
+          checks,
+          'aggregate incident rows navigate to the real object workspace without leaking the aggregate view query',
+          aggregateDestination.searchParams.get('section') === 'lineStatus' &&
+            Boolean(aggregateDestination.searchParams.get('object')) &&
+            aggregateDestination.searchParams.get('view') === null,
+          aggregateDestination.toString(),
+        );
+        await page.goBack();
+        await page.locator('[data-mobile-incident-aggregate]').waitFor();
+        await page.goBack();
+        await page.locator('[data-mobile-overview-risk="wan"]').waitFor();
+        await page.goForward();
+        await page.locator('[data-mobile-incident-aggregate]').waitFor();
+        check(
+          checks,
+          'aggregate incident URL restores through Back and Forward',
+          page.url() === aggregateUrl,
+          { expected: aggregateUrl, actual: page.url() },
+        );
+        await page.getByRole('button', { name: '返回概览' }).click();
+        await page.locator('[data-mobile-overview-risk="wan"]').waitFor();
+      }
+    }
+    mock.state.scenario = '';
+    const normalOverviewTarget = new URL(mock.url);
+    normalOverviewTarget.searchParams.set('section', 'overview');
+    await page.setViewportSize({ width: 430, height: 932 });
+    await page.goto(normalOverviewTarget.toString(), { waitUntil: 'domcontentloaded' });
+    await waitForPhase(page, 'current', 12000);
+    await page.locator('[data-mobile-overview]').waitFor();
+    screenshots.push(await screenshot(page, 'overview-normal-430.png', 'overview-normal-430'));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(normalOverviewTarget.toString(), { waitUntil: 'domcontentloaded' });
+    await waitForPhase(page, 'current', 12000);
     await page.locator('[data-mobile-overview]').waitFor();
 
     const beforeMalformed = mock.state.snapshotCalls;
@@ -4079,13 +4653,13 @@ async function main() {
     });
     check(
       checks,
-      'multi-object tablet Overview keeps the risk list active until explicit selection',
+      'multi-object tablet Overview selects the highest-risk object by default',
       Boolean(tabletOverviewDefault.firstId) &&
-        tabletOverviewDefault.selectedId === '' &&
-        tabletOverviewDefault.inspectorId === '' &&
-        tabletOverviewDefault.attributeLabels.length === 0 &&
-        tabletOverviewDefault.source === '' &&
-        tabletOverviewDefault.actionRoute === '',
+        tabletOverviewDefault.selectedId === tabletOverviewDefault.firstId &&
+        tabletOverviewDefault.inspectorId === tabletOverviewDefault.firstId &&
+        tabletOverviewDefault.attributeLabels.length >= 3 &&
+        tabletOverviewDefault.source.includes('interfaces[') &&
+        tabletOverviewDefault.actionRoute === 'interfaces',
       tabletOverviewDefault
     );
     await incidentRows.nth(1).click();
@@ -4317,12 +4891,13 @@ async function main() {
     );
     const tabletIncidentNextEvidence = await tabletPage.evaluate(() => {
       const workspace = document.querySelector('[data-tablet-next-evidence-workspace="incident"]');
-      const rows = [...(workspace?.querySelectorAll('[data-tablet-next-evidence-row="incident"]') || [])];
+      const rows = [...(workspace?.querySelectorAll('[data-tablet-next-evidence-relation]') || [])];
       return {
         present: Boolean(workspace),
         kind: workspace?.getAttribute('data-tablet-next-evidence-kind') || '',
         newDecision: workspace?.getAttribute('data-tablet-next-evidence-new-decision') || '',
-        sourcePaths: rows.map((row) => row.getAttribute('data-tablet-next-evidence-source-path') || ''),
+        relationLabels: rows.map((row) => row.getAttribute('data-tablet-next-evidence-relation') || ''),
+        relationValues: rows.map((row) => row.querySelector('dd')?.textContent?.replace(/\s+/g, ' ').trim() || ''),
         title: workspace?.querySelector('h2')?.textContent?.trim() || '',
         evidenceAt: workspace?.getAttribute('data-tablet-next-evidence-at') || workspace?.querySelector('time')?.getAttribute('datetime') || '',
         duplicateMetricCount: (workspace?.textContent?.match(/24\.00 Mbps|8\.00 Mbps/g) || []).length,
@@ -4334,8 +4909,10 @@ async function main() {
       tabletIncidentNextEvidence.present &&
         tabletIncidentNextEvidence.kind === 'impact-trace' &&
         tabletIncidentNextEvidence.newDecision === 'true' &&
-        tabletIncidentNextEvidence.sourcePaths.length >= 3 &&
-        tabletIncidentNextEvidence.sourcePaths.every(Boolean) &&
+        tabletIncidentNextEvidence.relationLabels.join('|') === '来源|默认路由依赖|影响范围|最近采样' &&
+        tabletIncidentNextEvidence.relationValues.length === 4 &&
+        tabletIncidentNextEvidence.relationValues.every(Boolean) &&
+        tabletIncidentNextEvidence.relationValues[0] !== '未记录' &&
         tabletIncidentNextEvidence.title.length > 0 &&
         tabletIncidentNextEvidence.evidenceAt.length > 0 &&
         tabletIncidentNextEvidence.duplicateMetricCount === 0,
@@ -4411,12 +4988,13 @@ async function main() {
     const compactBoundaryStates = [];
     for (const width of [767, 600, 599]) {
       await tabletPage.setViewportSize({ width, height: 1024 });
-      await tabletPage.waitForFunction((expectedWidth) => (
+      const expectedMasterDetail = width >= 600;
+      await tabletPage.waitForFunction(({ expectedWidth, expectedMasterDetail: shouldOwnMasterDetail }) => (
         innerWidth === expectedWidth &&
         Boolean(document.querySelector('[data-mobile-overview]')) &&
         !document.querySelector('[data-desktop-overview]') &&
-        !document.querySelector('.mp-tablet-master-detail')
-      ), width);
+        Boolean(document.querySelector('.mp-tablet-master-detail')) === shouldOwnMasterDetail
+      ), { expectedWidth: width, expectedMasterDetail });
       const state = await inspectTabletOverviewGeometry();
       compactBoundaryStates.push(state);
       screenshots.push(await screenshot(
@@ -4436,18 +5014,21 @@ async function main() {
     );
     check(
       checks,
-      '599px and 600px preserve the same overview task while navigation capability changes',
+      '599px and 600px preserve the same overview task while the compact workbench gains a stacked master-detail owner',
       compactBoundaryStates.length === 3 &&
         sameOverviewTask(compactBoundaryStates[1]) &&
-        sameOverviewTask(compactBoundaryStates[2]),
+        sameOverviewTask(compactBoundaryStates[2]) &&
+        compactBoundaryStates[1].mode === 'stacked' &&
+        compactBoundaryStates[2].mode === 'unknown',
       compactBoundaryStates.slice(1)
     );
     check(
       checks,
-      '767px and 768px preserve overview risk and evidence while master-detail capability changes',
+      '767px and 768px preserve the same overview task and split master-detail ownership',
       sameOverviewTask(compactBoundaryStates[0]) &&
         tabletOverviewGeometry.mode === 'split' &&
-        compactBoundaryStates[0].mode === 'unknown',
+        compactBoundaryStates[0].mode === 'split' &&
+        compactBoundaryStates[0].splitBelowMinimum === false,
       { compact: compactBoundaryStates[0], tablet: tabletOverviewGeometry }
     );
 
@@ -4629,11 +5210,13 @@ async function main() {
         resourceInvestigationEntry.evidenceAt === resourceInvestigationEntry.originEvidenceAt &&
         resourceInvestigationEntry.detailRisk === 'resource' &&
         resourceInvestigationEntry.heading === 'CPU' &&
-        resourceInvestigationEntry.firstSectionText.includes('变化证据') &&
-        /样本范围/.test(resourceInvestigationEntry.firstSectionText) &&
-        /有效样本\s*6 个/.test(resourceInvestigationEntry.firstSectionText) &&
-        !/当前值|策略阈值|高出阈值|连续证据/.test(resourceInvestigationEntry.firstSectionText) &&
-        resourceInvestigationEntry.firstSectionText.includes('证据时间') &&
+        resourceInvestigationEntry.firstSectionText.includes('当前样本') &&
+        /当前样本\s*96%/.test(resourceInvestigationEntry.firstSectionText) &&
+        /策略阈值\s*85%/.test(resourceInvestigationEntry.firstSectionText) &&
+        /变化范围\s*88%\s*[—-]\s*96%/.test(resourceInvestigationEntry.firstSectionText) &&
+        /连续性\s*6\s*\/\s*6\s*个样本\s*·\s*25\s*秒/.test(resourceInvestigationEntry.firstSectionText) &&
+        /采样来源\s*资源证据对象序列\s*cpu/.test(resourceInvestigationEntry.text) &&
+        resourceInvestigationEntry.text.includes('只描述资源压力，不推断网络中断') &&
         resourceInvestigationEntry.text.includes('\u6765\u81ea\u8fd0\u884c\u6982\u89c8') &&
          resource768Geometry.mode === 'workbench' &&
          resource768Geometry.listDisplay === 'block' &&
@@ -4748,7 +5331,8 @@ async function main() {
         const taskSurface = document.querySelector(mobile
           ? '.mp-workspace'
           : root?.getAttribute('data-desktop-overview-risk') === 'none' ? '[data-desktop-normal-workspace], .do-main-grid' : '.do-incident');
-        const signal = document.querySelector('[data-overview-task-landmark="signal"]');
+         const signal = document.querySelector('[data-overview-task-landmark="signal"]');
+         const currentRate = document.querySelector('[data-overview-task-landmark="current-rate"]');
         const investigation = document.querySelector('[data-overview-task-landmark="investigation"]');
         const firstRiskObject = document.querySelector('[data-overview-task-risk-object]');
         const inspector = document.querySelector('[data-overview-task-inspector]');
@@ -4757,8 +5341,10 @@ async function main() {
           ? '[data-mobile-core-fact="route"]'
           : '[data-desktop-status-item="route"]');
         const comparison = document.querySelector('[data-overview-task-landmark="comparison"]');
+        const fleetScope = document.querySelector('[data-overview-task-landmark="fleet-scope"]');
         const objectDetails = document.querySelector('[data-overview-task-landmark="object-details"]');
         const comparisonObjectRows = [...(comparison?.querySelectorAll(mobile ? 'button[id]' : '[data-overview-object-detail]') || [])];
+        const fleetScopeRows = [...(fleetScope?.querySelectorAll('button[id]') || [])];
         const evidenceBoundary = document.querySelector('[data-overview-task-landmark="evidence-boundary"]');
         const primaryStack = document.querySelector(mobile ? '.mp-workspace-primary' : '[data-desktop-main-stack="signal-objects"]');
         const contextStack = document.querySelector(mobile ? '.mp-workspace-context' : '[data-desktop-main-stack="decisions-provenance"]');
@@ -4769,7 +5355,7 @@ async function main() {
         const tabletMasterDetail = document.querySelector('.mp-tablet-master-detail');
         const tabletSteady = document.querySelector('.mp-tablet-steady');
         const routeDossier = document.querySelector('.mp-route-dossier');
-        const normalObjectFocus = document.querySelector('[data-tablet-normal-object-focus="early"]');
+        const normalObjectFocus = document.querySelector('[data-tablet-normal-object-focus="secondary"]');
         const steadySupport = document.querySelector('.mp-tablet-steady-support');
         const tabletRelation = document.querySelector('[data-overview-task-landmark="relation-evidence"]');
         const tabletLeftColumn = document.querySelector('.mp-tablet-left-column');
@@ -4794,6 +5380,10 @@ async function main() {
           : document.querySelector('[data-desktop-ledger="objects"] [data-desktop-ledger-row]');
         const normalTopBand = document.querySelector('[data-desktop-normal-top-band]');
         const normalDecisionBand = document.querySelector('[data-desktop-normal-decision-band]');
+        const scenarioFocusNodes = [...document.querySelectorAll(mobile
+          ? '.mp-scenario-focus[data-overview-task-focus]'
+          : '[data-overview-task-landmark="scenario-focus"][data-overview-task-focus]')];
+        const scenarioFocus = scenarioFocusNodes[0] || null;
         const decisionLedger = mobile
           ? document.querySelector('[data-overview-task-landmark="decision-ledger"]')
           : document.querySelector('[data-desktop-ledger="decisions"]');
@@ -4919,12 +5509,14 @@ async function main() {
           surface: mobile ? 'mobile' : 'desktop',
           scenario: root?.getAttribute('data-mobile-overview-scenario') || root?.getAttribute('data-desktop-overview-scenario') || '',
           risk: root?.getAttribute('data-mobile-overview-risk') || root?.getAttribute('data-desktop-overview-risk') || '',
+          riskPriority: root?.getAttribute('data-mobile-risk-priority') || '',
+          riskPriorityReason: root?.getAttribute('data-mobile-risk-priority-reason') || '',
           contract: root?.getAttribute('data-overview-task-contract') || '',
           overviewRootCount: document.querySelectorAll('[data-mobile-overview], [data-desktop-overview]').length,
           landmarks: [...new Set(values('[data-overview-task-landmark]', 'data-overview-task-landmark'))].sort(),
-           focus: document.querySelector('[data-overview-task-focus]')?.getAttribute('data-overview-task-focus') || '',
-           scenarioFocusKind: document.querySelector('[data-overview-task-landmark="scenario-focus"]')?.getAttribute('data-overview-task-focus') || '',
-           scenarioFocusCount: landmarkCount('scenario-focus'),
+           focus: scenarioFocus?.getAttribute('data-overview-task-focus') || document.querySelector('[data-overview-task-focus]')?.getAttribute('data-overview-task-focus') || '',
+           scenarioFocusKind: scenarioFocus?.getAttribute('data-overview-task-focus') || '',
+           scenarioFocusCount: scenarioFocusNodes.length,
           focusObject: document.querySelector('[data-overview-task-focus-object]')?.getAttribute('data-overview-task-focus-object') || '',
           focusObjectCount: document.querySelectorAll('[data-overview-task-focus-object]').length,
           focusPlacement: tabletSupport ? 'tablet-support' : focusObject?.parentElement === workspace ? 'workspace-lead' : taskParent(focusObject),
@@ -4951,6 +5543,7 @@ async function main() {
           investigationTitle: investigationTitle?.textContent?.trim() || '',
           firstInvestigationActionId: firstInvestigationAction?.id || '',
           firstInvestigationActionText: firstInvestigationAction?.textContent?.replace(/\s+/g, ' ').trim() || firstInvestigationAction?.getAttribute('aria-label') || '',
+          investigationRisk: investigationActionSurface?.getAttribute('data-mobile-action-risk') || '',
           verdictIconClass: verdictPanel?.querySelector(mobile ? '.mp-command-icon svg' : '.do-verdict-icon svg')?.getAttribute('class') || '',
           verdictAccent: verdictPanel ? getComputedStyle(verdictPanel, '::before').backgroundColor : '',
           maxTouchPoints: navigator.maxTouchPoints,
@@ -4982,6 +5575,7 @@ async function main() {
           signalWindowText: signal?.getAttribute('data-mobile-traffic-window') || '',
           currentRateOwnerCount: document.querySelectorAll('[data-mobile-traffic-current]').length,
           currentRateOwnerText: document.querySelector('[data-mobile-traffic-current]')?.textContent?.replace(/\s+/g, ' ').trim() || '',
+          focusAccessibleName: focusObject?.querySelector('button')?.getAttribute('aria-label')?.replace(/\s+/g, ' ').trim() || '',
           focusLabel: focusObject?.querySelector(mobile ? '.mp-focus-meta small' : 'header small')?.textContent?.trim() || '',
           focusTitle: focusObject?.querySelector(mobile ? '.mp-focus-copy > b' : 'h2')?.textContent?.trim() || '',
           focusName: focusObject?.querySelector(mobile ? 'code' : '.do-focus-object-name > b')?.textContent?.trim() || '',
@@ -4999,6 +5593,15 @@ async function main() {
               clipped: name instanceof HTMLElement && (name.scrollWidth > name.clientWidth + 1 || name.scrollHeight > name.clientHeight + 1),
             };
           }),
+          fleetScopeTitle: fleetScope?.querySelector('h2')?.textContent?.trim() || '',
+          fleetScopeCount: document.querySelectorAll('[data-overview-task-landmark="fleet-scope"]').length,
+          fleetScopeInFirstViewport: fullyInsideViewport(fleetScope),
+          fleetScopeObjects: fleetScopeRows.map((row) => ({
+            id: row.id,
+            text: row.textContent?.replace(/\s+/g, ' ').trim() || '',
+            routeTone: row.getAttribute('data-object-tone') || '',
+            inFirstViewport: fullyInsideViewport(row),
+          })),
           objectDetailsTitle: objectDetails?.querySelector('h2')?.textContent?.trim() || '',
           objectDetailsLandmark: objectDetails?.getAttribute('data-overview-task-landmark') || '',
           objectDetailsLandmarkCount: document.querySelectorAll('[data-overview-task-landmark="object-details"]').length,
@@ -5068,7 +5671,8 @@ async function main() {
           verdictRect: rect(verdictSurface),
           proofRect: rect(proofSurface),
           taskRect: rect(taskSurface),
-          signalRect: rect(signal),
+           signalRect: rect(signal),
+           currentRateRect: rect(currentRate),
           investigationRect: rect(investigation),
           firstRiskObjectRect: rect(firstRiskObject),
           inspectorRect: rect(inspector),
@@ -5091,6 +5695,7 @@ async function main() {
             ? [patrolCanvas, verdictSurface, workspace].map(groupedSurface).filter(Boolean)
             : [],
           tabletSteadyCount: document.querySelectorAll('.mp-tablet-steady').length,
+          tabletRelationCount: document.querySelectorAll('[data-overview-task-landmark="relation-evidence"]').length,
           tabletSteadyRect: rect(tabletSteady),
           routeDossierCount: document.querySelectorAll('.mp-route-dossier').length,
           routeDossierRect: rect(routeDossier),
@@ -5188,6 +5793,8 @@ async function main() {
     const normal620 = await inspectOverviewTaskBoundary(taskDesktopPage, '', 768, 1024, { workspaceWidth: 620 });
     const normal844 = await inspectOverviewTaskBoundary(taskDesktopPage, '', 844, 1024);
     screenshots.push(await screenshot(taskDesktopPage, 'overview-normal-task-844.png', 'overview-normal-task-844'));
+    const normal899 = await inspectOverviewTaskBoundary(taskDesktopPage, '', 899, 1024);
+    const normal900 = await inspectOverviewTaskBoundary(taskDesktopPage, '', 900, 1024);
     const normal1199 = await inspectOverviewTaskBoundary(taskDesktopPage, '', 1199);
     screenshots.push(await screenshot(taskDesktopPage, 'overview-normal-task-1199.png', 'overview-normal-task-1199'));
     const normal1200 = await inspectOverviewTaskBoundary(taskDesktopPage, '', 1200);
@@ -5196,10 +5803,10 @@ async function main() {
       checks,
       'normal current mobile and desktop verdicts lead with verified management evidence and preserve the external business boundary',
       [normal390, normal1199].every((item) => (
-        item.verdictTitleText === '默认出口与采集已核实' &&
-        item.verdictSummaryText.includes('默认路由') &&
-        item.verdictSummaryText.includes('采集通道') &&
+        item.verdictTitleText === '当前管理证据已核实' &&
+        !/默认路由|采集通道|WAN/.test(item.verdictSummaryText) &&
         /未探测外部业务|外部业务未探测/.test(item.verdictSummaryText) &&
+        item.verdictSummaryText.includes('不据此声明互联网可用') &&
         !item.verdictTitleText.includes('默认路由已核实')
       )),
       { normal390, normal1199 },
@@ -5236,12 +5843,13 @@ async function main() {
         item.investigationSecondaryActionCount === 0 &&
         item.firstInvestigationActionId === 'lineStatus' &&
         item.decisionRect && item.firstInvestigationActionRect &&
-        item.signalRect &&
-        item.firstInvestigationActionRect.top >= item.signalRect.bottom - 1 &&
-        item.firstInvestigationActionRect.bottom <= item.decisionRect.top + 1 &&
+        item.currentRateRect && item.signalRect &&
+        item.firstInvestigationActionRect.top >= item.currentRateRect.bottom - 1 &&
+        item.firstInvestigationActionRect.bottom <= item.signalRect.top + 1 &&
+        item.signalRect.bottom <= item.decisionRect.top + 1 &&
         item.firstInvestigationActionRect.height >= 44
       ));
-    const normalLargeFirst = [normal768, normal844, normal1199, normal1200].every((item) => (
+    const normalLargeFirst = [normal768, normal844, normal899, normal900, normal1199, normal1200].every((item) => (
         item.investigationActionRouteCount >= 1 &&
         item.investigationPrimaryActionCount === 1 &&
         item.investigationSecondaryActionCount === item.investigationActionRouteCount - 1 &&
@@ -5249,9 +5857,9 @@ async function main() {
       ));
     check(
       checks,
-      'normal patrol actions expose one primary task after the phone WAN signal and before the phone decision ledger, while preserving desktop/tablet first-scan follow-ups',
+      'normal patrol actions expose one primary task after current phone rates and before WAN history, while preserving desktop/tablet first-scan follow-ups',
       normalPhoneDecisionFirst && normalLargeFirst,
-      { normalPhoneDecisionFirst, normalLargeFirst, normal390, normal375, normal768, normal844, normal1199, normal1200 },
+      { normalPhoneDecisionFirst, normalLargeFirst, normal390, normal375, normal768, normal844, normal899, normal900, normal1199, normal1200 },
     );
     check(
       checks,
@@ -5263,6 +5871,10 @@ async function main() {
         item.currentRateOwnerCount === 1 &&
         item.currentRateOwnerText.includes('下载') &&
         item.currentRateOwnerText.includes('上传') &&
+        item.focusAccessibleName.includes('下载') &&
+        item.focusAccessibleName.includes('上传') &&
+        Array.from(item.currentRateOwnerText.matchAll(/\d+(?:\.\d+)?\s*(?:[KMGT]?bps)/gi), (match) => match[0])
+          .every((rate) => item.focusAccessibleName.includes(rate)) &&
         item.signalPeakText.includes('窗口峰值') &&
         item.signalWindowText.includes('点')
       )),
@@ -5300,15 +5912,18 @@ async function main() {
     );
     check(
       checks,
-      '768/844/1199 current normal Overview exposes route/WAN evidence, an early object-focus workspace and one support band',
-      [normal768, normal844, normal1199].every((item) => (
+      '768/844/899/900/1199 current normal Overview keeps one relation evidence owner in the tablet workbench',
+      [normal768, normal844, normal899, normal900, normal1199].every((item) => (
         item.surface === 'mobile' && item.tabletSteadyCount === 1 && item.routeDossierCount === 1 &&
-        item.routeDossierRect && item.signalRect && item.normalObjectFocusRect && item.steadySupportRect && item.workspaceRect &&
+        item.tabletRelationCount === 1 && item.routeDossierRect && item.signalRect && item.normalObjectFocusRect &&
+        item.tabletRelationRect && item.steadySupportRect && item.workspaceRect &&
         Math.abs(item.routeDossierRect.top - item.signalRect.top) <= 1 &&
         item.signalRect.width > item.routeDossierRect.width &&
         item.steadySupportRect.width >= item.workspaceRect.width - 2 &&
-        item.normalObjectFocusRect.top <= item.routeDossierRect.top + 1 &&
+        item.normalObjectFocusRect.top >= Math.max(item.routeDossierRect.bottom, item.signalRect.bottom) - 1 &&
         item.normalObjectFocusRect.bottom <= item.evidenceBoundaryRect.top + 1 &&
+        item.tabletRelationRect.top >= item.normalObjectFocusRect.bottom - 1 &&
+        item.tabletRelationRect.bottom <= item.evidenceBoundaryRect.top + 1 &&
         item.routeDossierFacts['路由表'] === 'main' &&
         item.routeDossierFacts['网关'] === 'pppoe-wan1' &&
         item.routeDossierFacts.distance === '1' && item.routeDossierFacts['活动候选'] === '1 条' &&
@@ -5317,7 +5932,7 @@ async function main() {
         item.chartRect && item.chartRect.width >= 260 && item.chartRect.height >= 56 &&
         item.taskRect && item.taskRect.top >= 0 && item.overflow <= 1
       )) && normal390.tabletSteadyCount === 0 && normal1200.tabletSteadyCount === 0,
-      { normal390, normal768, normal844, normal1199, normal1200 },
+      { normal390, normal768, normal844, normal899, normal900, normal1199, normal1200 },
     );
     check(
       checks,
@@ -5338,14 +5953,21 @@ async function main() {
     );
     check(
       checks,
-      '390 current route owns complete values before a full-width readable historical plot',
+      '390 current route owns current values before the full-width WAN history signal',
       [normal390].every((item) => (
         item.surface === 'mobile' && item.rateCells.length === 2 &&
         item.rateCells.every((cell) => cell.text && !cell.wrapped) &&
-        item.chartSurfaceRect && item.chartRect && item.workspaceContentWidth &&
+        item.chartSurfaceRect && item.chartRect && item.workspaceContentWidth && item.focusObjectRect && item.proofRect &&
+        item.currentRateRect && item.firstInvestigationActionRect && item.signalRect &&
         item.chartSurfaceRect.width >= item.workspaceContentWidth - 48 && item.chartSurfaceRect.height >= 84 &&
         item.chartRect.width >= item.chartSurfaceRect.width * 0.7 && item.chartRect.height >= 60 &&
-        item.chartRect.top >= Math.max(...item.rateCells.map((cell) => cell.rect?.bottom || 0)) - 1 &&
+        item.proofRect.bottom <= item.focusObjectRect.top + 1 &&
+        item.currentRateRect.top >= item.focusObjectRect.top - 1 &&
+        item.currentRateRect.bottom <= item.focusObjectRect.bottom + 1 &&
+        item.focusObjectRect.bottom <= item.firstInvestigationActionRect.top + 1 &&
+        item.firstInvestigationActionRect.bottom <= item.signalRect.top + 1 &&
+        item.chartRect.top >= item.signalRect.top - 1 && item.chartRect.bottom <= item.signalRect.bottom + 1 &&
+        item.rateCells.every((cell) => cell.rect && cell.rect.top >= item.currentRateRect.top - 1 && cell.rect.bottom <= item.currentRateRect.bottom + 1) &&
         item.overflow <= 1
       )),
       { normal390 },
@@ -5354,7 +5976,9 @@ async function main() {
       checks,
       '1199/1200 preserve equivalent Focus-Signal and full-width support task ownership',
       normal1199.comparisonLandmarkCount === 0 && normal1199.tabletSteadyCount === 1 &&
-        normal1199.evidenceBoundaryParent === 'steady-support' && normal1199.investigationParent === 'tablet-left-column' &&
+        normal1199.evidenceBoundaryParent === 'steady-support' && normal1199.investigationParent === 'outside' &&
+        normal1199.normalObjectFocusRect && normal1199.investigationRect &&
+        normal1199.normalObjectFocusRect.bottom <= normal1199.investigationRect.top + 1 &&
         normal1199.primaryLandmarks.length === 0 && normal1199.contextLandmarks.length === 0 &&
         normal1200.comparisonLandmarkCount === 0 && normal1200.tabletSteadyCount === 0 &&
         normal1200.normalTopBandCount === 1 && normal1200.normalDecisionBandCount === 1 &&
@@ -5395,13 +6019,14 @@ async function main() {
       checks,
       '1199/1200 normal Overview does not manufacture Comparison from Focus and Signal evidence',
       [normal1199, normal1200].every((item) => (
-        item.routeProof.label === '默认路由' && item.routeProof.value === '已核实' &&
-        !item.routeProof.value.includes(item.focusName) && !item.routeProof.note.includes(item.focusName) &&
         item.signalTitle && item.focusTitle === '活动默认路由' &&
         item.focusName === 'pppoe-wan1' && item.signalText.includes('24.00 Mbps') && item.signalText.includes('8.00 Mbps') &&
         item.comparisonTitle === '' && item.comparisonLandmark === '' &&
         item.comparisonLandmarkCount === 0 && item.comparisonObjects.length === 0
-      )) &&
+      )) && normal1199.routeProof.label === '' && normal1199.proofKeys.join('|') === 'freshness|wan|collection' &&
+        normal1200.routeProof.label === '默认路由' && normal1200.routeProof.value === '已核实' &&
+        !normal1200.routeProof.value.includes(normal1200.focusName) && !normal1200.routeProof.note.includes(normal1200.focusName) &&
+        normal1200.proofKeys.join('|') === 'route|wan|collection' &&
         normal1199.signalTitle === normal1200.signalTitle &&
         normal1199.focusLabel === '当前出口' && normal1200.focusLabel === '当前核对对象' &&
         normal1199.focusTitle === normal1200.focusTitle,
@@ -5425,7 +6050,8 @@ async function main() {
         normal1199.taskRect && normal1200.taskRect && normal1199.signalRect && normal1200.signalRect &&
         normal1199.focusObjectRect && normal1200.focusObjectRect && normal1199.normalObjectFocusRect &&
         normal1199.investigationRect && normal1200.investigationRect &&
-        normal1199.proofKeys.join('|') === normal1200.proofKeys.join('|') &&
+        normal1199.proofKeys.join('|') === 'freshness|wan|collection' &&
+        normal1200.proofKeys.join('|') === 'route|wan|collection' &&
         (
           Math.abs(normal1199.verdictRect.height - normal1200.verdictRect.height) <= 24 ||
           (
@@ -5574,13 +6200,15 @@ async function main() {
     const collectionLandmarks = ['evidence-boundary', 'freshness', 'investigation', 'risk-objects', 'scenario-focus', 'selected-inspector', 'verdict'];
     check(
       checks,
-      '1199/1200 collection incident preserves scenario focus while desktop opens its selected inspector',
+      '1199/1200 collection incident preserves scenario focus and opens the highest-risk inspector',
        collection1199.contract === 'overview-task-v1' && collection1200.contract === 'overview-task-v1' &&
          collection1199.scenario === 'collection-down' && collection1200.scenario === 'collection-down' &&
        includesEvery(collection1199.landmarks, collectionLandmarks) && includesEvery(collection1200.landmarks, collectionLandmarks) &&
        collection1199.surface === 'mobile' && collection1200.surface === 'desktop' &&
          collection1199.scenarioFocusKind === 'planes' && collection1200.scenarioFocusKind === 'planes' &&
-         collection1199.initialRiskObject && !collection1199.initialSelectedRiskObject && !collection1199.initialInspector &&
+         collection1199.initialRiskObject &&
+           collection1199.initialSelectedRiskObject === collection1199.initialRiskObject &&
+           collection1199.initialInspector === collection1199.initialRiskObject &&
         collection1200.initialRiskObject &&
           collection1200.initialSelectedRiskObject === collection1200.initialRiskObject &&
           collection1200.initialInspector === collection1200.initialRiskObject &&
@@ -5596,21 +6224,22 @@ async function main() {
     );
     check(
       checks,
-      '1199/1200 collection incident avoids proof replay and keeps first risk and inspector in one task rhythm',
+      '1199/1200 collection incident keeps one contextual proof owner and one risk-inspector task rhythm',
       Boolean(
         collection1199.verdictRect && collection1200.verdictRect &&
-        !collection1199.proofRect && collection1200.proofRect &&
+        collection1199.proofRect && collection1200.proofRect &&
         collection1199.taskRect && collection1200.taskRect &&
         collection1199.firstRiskObjectRect && collection1200.firstRiskObjectRect &&
         collection1199.inspectorRect && collection1200.inspectorRect &&
-        collection1199.proofKeys.length === 0 &&
-        collection1200.proofKeys.length === 3 &&
-        collection1200.proofKeys.includes('collection-channels') &&
-        collection1200.proofKeys.includes('last-success') &&
-        collection1200.proofKeys.includes('failed-endpoints') &&
-        collection1200.proofRect &&
-        Math.abs(collection1200.proofRect.top - collection1200.verdictRect.top) <= 2 &&
-        Math.abs(collection1200.proofRect.bottom - collection1200.verdictRect.bottom) <= 2 &&
+        [collection1199, collection1200].every((item) => (
+          item.proofKeys.length === 3 &&
+          item.proofKeys.includes('collection-channels') &&
+          item.proofKeys.includes('last-success') &&
+          item.proofKeys.includes('failed-endpoints') &&
+          Math.abs(item.proofRect.top - item.verdictRect.top) <= 2 &&
+          Math.abs(item.proofRect.bottom - item.verdictRect.bottom) <= 2
+        )) &&
+        collection1199.proofKeys.join('|') === collection1200.proofKeys.join('|') &&
         Math.abs(collection1199.verdictRect.height - collection1200.verdictRect.height) <= 24 &&
         Math.abs(collection1199.verdictTitlePx - collection1200.verdictTitlePx) <= 2 &&
         collection1199.mobileGroupedSurfaces.length === 1 &&
@@ -5671,11 +6300,30 @@ async function main() {
     const fleetCoverage844 = await inspectOverviewTaskBoundary(taskDesktopPage, 'fleet-coverage', 844, 1024);
     const fleetCoverage1200 = await inspectOverviewTaskBoundary(taskDesktopPage, 'fleet-coverage', 1200);
     screenshots.push(await screenshot(taskDesktopPage, 'overview-fleet-coverage-1200.png', 'overview-fleet-coverage-1200'));
-    const mobileFleetCoverage = [fleetCoverage390, fleetCoverage768, fleetCoverage844];
-    const mobileFleetCoverageContract = mobileFleetCoverage.every((item) => (
+    const tabletFleetCoverage = [fleetCoverage768, fleetCoverage844];
+    const mobileFleetCoverageContract = (
+        fleetCoverage390.scenario === 'fleet' && fleetCoverage390.risk === 'none' &&
+        fleetCoverage390.proofFacts.route === '已核实' && fleetCoverage390.proofFacts.wan === '4 / 4' && fleetCoverage390.proofFacts.interfaces === '8 / 8' &&
+        fleetCoverage390.focusName === 'pppoe-wan1' && fleetCoverage390.fleetScopeCount === 1 &&
+        fleetCoverage390.fleetScopeTitle === '对象覆盖 · 12 项' &&
+        fleetCoverage390.fleetScopeObjects.length === 12 &&
+        new Set(fleetCoverage390.fleetScopeObjects.map((object) => object.id)).size === 12 &&
+        fleetCoverage390.fleetScopeObjects.filter((object) => object.text.includes('WAN')).length === 4 &&
+        fleetCoverage390.fleetScopeObjects.filter((object) => object.text.includes('接口')).length === 8 &&
+        fleetCoverage390.fleetScopeObjects.every((object) => object.id) &&
+        fleetCoverage390.fleetScopeObjects.filter((object) => object.inFirstViewport).length >= 4 &&
+        fleetCoverage390.signalText.includes('24.00 Mbps') && fleetCoverage390.signalText.includes('8.00 Mbps') &&
+        fleetCoverage390.signalRect && fleetCoverage390.focusObjectRect &&
+        fleetCoverage390.focusObjectRect.bottom <= fleetCoverage390.signalRect.top + 1 &&
+        fleetCoverage390.comparisonLandmarkCount === 0 && fleetCoverage390.objectDetailsLandmarkCount === 0 &&
+        fleetCoverage390.actions.join('|') === 'interfaces' && fleetCoverage390.investigationActionRouteCount === 1 &&
+        fleetCoverage390.firstInvestigationActionInFirstViewport &&
+        fleetCoverage390.overflow <= 1
+      ) && tabletFleetCoverage.every((item) => (
         item.scenario === 'fleet' && item.risk === 'none' &&
         item.proofFacts.route === '已核实' && item.proofFacts.wan === '4 / 4' && item.proofFacts.interfaces === '8 / 8' &&
         item.focusName === 'pppoe-wan1' && item.signalText.includes('24.00 Mbps') && item.signalText.includes('8.00 Mbps') &&
+        item.fleetScopeCount === 0 &&
         item.comparisonLandmarkCount === 0 && item.objectDetailsLandmarkCount === 0 && item.objectDetailRows.length === 0 &&
         item.actions.join('|') === 'interfaces' && item.investigationActionRouteCount === 1 &&
         item.firstInvestigationActionId === 'interfaces' &&
@@ -5689,6 +6337,38 @@ async function main() {
         fleetCoverage1200.comparisonLandmarkCount === 0 && fleetCoverage1200.objectDetailsLandmarkCount === 1 &&
         fleetCoverage1200.objectDetailRows.length === 12 && new Set(fleetCoverage1200.objectDetailRows).size === 12 &&
         fleetCoverage1200.overflow <= 1;
+
+    async function exerciseFleetObjectEntry() {
+      await inspectOverviewTaskBoundary(taskDesktopPage, 'fleet-coverage', 390, 844);
+      const object = taskDesktopPage.locator('[data-overview-task-landmark="fleet-scope"] button[id]').first();
+      const objectCount = await object.count();
+      if (objectCount !== 1) return { available: false, objectCount };
+      const objectId = await object.getAttribute('id');
+      const originUrl = taskDesktopPage.url();
+      await object.click();
+      await taskDesktopPage.locator('[data-mobile-domain-workspace="lineStatus"] [data-mobile-object-detail]').waitFor();
+      const entryUrl = taskDesktopPage.url();
+      const entry = await taskDesktopPage.evaluate(() => {
+        const query = new URLSearchParams(location.search);
+        return {
+          section: query.get('section'),
+          object: query.get('object'),
+          from: query.get('from'),
+          evidenceAt: query.get('evidenceAt'),
+          selected: document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-object-detail') || '',
+        };
+      });
+      screenshots.push(await screenshot(taskDesktopPage, 'fleet-object-detail-390.png', 'fleet-object-detail-390'));
+      await taskDesktopPage.goBack();
+      await taskDesktopPage.locator('[data-overview-task-landmark="fleet-scope"]').waitFor();
+      const back = await taskDesktopPage.evaluate(() => ({ url: location.href, focus: document.activeElement?.id || '' }));
+      await taskDesktopPage.goForward();
+      await taskDesktopPage.locator('[data-mobile-domain-workspace="lineStatus"] [data-mobile-object-detail]').waitFor();
+      const forwardUrl = taskDesktopPage.url();
+      await taskDesktopPage.goBack();
+      await taskDesktopPage.locator('[data-overview-task-landmark="fleet-scope"]').waitFor();
+      return { available: true, objectId, originUrl, entryUrl, entry, back, forwardUrl };
+    }
 
     async function exerciseFleetWorkspaceHandoff(width, height, file, stateName) {
       await inspectOverviewTaskBoundary(taskDesktopPage, 'fleet-coverage', width, height);
@@ -5732,6 +6412,7 @@ async function main() {
       return { available: true, width, height, actionRect, actionText, originUrl, entry, back, forwardUrl };
     }
 
+    const fleetObjectEntry390 = await exerciseFleetObjectEntry();
     const fleetHandoff390 = await exerciseFleetWorkspaceHandoff(
       390, 844, 'fleet-network-workspace-390.png', 'fleet-network-workspace-390'
     );
@@ -5741,7 +6422,17 @@ async function main() {
     check(
       checks,
       'mobile Fleet coverage judgement and canonical network handoff preserve desktop completeness and Back/Forward focus',
-      mobileFleetCoverageContract && [fleetHandoff390, fleetHandoff768].every((journey) => (
+      mobileFleetCoverageContract &&
+        fleetObjectEntry390.available && Boolean(fleetObjectEntry390.objectId) &&
+        fleetObjectEntry390.entry.section === 'lineStatus' &&
+        fleetObjectEntry390.entry.object === fleetObjectEntry390.objectId &&
+        fleetObjectEntry390.entry.selected === fleetObjectEntry390.objectId &&
+        fleetObjectEntry390.entry.from === 'overview' &&
+        /^\d{4}-\d{2}-\d{2}T/.test(fleetObjectEntry390.entry.evidenceAt || '') &&
+        fleetObjectEntry390.back.url === fleetObjectEntry390.originUrl &&
+        fleetObjectEntry390.back.focus === fleetObjectEntry390.objectId &&
+        fleetObjectEntry390.forwardUrl === fleetObjectEntry390.entryUrl &&
+        [fleetHandoff390, fleetHandoff768].every((journey) => (
         journey.available && journey.actionRect?.height >= 44 &&
         journey.actionText.includes('进入网络工作区') && journey.actionText.includes('WAN、接口与路由对象') &&
         journey.entry.section === 'interfaces' && journey.entry.object === null && journey.entry.risk === null &&
@@ -5750,7 +6441,7 @@ async function main() {
         journey.back.url === journey.originUrl && journey.back.focusedAction === 'interfaces' &&
         journey.forwardUrl === journey.entry.url
       )),
-      { fleetCoverage390, fleetCoverage768, fleetCoverage844, fleetCoverage1200, fleetHandoff390, fleetHandoff768 },
+      { fleetCoverage390, fleetCoverage768, fleetCoverage844, fleetCoverage1200, fleetObjectEntry390, fleetHandoff390, fleetHandoff768 },
     );
     check(
       checks,
@@ -6005,7 +6696,8 @@ async function main() {
       const left = document.querySelector('.mp-tablet-left-column');
       const right = document.querySelector('.mp-tablet-right-column');
       const signal = right?.querySelector('[data-overview-task-landmark="signal"]');
-      const decisions = right?.querySelector('[data-overview-task-landmark="decision-ledger"]');
+      const followup = document.querySelector('.mp-tablet-steady-followup');
+      const decisions = followup?.querySelector('[data-overview-task-landmark="decision-ledger"]');
       const objectWorkspace = document.querySelector('.mp-tablet-object-workspace');
       const support = document.querySelector('.mp-tablet-steady-support');
       const relation = support?.querySelector('[data-overview-task-landmark="relation-evidence"]');
@@ -6017,6 +6709,8 @@ async function main() {
       const objectRect = objectWorkspace?.getBoundingClientRect() ?? null;
       const objectTop = objectRect?.top ?? null;
       const objectBottom = objectRect?.bottom ?? null;
+      const followupTop = followup?.getBoundingClientRect().top ?? null;
+      const followupBottom = followup?.getBoundingClientRect().bottom ?? null;
       const relationTop = relation?.getBoundingClientRect().top ?? null;
       const relationBottom = relation?.getBoundingClientRect().bottom ?? null;
       const evidenceTop = evidence?.getBoundingClientRect().top ?? null;
@@ -6032,29 +6726,33 @@ async function main() {
         signal: bounds(signal),
         decisions: bounds(decisions),
         objectWorkspace: bounds(objectWorkspace),
-        objectBeforeColumns: Number.isFinite(objectTop) && Number.isFinite(leftTop) && Number.isFinite(rightTop) && objectTop <= Math.min(leftTop, rightTop) + 12,
+        objectAfterPrimaryColumns: Number.isFinite(objectTop) && Number.isFinite(leftBottom) && Number.isFinite(rightBottom) && objectTop >= Math.max(leftBottom, rightBottom) - 12,
+        followup: bounds(followup),
+        followupAfterObject: Number.isFinite(objectBottom) && Number.isFinite(followupTop) && followupTop >= objectBottom - 12,
         support: bounds(support),
+        supportExists: Boolean(support),
         relation: bounds(relation),
         evidence: bounds(evidence),
-        rightOwnsOnlySignalAndDecisions: Boolean(right && !right.querySelector('[data-overview-task-landmark="relation-evidence"]')),
-        relationAfterObjectWorkspace: Number.isFinite(objectBottom) && Number.isFinite(relationTop) && relationTop >= objectBottom - 12,
+        rightOwnsOnlySignal: Boolean(right && signal && !right.querySelector('[data-overview-task-landmark="decision-ledger"], [data-overview-task-landmark="relation-evidence"]')),
+        relationAfterFollowup: Number.isFinite(followupBottom) && Number.isFinite(relationTop) && relationTop >= followupBottom - 12,
         evidenceAfterRelation: Number.isFinite(relationBottom) && Number.isFinite(evidenceTop) && evidenceTop >= relationBottom - 12,
-        evidenceAfterColumns: Number.isFinite(evidenceTop) && Number.isFinite(leftBottom) && Number.isFinite(rightBottom) && evidenceTop >= Math.max(leftBottom, rightBottom) - 12,
+        evidenceAfterFollowup: Number.isFinite(evidenceTop) && Number.isFinite(followupBottom) && evidenceTop >= followupBottom - 12,
       };
     });
     check(
       checks,
-      'tablet normal puts object comparison before supporting columns and keeps relation/evidence after the task workspace',
+      'tablet normal orders route/WAN, object comparison, follow-up tasks, then relation/evidence',
       Boolean(
         tabletNormalColumnFlow.left && tabletNormalColumnFlow.right &&
         tabletNormalColumnFlow.signal && tabletNormalColumnFlow.decisions &&
-        tabletNormalColumnFlow.objectWorkspace && tabletNormalColumnFlow.support &&
+        tabletNormalColumnFlow.objectWorkspace && tabletNormalColumnFlow.followup && tabletNormalColumnFlow.supportExists &&
         tabletNormalColumnFlow.relation && tabletNormalColumnFlow.evidence &&
-        tabletNormalColumnFlow.rightOwnsOnlySignalAndDecisions &&
-        tabletNormalColumnFlow.objectBeforeColumns &&
-        tabletNormalColumnFlow.relationAfterObjectWorkspace &&
+        tabletNormalColumnFlow.rightOwnsOnlySignal &&
+        tabletNormalColumnFlow.objectAfterPrimaryColumns &&
+        tabletNormalColumnFlow.followupAfterObject &&
+        tabletNormalColumnFlow.relationAfterFollowup &&
         tabletNormalColumnFlow.evidenceAfterRelation &&
-        tabletNormalColumnFlow.evidenceAfterColumns
+        tabletNormalColumnFlow.evidenceAfterFollowup
       ),
       tabletNormalColumnFlow,
     );
@@ -6311,6 +7009,12 @@ async function main() {
       ),
       tablet844StickyContext
     );
+    await tabletPage.evaluate(async () => {
+      window.scrollTo(0, 0);
+      const inspector = document.querySelector('.mdw-inspector');
+      if (inspector instanceof HTMLElement) inspector.scrollTop = 0;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
     screenshots.push(await screenshot(tabletPage, 'tablet-network-844.png', 'tablet-network-844'));
 
     await tabletPage.setViewportSize({ width: 768, height: 1024 });
@@ -6398,13 +7102,11 @@ async function main() {
         : '[data-desktop-domain-workspace="interfaces"]'
       ).waitFor();
       if (mobile) {
-        const expectedLayout = width <= 599
+        const expectedLayout = width <= 599 || height < 700
           ? 'phone-list'
           : width <= 767
             ? 'compact-list'
-            : height >= 700
-              ? 'workbench'
-              : 'phone-list';
+            : 'workbench';
         await tabletPage.waitForFunction((expected) => (
           document.querySelector('[data-mobile-domain-workspace="interfaces"]')
             ?.getAttribute('data-mobile-domain-layout') === expected
@@ -6479,7 +7181,7 @@ async function main() {
     check(
       checks,
       'short-landscape list tasks consume the workspace instead of reserving an empty inspector column',
-      boundary667Short.mobile && boundary667Short.layout === 'compact-list' &&
+      boundary667Short.mobile && boundary667Short.layout === 'phone-list' &&
         boundary667Short.inspector === 'none' && boundary667Short.listFillsLayout &&
         boundary844Short.mobile && boundary844Short.layout === 'phone-list' &&
         boundary844Short.inspector === 'none' && boundary844Short.listFillsLayout &&
@@ -6572,7 +7274,7 @@ async function main() {
         desktopDomain.route === contract.route &&
           desktopDomain.kind === (contract.desktopKind || contract.kind) &&
           desktopDomain.blocks >= 1 &&
-          desktopDomain.search &&
+          desktopDomain.search === (contract.searchable !== false) &&
           desktopDomain.filters >= 1 &&
           desktopDomain.sort &&
           /\d+\s*\/\s*\d+/.test(desktopDomain.pagination) &&
@@ -7386,9 +8088,10 @@ async function main() {
     check(
       checks,
       'direct resource deep link preserves object evidence but rejects mismatched continuity',
-      mismatchedDetail.text.includes('变化证据') &&
-        mismatchedDetail.text.includes('样本未取得') &&
-        !mismatchedDetail.text.includes('当前值') && !mismatchedDetail.text.includes('策略阈值') &&
+      mismatchedDetail.text.includes('当前样本') && mismatchedDetail.text.includes('96%') &&
+        mismatchedDetail.text.includes('策略阈值85%') && mismatchedDetail.text.includes('样本未取得') &&
+        mismatchedDetail.text.includes('变化范围未取得') && mismatchedDetail.text.includes('连续性未取得') &&
+        mismatchedDetail.text.includes('只描述资源压力，不推断网络中断') &&
         !mismatchedDetail.series.includes('cpu') && mismatchedDetail.series.includes('memory') && mismatchedDetail.series.includes('disk'),
       mismatchedDetail
     );
@@ -7426,9 +8129,10 @@ async function main() {
     });
     check(
       checks,
-      'slow-poll stale resource deep link keeps object evidence without historical continuity',
-      staleDetail.text.includes('变化证据') && staleDetail.text.includes('样本未取得') &&
-        !staleDetail.text.includes('当前值') && !staleDetail.text.includes('策略阈值') && staleDetail.series.length === 0,
+      'slow-poll stale history keeps the current object sample without claiming continuity',
+      staleDetail.text.includes('当前样本96%') && staleDetail.text.includes('策略阈值85%') &&
+        staleDetail.text.includes('样本未取得') && staleDetail.text.includes('变化范围未取得') &&
+        staleDetail.text.includes('连续性未取得') && !staleDetail.text.includes('历史末值') && staleDetail.series.length === 0,
       staleDetail
     );
 
@@ -7488,11 +8192,12 @@ async function main() {
         } else {
           check(
             checks,
-            `${surface} composite incident waits for explicit object selection`,
-            !initialSelection.selected && !initialSelection.inspector,
+            `${surface} composite incident opens the highest-priority object context`,
+            Boolean(initialSelection.firstRiskObject) &&
+              initialSelection.selected === initialSelection.firstRiskObject &&
+              initialSelection.inspector === initialSelection.firstRiskObject,
             initialSelection
           );
-          await adaptivePage.locator('[data-overview-task-risk-object]').first().click();
           await adaptivePage.locator('[data-overview-task-inspector]').waitFor();
         }
       }
@@ -7620,12 +8325,24 @@ async function main() {
       );
       check(
         checks,
+        `${surface} composite verdict, first object and first action share the auditable highest-risk rule`,
+        result.risk === 'interfaces' && result.verdictTitle.includes('出口依赖接口未运行') &&
+          result.riskPriority === '400' && result.primaryRiskPriority === '400' &&
+          result.riskPriorityReason.includes('默认路由依赖接口未运行') &&
+          result.actionRisk === 'interfaces' &&
+          result.taskPriorities.join('|') === '200',
+        result
+      );
+      check(
+        checks,
         `${surface} composite task keeps the approved primary-secondary relationship without clipping or overflow`,
         (surface === 'desktop'
           ? result.desktopFactsBeforeWorkspace && result.desktopWorkspaceBeforeQueue && result.desktopQueueBeforeActions
-          : result.afterPrimary) &&
+          : result.afterPrimary && (width < 600
+            ? result.withinFirstViewport
+            : result.objectInFirstViewport && result.actionInFirstViewport && result.secondaryRiskReachable)) &&
           result.tabletFullWidth &&
-          result.withinFirstViewport && result.minimumTarget >= 44 &&
+          result.minimumTarget >= 44 &&
           result.clippedText.length === 0 && result.overflow <= 1,
         result
       );
@@ -7644,8 +8361,8 @@ async function main() {
       if (surface === 'mobile') {
         check(
           checks,
-          `${width}px composite task keeps the interface object ahead of proof and secondary resource/traffic evidence`,
-          (width < 600 ? result.objectBeforeProof : result.proofBeforeObject) && result.objectBeforeQueue && (!result.signalRect || result.queueBeforeSignal) &&
+          `${width}px composite task keeps core proof ahead of the interface object and secondary resource/traffic evidence`,
+          result.proofBeforeObject && result.objectBeforeQueue && (!result.signalRect || result.queueBeforeSignal) &&
             result.objectInFirstViewport && result.actionInFirstViewport &&
             result.objectText.includes('ether9') && result.actionRect?.height >= 44 &&
           !/CPU|内存|磁盘|策略阈值/.test(result.signalText) && !result.historyText,
@@ -7657,7 +8374,9 @@ async function main() {
           width >= 600 || (
             result.rootRhythm === 'incident-ledger-v1' && result.actionRhythm === 'primary-plus-context' &&
             result.primaryActionVisual === 'accent' && result.primaryActionColor !== '' &&
-            result.secondaryActionMinHeights.every((height) => height <= 48)
+            result.secondaryDisclosureOpen === false &&
+            result.secondaryDisclosureSummaryRect?.height >= 44 &&
+            result.secondaryActionMinHeights.every((height) => height >= 44 && height <= 48)
           ),
           result
         );
@@ -7666,6 +8385,12 @@ async function main() {
             checks,
             `${width}px mobile incident primary action is fully above fixed navigation`,
             result.actionAboveNavigation === true && result.actionVisibleRatio === 1,
+            result
+          );
+          check(
+            checks,
+            `${width}px mobile secondary risk is fully above fixed navigation`,
+            result.secondaryRiskAboveNavigation === true,
             result
           );
           contractCheck(
@@ -7765,6 +8490,12 @@ async function main() {
           actionVisibility
         );
       }
+      await adaptivePage.evaluate(async () => {
+        window.scrollTo(0, 0);
+        const inspector = document.querySelector('.mdw-inspector');
+        if (inspector instanceof HTMLElement) inspector.scrollTop = 0;
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
       screenshots.push(await screenshot(adaptivePage, `${surface}-secondary-resource-context-${width}.png`, `${surface}-secondary-resource-context-${width}`));
       await adaptivePage.goBack();
       await adaptivePage.locator(surface === 'desktop'
@@ -7789,9 +8520,9 @@ async function main() {
           openedContext.contextRisk === 'resource' && openedContext.selectedRows === 1 &&
           openedContext.text.includes('来自运行概览') &&
           (surface === 'mobile'
-            ? openedContext.text.includes('变化证据') &&
-              openedContext.text.includes('样本范围') && openedContext.text.includes('采样来源') &&
-              !openedContext.text.includes('当前越阈判断') && !openedContext.text.includes('策略阈值')
+            ? openedContext.text.includes('当前样本96%') && openedContext.text.includes('策略阈值85%') &&
+              openedContext.text.includes('变化范围88% — 96%') && openedContext.text.includes('连续性6 / 6 个样本') &&
+              openedContext.text.includes('采样来源') && !openedContext.text.includes('当前越阈判断')
             : openedContext.text.includes('当前越阈判断') &&
               openedContext.text.includes('当前值') && openedContext.text.includes('策略阈值') &&
               openedContext.text.includes('样本范围')) &&
@@ -8143,8 +8874,15 @@ async function main() {
     );
     mock.state.scenario = '';
     await tabletContext.close();
-    if (isolatedBrowser) {
-      await boundedCleanup('isolated-browser.close.after-tablet-batch', () => isolatedBrowser.close());
+    if (isolatedBrowserRuntime) {
+      await boundedCleanup('isolated-browser.lifecycle.close.after-tablet-batch', async () => {
+        try {
+          await isolatedBrowserRuntime.close();
+        } finally {
+          runtimeProgress.browserLifecycle.push(isolatedBrowserRuntime.diagnostics);
+        }
+      }, 20000);
+      isolatedBrowserRuntime = null;
       isolatedBrowser = null;
     }
 
@@ -8369,6 +9107,15 @@ async function main() {
 
 async function runRuntimeBrowserEntry() {
   let timeoutHandle;
+  let stopRequested = false;
+  const handleStop = (signal) => {
+    if (stopRequested) return;
+    stopRequested = true;
+    setRuntimePhase(`signal:${signal}`);
+    void cleanupRuntime().catch(() => {}).finally(() => process.exit(signal === 'SIGINT' ? 130 : 143));
+  };
+  process.once('SIGINT', handleStop.bind(null, 'SIGINT'));
+  process.once('SIGTERM', handleStop.bind(null, 'SIGTERM'));
   const timeout = new Promise((_, reject) => {
     timeoutHandle = setTimeout(() => {
       const phaseAgeMs = Date.now() - runtimeProgress.phaseStartedAt;
@@ -8380,12 +9127,14 @@ async function runRuntimeBrowserEntry() {
         'snapshotCalls=' + runtimeProgress.snapshotCalls,
         'cleanupTimeouts=' + runtimeProgress.cleanupTimeouts.join(','),
         'cleanupErrors=' + runtimeProgress.cleanupErrors.join(' | '),
+        'browserLifecycle=' + JSON.stringify(runtimeProgress.browserLifecycle),
         '',
       ].join('\n');
       try {
         fs.mkdirSync(outDir, { recursive: true });
         fs.writeFileSync(path.join(outDir, 'failure.log'), message, 'utf8');
       } catch {}
+      void cleanupRuntime().catch(() => {});
       reject(new Error(message.trim()));
     }, testTimeout);
   });
@@ -8416,7 +9165,11 @@ async function runRuntimeBrowserEntry() {
       'utf8'
     );
     console.error(error && (error.stack || error.message) || error);
-    await cleanupRuntime();
+    try {
+      await cleanupRuntime();
+    } catch (cleanupError) {
+      console.error(cleanupError && (cleanupError.stack || cleanupError.message) || cleanupError);
+    }
     process.exit(1);
   }
 }

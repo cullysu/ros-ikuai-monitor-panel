@@ -4,7 +4,8 @@ export type MobileWorkspacePreviewLabel =
   | "风险对象"
   | "默认出口"
   | "活动默认路由"
-  | "最近记录";
+  | "最近记录"
+  | "当前对象";
 
 export interface MobileWorkspacePreview {
   row: WorkspaceRow;

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
+const { assertIndependentReviewRecords } = require("./check-independent-review-records");
 
 const root = path.resolve(__dirname, "..");
 const ledgerPath = path.join(root, "docs", "decision-system", "review-adjudication-2026-07-23.md");
@@ -42,18 +43,30 @@ for (let index = 0; index < 23; index += 1) {
 }
 
 const state = JSON.parse(fs.readFileSync(statePath, "utf8"));
+const independentReview = assertIndependentReviewRecords({ root });
 const gates = state.gates || {};
-for (const name of ["product", "design", "visual-qa"]) {
-  const status = gates[name]?.status;
-  if (["pass", "passed", "complete"].includes(status)) fail(`${name} cannot be marked pass by this ledger`);
-}
-if (!/\*\*FAIL(?: overall)?/.test(fs.readFileSync(currentStatePath, "utf8"))) {
+const currentReviewStatuses = ["product", "design", "visual-qa"].map((name) => gates[name]?.status);
+const currentReviewPass = currentReviewStatuses.every((status) => status === "pass");
+const currentReviewFail = currentReviewStatuses.every((status) => status === "failed");
+const currentReviewPending = currentReviewStatuses.every((status) => status === "pending");
+const localReviewIsHistorical = independentReview.pass === true &&
+  independentReview.releaseEligible === false &&
+  independentReview.step < Number(state.latest_decision_step) &&
+  independentReview.runtimeReportMatchesReviewedArtifact === false;
+const currentState = fs.readFileSync(currentStatePath, "utf8");
+const currentReviewFailureDeclared = /\| R07 Product \| fail \|/.test(currentState) &&
+  /\| R09 Design \/ Visual \| fail \|/.test(currentState);
+if (!currentReviewPass && !currentReviewFail && !currentReviewPending) fail("current Product/Design/Visual gates must resolve coherently");
+if (!/\*\*FAIL(?: overall)?/.test(currentState)) {
   fail("current-state must retain an overall FAIL boundary");
 }
-if (!/productGate: `failed`/.test(text) || !/designGate: `failed`/.test(text) || !/visualGate: `failed`/.test(text)) {
-  fail("ledger must explicitly retain Product/Design/Visual failed gates");
+if (!/productGate: `failed`/.test(text) || !/designGate: `failed`/.test(text) || !/visualGate: `failed`/.test(text)) fail("historical ledger must retain its original adjudication boundary");
+if (localReviewIsHistorical
+  ? !(currentReviewPending || (currentReviewFail && currentReviewFailureDeclared))
+  : currentReviewPass !== independentReview.pass) {
+  fail("current review state must match the current or historical scope of structured independent review records");
 }
 if (!/numeric-score governance contract/.test(text)) fail("numeric-score governance must remain explicit");
 
 const summary = Object.fromEntries([...allowedStatuses].map((status) => [status, findingStatuses.filter((value) => value === status).length]));
-console.log(JSON.stringify({ pass: true, findingCount: headings.length, statusCounts: summary, productDesignVisualPass: false }, null, 2));
+console.log(JSON.stringify({ pass: true, findingCount: headings.length, statusCounts: summary, productDesignVisualPass: currentReviewPass, productDesignVisualPending: currentReviewPending, localReviewIsHistorical, independentReviewScope: independentReview.scope }, null, 2));

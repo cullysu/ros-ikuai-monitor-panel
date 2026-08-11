@@ -8,12 +8,13 @@ services:
     restart: unless-stopped
     init: true
     ports:
-      - "${ROS_PANEL_PUBLISHED_ADDR:-127.0.0.1}:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}"
+      - "127.0.0.1:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}"
     environment:
       ROS_PANEL_BIND: "${ROS_PANEL_BIND:-0.0.0.0}"
       ROS_PANEL_PORT: "${ROS_PANEL_PORT:-28646}"
       ROS_PANEL_TARGET_IP: "${ROS_PANEL_TARGET_IP:-127.0.0.1}"
       ROS_PANEL_TRUST_PROXY_HEADERS: "${ROS_PANEL_TRUST_PROXY_HEADERS:-0}"
+      ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD: "${ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD:-1}"
       ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD: "${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD:-0}"
       ROS_PANEL_LOCALHOST_FORWARD_TOKEN: "${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"
       ROS_PANEL_PROFILE: "${ROS_PANEL_PROFILE:-routeros_only}"
@@ -53,6 +54,8 @@ services:
     cap_drop:
       - ALL
     pids_limit: 256
+    mem_limit: 1536m
+    cpus: 1.50
     security_opt:
       - no-new-privileges:true
     healthcheck:

@@ -58,12 +58,27 @@ const { selectSemanticWorkspacePreview } = require(path.join(
   "mobile",
   "mobileWorkspacePreview.ts",
 ));
-const { diagnosticFailureLabel } = require(path.join(
+const { diagnosticChannelSummaries, diagnosticFailureLabel } = require(path.join(
   root,
   "src",
   "panel-framework",
   "sections",
   "diagnosticFailureModel.ts",
+));
+const { deriveOverviewState } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "overview",
+  "deriveOverviewState.ts",
+));
+const { sectionRecoveryState } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "sections",
+  "route-recovery",
+  "routeRecoveryState.ts",
 ));
 
 assert.equal(
@@ -121,30 +136,76 @@ resourceHistory.overview.cpuLoad = 20;
 resourceHistory.overview.memoryUsage = 40;
 resourceHistory.overview.diskUsage = 60;
 resourceHistory.overview.history = {
-  timestamps: ["2026-07-16T09:59:50Z", "2026-07-16T10:00:00Z"],
-  cpu: [10, 20],
-  memory: [30, 40],
-  disk: [50, 60],
+  resourceSamples: [
+    { timestamp: "2026-07-16T09:59:50Z", cpu: 10, memory: 30, disk: 50, source: "section-model-test", evidenceMode: "current" },
+    { timestamp: "2026-07-16T10:00:00Z", cpu: 20, memory: 40, disk: 60, source: "section-model-test", evidenceMode: "current" },
+  ],
 };
 assert.equal(buildSectionModel("loadAudit", resourceHistory).visualization?.series[0].points.length, 2);
 const singleResourcePoint = clone(resourceHistory);
-singleResourcePoint.overview.history.timestamps = ["2026-07-16T10:00:00Z"];
-singleResourcePoint.overview.history.cpu = [20];
-singleResourcePoint.overview.history.memory = [40];
-singleResourcePoint.overview.history.disk = [60];
+singleResourcePoint.overview.history.resourceSamples = [resourceHistory.overview.history.resourceSamples[1]];
 assert.equal(
   buildSectionModel("loadAudit", singleResourcePoint).visualization,
   undefined,
   "a single timestamped resource sample must remain a summary, not a trend",
 );
-resourceHistory.overview.history.timestamps = [1721123990, 1721124000];
-assert.equal(buildSectionModel("loadAudit", resourceHistory).visualization, undefined, "numeric epoch resource history must not be guessed by the frontend");
+const invalidResourceHistory = clone(resourceHistory);
+invalidResourceHistory.overview.history.resourceSamples[0].timestamp = 1721123990;
+assert.equal(buildSectionModel("loadAudit", invalidResourceHistory).visualization, undefined, "numeric epoch resource history must not be guessed by the frontend");
+const legacyParallelResourceHistory = clone(resourceHistory);
+legacyParallelResourceHistory.overview.history = {
+  timestamps: ["2026-07-16T09:59:50Z", "2026-07-16T10:00:00Z"],
+  cpu: [10, 20],
+  memory: [30, 40],
+  disk: [50, 60],
+};
+assert.equal(buildSectionModel("loadAudit", legacyParallelResourceHistory).visualization, undefined, "parallel resource arrays must not be reconstructed into a trend");
 
 const missingConnections = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 delete missingConnections.connections.total;
 assert.equal(metric(buildSectionModel("connections", missingConnections), "连接总数").value, "未取得");
 missingConnections.connections.total = 0;
 assert.equal(metric(buildSectionModel("connections", missingConnections), "连接总数").value, "0");
+
+const missingObservationCounts = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete missingObservationCounts.interfaces;
+missingObservationCounts.connections.total = null;
+const missingObservationState = deriveOverviewState(missingObservationCounts);
+assert.equal(missingObservationState.counts.interfacesTotal, null, "missing interface collection count must remain unavailable");
+assert.equal(missingObservationState.counts.connections, null, "missing protocol total must remain unavailable");
+const observedZeroCounts = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+observedZeroCounts.interfaces = [];
+observedZeroCounts.connections.total = 0;
+const observedZeroState = deriveOverviewState(observedZeroCounts);
+assert.equal(observedZeroState.counts.interfacesTotal, 0, "observed empty interface collection must preserve zero");
+assert.equal(observedZeroState.counts.connections, 0, "observed protocol zero must preserve zero");
+
+const undeclaredConnectionCoverage = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+undeclaredConnectionCoverage.connections.total = 42;
+undeclaredConnectionCoverage.connections.active = [{}];
+const undeclaredCoverageMetric = metric(buildSectionModel("connections", undeclaredConnectionCoverage), "活动明细样本");
+assert.equal(undeclaredCoverageMetric.value, "1 / 42", "connection detail rows must be compared with the reported total");
+assert.equal(undeclaredCoverageMetric.note, "完整性未声明", "missing coverage metadata must remain explicitly unknown");
+assert.equal(undeclaredCoverageMetric.tone, "warn", "unknown connection coverage must not receive a trusted tone");
+
+const sampledConnectionCoverage = clone(undeclaredConnectionCoverage);
+sampledConnectionCoverage.connections.meta = {
+  active: { actualCount: 42, totalCount: 42, shownCount: 1, hasMore: true, sampled: true },
+};
+const sampledCoverageMetric = metric(buildSectionModel("connections", sampledConnectionCoverage), "活动明细样本");
+assert.equal(sampledCoverageMetric.value, "1 / 42");
+assert.equal(sampledCoverageMetric.note, "非全量枚举 · 活动速率样本");
+assert.equal(sampledCoverageMetric.tone, "warn");
+
+const completeConnectionCoverage = clone(undeclaredConnectionCoverage);
+completeConnectionCoverage.connections.total = 1;
+completeConnectionCoverage.connections.meta = {
+  active: { actualCount: 1, totalCount: 1, shownCount: 1, hasMore: false, sampled: false },
+};
+const completeCoverageMetric = metric(buildSectionModel("connections", completeConnectionCoverage), "活动明细样本");
+assert.equal(completeCoverageMetric.value, "1 / 1");
+assert.equal(completeCoverageMetric.note, "快照声明完整枚举");
+assert.equal(completeCoverageMetric.tone, "trust");
 
 const missingOperationalCollections = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 delete missingOperationalCollections.terminals;
@@ -159,7 +220,7 @@ assert.equal(metric(buildSectionModel("routes", missingOperationalCollections), 
 assert.equal(metric(buildSectionModel("terminals", missingOperationalCollections), "终端记录").value, "未取得");
 assert.equal(metric(buildSectionModel("dhcp", missingOperationalCollections), "租约").value, "未取得");
 assert.equal(metric(buildSectionModel("arp", missingOperationalCollections), "身份告警").value, "未取得");
-assert.equal(metric(buildSectionModel("connections", missingOperationalCollections), "当前明细").value, "未取得");
+assert.equal(metric(buildSectionModel("connections", missingOperationalCollections), "活动明细样本").value, "未取得");
 assert.equal(metric(buildSectionModel("dns4", missingOperationalCollections), "静态规则").value, "未取得");
 assert.equal(metric(buildSectionModel("security", missingOperationalCollections), "告警记录").value, "未取得");
 assert.equal(metric(buildSectionModel("logs", missingOperationalCollections), "全部记录").value, "未取得");
@@ -253,16 +314,16 @@ assert.equal(securityRows[0].trailing, "accept", "missing rule order must not be
 
 const logShape = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 logShape.logs = {
-  all: [{ time: "12:00:01", topics: "system,info", message: "link state changed" }],
-  system: [{ time: "12:00:01", topics: "system,info", message: "link state changed" }],
+  all: [{ observedAt: "2026-07-17T12:00:01Z", topics: "system,info", message: "link state changed" }],
+  system: [{ observedAt: "2026-07-17T12:00:01Z", topics: "system,info", message: "link state changed" }],
   firewall: [],
   dhcp: [],
   dns: [],
 };
 const logRows = rowsFromModel("logs", buildSectionModel("logs", logShape));
 assert.equal(logRows[0].primary, "link state changed", "log message must be scannable before opening detail");
-assert.equal(logRows[0].secondary, "12:00:01");
-assert.equal(logRows[0].trailing, "system,info");
+assert.equal(logRows[0].secondary, "2026-07-17T12:00:01Z");
+assert.equal(logRows[0].trailing, "system · info");
 
 const domainDetailShape = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 domainDetailShape.interfaces = [{
@@ -446,6 +507,42 @@ assert.equal(historical.status, "历史证据 · 不代表当前", "the first st
 assert.equal(historical.metrics.every((item) => item.tone === "warn"), true, "historical metrics must not retain current-incident danger tone");
 assert.equal(historical.metrics.some((item) => /历史记录，不代表当前/.test(item.note || "")), false, "the boundary belongs in the primary status, not repeated in every metric");
 assert.ok(historical.tables.every((item) => /历史记录.*不代表当前/.test(item.note)));
+
+const currentDiagnosticSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+const currentDiagnosticModel = buildSectionModel("readonlyDiagnostics", currentDiagnosticSnapshot);
+assert.equal(
+  currentDiagnosticModel.metrics.some((item) => item.value === "已记录失败端点 0"),
+  true,
+  "an observed channel with zero failures must not be presented as an unobserved or generic healthy state",
+);
+const partialDiagnosticSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete partialDiagnosticSnapshot.meta.detailEndpointFailures;
+delete partialDiagnosticSnapshot.meta.connectionDetailError;
+delete partialDiagnosticSnapshot.meta.connectionDetailUpdatedAt;
+const partialDiagnosticModel = buildSectionModel("readonlyDiagnostics", partialDiagnosticSnapshot);
+assert.equal(sectionRecoveryState(partialDiagnosticModel), "partial", "one missing diagnostic channel must produce an explicit partial recovery state");
+assert.equal(
+  partialDiagnosticModel.metrics.some((item) => item.label === "连接明细 REST" && item.value === "未取得"),
+  true,
+  "a channel without observations must remain unavailable instead of becoming zero failures",
+);
+
+const unattemptedDiagnosticSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+for (const [failures, error, observedAt] of [
+  ["realtimeEndpointFailures", "realtimeError", "realtimeUpdatedAt"],
+  ["slowRestEndpointFailures", "slowRestError", "slowRestUpdatedAt"],
+  ["staticEndpointFailures", "staticError", "staticUpdatedAt"],
+  ["detailEndpointFailures", "connectionDetailError", "connectionDetailUpdatedAt"],
+]) {
+  unattemptedDiagnosticSnapshot.meta[failures] = [];
+  delete unattemptedDiagnosticSnapshot.meta[error];
+  delete unattemptedDiagnosticSnapshot.meta[observedAt];
+}
+assert.equal(
+  diagnosticChannelSummaries(unattemptedDiagnosticSnapshot.meta).every((channel) => channel.observed === false),
+  true,
+  "an empty endpoint array without attempt or coverage evidence must stay unavailable",
+);
 
 const diagnosticSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES["collection-down"]);
 const diagnosticModel = buildSectionModel("readonlyDiagnostics", diagnosticSnapshot);

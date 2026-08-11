@@ -10,6 +10,8 @@ export type OverviewInvestigationActionPriority = "primary" | "secondary";
 
 export interface OverviewRiskTask {
   risk: Exclude<OverviewEvidenceRisk, "none">;
+  priorityScore: number;
+  priorityReason: string;
   label: string;
   value: string;
   note: string;
@@ -137,6 +139,37 @@ export interface OverviewResourceInstrument {
   accessibleSummary: string;
 }
 
+/**
+ * A route path is only emitted when all displayed fields came from one route
+ * record. `observedAt` is reserved for timestamped historical records; a
+ * current route is deliberately not retroactively described as historical.
+ */
+export interface OverviewRouteEvidencePath {
+  gateway: string;
+  table: string;
+  destination: string;
+  source: string;
+  observedAt: string | null;
+}
+
+/** A not-running interface and the enabled default route that explicitly names it. */
+export interface OverviewInterfaceRouteDependency {
+  interfaceId: string;
+  interfaceName: string;
+  interfaceSource: string;
+  route: OverviewRouteEvidencePath;
+}
+
+/**
+ * Route relationships are evidence, not a visual convenience: consumers must
+ * render an explicit boundary whenever the applicable path is null.
+ */
+export interface OverviewRouteEvidence {
+  activePath: OverviewRouteEvidencePath | null;
+  interfaceDependencies: OverviewInterfaceRouteDependency[];
+  lastConfirmedActivePath: OverviewRouteEvidencePath | null;
+}
+
 export interface OverviewEvidenceRow {
   key: string;
   label: string;
@@ -193,6 +226,7 @@ export interface OverviewEvidenceModel {
   comparisonObjects: OverviewComparisonObject[];
   tabletComparisonObjects: OverviewComparisonObject[];
   secondaryDecisions: OverviewOperationalDecision[];
+  routeEvidence: OverviewRouteEvidence;
   traffic: OverviewTrafficInstrument | null;
   resource: OverviewResourceInstrument | null;
   evidenceRows: OverviewEvidenceRow[];

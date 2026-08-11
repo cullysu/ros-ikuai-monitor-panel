@@ -37,6 +37,9 @@ export function TerminalInspector({
   const navigationEvidenceAt = evidenceAt || model.observedAt;
   const hasConnectionEvidence = [evidence.connections, evidence.downRate, evidence.upRate, evidence.sessionBytes]
     .some((value) => value !== null);
+  const hasDownRate = evidence.downRate !== null;
+  const hasUpRate = evidence.upRate !== null;
+  const hasCompleteRateObservation = hasDownRate && hasUpRate;
   const openRelatedObject = () => {
     if (evidence.interfaceName) {
       onNavigate("interfaces", {
@@ -61,10 +64,19 @@ export function TerminalInspector({
         ]} />
       </InspectorSection>
       <InspectorSection title={historical ? "历史负载" : "当前负载"} note={historical ? "来自最近成功快照" : undefined}>
-        <InspectorReadings
-          left={{ label: "下载", value: displayRate(evidence.downRate) }}
-          right={{ label: "上传", value: displayRate(evidence.upRate) }}
-        />
+        {hasDownRate || hasUpRate ? (
+          <InspectorReadings
+            left={{ label: "下载", value: displayRate(evidence.downRate) }}
+            right={{ label: "上传", value: displayRate(evidence.upRate) }}
+          />
+        ) : null}
+        {!hasCompleteRateObservation ? (
+          <InspectorFacts facts={[{
+            label: "速率证据",
+            value: hasDownRate || hasUpRate ? "连接记录未提供完整双向速率" : "本次连接记录未提供速率观测",
+            tone: "warn",
+          }]} />
+        ) : null}
         <InspectorFacts facts={[
           { label: "连接记录", value: displayValue(evidence.connections) },
           { label: "会话字节", value: displayBytes(evidence.sessionBytes) },

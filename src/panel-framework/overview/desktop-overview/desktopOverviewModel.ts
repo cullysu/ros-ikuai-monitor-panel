@@ -27,6 +27,22 @@ export interface DesktopOverviewModel {
   activeRoute: OverviewRawRoute | null;
 }
 
+const FLEET_TONE_ORDER: Record<OverviewTone, number> = {
+  danger: 0,
+  warn: 1,
+  missing: 2,
+  trust: 3,
+  ok: 4,
+};
+
+/** Keeps fleet coverage actionable when a large sample contains mixed severity. */
+export function rankFleetCoverageRows(rows: DesktopLedgerRow[]): DesktopLedgerRow[] {
+  return rows
+    .map((row, index) => ({ row, index }))
+    .sort((left, right) => FLEET_TONE_ORDER[left.row.tone] - FLEET_TONE_ORDER[right.row.tone] || left.index - right.index)
+    .map(({ row }) => row);
+}
+
 function statusItem(fact: OverviewEvidenceModel["facts"][number]): DesktopStatusItem {
   return { ...fact, note: fact.note || "" };
 }
@@ -104,7 +120,7 @@ export function buildDesktopOverviewModel(snapshot: OverviewRawSnapshot, state: 
     evidence,
     statusItems: evidence.facts.map(statusItem) as [DesktopStatusItem, DesktopStatusItem, DesktopStatusItem],
     decisionRows: evidence.risk === "none" ? evidence.secondaryDecisions : boundaryRows(evidence, state),
-    objectRows: state.scale === "fleet" ? evidence.coverageObjects : evidence.comparisonObjects,
+    objectRows: state.scale === "fleet" ? rankFleetCoverageRows(evidence.coverageObjects) : evidence.comparisonObjects,
     activeRoute: route,
   };
 }

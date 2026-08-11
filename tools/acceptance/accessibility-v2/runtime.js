@@ -1,0 +1,321 @@
+"use strict";
+
+const { execFile } = require("child_process");
+const { promisify } = require("util");
+const {
+  LifecycleError,
+  bounded,
+  launchManagedBrowser,
+} = require("../browser-lifecycle-v2/browser-lifecycle");
+const { startMock, browserExecutable } = require("../../check-panel-runtime-browser");
+
+const VIEWPORT = { width: 390, height: 844 };
+const ACTION_TIMEOUT_MS = 8_000;
+// Windows can take longer to create a fresh Playwright pipe under sustained
+// validation load. Keep the launch bounded, but do not confuse a slow spawn
+// with a product failure.
+const LAUNCH_TIMEOUT_MS = 30_000;
+const CLEANUP_TIMEOUT_MS = 4_000;
+const ABORT_CLEANUP_TIMEOUT_MS = 30_000;
+const activeRuntimes = new Set();
+const execFileAsync = promisify(execFile);
+
+function errorDetail(error) {
+  return {
+    name: error?.name || "Error",
+    code: error?.code || null,
+    message: String(error?.message || error),
+  };
+}
+
+function processExists(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error?.code === "EPERM";
+  }
+}
+
+async function terminateOwnedBrowser(runtime) {
+  const pid = runtime?.managedBrowser?.diagnostics?.ownedBrowserPid;
+  if (!processExists(pid)) {
+    return { pid: pid || null, attempted: false, verifiedStopped: true, reason: "owned-process-not-present" };
+  }
+  const startedAt = Date.now();
+  const attempts = [];
+  const deadline = startedAt + CLEANUP_TIMEOUT_MS;
+  while (processExists(pid) && Date.now() < deadline) {
+    let commandError = null;
+    try {
+      await execFileAsync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+        windowsHide: true,
+        timeout: Math.max(250, deadline - Date.now()),
+        maxBuffer: 64 * 1024,
+      });
+    } catch (error) {
+      commandError = errorDetail(error);
+    }
+    attempts.push({ commandError });
+    if (!processExists(pid)) break;
+    await new Promise((resolve) => setTimeout(resolve, 80));
+  }
+  const verifiedStopped = !processExists(pid);
+  return { pid, attempted: true, verifiedStopped, elapsedMs: Date.now() - startedAt, attempts };
+}
+
+function timeoutError(label, timeoutMs, cleanupError) {
+  return new LifecycleError(
+    cleanupError ? "GLOBAL_TIMEOUT_CLEANUP_FAILED" : "GLOBAL_TIMEOUT",
+    `${label} exceeded ${timeoutMs}ms${cleanupError ? "; abort cleanup failed" : ""}`,
+    { label, timeoutMs, cleanupError: cleanupError ? errorDetail(cleanupError) : null },
+  );
+}
+
+async function withTimeout(label, operation, timeoutMs = ACTION_TIMEOUT_MS) {
+  let settled = false;
+  let timer = null;
+  let abortPromise = null;
+  const abort = () => {
+    if (!abortPromise) {
+      abortPromise = boundedAbortCleanup(closeActiveRuntimes, ABORT_CLEANUP_TIMEOUT_MS);
+    }
+    return abortPromise;
+  };
+  return new Promise((resolve, reject) => {
+    timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      abort().then(
+        () => reject(timeoutError(label, timeoutMs)),
+        (cleanupError) => reject(timeoutError(label, timeoutMs, cleanupError)),
+      );
+    }, timeoutMs);
+    Promise.resolve().then(operation).then(
+      (value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+async function boundedAbortCleanup(operation, timeoutMs) {
+  let timer = null;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new LifecycleError(
+          "ABORT_CLEANUP_TIMEOUT",
+          `accessibility abort cleanup exceeded ${timeoutMs}ms`,
+          { timeoutMs },
+        )), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+async function cleanupStep(runtime, label, operation, timeoutMs = CLEANUP_TIMEOUT_MS) {
+  const startedAt = Date.now();
+  try {
+    await bounded(`a11y.cleanup.${label}`, operation, timeoutMs);
+    runtime.cleanup.push({ label, status: "ok", timeoutMs, elapsedMs: Date.now() - startedAt });
+  } catch (error) {
+    runtime.cleanup.push({ label, status: "failed", timeoutMs, elapsedMs: Date.now() - startedAt, error: errorDetail(error) });
+    throw error;
+  }
+}
+
+async function launchRuntime(options = {}) {
+  const executablePath = browserExecutable();
+  if (!executablePath) throw new LifecycleError("BROWSER_UNAVAILABLE", "Edge/Chrome executable not found");
+  const runtime = {
+    browser: null,
+    context: null,
+    managedBrowser: null,
+    mock: null,
+    page: null,
+    executablePath,
+    cleanup: [],
+    closed: false,
+    closePromise: null,
+  };
+  activeRuntimes.add(runtime);
+  try {
+    const { browserArgs = [], headless = true, ...contextOptions } = options;
+    runtime.mock = (await bounded("a11y.mock.start", () => startMock({ transport: process.platform === "win32" ? "pipe" : "tcp" }), LAUNCH_TIMEOUT_MS)).value;
+    runtime.managedBrowser = (await bounded("a11y.browser.launch", () => launchManagedBrowser({
+      executablePath,
+      headless,
+      args: [...(process.platform === "linux" ? ["--no-sandbox"] : []), ...browserArgs],
+      connectionMode: process.platform === "win32" ? "pipe" : "server",
+      launchTimeoutMs: LAUNCH_TIMEOUT_MS,
+      cleanupTimeoutMs: CLEANUP_TIMEOUT_MS,
+    }), LAUNCH_TIMEOUT_MS)).value;
+    runtime.browser = runtime.managedBrowser.browser;
+    runtime.context = (await bounded("a11y.context.create", () => runtime.managedBrowser.openContext({
+      viewport: VIEWPORT,
+      deviceScaleFactor: 1,
+      isMobile: true,
+      hasTouch: true,
+      ...contextOptions,
+    }), LAUNCH_TIMEOUT_MS)).value;
+    if (typeof runtime.mock.installRoute === "function") {
+      await bounded("a11y.mock.route", () => runtime.mock.installRoute(runtime.context), LAUNCH_TIMEOUT_MS);
+    }
+    runtime.page = (await bounded("a11y.page.create", () => runtime.context.newPage(), LAUNCH_TIMEOUT_MS)).value;
+    runtime.page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+    runtime.page.setDefaultNavigationTimeout(ACTION_TIMEOUT_MS);
+    return runtime;
+  } catch (error) {
+    let cleanupError = null;
+    try {
+      await closeRuntime(runtime);
+    } catch (closeFailure) {
+      cleanupError = closeFailure;
+    }
+    if (cleanupError) error.lifecycleCleanupError = errorDetail(cleanupError);
+    throw error;
+  }
+}
+
+async function closeRuntime(runtime) {
+  if (!runtime) return;
+  if (!runtime.closePromise) {
+    runtime.closePromise = (async () => {
+      const errors = [];
+      if (runtime.context) {
+        try { await cleanupStep(runtime, "context.close", () => runtime.context.close()); }
+        catch (error) { errors.push(error); }
+      }
+      if (runtime.managedBrowser) {
+        let closeError = null;
+        try { await cleanupStep(runtime, "managed-browser.close", () => runtime.managedBrowser.close(), CLEANUP_TIMEOUT_MS * 3); }
+        catch (error) { closeError = error; }
+        const recovery = await terminateOwnedBrowser(runtime);
+        runtime.cleanup.push({
+          label: "managed-browser.verify-stopped",
+          status: recovery.verifiedStopped ? (closeError ? "recovered" : "ok") : "failed",
+          timeoutMs: CLEANUP_TIMEOUT_MS,
+          ...recovery,
+        });
+        if (!recovery.verifiedStopped) errors.push(closeError || new LifecycleError(
+          "OWNED_BROWSER_STILL_RUNNING",
+          "owned accessibility browser process remained after close",
+          recovery,
+        ));
+      }
+      if (runtime.mock) {
+        try { await cleanupStep(runtime, "mock.stop", () => runtime.mock.stop()); }
+        catch (error) { errors.push(error); }
+      }
+      activeRuntimes.delete(runtime);
+      runtime.closed = true;
+      if (errors.length) {
+        throw new LifecycleError("RUNTIME_CLEANUP_FAILED", "accessibility runtime cleanup failed", { errors: errors.map(errorDetail), cleanup: runtime.cleanup });
+      }
+    })();
+  }
+  return runtime.closePromise;
+}
+
+async function closeActiveRuntimes() {
+  const settled = await Promise.allSettled([...activeRuntimes].map((runtime) => closeRuntime(runtime)));
+  const errors = settled.filter((result) => result.status === "rejected").map((result) => result.reason);
+  if (errors.length) throw new LifecycleError("ABORT_CLEANUP_FAILED", "timed out accessibility runtimes could not be closed", { errors: errors.map(errorDetail) });
+}
+
+async function waitForPhase(page, phase) {
+  await page.waitForFunction(
+    (expectedPhase) => document.querySelector("[data-panel-runtime-phase]")?.getAttribute("data-panel-runtime-phase") === expectedPhase,
+    phase,
+    { timeout: LAUNCH_TIMEOUT_MS },
+  );
+}
+
+async function waitForCurrent(page) {
+  await waitForPhase(page, "current");
+}
+
+async function login(page, baseUrl) {
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  const form = page.locator("[data-router-login-form]");
+  await form.waitFor();
+  await page.locator('input[name="host"]').fill("192.0.2.1");
+  await page.locator('input[name="user"]').fill("observer");
+  await page.locator('input[name="password"]').fill("correct-horse");
+  const submit = form.locator('button[type="submit"]');
+  const submitWhenReady = async () => {
+    await page.waitForFunction(() => {
+      const button = document.querySelector('[data-router-login-form] button[type="submit"]');
+      return button instanceof HTMLButtonElement && !button.disabled;
+    }, null, { timeout: LAUNCH_TIMEOUT_MS });
+    // Login is test setup rather than the interaction under review. Dispatch
+    // through the enabled DOM control so forced-colors rendering stability does
+    // not turn a valid setup state into an actionability timeout.
+    await submit.evaluate((button) => button.click());
+  };
+  await submitWhenReady();
+  const hostKey = page.locator(".router-host-key-confirmation");
+  const nextStepHandle = await page.waitForFunction(() => {
+    const current = document.querySelector("[data-panel-runtime-phase]")?.getAttribute("data-panel-runtime-phase") === "current";
+    if (current) return "current";
+    const confirmation = document.querySelector(".router-host-key-confirmation");
+    if (confirmation instanceof HTMLElement) {
+      const style = getComputedStyle(confirmation);
+      if (style.display !== "none" && style.visibility !== "hidden") return "host-key";
+    }
+    return null;
+  }, null, { timeout: LAUNCH_TIMEOUT_MS });
+  const nextStep = await nextStepHandle.jsonValue();
+  if (nextStep === "host-key") {
+    await hostKey.locator('input[type="checkbox"]').check();
+    await submitWhenReady();
+  }
+  await waitForCurrent(page);
+}
+
+async function visitRoute(page, baseUrl, route, { requireWorkspace = true, runtimePhase = "current" } = {}) {
+  const target = new URL(baseUrl);
+  target.searchParams.set("section", route);
+  target.hash = "";
+  await page.goto(target.toString(), { waitUntil: "domcontentloaded" });
+  await waitForPhase(page, runtimePhase);
+  const canonical = await page.evaluate(() => ({
+    hash: location.hash,
+    section: new URLSearchParams(location.search).get("section"),
+  }));
+  if (canonical.hash || canonical.section !== route) {
+    throw new Error(`route did not settle on canonical ?section= URL: ${JSON.stringify({ route, canonical })}`);
+  }
+  if (!requireWorkspace) return null;
+  const workspace = page.locator(`[data-mobile-domain-workspace="${route}"]`);
+  await workspace.waitFor();
+  return workspace;
+}
+
+module.exports = {
+  ACTION_TIMEOUT_MS,
+  ABORT_CLEANUP_TIMEOUT_MS,
+  CLEANUP_TIMEOUT_MS,
+  boundedAbortCleanup,
+  closeRuntime,
+  launchRuntime,
+  login,
+  visitRoute,
+  waitForPhase,
+  waitForCurrent,
+  withTimeout,
+};

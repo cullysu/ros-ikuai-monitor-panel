@@ -1,6 +1,7 @@
 import type { PanelRouteId } from "../routes/panelRoutes";
 import { compareResourceRisk } from "../overview/evidence-model/resourceHistorySamples";
 import type { ResourceRowEvidence } from "../sections/sectionRowEvidenceTypes";
+import { parseRfc3339Timestamp } from "../timeContract";
 import type { WorkspaceRow } from "./mobileDomainWorkspaceModel";
 
 export interface DomainFilterOption {
@@ -55,6 +56,29 @@ function compareIp(left: WorkspaceRow, right: WorkspaceRow): number {
 
 function hasTag(row: WorkspaceRow, tag: string): boolean {
   return row.meta.tags.includes(tag);
+}
+
+function resourceEvidenceFor(row: WorkspaceRow): ResourceRowEvidence | null {
+  return row.evidence.kind === "resource" ? row.evidence as ResourceRowEvidence : null;
+}
+
+function resourceSeriesIs(row: WorkspaceRow, series: string): boolean {
+  return resourceEvidenceFor(row)?.series?.trim().toLowerCase() === series;
+}
+
+function resourceRange(row: WorkspaceRow): number | null {
+  const values = resourceEvidenceFor(row)?.values || [];
+  return values.length ? Math.max(...values) - Math.min(...values) : null;
+}
+
+function resourceEvidenceTimestamp(row: WorkspaceRow): number | null {
+  const value = resourceEvidenceFor(row)?.evidenceAt;
+  return value ? parseRfc3339Timestamp(value) : null;
+}
+
+function resourcePressure(row: WorkspaceRow): boolean {
+  const evidence = resourceEvidenceFor(row);
+  return evidence !== null && evidence.delta !== null && evidence.delta >= 0;
 }
 
 function filter(id: string, label: string, matches: (row: WorkspaceRow) => boolean): DomainFilterOption {
@@ -200,23 +224,56 @@ const DOMAIN: Partial<Record<PanelRouteId, DomainDefinition>> = {
     sorts: [ATTENTION_FIRST, sort("address-asc", "地址顺序", compareIp), NAME_ASC],
   },
   trafficLoad: {
-    searchable: false,
-    searchPlaceholder: "",
+    searchable: true,
+    searchPlaceholder: "CPU、内存、磁盘或接口",
     objectLabel: "资源指标",
     defaultSort: "risk-desc",
-    filters: [ALL],
-    sorts: [sort("risk-desc", "风险优先", (left, right) => compareResourceRisk(
-      left.evidence as ResourceRowEvidence,
-      right.evidence as ResourceRowEvidence,
-    ))],
+    filters: [
+      ALL,
+      filter("overloaded", "已超阈值", resourcePressure),
+      ATTENTION_FILTER,
+      filter("cpu", "CPU", (row) => resourceSeriesIs(row, "cpu")),
+      filter("memory", "内存", (row) => resourceSeriesIs(row, "memory")),
+      filter("disk", "磁盘", (row) => resourceSeriesIs(row, "disk")),
+      filter("unavailable", "未取得最近值", (row) => resourceEvidenceFor(row)?.latest === null),
+    ],
+    sorts: [
+      sort("risk-desc", "风险优先", (left, right) => compareResourceRisk(
+        resourceEvidenceFor(left) || { delta: null, trailing: 0, latest: null },
+        resourceEvidenceFor(right) || { delta: null, trailing: 0, latest: null },
+      )),
+      sort("latest-desc", "最近值从高到低", (left, right) => compareNumber(resourceEvidenceFor(left)?.latest ?? null, resourceEvidenceFor(right)?.latest ?? null, "desc") || compareText(left.primary, right.primary)),
+      sort("continuity-desc", "连续超限优先", (left, right) => compareNumber(resourceEvidenceFor(left)?.trailing ?? null, resourceEvidenceFor(right)?.trailing ?? null, "desc") || compareText(left.primary, right.primary)),
+      sort("samples-desc", "样本数从高到低", (left, right) => compareNumber(resourceEvidenceFor(left)?.sampleCount ?? null, resourceEvidenceFor(right)?.sampleCount ?? null, "desc") || compareText(left.primary, right.primary)),
+      NAME_ASC,
+    ],
   },
   loadAudit: {
-    searchable: false,
-    searchPlaceholder: "",
+    searchable: true,
+    searchPlaceholder: "指标、来源或采样序列",
     objectLabel: "采样序列",
     defaultSort: "samples-desc",
-    filters: [ALL],
-    sorts: [sort("samples-desc", "样本数从高到低", (left, right) => compareNumber(left.meta.sampleCount, right.meta.sampleCount, "desc") || compareText(left.primary, right.primary))],
+    filters: [
+      ALL,
+      filter("sequence-available", "有效序列", (row) => (resourceEvidenceFor(row)?.samples.length || 0) > 0),
+      filter("latest-available", "最近值已取得", (row) => resourceEvidenceFor(row)?.latest !== null),
+      filter("sequence-only", "仅有序列", (row) => {
+        const evidence = resourceEvidenceFor(row);
+        return Boolean(evidence && evidence.samples.length > 0 && evidence.latest === null);
+      }),
+      filter("overloaded", "已超阈值", resourcePressure),
+      filter("unavailable", "无有效序列", (row) => {
+        const evidence = resourceEvidenceFor(row);
+        return Boolean(evidence && evidence.samples.length === 0 && evidence.latest === null);
+      }),
+    ],
+    sorts: [
+      sort("samples-desc", "样本数从高到低", (left, right) => compareNumber(resourceEvidenceFor(left)?.sampleCount ?? null, resourceEvidenceFor(right)?.sampleCount ?? null, "desc") || compareText(left.primary, right.primary)),
+      sort("newest-desc", "证据时间从新到旧", (left, right) => compareNumber(resourceEvidenceTimestamp(left), resourceEvidenceTimestamp(right), "desc") || compareText(left.primary, right.primary)),
+      sort("range-desc", "样本范围从大到小", (left, right) => compareNumber(resourceRange(left), resourceRange(right), "desc") || compareText(left.primary, right.primary)),
+      sort("pressure-desc", "压力优先", (left, right) => Number(resourcePressure(right)) - Number(resourcePressure(left)) || compareText(left.primary, right.primary)),
+      NAME_ASC,
+    ],
   },
   trafficAudit: {
     searchable: true,

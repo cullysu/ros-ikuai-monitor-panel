@@ -49,3 +49,16 @@
 .mdi-next-step > button > svg {
   flex: 0 0 auto;
 }
+
+@media (min-width: 600px) and (max-width: 899px) {
+  .mdw-tablet-interface-relations > .mdw-status-row {
+    min-height: 0;
+    align-items: start;
+    padding: 8px 10px;
+  }
+  .mdw-tablet-interface-relations > .mdw-status-row p {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+}

@@ -11,7 +11,7 @@ body {
 }
 
 body {
-  background: #eef3f5;
+  background: #edf2f3;
 }
 
 #app,
@@ -46,7 +46,7 @@ body {
     min-height: 100svh;
   }
   #overview.is-mobile-surface,
-  #overview.is-mobile-surface > .mobile-patrol-mount {
+  #overview.is-mobile-surface > .mobile-overview-mount {
     width: 100%;
   }
 }

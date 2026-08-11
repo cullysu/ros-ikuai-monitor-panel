@@ -7,16 +7,18 @@ import {
 } from "../mobile/mobileDomainDefinitions";
 import {
   rowsFromModel,
-  riskObjectCount,
   useObjectHistory,
   type WorkspaceRow,
 } from "../mobile/mobileDomainWorkspaceModel";
 import { selectSemanticWorkspacePreview } from "../mobile/mobileWorkspacePreview";
-import type { PanelRouteId } from "../routes/panelRoutes";
+import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
 import { DesktopDomainInspector } from "./DesktopDomainInspector";
+import { DesktopRouteSupplement } from "./DesktopRouteSupplement";
+import { RouteEvidenceBoundary } from "./RouteEvidenceBoundary";
 import { interfaceRouteRelationCopy } from "./interfaceRouteRelation";
 import type { SectionModel } from "./sectionModels";
 import type { InterfaceRowEvidence } from "./sectionRowEvidenceTypes";
+import { useRouteSupplementEvidence } from "./useRouteSupplementEvidence";
 import "./desktop-domain.css";
 
 function comparisonValue(row: WorkspaceRow): string {
@@ -69,25 +71,25 @@ function DesktopInterfaceRelations({ rows }: { rows: WorkspaceRow[] }) {
   );
 }
 
-export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; model: SectionModel }) {
+export function DesktopDomainWorkspace({ route, model, onNavigate }: { route: PanelRouteId; model: SectionModel; onNavigate: PanelNavigate }) {
   const definition = domainDefinitionFor(route);
   const allRows = useMemo(() => rowsFromModel(route, model), [model, route]);
-  const { selectedId, risk, evidenceAt, open, replace, close } = useObjectHistory(route);
-  const matchingRiskObjects = risk ? riskObjectCount(risk, allRows) : 0;
-  const [query, setQuery] = useState("");
+  const { selectedId, risk, evidenceAt, query: navigationQuery, open, replace, close } = useObjectHistory(route);
+  const [query, setQuery] = useState(navigationQuery || "");
   const [filter, setFilter] = useState(definition.filters[0]?.id || "all");
   const [sort, setSort] = useState(definition.defaultSort);
   const [page, setPage] = useState(1);
+  const supplement = useRouteSupplementEvidence(route);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const lastTriggerRef = useRef("");
   const rowRefs = useRef(new Map<string, HTMLButtonElement>());
 
   useEffect(() => {
-    setQuery("");
+    setQuery(navigationQuery || "");
     setFilter(definition.filters[0]?.id || "all");
     setSort(definition.defaultSort);
     setPage(1);
-  }, [definition, route]);
+  }, [definition, navigationQuery, route]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -102,8 +104,16 @@ export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; 
   const activePage = selectedPage || Math.min(page, pageCount);
   const visibleRows = filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
   const selectedRow = selectedId ? visibleRows.find((row) => row.id === selectedId) || null : null;
+  const riskRows = !selectedId && risk ? visibleRows.filter((row) => {
+    if (risk === "interfaces" && row.evidence.kind === "interface") return row.evidence.operationalImpact === "risk";
+    if (risk === "interface-review" && row.evidence.kind === "interface") return row.evidence.operationalImpact === "unverified";
+    return row.meta.attention;
+  }) : [];
   const semanticPreview = risk && !selectedId ? null : selectSemanticWorkspacePreview(visibleRows);
   const inspectorRow = selectedRow || semanticPreview?.row || null;
+  const supplementOwnsDnsList = route === "dns4" && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "dns-static";
+  const supplementOwnsConnectionList = route === "connections" && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "connection-search";
+  const supplementOwnsCollection = supplementOwnsDnsList || supplementOwnsConnectionList;
 
   useEffect(() => {
     if (!selectedId) return;
@@ -133,12 +143,14 @@ export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; 
 
   return (
     <section className="desktop-domain-workspace" data-desktop-domain-workspace={route}>
-      <header className="ddw-toolbar">
-        <label className="ddw-search">
-          <Search aria-hidden="true" size={16} />
-          <span className="sr-only">搜索{definition.objectLabel}</span>
-          <input type="search" value={query} placeholder={definition.searchPlaceholder} onChange={(event) => { setQuery(event.target.value); setPage(1); }} />
-        </label>
+      {!supplementOwnsCollection ? <header className={definition.searchable ? "ddw-toolbar" : "ddw-toolbar is-searchless"}>
+        {definition.searchable ? (
+          <label className="ddw-search">
+            <Search aria-hidden="true" size={16} />
+            <span className="sr-only">搜索{definition.objectLabel}</span>
+            <input type="search" value={query} placeholder={definition.searchPlaceholder} onChange={(event) => { setQuery(event.target.value); setPage(1); }} />
+          </label>
+        ) : null}
         <div className="ddw-filters" aria-label="对象筛选">
           <SlidersHorizontal aria-hidden="true" size={16} />
           {definition.filters.map((item) => (
@@ -151,13 +163,19 @@ export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; 
             {definition.sorts.map((item) => <option value={item.id} key={item.id}>{item.label}</option>)}
           </select>
         </label>
-      </header>
+      </header> : null}
+      {route !== "more" ? <RouteEvidenceBoundary route={route} model={model} onNavigate={onNavigate} surface="desktop" /> : null}
+      <DesktopRouteSupplement route={route} state={supplement} />
 
-      <div className="ddw-body">
+      {!supplementOwnsCollection ? <div className="ddw-body">
         <section className="ddw-table-pane" aria-label={`${definition.objectLabel}列表`}>
           <header>
             <span><b>{filtered.length}</b> 个{definition.objectLabel}</span>
-            <small>{query || filter !== definition.filters[0]?.id ? `共 ${allRows.length} 个对象` : "当前只读快照"}</small>
+            <small>{query || filter !== definition.filters[0]?.id
+              ? `共 ${allRows.length} 个对象`
+              : route === "connections" && model.tables[0]?.note
+                ? model.tables[0].note
+                : "当前只读快照"}</small>
           </header>
           <div className="ddw-table-scroll">
             <table>
@@ -182,16 +200,16 @@ export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; 
         </section>
         <DesktopDomainInspector
           row={inspectorRow}
+          riskRows={riskRows}
           model={model}
           pinned={Boolean(selectedRow)}
           originRisk={risk}
           originEvidenceAt={evidenceAt}
-          matchingCount={matchingRiskObjects}
           onUnpin={unpin}
           onReturn={close}
           titleRef={titleRef}
         />
-      </div>
+      </div> : null}
     </section>
   );
 }

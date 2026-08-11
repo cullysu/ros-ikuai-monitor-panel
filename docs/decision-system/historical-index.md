@@ -1,11 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: current exact-SHA governance candidate; historical entries remain immutable
+- validForCommit: Step940 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `905`
+- coveredStepMax: `940`
+- latestRecordedStep: `940`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -36,6 +37,30 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 889 | 911 exact-SHA scoped review and local Windows package verification; formal gates remain open | current-state.md |
 | 890 - 904 | exact-SHA evidence rebinding, runtime lifecycle stabilization, adaptive mobile evidence/task geometry, static owner-contract alignment, incident support-boundary truth, wide-phone fixed-navigation clearance repair, and ownerless/duplicate CSS removal | current-state.md |
 | 905 | short-landscape domain list ownership, empty inspector-track removal, and required 667/844 runtime geometry evidence | current-state.md |
+| 906 | current-SHA independent Product/Design/Visual/Accessibility FAIL adjudication, ownerless 667 portrait split root cause, and remediation order | current-state.md |
+| 907 | owner-based Overview single/split ownership, 667 portrait full-width repair, and 600+ scenario-action visual grammar | current-state.md |
+| 908 | explicit connection-detail sample coverage, complete/partial/unknown truth contract, and cross-viewport visible scope evidence | current-state.md |
+| 909 | short-phone fixed-navigation task boundary, incident task reordering, and 375/390 runtime geometry evidence | current-state.md |
+| 910 | independent Product/Design/Visual/Accessibility/Code-review re-signoff, original-image evidence closure, and release boundary retained | current-state.md |
+| 911 | Step910 four-review artifact binding demoted to historical local evidence; current runtime and focus/security/workflow verification plus all final external/release gates remain open | current-state.md |
+| 912 - 915 | external promotion authority, mobile evidence ownership, independent-review remediation and report/data truth hardening; final current-candidate acceptance remains open | current-state.md |
+| 916 - 918 | report-identity/lifecycle hardening; public time and canonical URL focused closure; initial Windows-owned Edge toolbar-zoom proof and release-evidence hardening, now superseded as a current conclusion | Step919/current-state.md |
+| 919 | real Edge 200% helper-occlusion and WAN-axis-overlap discovery; hidden-helper foreground-HWND nine-point proof, left-gutter repair, green asset budgets, fixture separation and non-CAS `force:false` connector-lease disclosure; formal clean exact-SHA finalization remains open | current-state.md |
+| 920 | owner mobile-visual rejection, direct screenshot adjudication, candidate-freeze cancellation, preservation of evidence/safety contracts, and return from verify to three-direction design discovery | current-state.md |
+| 921 | three-direction adjudication, Linkboard selection, adversarial no-go conditions, clean mobile Overview ownership seam and implementation boundary | current-state.md |
+| 922 - 924 | isolated Linkboard implementation, five-scene truth remediation, bounded runtime/accessibility evidence, original-image visual rejection and Native Operations Canvas selection | current-state.md |
+| 925 - 926 | physical replacement with Native Operations Canvas, 14-original human review, independent Product/Visual/Accessibility P0/P1 closure, and migration to the current 20-gate Overview owner | current-state.md |
+| 927 - 929 | public-readiness migration from retired Patrol ownership to the Linkboard contract, corrected route-evidence source binding, live boundary continuity, accessibility-detail closure and command/report-owner cleanup; now historical for visual direction | Step930/current-state.md |
+| 930 | owner visual veto of Native Operations Canvas, four-way design adjudication, official iOS 27/iKuai source review and Pocket Console selection | Step931/current-state.md |
+| 931 | physical Pocket Console replacement, phone evidence-object-action closure, tablet aggregation workspace, current runtime/accessibility evidence and independent 14-original P0/P1 closure | current-state.md |
+| 932 | Pocket Console 49-cell truth, four-role scoped closure and public Overview matrix; later invalidated by owner visual veto | Step933/current-state.md |
+| 933 - 934 | owner visual veto, three materially distinct mobile directions and Optical Patrol selection | Step935/current-state.md |
+| 935 | Optical Patrol production replacement, first exact independent VETO and initial product/runtime remediation | Step936/current-state.md |
+| 936 | second exact VETO, 63-cell provenance expansion, short-phone incident action, semantic live status and Back/Forward scroll restoration; later superseded by the Step937 geometry/order findings | current-state.md |
+| 937 | third exact VETO remediation, complete action geometry, decisive-evidence ordering, responsive label/name repair, and exact `2c89…` evidence later superseded by the Step938 scroll-state finding | current-state.md |
+| 938 | fourth exact local Product/Design/Visual/Accessibility/Engineering P0/P1 closure for artifact `188e…`; later tracked release-gate remediation makes it historical rather than current acceptance | Step939/current-state.md |
+| 939 | tracked remediation invalidated Step938 as current acceptance while complete matrices and a clean candidate remained open | Step940/current-state.md |
+| 940 | supplemental connections, DNS and global-health evidence closed focused local Product/Visual/Responsive/Accessibility P1s while whole-product exact acceptance and release remain open | current-state.md |
 
 ## Reading rule
 

@@ -4,7 +4,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { gitWorktreeIdentity } = require("./worktree-runtime-identity");
+const { readRuntimeReport, runtimeIdentityDetail } = require("./runtime-report-identity");
 
 const root = path.resolve(__dirname, "..");
 const evidenceRoot = path.join(root, "_acceptance", "panel-runtime-browser");
@@ -52,10 +52,13 @@ function sha256(filePath) {
 }
 
 if (!Number.isSafeInteger(decisionStep) || decisionStep <= 0) throw new Error("decision step must be a positive integer");
-if (!fs.existsSync(reportPath)) throw new Error("panel-runtime-browser/report.json is missing; run the exact clean runtime first");
+const runtimeBinding = readRuntimeReport(root);
+if (!runtimeBinding.current) {
+  throw new Error(`panel-runtime-browser/report.json is not current production runtime evidence: ${JSON.stringify(runtimeIdentityDetail(runtimeBinding))}`);
+}
 
-const identity = gitWorktreeIdentity(root);
-const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+const identity = runtimeBinding.identity;
+const report = runtimeBinding.report;
 for (const field of ["commit", "worktreeFingerprint", "artifactKey", "worktreeClean", "releaseEvidenceEligible"]) {
   if (report[field] !== identity[field]) throw new Error(`runtime report ${field} does not match the current candidate`);
 }

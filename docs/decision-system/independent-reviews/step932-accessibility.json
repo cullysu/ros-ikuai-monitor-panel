@@ -1,0 +1,49 @@
+{
+  "schema": "independent-review/v1",
+  "step": 932,
+  "role": "accessibility-interaction",
+  "scope": "local-independent-scope",
+  "releaseEligible": false,
+  "reviewerAgentId": "019fecd9-a5f1-7162-81cf-5a1cf6eb5820",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/pocket-console-runtime/report.json",
+    "_acceptance/pocket-console-accessibility-runtime/report.json",
+    "_acceptance/mobile-accessibility-runtime-v2/rendered-scale-reflow-fixture/report.json",
+    "_acceptance/mobile-accessibility-runtime-v2/rendered-scale-reflow-fixture/overview-phone.png",
+    "_acceptance/responsive-boundary-current/report.json",
+    "tools/check-mobile-accessibility-runtime-v2.js"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-f8a12846eebd-96ec52e7f8f8",
+    "worktreeFingerprint": "96ec52e7f8f8c640482609ac6618c6979f10fe99c6e46173042ad14de47ed905",
+    "generatedAt": "2026-08-10T20:47:40.973Z",
+    "commit": "f8a12846eebd8f6d89b4748b89e8808b23257e67",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "text-reflow-and-clipping",
+      "result": "pass",
+      "summary": "390/768 的 200% 回流无内容丢失；检测器分别以 self、ancestor 和 outside-viewport 正例夹具阻断自身、祖先与视口裁切。"
+    },
+    {
+      "id": "focus-history-and-targets",
+      "result": "pass",
+      "summary": "对象键盘选择、Back/Forward、焦点恢复、44px 目标、底栏净空、Reduced Motion、dark 与 forced-colors 当前证据均通过。"
+    },
+    {
+      "id": "truthful-accessibility-semantics",
+      "result": "pass",
+      "summary": "标题关系、live region、aria-pressed、机器时间和 unavailable/current 撤回语义一致，无悬空控制关系。"
+    },
+    {
+      "id": "evidence-boundary",
+      "result": "pass",
+      "summary": "当前 Chromium fixture 不冒充浏览器工具栏 200%、iOS Dynamic Type 或 Android 系统字体证据；这些保留为后续独立发布验收边界。"
+    }
+  ]
+}

@@ -15,10 +15,11 @@ export function DesktopIncidentDocket({
   onNavigate: PanelNavigate;
   investigationActions: ReactElement;
 }) {
-  const primarySummary = model.scenarioFocus ? (
-    <DesktopScenarioFocus focus={model.scenarioFocus} onNavigate={onNavigate} />
-  ) : model.risk === "resource" && model.resource ? (
+  const resourceIncident = model.risk === "resource" && Boolean(model.resource);
+  const primarySummary = resourceIncident && model.resource ? (
     <DesktopResourceEvidence resource={model.resource} />
+  ) : model.scenarioFocus ? (
+    <DesktopScenarioFocus focus={model.scenarioFocus} onNavigate={onNavigate} />
   ) : (
     null
   );
@@ -30,6 +31,9 @@ export function DesktopIncidentDocket({
           <button
             type="button"
             className={`is-${task.tone}`}
+            data-desktop-risk={task.risk}
+            data-desktop-risk-priority={task.priorityScore}
+            data-desktop-risk-priority-reason={task.priorityReason}
             onClick={() => onNavigate(task.route, overviewRiskTaskNavigation(task, model.evidenceAt))}
             key={task.risk}
           >
@@ -47,23 +51,36 @@ export function DesktopIncidentDocket({
     <section
       className={`do-incident is-${model.verdictTone}`}
       aria-label="事故任务"
+      data-desktop-primary-risk={model.risk}
+      data-desktop-risk-priority={model.riskQueue[0]?.priorityScore}
+      data-desktop-risk-priority-reason={model.riskQueue[0]?.priorityReason}
       data-desktop-incident-order={usesIncidentPriorityOrder ? "facts-primary-object-secondary-queue" : undefined}
     >
-      {primarySummary}
-      {actionsBeforeObject ? investigationActions : null}
-      {usesIncidentPriorityOrder ? (
+      {resourceIncident ? (
         <>
           <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
+          {primarySummary}
           {secondaryRisks}
+          {investigationActions}
+        </>
+      ) : usesIncidentPriorityOrder ? (
+        <>
+          {primarySummary}
+          {actionsBeforeObject ? investigationActions : null}
+          <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
+          {secondaryRisks}
+          {!actionsBeforeObject ? investigationActions : null}
         </>
       ) : (
         <>
+          {primarySummary}
+          {actionsBeforeObject ? investigationActions : null}
           {actionsBeforeObject ? null : secondaryRisks}
           <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
           {actionsBeforeObject ? secondaryRisks : null}
+          {!actionsBeforeObject ? investigationActions : null}
         </>
       )}
-      {!actionsBeforeObject ? investigationActions : null}
     </section>
   );
 }

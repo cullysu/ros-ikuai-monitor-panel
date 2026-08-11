@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import ipaddress
 import json
 import os
@@ -29,7 +30,6 @@ from panel_backend.request_source import (
     parse_referer_authority,
     source_authority_is_allowed,
 )
-from panel_backend.time_contract import unix_timestamp_rfc3339, utc_now_rfc3339
 from panel_backend.router_transport import (
     PinnedHostKeyPolicy,
     SshHostKeyConfirmationRequired,
@@ -46,14 +46,34 @@ from panel_backend.router_transport import (
     validate_rest_security,
 )
 from panel_backend.session_security import SessionStore, SlidingWindowRateLimiter
+from panel_backend.supplemental_contract import (
+    CONNECTION_SEARCH_MAX_LIMIT as PUBLIC_CONNECTION_SEARCH_MAX_LIMIT,
+    DNS_STATIC_MAX_PAGE_SIZE as PUBLIC_DNS_STATIC_MAX_PAGE_SIZE,
+    SupplementalConnectionGuard,
+)
 from panel_backend.trust_binding import (
     SshTrustChallengeError,
     issue_ssh_trust_challenge,
     verify_ssh_trust_challenge,
 )
 from panel_backend.http_dispatcher import create_panel_handler
+from panel_backend.interface_metrics import (
+    InterfaceMetricsMixin,
+    bind_interface_metrics_runtime,
+    interface_is_derived,
+    interface_logical_pair_key,
+    interface_parent_hint,
+    interface_quality_group_key,
+)
 from panel_backend.rate_evidence import complete_rate_total, observed_rate
 from panel_backend.snapshot_builder import SnapshotBuilderMixin, bind_snapshot_runtime
+from panel_backend.time_contract import (
+    enforce_public_timestamp_contract,
+    optional_rfc3339_timestamp,
+    require_rfc3339_timestamp,
+    unix_timestamp_rfc3339,
+    utc_now_rfc3339,
+)
 
 try:
     import paramiko
@@ -138,6 +158,40 @@ def env_bool(name, default=False):
     if text in {"0", "false", "no", "off", "disabled"}:
         return False
     return default
+
+
+def bounded_config_int(value, default, minimum, maximum):
+    if minimum > maximum:
+        raise ValueError("Invalid bounded integer range")
+    raw = default if value in (None, "") else value
+    parsed = int(raw)
+    return max(minimum, min(maximum, parsed))
+
+
+def read_bounded_json_response(response, max_bytes, label="RouterOS"):
+    safe_max = bounded_config_int(max_bytes, 1, 1, 64 * 1024 * 1024)
+    content_length = response.headers.get("Content-Length")
+    if content_length not in (None, ""):
+        try:
+            declared_length = int(content_length)
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError(f"{label} returned an invalid Content-Length") from exc
+        if declared_length < 0 or declared_length > safe_max:
+            raise RuntimeError(f"{label} exceeded the safe response limit of {safe_max} bytes")
+
+    chunks = []
+    total = 0
+    for chunk in response.iter_content(chunk_size=min(65536, safe_max)):
+        if not chunk:
+            continue
+        total += len(chunk)
+        if total > safe_max:
+            raise RuntimeError(f"{label} exceeded the safe response limit of {safe_max} bytes")
+        chunks.append(chunk)
+    try:
+        return json.loads(b"".join(chunks).decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{label} returned invalid JSON") from exc
 
 
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
@@ -225,6 +279,38 @@ DEFAULT_PANEL_BIND = "127.0.0.1"
 DEFAULT_PANEL_PORT = 28646
 DEFAULT_PANEL_TARGET = "127.0.0.1"
 PANEL_LOCAL_SETTINGS_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
+
+
+def parse_linux_default_gateway_hosts(route_text):
+    gateways = set()
+    for line in str(route_text or "").splitlines()[1:]:
+        fields = line.split()
+        if len(fields) < 4 or fields[1] != "00000000":
+            continue
+        try:
+            flags = int(fields[3], 16)
+            gateway_bytes = bytes.fromhex(fields[2])
+            gateway = ipaddress.IPv4Address(gateway_bytes[::-1])
+        except (ValueError, IndexError):
+            continue
+        if flags & 0x3 == 0x3 and not gateway.is_unspecified:
+            gateways.add(str(gateway))
+    # Docker host-forward is a narrow trust exception. If the namespace has
+    # more than one distinct default gateway, there is no single peer we can
+    # safely identify as the host-side forwarder, so fail closed.
+    return frozenset(gateways) if len(gateways) == 1 else frozenset()
+
+
+def discover_linux_default_gateway_hosts(route_path="/proc/net/route"):
+    if os.name != "posix":
+        return frozenset()
+    try:
+        route_text = Path(route_path).read_text(encoding="ascii")
+    except (OSError, UnicodeError):
+        return frozenset()
+    return parse_linux_default_gateway_hosts(route_text)
+
+
 # The public name describes the actual boundary: this permits writing only the
 # panel's local sidecar address settings. Keep the old, ambiguous name as a
 # compatibility fallback for existing private installs.
@@ -238,6 +324,22 @@ PANEL_TRUST_PROXY_HEADERS = str(env_value("ROS_PANEL_TRUST_PROXY_HEADERS", "0"))
 PANEL_ALLOW_LOCALHOST_HOST_FORWARD = str(env_value("ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD", "0")).strip().lower() in {"1", "true", "yes", "on"}
 PANEL_LOCALHOST_FORWARD_HEADER = "X-Ros-Panel-Localhost-Forward"
 PANEL_LOCALHOST_FORWARD_TOKEN = str(env_value("ROS_PANEL_LOCALHOST_FORWARD_TOKEN", "")).strip()
+PANEL_ALLOW_DOCKER_HOST_FORWARD = str(env_value("ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD", "0")).strip().lower() in {"1", "true", "yes", "on"}
+PANEL_DOCKER_HOST_FORWARD_PEERS = discover_linux_default_gateway_hosts()
+
+
+def validate_panel_forwarding_contract(docker_host_forward, proxy_headers, token_forward):
+    if docker_host_forward and proxy_headers:
+        raise ValueError("Docker host-forward mode cannot trust proxy headers")
+    if docker_host_forward and token_forward:
+        raise ValueError("Docker host-forward mode and token-forward mode are mutually exclusive")
+
+
+validate_panel_forwarding_contract(
+    PANEL_ALLOW_DOCKER_HOST_FORWARD,
+    PANEL_TRUST_PROXY_HEADERS,
+    PANEL_ALLOW_LOCALHOST_HOST_FORWARD,
+)
 PANEL_SESSION_COOKIE = "ros_panel_session"
 PANEL_CSRF_COOKIE = "ros_panel_csrf"
 PANEL_SESSION_TTL_SECONDS = 8 * 60 * 60
@@ -382,8 +484,21 @@ def panel_client_address_is_allowed(client_address, headers=None):
         return True
     peer_host = client_address[0] if client_address else ""
     if not client_host_is_loopback(peer_host):
-        if PANEL_ALLOW_LOCALHOST_HOST_FORWARD:
+        request_host = None
+        if PANEL_ALLOW_DOCKER_HOST_FORWARD or PANEL_ALLOW_LOCALHOST_HOST_FORWARD:
             request_host = parse_panel_request_host(headers, fallback_port=PANEL_PORT)
+        if PANEL_ALLOW_DOCKER_HOST_FORWARD:
+            try:
+                normalized_peer = str(parse_ip_literal(peer_host))
+            except ValueError:
+                normalized_peer = ""
+            if (
+                normalized_peer in PANEL_DOCKER_HOST_FORWARD_PEERS
+                and request_host
+                and is_loopback_panel_host(request_host[0])
+            ):
+                return True
+        if PANEL_ALLOW_LOCALHOST_HOST_FORWARD:
             supplied_token = first_header_value((headers or {}).get(PANEL_LOCALHOST_FORWARD_HEADER))
             token_ok = bool(
                 PANEL_LOCALHOST_FORWARD_TOKEN
@@ -724,15 +839,16 @@ PANEL_LOGIN_ATTEMPT_LIMIT = max(2, int(env_value("ROS_PANEL_LOGIN_ATTEMPT_LIMIT"
 PANEL_RATE_LIMIT_WINDOW_SECONDS = max(10, int(env_value("ROS_PANEL_RATE_LIMIT_WINDOW_SECONDS", "60")))
 PANEL_SESSION_STORE = SessionStore(PANEL_SESSION_TTL_SECONDS, PANEL_SESSION_MAX)
 PANEL_REQUEST_RATE_LIMITER = SlidingWindowRateLimiter(max_keys=1024)
+SUPPLEMENTAL_CONNECTION_GUARD = SupplementalConnectionGuard(max_peers=1024)
 PANEL_SSH_TRUST_CHALLENGE_TTL_SECONDS = max(
     30,
     min(600, int(env_value("ROS_PANEL_SSH_TRUST_CHALLENGE_TTL_SECONDS", "180"))),
 )
 PANEL_SSH_TRUST_CHALLENGE_SECRET = secrets.token_bytes(32)
-POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
-HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
-RATE_ZERO_CONFIRM_SAMPLES = max(1, int(os.getenv("ROS_MONITOR_RATE_ZERO_CONFIRM_SAMPLES", "2")))
-ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))
+POLL_SECONDS = bounded_config_int(os.getenv("ROS_MONITOR_POLL_SECONDS"), 1, 1, 3600)
+HISTORY_LIMIT = bounded_config_int(os.getenv("ROS_MONITOR_HISTORY_LIMIT"), 60, 1, 3600)
+RATE_ZERO_CONFIRM_SAMPLES = bounded_config_int(os.getenv("ROS_MONITOR_RATE_ZERO_CONFIRM_SAMPLES"), 2, 1, 10)
+ACTIVE_CONNECTION_LIMIT = bounded_config_int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT"), 80, 1, 2000)
 REST_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_REST_TIMEOUT", "12")))
 SSH_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_SSH_TIMEOUT", "12")))
 STATIC_POLL_SECONDS = max(300, int(os.getenv("ROS_MONITOR_STATIC_POLL_SECONDS", "300")))
@@ -745,11 +861,18 @@ CONNECTION_PROTOCOL_POLL_SECONDS = max(30, int(os.getenv("ROS_MONITOR_CONNECTION
 CONNECTION_DETAIL_CAPTURE_SECONDS = max(4, int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_CAPTURE_SECONDS", "4")))
 CONNECTION_DETAIL_SAMPLE_LIMIT = max(
     ACTIVE_CONNECTION_LIMIT,
-    int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_SAMPLE_LIMIT", str(max(ACTIVE_CONNECTION_LIMIT * 4, 160)))),
+    bounded_config_int(
+        os.getenv("ROS_MONITOR_CONNECTION_DETAIL_SAMPLE_LIMIT"),
+        max(ACTIVE_CONNECTION_LIMIT * 4, 160),
+        ACTIVE_CONNECTION_LIMIT,
+        8000,
+    ),
 )
-CONNECTION_DETAIL_STREAM_MAX_BYTES = max(
+CONNECTION_DETAIL_STREAM_MAX_BYTES = bounded_config_int(
+    os.getenv("ROS_MONITOR_CONNECTION_DETAIL_STREAM_MAX_BYTES"),
+    131072,
     65536,
-    int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_STREAM_MAX_BYTES", "131072")),
+    16 * 1024 * 1024,
 )
 CONNECTION_DETAIL_OVERRUN_BACKOFF_SECONDS = max(
     CONNECTION_DETAIL_POLL_SECONDS,
@@ -770,11 +893,13 @@ CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS = max(
 CONNECTION_PROTOCOL_SCAN_TIMEOUT = max(120, int(os.getenv("ROS_MONITOR_CONNECTION_PROTOCOL_SCAN_TIMEOUT", "300")))
 CONNECTION_TRACKING_TIMEOUT = max(12, int(os.getenv("ROS_MONITOR_CONNECTION_TRACKING_TIMEOUT", "30")))
 CONNECTION_DETAIL_REST_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_REST_TIMEOUT", "12")))
-CONNECTION_SEARCH_MAX_LIMIT = max(20, int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_MAX_LIMIT", "200")))
+CONNECTION_SEARCH_MAX_LIMIT = PUBLIC_CONNECTION_SEARCH_MAX_LIMIT
 CONNECTION_SEARCH_CAPTURE_SECONDS = max(2, int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_CAPTURE_SECONDS", "4")))
-CONNECTION_SEARCH_STREAM_MAX_BYTES = max(
+CONNECTION_SEARCH_STREAM_MAX_BYTES = bounded_config_int(
+    os.getenv("ROS_MONITOR_CONNECTION_SEARCH_STREAM_MAX_BYTES"),
+    262144,
     32768,
-    int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_STREAM_MAX_BYTES", "262144")),
+    16 * 1024 * 1024,
 )
 CONNECTION_SEARCH_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_TIMEOUT", "12")))
 CONNECTION_SEARCH_FIELDS = [
@@ -790,23 +915,29 @@ CONNECTION_SEARCH_FIELDS = [
     "orig-bytes",
     "repl-bytes",
 ]
-DNS_STATIC_PREVIEW_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PREVIEW_LIMIT", "12"))
-DNS_STATIC_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT", "100"))
-DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT", "300"))
+DNS_STATIC_PREVIEW_LIMIT = bounded_config_int(os.getenv("ROS_MONITOR_DNS_STATIC_PREVIEW_LIMIT"), 12, 1, 100)
+DNS_STATIC_MAX_PAGE_LIMIT = PUBLIC_DNS_STATIC_MAX_PAGE_SIZE
+DNS_STATIC_PAGE_LIMIT = min(
+    bounded_config_int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT"), 50, 1, DNS_STATIC_MAX_PAGE_LIMIT),
+    DNS_STATIC_MAX_PAGE_LIMIT,
+)
 DNS_STATIC_CACHE_TTL = int(os.getenv("ROS_MONITOR_DNS_STATIC_CACHE_TTL", "60"))
 DNS_STATIC_FULL_REST_TIMEOUT = int(os.getenv("ROS_MONITOR_DNS_STATIC_FULL_REST_TIMEOUT", "35"))
+DNS_STATIC_FULL_REST_MAX_BYTES = bounded_config_int(
+    os.getenv("ROS_MONITOR_DNS_STATIC_FULL_MAX_BYTES"), 4 * 1024 * 1024, 65536, 16 * 1024 * 1024
+)
 SSH_BANNER_PROBE_TIMEOUT = max(0.5, min(3.0, float(os.getenv("ROS_MONITOR_SSH_BANNER_PROBE_TIMEOUT", "1.5"))))
 IP_ALIAS_FILE = Path(os.getenv("ROS_PANEL_IP_ALIAS_FILE", str(BASE_DIR / "data" / "ip_aliases.json"))).expanduser()
 ROUTER_LOGIN_STORE_FILE = Path(os.getenv("ROS_PANEL_ROUTER_LOGIN_STORE_FILE", str(BASE_DIR / "data" / "router_logins.json"))).expanduser()
-ROUTER_LOGIN_HISTORY_LIMIT = max(1, int(os.getenv("ROS_PANEL_ROUTER_LOGIN_HISTORY_LIMIT", "32")))
+ROUTER_LOGIN_HISTORY_LIMIT = bounded_config_int(os.getenv("ROS_PANEL_ROUTER_LOGIN_HISTORY_LIMIT"), 32, 1, 256)
 ROUTER_PROFILE_STORE = RouterProfileStore(ROUTER_LOGIN_STORE_FILE, ROUTER_LOGIN_HISTORY_LIMIT)
 CUSTOM_NAME_MAX_LENGTH = int(os.getenv("ROS_PANEL_CUSTOM_NAME_MAX_LENGTH", "48"))
 READONLY_DIAGNOSTIC_CACHE_TTL = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_CACHE_TTL", "45"))
 READONLY_DIAGNOSTIC_DNS_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_DNS_TIMEOUT", "1.2"))
 READONLY_DIAGNOSTIC_HTTP_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_HTTP_TIMEOUT", "2.5"))
-READONLY_DIAGNOSTIC_WORKERS = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_WORKERS", "24"))
+READONLY_DIAGNOSTIC_WORKERS = bounded_config_int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_WORKERS"), 24, 1, 64)
 READONLY_DIAGNOSTIC_TOTAL_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_TOTAL_TIMEOUT", "8"))
-STATUS_FINDINGS_LIMIT = max(1, int(os.getenv("ROS_PANEL_STATUS_FINDINGS_LIMIT", "24")))
+STATUS_FINDINGS_LIMIT = bounded_config_int(os.getenv("ROS_PANEL_STATUS_FINDINGS_LIMIT"), 24, 1, 100)
 WAN_LATENCY_TARGET = os.getenv("ROS_PANEL_WAN_LATENCY_TARGET", "www.baidu.com").strip() or "www.baidu.com"
 WAN_LATENCY_POLL_SECONDS = max(1, int(os.getenv("ROS_PANEL_WAN_LATENCY_POLL_SECONDS", "10")))
 WAN_LATENCY_TIMEOUT_MS = max(200, int(os.getenv("ROS_PANEL_WAN_LATENCY_TIMEOUT_MS", "1200")))
@@ -1118,45 +1249,6 @@ def make_arp_alert(kind, value, entries, unique_key):
     }
 
 
-def interface_is_derived(name, iface_type):
-    type_text = str(iface_type or "").strip().lower()
-    name_text = str(name or "").strip().lower()
-    return type_text in {"vlan", "macvlan"} or name_text.startswith(("vlan", "macvlan"))
-
-
-def interface_parent_hint(item):
-    item = item if isinstance(item, dict) else {}
-    own_name = str(item.get("name") or "").strip()
-    for key in ("interface", "master-interface", "actual-interface", "parent"):
-        value = str(item.get(key) or "").strip()
-        if value and value != own_name:
-            return value
-    return None
-
-
-def interface_logical_pair_key(item):
-    item = item if isinstance(item, dict) else {}
-    name = str(item.get("name") or "").strip().lower()
-    match = re.fullmatch(r"(?:vlan|macvlan)(.+)", name)
-    if match and match.group(1):
-        return f"logical-pair:{match.group(1)}"
-    return None
-
-
-def interface_quality_group_key(item):
-    item = item if isinstance(item, dict) else {}
-    parent = interface_parent_hint(item)
-    logical_pair = interface_logical_pair_key(item)
-    iface_type = str(item.get("type") or "").strip().lower() or "interface"
-    vlan_id = str(item.get("vlan-id") or "").strip()
-    own_name = str(item.get("name") or "").strip()
-    if parent:
-        return ":".join(part for part in (parent, iface_type, vlan_id or own_name) if part)
-    if logical_pair:
-        return logical_pair
-    return own_name or iface_type
-
-
 PANEL_OPEN_BROWSER = env_bool("ROS_PANEL_OPEN_BROWSER", default=is_frozen_app())
 
 
@@ -1169,7 +1261,7 @@ def connection_detail_sleep_seconds(elapsed):
 
 
 def format_iso_now():
-    return utc_now_rfc3339()
+    return require_rfc3339_timestamp(utc_now_rfc3339())
 
 
 def parse_ping_latency_ms(output):
@@ -1871,6 +1963,36 @@ def compact_text(value, limit=180):
     return text[: max(0, limit - 3)] + "..."
 
 
+HEALTH_PUBLIC_TEXT_BLOCKLIST = re.compile(
+    r"(?:https?://|\b(?:password|passwd|token|secret|authorization)\s*[=:]|\btraceback\b|\bexception\b|\bstack\b|/ip/[a-z0-9_/-]+)",
+    re.IGNORECASE,
+)
+
+
+def health_public_text(value, limit=160):
+    """Keep health findings operational without publishing raw collector diagnostics."""
+    if value is None or isinstance(value, (int, float, bool)):
+        return value
+    text = " ".join(str(value).replace("\x00", "").split())
+    if HEALTH_PUBLIC_TEXT_BLOCKLIST.search(text):
+        return "Redacted internal diagnostic detail."
+    return compact_text(text, limit)
+
+
+def health_public_evidence(evidence):
+    safe = []
+    for item in as_list(evidence)[:6]:
+        row = as_dict(item)
+        label = compact_text(row.get("label"), 80)
+        if not label:
+            continue
+        value = health_public_text(row.get("value"), 160)
+        if value is None:
+            continue
+        safe.append({"label": label, "value": value})
+    return safe
+
+
 def collector_status_message(status, error=None):
     error_text = compact_text(error, 240)
     if error_text:
@@ -1891,6 +2013,7 @@ def collector_status_message(status, error=None):
 def normalize_collector_snapshot_status(snapshot):
     if not isinstance(snapshot, dict):
         return snapshot
+    snapshot = enforce_public_timestamp_contract(snapshot)
     status = str(snapshot.get("status") or "unknown").strip() or "unknown"
     message = collector_status_message(status, snapshot.get("error"))
     snapshot["status"] = status
@@ -1903,7 +2026,7 @@ def normalize_collector_snapshot_status(snapshot):
 
 
 def build_health_findings(snapshot):
-    snapshot = as_dict(snapshot)
+    snapshot = as_dict(enforce_public_timestamp_contract(snapshot))
     meta = as_dict(snapshot.get("meta"))
     overview = as_dict(snapshot.get("overview"))
     connections = as_dict(snapshot.get("connections"))
@@ -1925,39 +2048,43 @@ def build_health_findings(snapshot):
                 "id": action_id,
                 "severity": severity,
                 "domain": domain,
-                "title": title,
-                "summary": compact_text(summary, 240),
-                "source": source,
+                "title": health_public_text(title, 120),
+                "summary": health_public_text(summary, 240),
+                "source": health_public_text(source, 120),
                 "readOnly": True,
                 "priority": len(actions) + 1,
-                "evidence": evidence or [],
+                "evidence": health_public_evidence(evidence),
             }
         )
 
     snapshot_status = snapshot.get("status")
     if snapshot_status and snapshot_status != "ok":
-        status_message = collector_status_message(snapshot_status, snapshot.get("error"))
+        status_message = (
+            collector_status_message(snapshot_status)
+            if snapshot_status == "starting"
+            else "采集器报告只读采集状态异常。"
+        )
         add_action(
             "collector.snapshot_status",
             "warning" if snapshot_status == "starting" else "critical",
             "collector",
-            "Snapshot collection is not healthy",
+            "快照采集状态异常",
             status_message,
-            "Confirm collection state before trusting dependent widgets.",
+            "确认采集状态后，再判断依赖此快照的指标。",
             "snapshot.status",
             [
-                {"label": "status", "value": snapshot_status},
-                {"label": "message", "value": status_message},
-                {"label": "error", "value": compact_text(snapshot.get("error"))},
+                {"label": "采集状态", "value": snapshot_status},
+                {"label": "状态说明", "value": status_message},
+                {"label": "内部错误", "value": "内部细节已隐藏" if snapshot.get("error") else None},
             ],
         )
 
     collection_sources = [
-        ("meta.realtimeError", meta.get("realtimeError"), meta.get("realtimeLastErrorAt"), "critical", "Realtime REST collection has errors"),
-        ("meta.slowRestError", meta.get("slowRestError"), meta.get("slowRestLastErrorAt"), "warning", "Slow REST collection has errors"),
-        ("meta.staticError", meta.get("staticError"), meta.get("staticLastErrorAt"), "warning", "Static REST collection has errors"),
-        ("connections.protocolError", connections.get("protocolError"), connections.get("protocolLastErrorAt"), "warning", "Connection protocol summary has errors"),
-        ("connections.detailError", connections.get("detailError"), connections.get("detailLastErrorAt"), "warning", "Connection detail collection has errors"),
+        ("meta.realtimeError", meta.get("realtimeError"), meta.get("realtimeLastErrorAt"), "critical", "实时 REST 采集异常"),
+        ("meta.slowRestError", meta.get("slowRestError"), meta.get("slowRestLastErrorAt"), "warning", "低频 REST 采集异常"),
+        ("meta.staticError", meta.get("staticError"), meta.get("staticLastErrorAt"), "warning", "静态 REST 采集异常"),
+        ("connections.protocolError", connections.get("protocolError"), connections.get("protocolLastErrorAt"), "warning", "连接协议汇总采集异常"),
+        ("connections.detailError", connections.get("detailError"), connections.get("detailLastErrorAt"), "warning", "连接明细采集异常"),
     ]
     for source, error, last_error_at, severity, title in collection_sources:
         if error:
@@ -1966,17 +2093,20 @@ def build_health_findings(snapshot):
                 severity,
                 "collector",
                 title,
-                compact_text(error),
-                "Verify the read-only collection path and credentials before trusting dependent widgets.",
+                "只读采集通道报告失败；内部诊断细节已隐藏。",
+                "先核对只读采集路径和凭据，再判断依赖该通道的指标。",
                 source,
-                [{"label": "lastErrorAt", "value": last_error_at or "-"}, {"label": "error", "value": compact_text(error)}],
+                [
+                    {"label": "最近失败", "value": last_error_at or "-"},
+                    {"label": "内部错误", "value": "内部细节已隐藏"},
+                ],
             )
 
     endpoint_failure_sources = [
-        ("meta.realtimeEndpointFailures", "Realtime REST endpoint failures"),
-        ("meta.slowRestEndpointFailures", "Slow REST endpoint failures"),
-        ("meta.staticEndpointFailures", "Static REST endpoint failures"),
-        ("meta.detailEndpointFailures", "Detail REST endpoint failures"),
+        ("meta.realtimeEndpointFailures", "实时 REST 端点采集失败"),
+        ("meta.slowRestEndpointFailures", "低频 REST 端点采集失败"),
+        ("meta.staticEndpointFailures", "静态 REST 端点采集失败"),
+        ("meta.detailEndpointFailures", "明细 REST 端点采集失败"),
     ]
     for source, title in endpoint_failure_sources:
         failures = as_dict(meta.get(source.split(".")[-1]))
@@ -1987,10 +2117,10 @@ def build_health_findings(snapshot):
                 "warning",
                 "collector",
                 title,
-                f"{len(failed_names)} endpoint(s) reported collection failures.",
-                "Open the collector logs or endpoint failure details; keep remediation manual.",
+                f"{len(failed_names)} 个端点报告采集失败。",
+                "查看采集日志或端点失败明细；修复操作保持人工执行。",
                 source,
-                [{"label": "count", "value": len(failed_names)}, {"label": "sample", "value": ", ".join(failed_names[:5])}],
+                [{"label": "失败端点", "value": len(failed_names)}],
             )
 
     wan_lines = as_list(snapshot.get("wan")) or as_list(snapshot.get("pppoe"))
@@ -2001,22 +2131,22 @@ def build_health_findings(snapshot):
             "wan.no_running_lines",
             "critical",
             "wan",
-            "No WAN line is running",
-            "All known WAN lines are currently reported offline.",
-            "Confirm upstream link state and routing from the read-only WAN and route views.",
+            "没有 WAN 线路处于运行状态",
+            "当前所有已知 WAN 线路均报告离线。",
+            "从只读 WAN 与路由视图核对上联链路和默认路由。",
             "snapshot.wan",
-            [{"label": "wanCount", "value": len(wan_lines)}],
+            [{"label": "WAN 线路", "value": len(wan_lines)}],
         )
     elif offline_wan:
         add_action(
             "wan.offline_lines",
             "warning",
             "wan",
-            "Some WAN lines are offline",
-            f"{len(offline_wan)} of {len(wan_lines)} WAN line(s) are not running.",
-            "Review the affected line inventory and upstream access before changing policy.",
+            "部分 WAN 线路离线",
+            f"{len(wan_lines)} 条 WAN 中有 {len(offline_wan)} 条未运行。",
+            "调整策略前，先核对受影响线路和上联接入。",
             "snapshot.wan",
-            [{"label": "offline", "value": ", ".join(compact_text(row.get("name") or row.get("lineId") or "-") for row in offline_wan[:5])}],
+            [{"label": "离线线路", "value": ", ".join(compact_text(row.get("name") or row.get("lineId") or "-") for row in offline_wan[:5])}],
         )
 
     default_routes = as_list(routes.get("defaultRoutes"))
@@ -2026,22 +2156,22 @@ def build_health_findings(snapshot):
             "routes.no_active_default",
             "critical",
             "routes",
-            "No active default route",
-            "Default routes exist, but none are active and enabled.",
-            "Use the route inventory to identify inactive gateways; do not auto-edit routes from this panel.",
+            "没有活动默认路由",
+            "快照中存在默认路由，但没有任何一条同时处于活动且启用状态。",
+            "从路由清单定位未活动网关；本面板不会自动修改路由。",
             "snapshot.routes.defaultRoutes",
-            [{"label": "defaultRoutes", "value": len(default_routes)}],
+            [{"label": "默认路由", "value": len(default_routes)}],
         )
     elif wan_lines and not default_routes:
         add_action(
             "routes.no_default_visible",
             "warning",
             "routes",
-            "No default route is visible",
-            "WAN lines are present but the snapshot does not include a default route.",
-            "Check route collection freshness and the RouterOS route table manually.",
+            "快照中未见默认路由",
+            "WAN 线路存在，但快照没有包含默认路由。",
+            "核对路由采集鲜度，并在 RouterOS 路由表中人工确认。",
             "snapshot.routes.defaultRoutes",
-            [{"label": "wanCount", "value": len(wan_lines)}],
+            [{"label": "WAN 线路", "value": len(wan_lines)}],
         )
 
     distribution = [as_dict(row) for row in as_list(load_balance.get("distribution"))]
@@ -2051,11 +2181,11 @@ def build_health_findings(snapshot):
             "wan.traffic_skew",
             "info",
             "wan",
-            "WAN traffic distribution is skewed",
-            f"{dominant.get('name', '-')} is carrying about {dominant.get('share', 0)}% of observed WAN traffic.",
-            "Treat this as an observation unless it persists under representative traffic.",
+            "WAN 流量分布明显偏斜",
+            f"{dominant.get('name', '-')} 承载了约 {dominant.get('share', 0)}% 的已观测 WAN 流量。",
+            "只有在代表性业务流量下持续出现，才将其视为异常。",
             "snapshot.loadBalance.distribution",
-            [{"label": "line", "value": dominant.get("name", "-")}, {"label": "share", "value": dominant.get("share", 0)}],
+            [{"label": "线路", "value": dominant.get("name", "-")}, {"label": "流量占比", "value": dominant.get("share", 0)}],
         )
 
     if dns and not dns.get("running"):
@@ -2063,20 +2193,20 @@ def build_health_findings(snapshot):
             "dns.remote_requests_disabled",
             "warning",
             "dns",
-            "RouterOS DNS remote requests are disabled",
-            "The RouterOS DNS service is not accepting remote requests according to the snapshot.",
-            "Confirm whether this is intentional for the current topology before changing DNS settings.",
+            "RouterOS DNS 远程请求未启用",
+            "根据当前快照，RouterOS DNS 服务未接受远程请求。",
+            "修改 DNS 设置前，先确认这是否符合当前拓扑设计。",
             "snapshot.dns.running",
-            [{"label": "running", "value": dns.get("running")}],
+            [{"label": "远程请求", "value": dns.get("running")}],
         )
     if dns and not as_list(dns.get("servers")):
         add_action(
             "dns.no_servers",
             "warning",
             "dns",
-            "No upstream DNS servers are visible",
-            "The DNS snapshot does not list upstream servers.",
-            "Verify DNS configuration through the normal RouterOS console if clients report resolution failures.",
+            "快照中未见上游 DNS 服务器",
+            "DNS 快照没有列出上游服务器。",
+            "若客户端报告解析失败，请在 RouterOS 控制台核对 DNS 配置。",
             "snapshot.dns.servers",
             [],
         )
@@ -2089,11 +2219,11 @@ def build_health_findings(snapshot):
                 "dns.cache_pressure",
                 "warning",
                 "dns",
-                "DNS cache usage is high",
-                f"DNS cache usage is about {round(cache_usage, 1)}%.",
-                "Observe whether resolution latency or cache evictions correlate before tuning cache size.",
+                "DNS 缓存占用偏高",
+                f"DNS 缓存使用率约为 {round(cache_usage, 1)}%。",
+                "调整缓存大小前，先观察解析时延和缓存淘汰是否同步异常。",
                 "snapshot.dns.cacheUsed",
-                [{"label": "cacheUsed", "value": cache_used}, {"label": "cacheSize", "value": cache_size}],
+                [{"label": "已使用缓存", "value": cache_used}, {"label": "缓存容量", "value": cache_size}],
             )
 
     ipv6_dhcp_unbound = [
@@ -2105,11 +2235,11 @@ def build_health_findings(snapshot):
             "ipv6.dhcp_clients_unbound",
             "warning",
             "ipv6",
-            "Some DHCPv6 clients are not bound",
-            f"{len(ipv6_dhcp_unbound)} DHCPv6 client(s) are not bound.",
-            "Review IPv6 prefix delegation and upstream state from the IPv6 diagnostics view.",
+            "部分 DHCPv6 客户端未绑定",
+            f"有 {len(ipv6_dhcp_unbound)} 个 DHCPv6 客户端未绑定。",
+            "从 IPv6 诊断视图核对前缀委派和上游状态。",
             "snapshot.dns.ipv6DhcpClients",
-            [{"label": "interfaces", "value": ", ".join(str(as_dict(row).get("interface", "-")) for row in ipv6_dhcp_unbound[:5])}],
+            [{"label": "接口", "value": ", ".join(str(as_dict(row).get("interface", "-")) for row in ipv6_dhcp_unbound[:5])}],
         )
 
     high_pools = []
@@ -2124,11 +2254,11 @@ def build_health_findings(snapshot):
             "dhcp.pool_pressure",
             "critical" if max_usage >= 95 else "warning",
             "dhcp",
-            "DHCP pool capacity is tight",
-            f"{len(high_pools)} DHCP pool(s) are at or above 85% usage.",
-            "Review lease inventory and pool sizing manually before making address-plan changes.",
+            "DHCP 地址池容量紧张",
+            f"有 {len(high_pools)} 个 DHCP 地址池使用率达到或超过 85%。",
+            "修改地址规划前，先人工核对租约清单和地址池容量。",
             "snapshot.dhcp.pools",
-            [{"label": "pools", "value": ", ".join(str(pool.get("name", "-")) for pool in high_pools[:5])}],
+            [{"label": "地址池", "value": ", ".join(str(pool.get("name", "-")) for pool in high_pools[:5])}],
         )
 
     arp_alerts = as_list(arp.get("alerts"))
@@ -2147,27 +2277,27 @@ def build_health_findings(snapshot):
         warning_count = severity_counts.get("warning", 0)
         info_count = severity_counts.get("info", 0)
         if critical_count:
-            title = "Active ARP identity conflict evidence detected"
-            next_step = "Investigate active duplicate-IP evidence first; confirm with switch/AP and terminal evidence before changing address plans."
+            title = "检测到活动 ARP 身份冲突证据"
+            next_step = "优先核对活动重复 IP 证据；修改地址规划前，再与交换机、AP 和终端证据交叉确认。"
         else:
-            title = "ARP identity movement needs review"
-            next_step = "Treat stale or failed ARP movement as lower-confidence history; look for fresh duplicate-IP evidence before declaring an active conflict."
+            title = "ARP 身份漂移需要复核"
+            next_step = "将陈旧或失败的 ARP 漂移视为低置信历史；确认存在新鲜重复 IP 证据后，再判定活动冲突。"
         add_action(
             "arp.identity_conflicts",
             top_severity,
             "terminals",
             title,
             (
-                f"{len(arp_alerts)} ARP alert(s): critical={critical_count}, "
-                f"warning={warning_count}, info={info_count}."
+                f"共 {len(arp_alerts)} 条 ARP 告警：严重 {critical_count}，"
+                f"警告 {warning_count}，提示 {info_count}。"
             ),
             next_step,
             "snapshot.arp.alerts",
             [
-                {"label": "sample", "value": compact_text(as_dict(arp_alerts[0]).get("detail") or as_dict(arp_alerts[0]).get("value"))},
-                {"label": "sampleSeverity", "value": as_dict(arp_alerts[0]).get("severity", "-")},
-                {"label": "sampleConfidence", "value": as_dict(arp_alerts[0]).get("confidence", "-")},
-                {"label": "confidenceSummary", "value": ", ".join(f"{key}:{confidence_counts[key]}" for key in sorted(confidence_counts))},
+                {"label": "样本", "value": compact_text(as_dict(arp_alerts[0]).get("detail") or as_dict(arp_alerts[0]).get("value"))},
+                {"label": "样本级别", "value": as_dict(arp_alerts[0]).get("severity", "-")},
+                {"label": "样本置信度", "value": as_dict(arp_alerts[0]).get("confidence", "-")},
+                {"label": "置信度汇总", "value": ", ".join(f"{key}:{confidence_counts[key]}" for key in sorted(confidence_counts))},
             ],
         )
 
@@ -2210,7 +2340,7 @@ def build_health_findings(snapshot):
         primary_count = sum(1 for item in interface_issues if not item["isDerived"])
         logical_count = len(interface_issues) - primary_count
         if top_issue["lossRate"] is None:
-            loss_text = "unknown"
+            loss_text = "未取得"
         else:
             loss_value_text = f"{top_issue['lossRate'] * 100:.4f}".rstrip("0").rstrip(".")
             loss_text = f"{loss_value_text}%"
@@ -2218,22 +2348,21 @@ def build_health_findings(snapshot):
             "interfaces.error_counters",
             "warning",
             "interfaces",
-            "Interface drop/error evidence needs review",
+            "接口丢包与错误证据需要复核",
             (
-                f"{primary_count} primary interface(s) and {logical_count} logical/down-ranked interface(s) "
-                f"have drop/error evidence. Top {top_issue['row'].get('name', '-')}: "
-                f"cumulative drop/error={top_issue['dropTotal']}/{top_issue['errorTotal']}, "
-                f"latest +{top_issue['dropDelta']}/+{top_issue['errorDelta']}, "
-                f"recent loss rate={loss_text}."
+                f"{primary_count} 个主接口和 {logical_count} 个降级排序的逻辑接口存在丢包或错误证据。"
+                f"最高项 {top_issue['row'].get('name', '-')}：累计丢包/错误 "
+                f"{top_issue['dropTotal']}/{top_issue['errorTotal']}，最近增量 "
+                f"+{top_issue['dropDelta']}/+{top_issue['errorDelta']}，近期丢包率 {loss_text}。"
             ),
-            "Review recent delta and loss-rate evidence first; treat VLAN/macvlan logical pairs as lower-confidence evidence unless their parent also shows fresh deltas.",
+            "优先核对最近增量和丢包率；若父接口没有新鲜增量，将 VLAN/macvlan 逻辑对视为低置信证据。",
             "snapshot.interfaces",
             [
-                {"label": "topInterface", "value": top_issue["row"].get("name", "-")},
-                {"label": "cumulativeDropError", "value": f"{top_issue['dropTotal']}/{top_issue['errorTotal']}"},
-                {"label": "latestDropErrorDelta", "value": f"+{top_issue['dropDelta']}/+{top_issue['errorDelta']}"},
-                {"label": "recentLossRate", "value": loss_text},
-                {"label": "logicalDownranked", "value": logical_count},
+                {"label": "最高风险接口", "value": top_issue["row"].get("name", "-")},
+                {"label": "累计丢包/错误", "value": f"{top_issue['dropTotal']}/{top_issue['errorTotal']}"},
+                {"label": "最近丢包/错误增量", "value": f"+{top_issue['dropDelta']}/+{top_issue['errorDelta']}"},
+                {"label": "近期丢包率", "value": loss_text},
+                {"label": "降级逻辑接口", "value": logical_count},
             ],
         )
 
@@ -2259,9 +2388,9 @@ def build_health_findings(snapshot):
             "system.resource_pressure",
             severity,
             "system",
-            "Router resource pressure is elevated",
+            "路由器资源压力偏高",
             ", ".join(f"{name}={value}%" for name, _, value in resource_pressure),
-            "Correlate with traffic and logs before scheduling maintenance or tuning.",
+            "安排维护或调优前，先与流量和日志证据交叉确认。",
             "snapshot.overview",
             [{"label": name, "value": value} for name, _, value in resource_pressure],
         )
@@ -2272,11 +2401,11 @@ def build_health_findings(snapshot):
             "connections.tracking_pressure",
             "critical" if threshold_level == "danger" else "warning",
             "connections",
-            "Connection tracking pressure is elevated",
-            f"Connection total is {connections.get('total', 0)} with threshold level {threshold_level}.",
-            "Use top IP and active connection views to identify heavy clients before changing limits.",
+            "连接跟踪压力偏高",
+            f"当前连接总数为 {connections.get('total', 0)}，阈值级别为 {threshold_level}。",
+            "修改限制前，先从终端排行和活动连接中定位高负载客户端。",
             "snapshot.connections",
-            [{"label": "total", "value": connections.get("total", 0)}, {"label": "tcp", "value": connections.get("tcp")}],
+            [{"label": "连接总数", "value": connections.get("total", 0)}, {"label": "TCP", "value": connections.get("tcp")}],
         )
 
     top_terminal = next((as_dict(row) for row in as_list(snapshot.get("terminals")) if to_int(as_dict(row).get("connections")) >= 1000), None)
@@ -2285,11 +2414,11 @@ def build_health_findings(snapshot):
             "terminals.high_connection_client",
             "info",
             "terminals",
-            "A terminal has a high connection count",
-            f"{top_terminal.get('displayName') or top_terminal.get('hostname') or top_terminal.get('ip')} has {top_terminal.get('connections')} tracked connection(s).",
-            "Review whether this is expected workload, download software, P2P, or a noisy client.",
+            "终端连接数偏高",
+            f"{top_terminal.get('displayName') or top_terminal.get('hostname') or top_terminal.get('ip')} 有 {top_terminal.get('connections')} 条跟踪连接。",
+            "核对这是预期负载、下载软件、P2P，还是异常终端。",
             "snapshot.terminals",
-            [{"label": "ip", "value": top_terminal.get("ip", "-")}, {"label": "connections", "value": top_terminal.get("connections", 0)}],
+            [{"label": "IP", "value": top_terminal.get("ip", "-")}, {"label": "连接数", "value": top_terminal.get("connections", 0)}],
         )
 
     security_alerts = as_list(security.get("alerts"))
@@ -2298,28 +2427,46 @@ def build_health_findings(snapshot):
             "security.log_alerts",
             "warning" if len(security_alerts) >= 10 else "info",
             "security",
-            "Security-related log alerts are present",
-            f"{len(security_alerts)} firewall/warning/error log item(s) are visible.",
-            "Review log context and rule hit counters as read-only evidence.",
+            "存在安全相关日志告警",
+            f"当前可见 {len(security_alerts)} 条防火墙、警告或错误日志。",
+            "以只读方式核对日志上下文和规则命中计数。",
             "snapshot.security.alerts",
-            [{"label": "sample", "value": compact_text(as_dict(security_alerts[0]).get("message"))}],
+            [{"label": "样本", "value": compact_text(as_dict(security_alerts[0]).get("message"))}],
         )
 
     actions.sort(key=lambda row: (ACTION_SEVERITY_RANK.get(row["severity"], 99), row["priority"]))
-    actions = actions[:STATUS_FINDINGS_LIMIT]
+    actions = actions[: min(STATUS_FINDINGS_LIMIT, 20)]
     for index, action in enumerate(actions, start=1):
         action["priority"] = index
     counts = {severity: 0 for severity in ACTION_SEVERITY_RANK}
     for action in actions:
         counts[action["severity"]] = counts.get(action["severity"], 0) + 1
     status = "critical" if counts.get("critical") else "warning" if counts.get("warning") else "ok"
+    observed_at = optional_rfc3339_timestamp(snapshot.get("updatedAt"))
+    snapshot_status = str(snapshot.get("status") or "").strip().lower()
+    source_status = (
+        "ok"
+        if snapshot_status == "ok"
+        else "degraded"
+        if observed_at
+        else "failed"
+        if snapshot_status == "error"
+        else "unknown"
+    )
+    evidence_mode = "current" if source_status == "ok" and observed_at else "historical" if observed_at else "unavailable"
     return {
+        "schemaVersion": 1,
+        "kind": "health-findings",
         "status": status,
         "readOnly": True,
         "generatedAt": format_iso_now(),
-        "sourceUpdatedAt": snapshot.get("updatedAt"),
-        "sourceStatus": snapshot.get("status"),
-        "limit": STATUS_FINDINGS_LIMIT,
+        "observedAt": observed_at,
+        "sourceUpdatedAt": observed_at,
+        "source": "snapshot-health-analysis",
+        "evidenceMode": evidence_mode,
+        "coverage": "bounded-sample" if observed_at else "unavailable",
+        "sourceStatus": source_status,
+        "limit": min(STATUS_FINDINGS_LIMIT, 20),
         "counts": counts,
         "topFinding": actions[0] if actions else None,
         "findings": actions,
@@ -2809,13 +2956,14 @@ def nikki_probe():
                 rows = []
                 for name, provider in providers.items():
                     rules = provider.get("ruleCount") or provider.get("rule-count") or len(provider.get("rules") or [])
+                    provider_updated_at = optional_rfc3339_timestamp(provider.get("updatedAt") or provider.get("updated-at"))
                     rows.append(
                         {
                             "name": name,
                             "type": provider.get("type", "-"),
                             "vehicleType": provider.get("vehicleType") or provider.get("vehicle-type") or "-",
                             "ruleCount": to_int(rules),
-                            "updatedAt": provider.get("updatedAt") or provider.get("updated-at") or "-",
+                            "updatedAt": provider_updated_at,
                         }
                     )
                 rows.sort(key=lambda row: row["ruleCount"], reverse=True)
@@ -2830,9 +2978,13 @@ def nikki_probe():
 
 bind_snapshot_runtime(sys.modules[__name__])
 bind_collector_runtime(sys.modules[__name__])
+bind_interface_metrics_runtime(sys.modules[__name__])
 
 
 class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
+    compute_rates = InterfaceMetricsMixin.compute_rates
+    compute_interface_quality = InterfaceMetricsMixin.compute_interface_quality
+
     def __init__(self):
         self.router_transport = RouterCollectorTransport(
             get_ready_router_config,
@@ -2895,9 +3047,16 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
         self.detail_failures = {}
         self.static_rest = {}
         self.static_failures = {}
-        self.dns_static_cache = {"rows": [], "count": 0, "fetched_at": 0.0, "updatedAt": None}
+        self.dns_static_cache = {
+            "rows": [],
+            "count": 0,
+            "fetched_at": 0.0,
+            "updatedAt": None,
+            "revision": None,
+        }
+        self.dns_static_refresh_lock = threading.Lock()
         self.connection_summary = {
-            "counts": {"all": 0, "tcp": None, "udp": None, "icmp": None},
+            "counts": {"all": None, "tcp": None, "udp": None, "icmp": None},
             "protocolUpdatedAt": None,
             "protocolError": None,
             "protocolLastErrorAt": None,
@@ -2915,10 +3074,6 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
         self.static_last_error_at = None
         self.static_duration_seconds = None
         self.history = {
-            "cpu": deque(maxlen=HISTORY_LIMIT),
-            "memory": deque(maxlen=HISTORY_LIMIT),
-            "disk": deque(maxlen=HISTORY_LIMIT),
-            "timestamps": deque(maxlen=HISTORY_LIMIT),
             "resourceSamples": deque(maxlen=HISTORY_LIMIT),
             "trafficSamples": deque(maxlen=HISTORY_LIMIT),
         }
@@ -2969,9 +3124,15 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
             self.static_error = None
             self.static_last_error_at = None
             self.static_duration_seconds = None
-            self.dns_static_cache = {"rows": [], "count": 0, "fetched_at": 0.0, "updatedAt": None}
+            self.dns_static_cache = {
+                "rows": [],
+                "count": 0,
+                "fetched_at": 0.0,
+                "updatedAt": None,
+                "revision": None,
+            }
             self.connection_summary = {
-                "counts": {"all": 0, "tcp": None, "udp": None, "icmp": None},
+                "counts": {"all": None, "tcp": None, "udp": None, "icmp": None},
                 "protocolUpdatedAt": None,
                 "protocolError": None,
                 "protocolLastErrorAt": None,
@@ -2985,12 +3146,8 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
                 "detailDurationSeconds": None,
             }
             self.history = {
-                "cpu": deque(maxlen=HISTORY_LIMIT),
-                "memory": deque(maxlen=HISTORY_LIMIT),
-                "disk": deque(maxlen=HISTORY_LIMIT),
-                "timestamps": deque(maxlen=HISTORY_LIMIT),
                 "resourceSamples": deque(maxlen=HISTORY_LIMIT),
-            "trafficSamples": deque(maxlen=HISTORY_LIMIT),
+                "trafficSamples": deque(maxlen=HISTORY_LIMIT),
             }
             self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
             self.connection_protocol_last_scan_at = 0.0
@@ -3203,12 +3360,11 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
                 ) from ssh_exc
 
     def fetch_connection_protocol_counts(self):
-        tracking = self.fetch_connection_tracking_summary()
         return {
             "tcp": None,
             "udp": None,
             "icmp": None,
-            "all": tracking["total"],
+            "all": None,
         }
 
     def parse_connection_terse_line(self, line):
@@ -3226,7 +3382,7 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
     def normalize_connection_search_row(self, row):
         return self.connection_evidence.normalize_search_row(row)
 
-    def fetch_connection_search(self, target_ip, source_ip=None, limit=80):
+    def fetch_connection_search(self, target_ip, source_ip=None, limit=CONNECTION_SEARCH_MAX_LIMIT):
         target = str(ipaddress.ip_address(str(target_ip or "").strip()))
         source = str(ipaddress.ip_address(str(source_ip or "").strip())) if source_ip else None
         safe_limit = max(1, min(to_int(limit, 80), CONNECTION_SEARCH_MAX_LIMIT))
@@ -3266,22 +3422,64 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
                 continue
             if source and not self.connection_row_matches_ip(row, source):
                 continue
-            rows.append(self.normalize_connection_search_row(row))
+            normalized = self.normalize_connection_search_row(row)
+            rows.append(
+                {
+                    "srcIp": normalized.get("srcIp") or "",
+                    "dstIp": normalized.get("dstIp") or "",
+                    "protocol": normalized.get("protocol") or "other",
+                    "timeout": normalized.get("timeout") or "",
+                    "origRateBps": normalized.get("origRate"),
+                    "replRateBps": normalized.get("replRate"),
+                }
+            )
             if len(rows) >= safe_limit:
                 break
+        truncated_by_rows = len(rows) >= safe_limit
+        transport_complete = bool(capture.get("complete"))
+        captured_bytes = to_int(capture.get("capturedBytes"), 0)
+        truncated_by_bytes = captured_bytes >= CONNECTION_SEARCH_STREAM_MAX_BYTES
+        complete = transport_complete and not truncated_by_rows and not truncated_by_bytes
+        observed_at = format_iso_now()
         return {
+            "schemaVersion": 1,
+            "kind": "connection-search",
             "targetIp": target,
             "sourceIp": source,
             "limit": safe_limit,
+            "query": {"targetIp": target, "sourceIp": source},
+            "page": {
+                "requestedLimit": safe_limit,
+                "returnedCount": len(rows),
+                "maxLimit": CONNECTION_SEARCH_MAX_LIMIT,
+            },
             "matchCount": len(rows),
             "rows": rows,
             "transport": "ssh",
             "readOnly": True,
+            "generatedAt": observed_at,
+            "observedAt": observed_at,
+            "evidenceMode": "current",
+            "source": "routeros-ssh",
+            "sourceStatus": "ok" if transport_complete else "degraded",
+            # This endpoint is a point-in-time, row-bounded query.  Even when
+            # the SSH stream reports a clean end, it is not an inventory or a
+            # durable claim about all connections after the observation.
+            "coverage": "bounded-sample",
             "capture": {
-                "complete": capture.get("complete"),
+                "complete": complete,
                 "capturedBytes": capture.get("capturedBytes"),
                 "firstOutputSeconds": capture.get("firstOutputSeconds"),
-                "truncatedByLimit": len(rows) >= safe_limit,
+                "truncatedByRows": truncated_by_rows,
+                "truncatedByBytes": truncated_by_bytes,
+                # ssh_capture does not expose a reliable distinction between
+                # a quiet-window stop and a timeout.  Preserve that unknown
+                # instead of inventing a timeout cause.
+                "timedOut": False if transport_complete or truncated_by_bytes else None,
+                "incompleteTransport": not transport_complete,
+                # Retain the legacy field while consumers move to the
+                # explicit row/byte/timeout boundary above.
+                "truncatedByLimit": truncated_by_rows,
             },
         }
 
@@ -3374,20 +3572,33 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
                 },
                 timeout=DNS_STATIC_FULL_REST_TIMEOUT,
                 allow_redirects=False,
+                stream=True,
             )
-            if 300 <= response.status_code < 400:
-                raise RuntimeError("RouterOS REST redirect was refused; configure the exact HTTPS endpoint")
-            response.raise_for_status()
-            payload = response.json()
+            try:
+                if 300 <= response.status_code < 400:
+                    raise RuntimeError("RouterOS REST redirect was refused; configure the exact HTTPS endpoint")
+                response.raise_for_status()
+                payload = read_bounded_json_response(
+                    response,
+                    max_bytes=DNS_STATIC_FULL_REST_MAX_BYTES,
+                    label="RouterOS DNS static REST response",
+                )
+            finally:
+                response.close()
             rows = payload if isinstance(payload, list) else ([payload] if payload else [])
             normalized_rows = self.normalize_dns_static_rows(rows)
             fetched_at = time.time()
+            observed_at = format_iso_now()
+            revision = hashlib.sha256(
+                json.dumps(normalized_rows, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
             with self.lock:
                 self.dns_static_cache = {
                     "rows": normalized_rows,
                     "count": len(normalized_rows),
                     "fetched_at": fetched_at,
-                    "updatedAt": format_iso_now(),
+                    "updatedAt": observed_at,
+                    "revision": revision,
                 }
                 self.static_rest["dns_static_meta"] = {
                     **copy.deepcopy(self.static_rest.get("dns_static_meta", {})),
@@ -3406,14 +3617,25 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
         with self.lock:
             cached_rows = copy.deepcopy(self.dns_static_cache.get("rows", []))
             fetched_at = float(self.dns_static_cache.get("fetched_at") or 0.0)
-        cache_valid = cached_rows and (now - fetched_at) < DNS_STATIC_CACHE_TTL
+        cache_valid = fetched_at > 0 and (now - fetched_at) < DNS_STATIC_CACHE_TTL
         if force_refresh or not cache_valid:
-            try:
-                return self.fetch_dns_static_full_rest()
-            except Exception:
-                if cached_rows:
+            # A cache miss can be triggered by many concurrent browser page
+            # requests.  Recheck under one narrow refresh lock so only one
+            # full RouterOS REST enumeration is in flight.
+            with self.dns_static_refresh_lock:
+                now = time.time()
+                with self.lock:
+                    cached_rows = copy.deepcopy(self.dns_static_cache.get("rows", []))
+                    fetched_at = float(self.dns_static_cache.get("fetched_at") or 0.0)
+                cache_valid = fetched_at > 0 and (now - fetched_at) < DNS_STATIC_CACHE_TTL
+                if not force_refresh and cache_valid:
                     return cached_rows
-                raise
+                try:
+                    return self.fetch_dns_static_full_rest()
+                except Exception:
+                    if fetched_at > 0:
+                        return cached_rows
+                    raise
         return cached_rows
 
     def fetch_dns_static_preview(self, total_count=0):
@@ -3451,6 +3673,85 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
             with self.lock:
                 preview_rows = copy.deepcopy(self.static_rest.get("dns_static", []))
             return preview_rows[safe_offset : safe_offset + safe_limit]
+
+    def fetch_dns_static_evidence_page(self, offset=0, page_size=DNS_STATIC_PAGE_LIMIT):
+        """Return a page plus its collection generation; never infer inventory completeness."""
+        safe_offset = max(to_int(offset, 0), 0)
+        safe_page_size = max(1, min(to_int(page_size, DNS_STATIC_PAGE_LIMIT), DNS_STATIC_MAX_PAGE_LIMIT))
+        now = time.time()
+        with self.lock:
+            cache = copy.deepcopy(self.dns_static_cache)
+        cache_fetched_at = float(cache.get("fetched_at") or 0.0)
+        cache_valid = cache_fetched_at > 0 and (now - cache_fetched_at) < DNS_STATIC_CACHE_TTL
+        source = "rest-cache" if cache_valid else None
+        rows = cache.get("rows", []) if cache_valid else None
+
+        if rows is None:
+            try:
+                with self.dns_static_refresh_lock:
+                    now = time.time()
+                    with self.lock:
+                        cache = copy.deepcopy(self.dns_static_cache)
+                    cache_fetched_at = float(cache.get("fetched_at") or 0.0)
+                    cache_valid = cache_fetched_at > 0 and (now - cache_fetched_at) < DNS_STATIC_CACHE_TTL
+                    if cache_valid:
+                        rows = cache.get("rows", [])
+                        source = "rest-cache"
+                    else:
+                        rows = self.fetch_dns_static_full_rest()
+                        with self.lock:
+                            cache = copy.deepcopy(self.dns_static_cache)
+                        source = "rest-live"
+            except Exception:
+                try:
+                    preview_rows = self.fetch_dns_static_preview(self.get_dns_static_total_count())
+                except Exception:
+                    preview_rows = []
+                if preview_rows:
+                    rows = preview_rows
+                    source = "ssh-preview"
+                    cache = {"updatedAt": None, "revision": None, "count": len(rows)}
+                else:
+                    rows = []
+                    source = "unavailable"
+                    cache = {"updatedAt": None, "revision": None, "count": None}
+
+        observed_at = optional_rfc3339_timestamp(cache.get("updatedAt"))
+        evidence_mode = "current" if source == "rest-live" and observed_at else "historical" if observed_at else "unavailable"
+        total_count = cache.get("count") if source in {"rest-live", "rest-cache"} else len(rows)
+        return {
+            "schemaVersion": 1,
+            "kind": "dns-static",
+            "readOnly": True,
+            "generatedAt": format_iso_now(),
+            "observedAt": observed_at,
+            "evidenceMode": evidence_mode,
+            "sourceStatus": "ok" if source == "rest-live" else "degraded" if source in {"rest-cache", "ssh-preview"} else "failed",
+            "source": source,
+            # Even a live REST inventory is returned to the browser as a page;
+            # only the server has seen the full enumeration.
+            "coverage": "page" if source in {"rest-live", "rest-cache"} else "preview" if source == "ssh-preview" else "unavailable",
+            "revision": cache.get("revision") if source in {"rest-live", "rest-cache"} else None,
+            "totalCount": total_count,
+            "offset": safe_offset,
+            "limit": safe_page_size,
+            "visibleRuleCount": len(rows[safe_offset : safe_offset + safe_page_size]),
+            "page": {
+                "offset": safe_offset,
+                "pageSize": safe_page_size,
+                "returnedCount": len(rows[safe_offset : safe_offset + safe_page_size]),
+                "totalCount": total_count,
+                # Bind each page to the same immutable collection generation
+                # exposed at the response root.  Clients can then reject a
+                # mixed-generation page instead of silently combining rows
+                # from different refreshes.
+                "revision": cache.get("revision") if source in {"rest-live", "rest-cache"} else None,
+                "maxPageSize": DNS_STATIC_MAX_PAGE_LIMIT,
+                "maxVisibleRows": 1000,
+                "maxVisiblePages": 20,
+            },
+            "rows": rows[safe_offset : safe_offset + safe_page_size],
+        }
 
     def get_dns_static_total_count(self):
         with self.lock:
@@ -3497,156 +3798,6 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
             "detailLastErrorAt": detail_last_error_at,
             "detailDurationSeconds": detail_duration_seconds,
         }
-
-    def compute_rates(self, interfaces, fresh_counter_sample=False):
-        if not fresh_counter_sample:
-            with self.lock:
-                return copy.deepcopy(self.current_rates)
-        ts = time.time()
-        with self.lock:
-            previous = copy.deepcopy(self.prev_counters)
-            previous_ts = self.prev_ts
-            previous_rates = copy.deepcopy(self.current_rates)
-            zero_candidates = copy.deepcopy(self.zero_rate_candidates)
-        interval = max(ts - previous_ts, 1) if previous_ts else 1
-        rates = {}
-        current = {}
-        sample_ready = False
-        counter_reset = False
-
-        def previous_direction_rate(interface_name, direction):
-            value = previous_rates.get(interface_name, {}).get(f"{direction}Bps")
-            try:
-                return float(value)
-            except (TypeError, ValueError):
-                return 0.0
-
-        def confirm_zero_rate(interface_name, direction, raw_rate, has_baseline, reset):
-            if reset:
-                zero_candidates.setdefault(interface_name, {})[direction] = 0
-                return None
-            if not has_baseline:
-                zero_candidates.setdefault(interface_name, {})[direction] = 0
-                return None
-            previous_rate = previous_direction_rate(interface_name, direction)
-            if raw_rate == 0 and previous_rate > 0:
-                direction_counts = zero_candidates.setdefault(interface_name, {})
-                direction_counts[direction] = to_int(direction_counts.get(direction), 0) + 1
-                if direction_counts[direction] < RATE_ZERO_CONFIRM_SAMPLES:
-                    return previous_rate
-                return 0
-            zero_candidates.setdefault(interface_name, {})[direction] = 0
-            return raw_rate
-
-        for item in interfaces:
-            name = item.get("name")
-            if not name:
-                continue
-            rx = to_int(item.get("rx-byte"))
-            tx = to_int(item.get("tx-byte"))
-            current[name] = (rx, tx)
-            has_baseline = name in previous
-            prev_rx, prev_tx = previous.get(name, (rx, tx))
-            reset = has_baseline and (rx < prev_rx or tx < prev_tx)
-            counter_reset = counter_reset or reset
-            sample_ready = sample_ready or (has_baseline and not reset)
-            raw_rx_bps = max(rx - prev_rx, 0) / interval if has_baseline and not reset else None
-            raw_tx_bps = max(tx - prev_tx, 0) / interval if has_baseline and not reset else None
-            rates[name] = {
-                "rxBps": confirm_zero_rate(name, "rx", raw_rx_bps, has_baseline, reset),
-                "txBps": confirm_zero_rate(name, "tx", raw_tx_bps, has_baseline, reset),
-                "rateSampleReady": has_baseline and not reset,
-                "counterReset": reset,
-            }
-        with self.lock:
-            self.prev_counters = current
-            self.prev_ts = ts
-            self.current_rates = copy.deepcopy(rates)
-            self.zero_rate_candidates = zero_candidates
-            self.last_counter_sample_at = format_iso_now()
-            self.last_rate_sample_ready = sample_ready
-            self.last_counter_reset = counter_reset
-            if sample_ready:
-                self.rate_history_sample_count += 1
-        return rates
-
-    def compute_interface_quality(self, interfaces, fresh_counter_sample=False):
-        if not fresh_counter_sample:
-            with self.lock:
-                return copy.deepcopy(self.current_interface_quality)
-
-        updated_at = format_iso_now()
-        with self.lock:
-            previous = copy.deepcopy(self.prev_quality_counters)
-            sample_count = self.interface_quality_sample_count + 1
-
-        current = {}
-        quality = {}
-        for item in interfaces:
-            name = item.get("name")
-            if not name:
-                continue
-            counters = {
-                "rxPackets": to_int(item.get("rx-packet")),
-                "txPackets": to_int(item.get("tx-packet")),
-                "rxDrop": to_int(item.get("rx-drop")),
-                "txDrop": to_int(item.get("tx-drop")),
-                "rxError": to_int(item.get("rx-error")),
-                "txError": to_int(item.get("tx-error")),
-            }
-            current[name] = counters
-            prev = previous.get(name)
-            has_baseline = isinstance(prev, dict)
-            counter_reset = bool(
-                has_baseline
-                and any(counters[key] < to_int(prev.get(key)) for key in counters)
-            )
-            if has_baseline and not counter_reset:
-                delta = {key: max(counters[key] - to_int(prev.get(key)), 0) for key in counters}
-            else:
-                delta = {key: 0 for key in counters}
-
-            packet_total = counters["rxPackets"] + counters["txPackets"]
-            packet_delta = delta["rxPackets"] + delta["txPackets"]
-            drop_total = counters["rxDrop"] + counters["txDrop"]
-            error_total = counters["rxError"] + counters["txError"]
-            drop_delta = delta["rxDrop"] + delta["txDrop"]
-            error_delta = delta["rxError"] + delta["txError"]
-            loss_rate = (drop_delta / packet_delta) if packet_delta > 0 else None
-            error_rate = (error_delta / packet_delta) if packet_delta > 0 else None
-            is_derived = interface_is_derived(name, item.get("type"))
-            quality[name] = {
-                "packetTotal": packet_total,
-                "packetDelta": packet_delta,
-                "dropTotal": drop_total,
-                "errorTotal": error_total,
-                "dropDelta": drop_delta,
-                "errorDelta": error_delta,
-                "rxDropDelta": delta["rxDrop"],
-                "txDropDelta": delta["txDrop"],
-                "rxErrorDelta": delta["rxError"],
-                "txErrorDelta": delta["txError"],
-                "lossRate": loss_rate,
-                "errorRate": error_rate,
-                "qualityUpdatedAt": updated_at,
-                "qualitySampleCount": sample_count,
-                "qualitySampleReady": has_baseline and not counter_reset,
-                "qualityCounterReset": counter_reset,
-                "isDerivedInterface": is_derived,
-                "isLogicalInterface": is_derived,
-                "qualityDisplayWeight": 0.35 if is_derived else 1.0,
-                "qualityEvidenceLevel": "logical" if is_derived else "primary",
-                "qualityParent": interface_parent_hint(item),
-                "logicalPairKey": interface_logical_pair_key(item),
-                "qualityGroupKey": interface_quality_group_key(item),
-            }
-
-        with self.lock:
-            self.prev_quality_counters = current
-            self.current_interface_quality = copy.deepcopy(quality)
-            self.last_quality_sample_at = updated_at
-            self.interface_quality_sample_count = sample_count
-        return quality
 
     def get_wan_latency(self, force=False):
         now = time.monotonic()

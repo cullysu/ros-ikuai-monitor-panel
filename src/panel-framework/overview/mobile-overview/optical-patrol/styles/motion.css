@@ -1,0 +1,57 @@
+.op__object-action,
+.op__followup {
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .op__object-action:hover,
+  .op__followup:hover {
+    background: color-mix(in srgb, var(--op-petrol) 6%, transparent);
+  }
+}
+
+.op__object-action:active,
+.op__followup:active {
+  background: color-mix(in srgb, var(--op-petrol) 11%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .op *,
+  .op *::before,
+  .op *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .op__chrome,
+  .op__task-nav {
+    backdrop-filter: none;
+    background: var(--op-canvas-raised);
+    border-color: var(--op-line-strong);
+    box-shadow: 0 1px 0 var(--op-line-strong);
+  }
+
+  .op__chrome::after,
+  .op__task-nav::after {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .op__chrome,
+  .op__task-nav {
+    backdrop-filter: none;
+    background: Canvas;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+
+  .op__chrome::after,
+  .op__task-nav::after {
+    display: none;
+  }
+}

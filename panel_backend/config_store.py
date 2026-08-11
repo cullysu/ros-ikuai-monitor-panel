@@ -119,9 +119,11 @@ class RouterProfileStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         normalized = []
         seen = set()
-        for raw in entries:
+        for index, raw in enumerate(entries):
             entry = self.normalize_entry(raw)
-            if not entry or entry["id"] in seen:
+            if not entry:
+                raise RouterProfileStoreCorruptError(self.path, f"entry {index} is invalid")
+            if entry["id"] in seen:
                 continue
             seen.add(entry["id"])
             normalized.append(entry)

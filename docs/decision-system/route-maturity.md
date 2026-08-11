@@ -4,7 +4,8 @@
 - validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
 - supersededBy: `null`
 - sourceOfTruth: `src/panel-framework/routes/panelRoutes.ts` plus `src/panel-framework/routes/panelRouteMaturity.ts`
-- strictGate: `tools/check-route-maturity-contract.js` (default mode is release-strict; `--contract-only` is structural inspection only)
+- structuralGate: `tools/check-route-maturity-contract.js --mode=structural` (validates every declared bounded-readonly/unavailable contract without promoting it)
+- completePromotionGate: `tools/check-route-maturity-contract.js --mode=complete --routes=<route> --acceptance-record=<absolute-external-path> --acceptance-keyring=<absolute-external-path> --candidate-commit=<40-hex-sha> --evidence-digest=sha256:<64-hex>` (requires independent Accessibility and signed external acceptance for one requested complete route)
 
 Maturity describes implemented operational depth, not URL existence.
 
@@ -39,9 +40,14 @@ Maturity describes implemented operational depth, not URL existence.
 | readonlyDiagnostics | bounded-readonly | Read-only diagnostics workspace |
 | more | unavailable | Tool directory, not a module |
 
-No route is currently labelled `complete`. The structural registry covers all 19 routes with `missing=0`, `extra=0`, `violations=0`, but the strict gate remains `pass=false` while operational routes have pending independent Accessibility/acceptance. Promotion requires direct evidence for every complete criterion and independent acceptance; matrix navigation coverage alone cannot promote a route. `evidenceRefs` are checked for file existence and source tokens by the contract; they do not replace human acceptance.
+No route is currently labelled `complete`. The structural registry covers all 19 routes with `missing=0`, `extra=0`, `violations=0`; this structural gate may pass while `acceptanceComplete=false` because the public claim is explicitly bounded-readonly rather than complete. Promotion requires direct evidence for every complete criterion and independent acceptance; matrix navigation coverage alone cannot promote a route. `evidenceRefs` are checked for file existence and source tokens by the contract; they do not replace human acceptance.
 
 ## External acceptance provenance
 
-The expected SHA is trusted only when it equals `git rev-parse HEAD` in a clean worktree. Missing Git identity, dirty worktree, missing key material, stale commit, malformed records, mismatched route identity, symlink/path escape or invalid signatures keep strict acceptance red.
-`acceptanceRefs` are not accepted merely because a file exists under the dedicated path. A candidate record must use the fixed-field `schema-version: 1` format, identify the repository, route, exact reviewed candidate commit, reviewer, evidence digest, key-id, declare `signature-algorithm: ed25519`, and carry a signature over the canonical record content. The checker verifies the current candidate SHA, Ed25519 key type, fixed trusted-key fingerprint, path containment and real-file boundary before accepting it. The trusted fingerprint allowlist is empty until a real independent reviewer key is explicitly enrolled; environment variables may supply key material and expected SHA but cannot alter that allowlist. Missing key material, stale commit, malformed records, mismatched route identity, symlink/path escape or invalid signatures keep strict acceptance red. No product code may create or self-sign an acceptance record.
+The exact candidate is the explicit `--candidate-commit` value, not `HEAD`; the checker requires a resolvable 40-hex Git commit object but deliberately does not require the current worktree to be clean. This lets an independent Route Owner/real AT sign a candidate tree without making their signed record part of that same tree.
+
+For a complete-promotion invocation, the acceptance record and its trusted keyring are both mandatory explicit **absolute paths outside this repository**. Repository-local paths, relative paths, symlinks, malformed keyrings, non-Ed25519 keys, unknown key IDs, route mismatch, candidate-SHA mismatch, evidence-digest mismatch, and invalid signatures remain red. `acceptanceRefs` remain a structural declaration of an external-acceptance boundary; the checker never reads a signed record from them or from the tracked `docs/` tree.
+
+The signed fixed-field `schema-version: 1` record binds repository, route, independent result, the exact reviewed candidate commit, reviewer, key ID, evidence digest, `ed25519`, and the signature over the canonical record bytes. The expected digest is provided as `--evidence-digest`, so a valid signature cannot be reused for different evidence. The external keyring is the explicit trust root for that invocation; no environment-provided key, in-repository fingerprint allowlist, or production private key is used. The standalone verifier is `tools/check-route-maturity-contract.js --verify-external-acceptance --route=<route>` with the same four external inputs. See [external acceptance format](external-acceptance/README.md) for the file formats.
+
+No route is promoted merely by this signature path: the structural registry and all complete criteria still apply. In particular, a `bounded-readonly` route remains bounded-readonly even when a testable external signature verifies.

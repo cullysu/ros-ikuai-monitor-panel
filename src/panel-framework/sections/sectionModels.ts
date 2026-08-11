@@ -163,6 +163,74 @@ function collectionCount(collection: CollectionState): string {
   return collection.present ? String(collection.rows.length) : "未取得";
 }
 
+function connectionDetailCoverageMetric(
+  connections: UnknownRecord,
+  activeCollection: CollectionState,
+  reportedTotal: number | null,
+): SectionMetric {
+  if (!activeCollection.present) {
+    return {
+      label: "活动明细样本",
+      value: "未取得",
+      note: "活动明细集合未返回",
+      tone: "missing",
+    };
+  }
+
+  const activeMeta = record(record(connections.meta).active);
+  const metadataTotal = number(activeMeta.totalCount ?? activeMeta.actualCount);
+  const declaredShown = number(activeMeta.shownCount);
+  const renderedCount = activeCollection.rows.length;
+  const total = reportedTotal ?? metadataTotal;
+  const metadataMismatch = (
+    (reportedTotal !== null && metadataTotal !== null && reportedTotal !== metadataTotal)
+    || (declaredShown !== null && declaredShown !== renderedCount)
+  );
+  const sampled = activeMeta.sampled === true;
+  const hasMore = activeMeta.hasMore === true;
+  const explicitlyComplete = (
+    activeMeta.sampled === false
+    && activeMeta.hasMore === false
+    && total !== null
+    && renderedCount === total
+    && !metadataMismatch
+  );
+
+  if (metadataMismatch) {
+    return {
+      label: "活动明细样本",
+      value: total === null ? `${renderedCount} 条` : `${renderedCount} / ${total}`,
+      note: "覆盖元数据与可见行不一致",
+      tone: "warn",
+    };
+  }
+
+  if (sampled || hasMore) {
+    return {
+      label: "活动明细样本",
+      value: total === null ? `${renderedCount} 条` : `${renderedCount} / ${total}`,
+      note: "非全量枚举 · 活动速率样本",
+      tone: "warn",
+    };
+  }
+
+  if (explicitlyComplete) {
+    return {
+      label: "活动明细样本",
+      value: `${renderedCount} / ${total}`,
+      note: "快照声明完整枚举",
+      tone: "trust",
+    };
+  }
+
+  return {
+    label: "活动明细样本",
+    value: total === null ? `${renderedCount} 条` : `${renderedCount} / ${total}`,
+    note: total === null ? "总连接数未取得 · 完整性未声明" : "完整性未声明",
+    tone: "warn",
+  };
+}
+
 function collectionTone(collection: CollectionState, nonEmptyTone: OverviewTone = "trust"): OverviewTone {
   return collection.present && collection.rows.length ? nonEmptyTone : collection.present ? "trust" : "missing";
 }
@@ -285,7 +353,13 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord, evi
   const directTraffic = firstNumber(row.totalRate, row.rate, row.bytes, row.value);
   const trafficBps = directTraffic ?? observedTotal(row.downRate, row.upRate, row.rxRate, row.txRate);
   const connections = firstNumber(row.connections, row.count);
-  const timestampText = rawString(row.time, row.lastConfirmed, row.timestamp, row.at);
+  const timestampText = rawString(
+    row.observedAt,
+    row.lastConfirmed,
+    row.timestamp,
+    row.at,
+    route === "logs" || route === "serviceLogs" ? "" : row.time,
+  );
   const timestamp = timestampText ? parseRfc3339Timestamp(timestampText) : null;
   const address = rawString(row.address, row.ip, row.source, row.localIp, row.srcAddress, row.src);
   const targetAddress = rawString(row.destination, row.remoteIp, row.dstAddress, row.dst);
@@ -736,15 +810,16 @@ function connectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Se
     ? activeCollection.present
     : protocolCollection.present || topIpCollection.present;
   const total = number(connections.total);
+  const detailCoverage = connectionDetailCoverageMetric(connections, activeCollection, total);
   return {
     ...base(route, snapshot),
     metrics: [
       { label: "连接总数", value: total === null ? "未取得" : String(total), tone: total === null ? "missing" : "trust" },
-      { label: "当前明细", value: activeCollection.present ? String(active.length) : "未取得", tone: activeCollection.present ? "trust" : "missing" },
+      detailCoverage,
       { label: "协议分组", value: protocolCollection.present ? String(protocols.length) : "未取得", tone: protocolCollection.present ? "trust" : "missing" },
     ],
     tables: route === "connections"
-      ? [table(route, "活动连接", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, mapConnectionRow, collectionEmpty({ present: sourceObserved, rows: source }, "当前快照没有活动连接明细"))]
+      ? [table(route, "活动连接", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, mapConnectionRow, collectionEmpty({ present: sourceObserved, rows: source }, "当前快照没有活动连接明细"), `${detailCoverage.value} · ${detailCoverage.note}`)]
       : [
         table(route, "协议分布", [{ key: "protocol", label: "协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }, { key: "source", label: "采集来源" }], protocols, (item) => ({
           protocol: text(item.protocol || item.label || item.name),
@@ -850,7 +925,7 @@ function serviceLogModel(snapshot: OverviewRawSnapshot): SectionModel {
       { label: "分类记录", value: String(grouped.length), tone: grouped.length ? "trust" : "missing" },
       { label: "错误/警告", value: String(warningCount), tone: warningCount ? "warn" : "trust", note: "不等于服务当前健康" },
     ],
-    tables: [table("serviceLogs", "服务分类日志", [{ key: "category", label: "服务" }, { key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ category: serviceLogCategoryLabel(item.group), time: text(item.time), topics: text(item.topics), message: text(item.message) }), "没有可用于当前判断的服务日志", "按来源集合分开；分类缺失或没有记录不推断服务正常", { logs })],
+    tables: [table("serviceLogs", "服务分类日志", [{ key: "category", label: "服务" }, { key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ category: serviceLogCategoryLabel(item.group), time: text(item.observedAt), topics: text(item.topics), message: text(item.message) }), "没有可用于当前判断的服务日志", "按来源集合分开；分类缺失或没有记录不推断服务正常", { logs })],
   };
 }
 
@@ -871,24 +946,27 @@ function logModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionMo
       { label: "防火墙", value: collectionCount(firewallCollection), tone: !firewallCollection.present ? "missing" : firewallCollection.rows.length ? "warn" : "trust" },
       { label: "错误/警告", value: logCollectionObserved ? String(grouped.filter((item) => /error|warning|critical/i.test(text(item.topics, ""))).length) : "未取得", tone: logCollectionObserved ? "warn" : "missing" },
     ],
-    tables: [table(route, "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text(item.time), topics: text(item.topics), message: text(item.message) }), logCollectionObserved ? "当前快照没有日志记录" : "未取得日志集合", undefined, { logs })],
+    tables: [table(route, "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text(item.observedAt), topics: text(item.topics), message: text(item.message) }), logCollectionObserved ? "当前快照没有日志记录" : "未取得日志集合", undefined, { logs })],
   };
 }
 
 function diagnosticsModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const failures = diagnosticFailureRows(snapshot.meta);
   const channels = diagnosticChannelSummaries(snapshot.meta);
+  const observedChannels = channels.filter((channel) => channel.observed).length;
   return {
     ...base(route, snapshot, "历史诊断记录 · 不代表当前"),
     metrics: channels.map((channel) => ({
       label: channel.label,
-      value: channel.failureCount
+      value: !channel.observed
+        ? "未取得"
+        : channel.failureCount
         ? `${channel.failureCount} 条记录`
         : channel.error
           ? "错误记录"
-          : "无失败记录",
-      note: channel.observedAt ? shortTimestamp(channel.observedAt) : "时间未取得",
-      tone: channel.error ? "danger" : channel.failureCount ? "warn" : "missing",
+          : "已记录失败端点 0",
+      note: channel.observedAt ? shortTimestamp(channel.observedAt) : channel.observed ? "记录时间未取得" : "通道记录未取得",
+      tone: !channel.observed ? "missing" : channel.error ? "danger" : channel.failureCount ? "warn" : "trust",
     })),
     tables: [table(
       route,
@@ -900,7 +978,7 @@ function diagnosticsModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): S
         name: [text(item.name), text(item.endpoint, "")].filter(Boolean).join(" · "),
         message: text(item.message, "端点读取失败"),
       }),
-      "未记录端点失败",
+      observedChannels ? "已记录失败端点 0" : "未取得采集通道失败记录",
       "仅证明采集端点失败；不证明转发面或外部业务中断。",
     )],
   };

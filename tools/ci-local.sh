@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export CODEX_MEMORY_LIMIT_MB=2048
+export NODE_OPTIONS=--max-old-space-size=2048
+
 full_browser=0
 lite_browser=0
 skip_docker=0
@@ -29,6 +32,8 @@ done
 
 cd "$(dirname "$0")/.."
 
+npm ci
+
 python -m py_compile app.py panel_backend/rate_evidence.py tools/check-collector-regressions.py tools/check-decision-ledger-sync.py tools/test-decision-ledger-sync.py .agents/skills/router-panel-product-loop/scripts/merge_matrix_reports.py .agents/skills/router-panel-product-loop/scripts/release_checkpoint.py .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py
 python tools/check-collector-regressions.py
 python tools/test-decision-ledger-sync.py -v
@@ -51,6 +56,7 @@ node tools/check-acceptance-artifact-identity.js
 node tools/test-framework-asset-budget.js
 node tools/test-local-predeploy-matrix-contract.js
 node tools/test-public-release-semantic-gates.js
+npm run check:release-gates
 bash -n install.sh
 bash -n deploy_linux.sh
 bash tools/validate-public-install.sh

@@ -164,7 +164,7 @@ export interface OverviewRawInterfaceRow {
 }
 
 export interface OverviewRawConnections {
-  total?: number;
+  total?: number | null;
   active?: unknown[];
   topIps?: unknown[];
   [key: string]: unknown;
@@ -191,12 +191,12 @@ export interface OverviewCounts {
   wanOnline: number;
   wanOffline: number;
   wanUnknown: number;
-  interfacesTotal: number;
-  interfacesOnline: number;
-  interfacesDown: number;
-  interfacesUnknown: number;
+  interfacesTotal: number | null;
+  interfacesOnline: number | null;
+  interfacesDown: number | null;
+  interfacesUnknown: number | null;
   failures: number;
-  connections: number;
+  connections: number | null;
 }
 
 export interface OverviewDeviceFacts {
@@ -335,7 +335,7 @@ export interface OverviewFacts {
   interfaces: OverviewInterfaceState;
   failures: OverviewFailureState;
   connections: {
-    total: number;
+    total: number | null;
     active: number;
     topIps: number;
   };

@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step905 records short-landscape list ownership and removal of the empty inspector track; all exact-SHA evidence must be rebound, and formal trusted acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step940 supplemental local signoff closed / whole-product exact acceptance pending / release CLOSED**.
 
-这是当前面板工作的本地决策仓库镜像。Step905 修复 667×375 与 844×390 横屏在没有 inspector owner 时仍保留空白第二列的问题，并把列表满宽几何和两张原始截图纳入共享 runtime contract；focused 与 dirty runtime 通过，但提交后仍需按新 clean SHA 重新回绑，不能把 dirty 或历史 scoped 证据冒充当前独立签收。辅助技术正式验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step940 已在聚焦本地范围内关闭 supplemental 路由的 Product/Visual/Responsive/Accessibility P1，并绑定 16 张本地签署原图；这不是整个产品的 clean exact signoff。Step938 精确工件 `188e…` 的 full-63、responsive 10 零原点、Overview、缩放/交互证据和四角色结构化签收保持为历史本地证据，不能跨工件继续生效。完整 route/state/security、实体设备、真实 RouterOS soak、clean exact SHA、发布授权和远端 CL 未完成。任务 active、`blocked=false`，GitHub 未上传。
 
 - status: `current-mirror-entry`
-- currentStep: `905`
-- currentOutcome: `905:short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open`
-- currentBoundary: `905`
+- currentStep: `940`
+- currentOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
+- currentBoundary: `940`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -24,7 +24,7 @@ RouterOS / iKuai panel decision repository mirror. Step905 records short-landsca
 
 ## 当前边界
 
-当前产品结论：**FAIL**。本入口不重复容易过期的分数、候选 SHA 或矩阵数量；动态结论只以 `decision-system\current-state.md` 为准。历史远端 CL 只能证明对应不可变 SHA 的工程发行，不能替代本地工作树的产品、设计、视觉或发布签收。
+当前产品结论：**FAIL overall / Step940 supplemental local signoff closed / whole-product exact acceptance pending / release CLOSED**。Step940 只闭合 supplemental 路由的聚焦本地证据与独立评审；整个候选仍须在 clean exact SHA 上重新生成绑定证据并独立签收，且不能跳过 route/state/security、soak、授权或 remote CL。
 
 ## 过程怎么记录
 
@@ -42,18 +42,4 @@ RouterOS / iKuai panel decision repository mirror. Step905 records short-landsca
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Historical Step858: report quarantine is bounded to current-source references and remains fail-closed; release remains closed and task remains active.
-Step859: local scoped visual QA is P0/P1-clean for the declared screenshots and runtime contracts; formal acceptance and final exact-SHA rebind remain open, release remains closed and task remains active.
-Step860: exact-SHA local visual and matrix evidence is green in scope; readiness reaches the real route-maturity gate; formal acceptance, soak, CL and publication remain closed, release remains closed and task remains active.
-Step862: independent product/design/visual review findings are recorded; matrix aggregate families are isolated, runtime fixture identity is aligned with public matrix captures, and composite screenshot capture is stabilized. Formal gates remain closed and task remains active.
-Step868: the Overview probe now aggregates primary and marked secondary phone investigation actions without weakening thresholds; current exact-SHA Overview, route-responsive and route-state evidence is rebound. Readiness remains fail-closed at route maturity and task remains active.
-Step869: the runtime browser connectivity field is now named browserOnlineHint and explicitly cannot represent RouterOS/LAN reachability; same-origin snapshot requests continue while the hint is false. The source/governance change requires a fresh exact-SHA rebind, and the task remains active and blocked=false.
-Step874: the final local candidate has Overview 28/28, full route-responsive 532/532, bounded route-responsive 76/76, route-state 266/266, runtime 260/140/169 and scoped independent UI review P0/P1=0. Readiness still stops at route maturity; this documentation change requires a fresh exact-SHA rebind, and the task remains active and blocked=false.
-Step877: the visual packet generator now reads the authoritative current-state decision step by default instead of historical Step821; current release remains FAIL-closed, and formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
-
-Step878: the quarantine scanner now uses only the machine state's current evidence ledger for current report discovery; historical gate records remain audit-only and the release stays FAIL-closed.
-
-Step885: the normal verdict now has a red contract to lead with verified management evidence while preserving the unprobed business boundary; a 430px visual shard is required before independent signoff. Formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
-Step903: the 430px steady-state evidence boundary now finishes above fixed navigation by using wide-phone inline decision rows; focused 390/430 and the dirty 430 133-cell shard pass, while clean exact-SHA rebind and all formal gates remain open.
-Step904: ownerless mobile CSS and a fully shadowed desktop block are removed; fixed asset budgets and key normal/resource smoke pass, while clean exact-SHA rebind and all formal gates remain open.
-Step905: list-only domain workspaces now consume the full 667/844 short-landscape task area instead of reserving an empty inspector column; the shared runtime contract owns geometry and originals, while clean exact-SHA rebind and all formal gates remain open.
+Historical Step858–939 remains in `decision-system\historical-index.md` and the full decision log. Step940 is the current review-truth boundary. Historical green reports, superseded Pocket reviews and old VETO/PASS records never satisfy the open whole-product exact re-signoff or release boundary.

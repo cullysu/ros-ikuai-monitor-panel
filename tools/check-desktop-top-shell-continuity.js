@@ -10,11 +10,12 @@
  */
 const fs = require("node:fs");
 const path = require("node:path");
+const { readRuntimeReport, runtimeIdentityDetail } = require("./runtime-report-identity");
 
 const root = path.resolve(__dirname, "..");
-const reportPath = path.join(root, "_acceptance", "panel-runtime-browser", "report.json");
-const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
-const runtimeCheck = (report.checks || []).find(
+const runtimeBinding = readRuntimeReport(root);
+const report = runtimeBinding.current ? runtimeBinding.report : null;
+const runtimeCheck = (report?.checks || []).find(
   (check) => check.name === "1200/1366/1440 normal desktop follows Focus-left Signal-right then full-width current decisions",
 );
 const normal1366 = runtimeCheck?.detail?.normal1366 || null;
@@ -22,7 +23,8 @@ const normal1440 = runtimeCheck?.detail?.normal1440 || null;
 const firstViewportTopLimit = 90;
 const topOf = (item) => item?.verdictRect?.top ?? null;
 const checks = {
-  freshRuntimeIsBound: Boolean(normal1366 && normal1440 && report.generatedAt),
+  currentRuntimeArtifact: runtimeBinding.current,
+  freshRuntimeIsBound: Boolean(normal1366 && normal1440 && report?.generatedAt),
   desktopRuntimeToolbarIsPresent: [normal1366, normal1440].every((item) => item?.runtimeToolbar === "desktop"),
   overviewStatusStartsNearShell: [normal1366, normal1440].every((item) => {
     const top = topOf(item);
@@ -43,6 +45,7 @@ const result = {
     verdictTop1440: topOf(normal1440),
   },
   checks,
+  runtimeIdentity: runtimeIdentityDetail(runtimeBinding),
   failed,
   releaseEvidenceEligible: false,
 };

@@ -9,33 +9,26 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import type { OverviewTone } from "../overview";
 import {
   PANEL_ROUTES,
+  createPanelWorkspaceHistoryState,
   navigationContextFromLocation,
+  panelWorkspaceStateFromHistoryState,
   routeUrl,
   type PanelNavigationContext,
   type PanelRiskContext,
   type PanelRouteId,
+  type PanelWorkspaceHistoryState,
+  type PanelWorkspaceHistoryUpdate,
 } from "../routes/panelRoutes";
-import {
-  PANEL_MORE_ROUTE_GROUPS,
-  PANEL_MORE_ROUTES,
-  panelWorkspaceLabel,
-  panelWorkspaceTabs,
-} from "../routes/panelWorkspaceCatalog";
 import type { WorkspaceRow } from "./mobileWorkspaceRows";
 export { rowsFromModel, type WorkspaceRow } from "./mobileWorkspaceRows";
 
 
 
 
-
-export const MORE_ROUTE_GROUPS = PANEL_MORE_ROUTE_GROUPS;
-export const MORE_ROUTES = PANEL_MORE_ROUTES;
-export const routeTabs = panelWorkspaceTabs;
-export const workspaceLabel = panelWorkspaceLabel;
 
 export function routeIcon(route: PanelRouteId): LucideIcon {
   const group = PANEL_ROUTES[route].workspaceGroup;
@@ -64,6 +57,61 @@ export function rowMatchesRisk(risk: PanelRiskContext, row: WorkspaceRow): boole
 
 export function riskObjectCount(risk: PanelRiskContext, rows: WorkspaceRow[]): number {
   return rows.filter((row) => rowMatchesRisk(risk, row)).length;
+}
+
+function defaultWorkspaceHistoryState(
+  route: PanelRouteId,
+  defaultFilter: string,
+  defaultSort: string,
+  defaultSearch: string,
+): PanelWorkspaceHistoryState {
+  return createPanelWorkspaceHistoryState(route, {
+    search: defaultSearch,
+    filter: defaultFilter,
+    sort: defaultSort,
+  });
+}
+
+/** Keeps only bounded, route-owned presentation state on the current entry. */
+export function useMobileWorkspaceHistory(
+  route: PanelRouteId,
+  defaultFilter: string,
+  defaultSort: string,
+  defaultSearch: string,
+) {
+  const read = useCallback(() => {
+    const fallback = defaultWorkspaceHistoryState(route, defaultFilter, defaultSort, defaultSearch);
+    if (typeof window === "undefined") return fallback;
+    return panelWorkspaceStateFromHistoryState(window.history.state, route) || fallback;
+  }, [defaultFilter, defaultSearch, defaultSort, route]);
+  const [workspace, setWorkspace] = useState<PanelWorkspaceHistoryState>(read);
+  const [workspaceRestoreVersion, setWorkspaceRestoreVersion] = useState(0);
+
+  useLayoutEffect(() => {
+    const sync = () => {
+      const next = read();
+      setWorkspace(next);
+      setWorkspaceRestoreVersion((version) => version + 1);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, [read]);
+
+  const replaceWorkspace = useCallback((update: Partial<PanelWorkspaceHistoryUpdate>) => {
+    const previous = panelWorkspaceStateFromHistoryState(window.history.state, route)
+      || defaultWorkspaceHistoryState(route, defaultFilter, defaultSort, defaultSearch);
+    const next = createPanelWorkspaceHistoryState(route, { ...previous, ...update });
+    window.history.replaceState({
+      ...(window.history.state || {}),
+      panelRoute: route,
+      panelWorkspace: next,
+    }, "", routeUrl(route, window.location));
+    setWorkspace(next);
+    return next;
+  }, [defaultFilter, defaultSearch, defaultSort, route]);
+
+  return { workspace, workspaceRestoreVersion, replaceWorkspace };
 }
 
 function objectContextFromUrl(): PanelNavigationContext {
@@ -97,6 +145,7 @@ export function useObjectHistory(route: PanelRouteId) {
     const targetUrl = objectUrl(route, id);
     const state = { ...(window.history.state || {}), panelContextEntry: true, panelObject: id };
     window.history.pushState(state, "", targetUrl);
+    window.scrollTo({ left: 0, top: 0, behavior: "auto" });
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
   }, [route]);
 

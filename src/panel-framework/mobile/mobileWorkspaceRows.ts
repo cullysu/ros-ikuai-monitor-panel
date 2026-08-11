@@ -61,7 +61,14 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
       if (route === "logs" || route === "serviceLogs") {
         primary = values.message || primary;
         secondary = values.time || secondary;
-        trailing = values.topics || trailing;
+        // RouterOS emits comma-separated topic atoms. Preserve every atom but
+        // present them as a scan-friendly operations classification rather
+        // than an unprocessed CSV fragment.
+        trailing = (values.topics || trailing)
+          .split(",")
+          .map((topic) => topic.trim())
+          .filter(Boolean)
+          .join(" · ");
       } else if (route === "connections") {
         primary = values.source || primary;
         secondary = values.target || secondary;
@@ -106,9 +113,17 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
       }
 
       if (route === "trafficLoad" && evidence.kind === "resource") {
-        secondary = evidence.delta === null
+        const thresholdDelta = evidence.delta === null
           ? "阈值差未取得"
-          : `高出 ${evidence.delta} 个百分点 · 连续 ${evidence.trailing} / ${evidence.sampleCount}`;
+          : evidence.delta > 0
+            ? `高出阈值 ${evidence.delta} 个百分点`
+            : evidence.delta < 0
+              ? `低于阈值 ${Math.abs(evidence.delta)} 个百分点`
+              : "等于阈值";
+        const continuity = evidence.sampleCount > 0
+          ? `连续 ${evidence.trailing} / ${evidence.sampleCount}`
+          : "连续性未取得";
+        secondary = `${thresholdDelta} · ${continuity}`;
       }
 
       if ((route === "interfaces" || route === "lineStatus") && evidence.kind === "interface") {

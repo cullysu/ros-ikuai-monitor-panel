@@ -27,10 +27,32 @@ for (const file of walk(SOURCE_ROOT)) {
   });
 }
 
+const contractSources = [
+  path.join(SOURCE_ROOT, 'overview', 'mobile-overview', 'optical-patrol', 'opticalPatrolCollectionClaims.ts'),
+  path.join(SOURCE_ROOT, 'overview', 'mobile-overview', 'optical-patrol', 'opticalPatrolResourceClaims.ts'),
+];
+
+function requireSourcePattern(file, pattern, label) {
+  const source = fs.readFileSync(file, 'utf8');
+  if (!pattern.test(source)) {
+    failures.push(`${path.relative(ROOT, file).replace(/\\/g, '/')}:${label}`);
+  }
+}
+
+for (const file of contractSources) {
+  requireSourcePattern(file, /\.normalize\(["']NFKC["']\)[\s\S]{0,120}\.toLowerCase\(\)/, 'missing-locale-neutral-key-normalization');
+}
+
+const localeProbe = 'I REST SSH';
+const localeIndependent = localeProbe.toLowerCase();
+if (localeIndependent !== 'i rest ssh' || localeProbe.toLocaleLowerCase('tr') === localeIndependent) {
+  failures.push('runtime:locale-neutral-case-fold-probe');
+}
+
 const report = {
   pass: failures.length === 0,
   contract: 'locale-invariant-normalization-v1',
-  implementationState: failures.length === 0 ? 'focused-green' : 'expected-red',
+  implementationState: failures.length === 0 ? 'blocking-green' : 'blocking-red',
   failures,
 };
 console.log(JSON.stringify(report, null, 2));

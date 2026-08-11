@@ -74,12 +74,10 @@ export function buildOverviewScenarioFocus(
   if (risk === "wan") {
     return {
       kind: "outage",
-      label: "中断范围",
-      title: "影响范围与恢复判据",
-      summary: "采集仍当前；出口恢复需 WAN 与默认路由同时出现。",
+      label: "恢复证据",
+      title: "何时可以判定恢复",
+      summary: "这里只补充历史参考与恢复条件，不重复当前事故范围。",
       items: [
-        { key: "impact", label: "离线范围", value: `${state.facts.wan.offline} / ${state.facts.wan.total} WAN`, note: "当前离线对象", tone: "danger", route: "lineStatus", actionable: true },
-        { key: "route", label: "默认出口", value: "无活动记录", note: "当前没有可用默认路由", tone: "danger", route: "routes", actionable: true },
         { key: "last-success", label: "最后成功", value: successLabel, note: success ? "仅作恢复前参考" : "没有可用成功时间", tone: success ? "warn" : "missing", route: "logs", actionable: false },
         { key: "recovery", label: "恢复判据", value: "等待验证", note: "WAN 运行 + 活动默认路由", tone: "warn", route: "lineStatus", actionable: false },
       ],

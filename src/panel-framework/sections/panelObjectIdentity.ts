@@ -101,7 +101,9 @@ export function panelObjectIdentityPartsForRaw(
   } else if (route === "security") {
     parts = [rawIdentityString(row.rawOrder, row.order), rawIdentityString(row.chain), rawIdentityString(row.action), rawIdentityString(row.comment), rawIdentityString(row.srcAddress), rawIdentityString(row.dstAddress), rawIdentityString(row.protocol)];
   } else if (route === "readonlyDiagnostics") {
-    parts = [rawIdentityString(row.group), rawIdentityString(row.name), rawIdentityString(row.at), rawIdentityString(row.message)];
+    // A diagnostic timestamp changes on every collection cycle; including it
+    // would invalidate an otherwise stable object deep link after a reload.
+    parts = [rawIdentityString(row.group), rawIdentityString(row.name), rawIdentityString(row.message)];
   } else {
     parts = [table, JSON.stringify(canonicalRawIdentity(row))];
   }

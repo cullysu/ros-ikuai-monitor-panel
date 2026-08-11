@@ -63,6 +63,10 @@ http://127.0.0.1:28646/
 | Linux systemd / VM | 非 root systemd 服务监听 `127.0.0.1:28646` | 在 systemd 主机打开 `http://127.0.0.1:28646/` |
 | RouterOS Container | 容器进程监听 RouterOS container 网络内部地址 | 客户端通过本机转发器打开 `http://127.0.0.1:28646/` |
 
+Docker / Compose 会显式启用 `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1`：后端只把
+容器默认 bridge gateway 这个精确来源与 loopback `Host` 的组合视为宿主机本地转发；
+同网络其他容器、LAN 来源和非 loopback `Host` 仍会被拒绝。
+
 四种方式都应保持 `routeros_only`、不信任代理头、关闭 IP alias 写入、关闭
 admin session 暴露。`127.0.0.1` 永远是当前浏览器所在设备；跨设备访问必须先在
 该客户端本机建立明确的转发或隧道。
@@ -76,10 +80,11 @@ admin session 暴露。`127.0.0.1` 永远是当前浏览器所在设备；跨设
 
 ## Docker 一条命令
 
-安装脚本默认本地构建，避免公开安装依赖包可见性。CI 也会发布可选 GHCR 镜像：
+安装脚本默认本地构建，避免公开安装依赖包可见性。CI 也会发布可选的不可变
+GHCR 镜像；请选择已发布的提交 SHA，公开安装不使用可变标签：
 
 ```text
-ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
 ```
 
 更稳妥的首次安装方式是先下载、审阅、dry-run，再执行：
@@ -119,10 +124,13 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --build-local
 ```
 
-只有在 GHCR 包已经允许匿名拉取时，才使用预构建镜像：
+只有在 GHCR 包已经允许匿名拉取时，才使用已发布的不可变预构建镜像。将占位符
+替换为所选发布版本的完整 40 位提交 SHA；`--prebuilt` 会拒绝缺失标签、`main`
+和 `latest`：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt
+IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt --image "$IMAGE"
 ```
 
 升级：
@@ -180,6 +188,10 @@ docker compose --env-file .env.docker up -d --build
 ```text
 http://127.0.0.1:28646/
 ```
+
+Compose 将面板限制为 **1.5 GiB 内存**、**1.50 CPU** 和 **256 个 PID**，同时保留
+只读根文件系统和移除 Linux capabilities 的约束。本地使用 `--source-dir` 安装时，
+默认保留目标目录中无关的文件；只有明确附加 `--upgrade` 才会替换陈旧的源码文件。
 
 `.env.docker` 里的 RouterOS 凭据可以保持示例值，然后在网页登录页填写真实
 设备信息。REST 默认使用 HTTPS、443 端口并验证证书；SSH 首次连接会显示

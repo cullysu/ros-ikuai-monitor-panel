@@ -450,9 +450,12 @@ def assert_counter_rate_history_semantics():
     assert "uplink" not in first["overview"]["history"], first["overview"]["history"]
     assert "downlink" not in first["overview"]["history"], first["overview"]["history"]
     assert "history" not in first["wan"][0], first["wan"][0]
-    assert first["overview"]["history"]["cpu"] == [12], first["overview"]["history"]
-    assert first["overview"]["history"]["memory"] == [40.0], first["overview"]["history"]
-    assert first["overview"]["history"]["disk"] == [20.0], first["overview"]["history"]
+    first_resource_samples = first["overview"]["history"]["resourceSamples"]
+    assert len(first_resource_samples) == 1, first["overview"]["history"]
+    assert (first_resource_samples[-1]["cpu"], first_resource_samples[-1]["memory"], first_resource_samples[-1]["disk"]) == (12, 40.0, 20.0), first_resource_samples[-1]
+    assert first_resource_samples[-1]["source"] == "routeros-resource", first_resource_samples[-1]
+    assert first_resource_samples[-1]["evidenceMode"] == "current", first_resource_samples[-1]
+    assert is_rfc3339_timestamp(first_resource_samples[-1]["timestamp"]), first_resource_samples[-1]
 
     collector.prev_ts = time.time() - 1
     second = collector.build_snapshot(
@@ -470,9 +473,9 @@ def assert_counter_rate_history_semantics():
     assert second_traffic_samples[-1]["evidenceMode"] == "current", second["overview"]["history"]
     assert second_traffic_samples[-1]["timestamp"].endswith("Z"), second["overview"]["history"]
     assert "history" not in second["wan"][0], second["wan"][0]
-    assert second["overview"]["history"]["cpu"] == [12, 18], second["overview"]["history"]
-    assert second["overview"]["history"]["memory"] == [40.0, 45.0], second["overview"]["history"]
-    assert second["overview"]["history"]["disk"] == [20.0, 24.0], second["overview"]["history"]
+    second_resource_samples = second["overview"]["history"]["resourceSamples"]
+    assert len(second_resource_samples) == 2, second["overview"]["history"]
+    assert (second_resource_samples[-1]["cpu"], second_resource_samples[-1]["memory"], second_resource_samples[-1]["disk"]) == (18, 45.0, 24.0), second_resource_samples[-1]
 
     zero_collector = app.Collector()
     zero_collector.get_wan_latency = collector.get_wan_latency
@@ -499,15 +502,14 @@ def assert_counter_rate_history_semantics():
     assert stale_refresh["overview"]["history"]["trafficSamples"] == second_traffic_samples, stale_refresh["overview"]["history"]
     assert "history" not in stale_refresh["wan"][0], stale_refresh["wan"][0]
     assert stale_refresh["meta"]["freshCounterSample"] is False, stale_refresh["meta"]
-    assert len(stale_refresh["overview"]["history"]["timestamps"]) == 3, stale_refresh["overview"]["history"]
+    stale_resource_samples = stale_refresh["overview"]["history"]["resourceSamples"]
+    assert len(stale_resource_samples) == 3, stale_refresh["overview"]["history"]
     assert all(
-        is_rfc3339_timestamp(value)
-        for value in stale_refresh["overview"]["history"]["timestamps"]
+        is_rfc3339_timestamp(sample["timestamp"])
+        for sample in stale_resource_samples
     ), stale_refresh["overview"]["history"]
     assert len(stale_refresh["overview"]["history"]["trafficSamples"]) == 1, stale_refresh["overview"]["history"]
-    assert stale_refresh["overview"]["history"]["cpu"] == [12, 18, 33], stale_refresh["overview"]["history"]
-    assert stale_refresh["overview"]["history"]["memory"] == [40.0, 45.0, 50.0], stale_refresh["overview"]["history"]
-    assert stale_refresh["overview"]["history"]["disk"] == [20.0, 24.0, 30.0], stale_refresh["overview"]["history"]
+    assert (stale_resource_samples[-1]["cpu"], stale_resource_samples[-1]["memory"], stale_resource_samples[-1]["disk"]) == (33, 50.0, 30.0), stale_resource_samples[-1]
 
     empty_counter_rest = make_rate_rest(1800, 3200, cpu_load=44, free_memory=450000, free_hdd=660000)
     empty_counter_rest["interfaces"] = []
@@ -516,7 +518,7 @@ def assert_counter_rate_history_semantics():
     assert empty_counter["meta"]["freshCounterSample"] is False, empty_counter["meta"]
     assert empty_counter["overview"]["history"]["trafficSamples"] == second_traffic_samples, empty_counter["overview"]["history"]
     assert empty_counter["wan"] == [], empty_counter["wan"]
-    assert empty_counter["overview"]["history"]["cpu"] == [12, 18, 33, 44], empty_counter["overview"]["history"]
+    assert [sample["cpu"] for sample in empty_counter["overview"]["history"]["resourceSamples"]] == [12, 18, 33, 44], empty_counter["overview"]["history"]
 
     collector.prev_ts = time.time() - 1
     first_zero_candidate = collector.build_snapshot(
@@ -563,7 +565,7 @@ def assert_counter_rate_history_semantics():
     assert rollback["loadBalance"]["distribution"][0]["upRate"] is None, rollback["loadBalance"]["distribution"]
     assert rollback["loadBalance"]["distribution"][0]["downRate"] is None, rollback["loadBalance"]["distribution"]
     assert rollback["overview"]["history"]["trafficSamples"][:-1] == true_zero_traffic_samples, rollback["overview"]["history"]
-    assert rollback["overview"]["history"]["cpu"][-1] == 25, rollback["overview"]["history"]
+    assert rollback["overview"]["history"]["resourceSamples"][-1]["cpu"] == 25, rollback["overview"]["history"]
 
 
 
@@ -601,10 +603,7 @@ def assert_resource_history_requires_complete_atomic_samples():
         snapshot = collector().build_snapshot(rest, make_empty_ssh(), fresh_counter_sample=False)
         assert snapshot["overview"][field] is None, (label, snapshot["overview"])
         assert snapshot["overview"]["history"]["resourceSamples"] == [], (label, snapshot["overview"]["history"])
-        assert snapshot["overview"]["history"]["cpu"] == [], (label, snapshot["overview"]["history"])
-        assert snapshot["overview"]["history"]["memory"] == [], (label, snapshot["overview"]["history"])
-        assert snapshot["overview"]["history"]["disk"] == [], (label, snapshot["overview"]["history"])
-        assert snapshot["overview"]["history"]["timestamps"] == [], (label, snapshot["overview"]["history"])
+        assert not any(key in snapshot["overview"]["history"] for key in ("cpu", "memory", "disk", "timestamps")), (label, snapshot["overview"]["history"])
 
     observed_zero = collector().build_snapshot(
         make_rate_rest(1000, 2000, cpu_load=0, free_memory=1_000_000, free_hdd=1_000_000),
@@ -645,8 +644,8 @@ def assert_interface_quality_metrics_track_recent_samples():
     first_iface = first["interfaces"][0]
     assert first_iface["dropTotal"] == 5, first_iface
     assert first_iface["errorTotal"] == 1, first_iface
-    assert first_iface["dropDelta"] == 0, first_iface
-    assert first_iface["errorDelta"] == 0, first_iface
+    assert first_iface["dropDelta"] is None, first_iface
+    assert first_iface["errorDelta"] is None, first_iface
     assert first_iface["lossRate"] is None, first_iface
     assert first_iface["qualitySampleReady"] is False, first_iface
 
@@ -1014,14 +1013,14 @@ def assert_health_findings_distinguishes_quality_display_values():
     )
     issue = next(row for row in findings["findings"] if row["id"] == "interfaces.error_counters")
     assert "%%" not in issue["summary"], issue["summary"]
-    assert "cumulative drop/error=395361/2" in issue["summary"], issue["summary"]
-    assert "latest +4/+1" in issue["summary"], issue["summary"]
-    assert "recent loss rate=0.0588%." in issue["summary"], issue["summary"]
-    cumulative = next(row for row in issue["evidence"] if row["label"] == "cumulativeDropError")
+    assert "累计丢包/错误 395361/2" in issue["summary"], issue["summary"]
+    assert "最近增量 +4/+1" in issue["summary"], issue["summary"]
+    assert "近期丢包率 0.0588%。" in issue["summary"], issue["summary"]
+    cumulative = next(row for row in issue["evidence"] if row["label"] == "累计丢包/错误")
     assert cumulative["value"] == "395361/2", cumulative
-    latest = next(row for row in issue["evidence"] if row["label"] == "latestDropErrorDelta")
+    latest = next(row for row in issue["evidence"] if row["label"] == "最近丢包/错误增量")
     assert latest["value"] == "+4/+1", latest
-    recent_loss = next(row for row in issue["evidence"] if row["label"] == "recentLossRate")
+    recent_loss = next(row for row in issue["evidence"] if row["label"] == "近期丢包率")
     assert recent_loss["value"] == "0.0588%", recent_loss
 
     unknown_findings = app.build_health_findings(
@@ -1045,33 +1044,103 @@ def assert_health_findings_distinguishes_quality_display_values():
         }
     )
     unknown_issue = next(row for row in unknown_findings["findings"] if row["id"] == "interfaces.error_counters")
-    assert "cumulative drop/error=8/2" in unknown_issue["summary"], unknown_issue["summary"]
-    assert "latest +0/+0" in unknown_issue["summary"], unknown_issue["summary"]
-    assert "recent loss rate=unknown." in unknown_issue["summary"], unknown_issue["summary"]
-    unknown_loss = next(row for row in unknown_issue["evidence"] if row["label"] == "recentLossRate")
-    assert unknown_loss["value"] == "unknown", unknown_loss
+    assert "累计丢包/错误 8/2" in unknown_issue["summary"], unknown_issue["summary"]
+    assert "最近增量 +0/+0" in unknown_issue["summary"], unknown_issue["summary"]
+    assert "近期丢包率 未取得。" in unknown_issue["summary"], unknown_issue["summary"]
+    unknown_loss = next(row for row in unknown_issue["evidence"] if row["label"] == "近期丢包率")
+    assert unknown_loss["value"] == "未取得", unknown_loss
 
 
 def assert_localhost_host_forward_guard_supports_routeros_container():
+    route_fixture = """Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT
+eth0 00000000 010012AC 0003 0 0 0 00000000 0 0 0
+eth0 000012AC 00000000 0001 0 0 0 00FFFFFF 0 0 0
+"""
+    assert app.parse_linux_default_gateway_hosts(route_fixture) == frozenset({"172.18.0.1"})
+    ambiguous_route_fixture = """Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT
+eth0 00000000 010012AC 0003 0 0 0 00000000 0 0 0
+eth1 00000000 010013AC 0003 0 0 1 00000000 0 0 0
+"""
+    assert app.parse_linux_default_gateway_hosts(ambiguous_route_fixture) == frozenset()
+    assert app.parse_linux_default_gateway_hosts("broken route table") == frozenset()
+    app.validate_panel_forwarding_contract(True, False, False)
+    for proxy_headers, token_forward in ((True, False), (False, True)):
+        try:
+            app.validate_panel_forwarding_contract(True, proxy_headers, token_forward)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Docker host-forward accepted an overlapping forwarding trust mode")
     loopback_headers = {"Host": "127.0.0.1:28646"}
     token_headers = {"Host": "127.0.0.1:28646", app.PANEL_LOCALHOST_FORWARD_HEADER: "fixture-forward-token"}
     direct_ip_headers = {"Host": "172.18.0.2:28646"}
     remote_peer = ("192.0.2.10", 52344)
+    docker_gateway_peer = ("172.18.0.1", 52344)
+    sibling_container_peer = ("172.18.0.3", 52344)
     assert app.panel_host_header_is_allowed(loopback_headers)
     assert not app.panel_host_header_is_allowed(direct_ip_headers)
     assert app.panel_client_address_is_allowed(("127.0.0.1", 52344), direct_ip_headers)
     assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
     original = app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD
     original_token = app.PANEL_LOCALHOST_FORWARD_TOKEN
+    original_docker_forward = getattr(app, "PANEL_ALLOW_DOCKER_HOST_FORWARD", False)
+    original_docker_peers = getattr(app, "PANEL_DOCKER_HOST_FORWARD_PEERS", frozenset())
     try:
+        app.PANEL_ALLOW_DOCKER_HOST_FORWARD = False
+        app.PANEL_DOCKER_HOST_FORWARD_PEERS = frozenset({"172.18.0.1"})
+        assert not app.panel_client_address_is_allowed(docker_gateway_peer, loopback_headers)
+
         app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = True
         app.PANEL_LOCALHOST_FORWARD_TOKEN = "fixture-forward-token"
         assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
         assert app.panel_client_address_is_allowed(remote_peer, token_headers)
         assert not app.panel_client_address_is_allowed(remote_peer, direct_ip_headers)
+
+        app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = False
+        app.PANEL_ALLOW_DOCKER_HOST_FORWARD = True
+        app.PANEL_DOCKER_HOST_FORWARD_PEERS = frozenset({"172.18.0.1"})
+        assert app.panel_client_address_is_allowed(docker_gateway_peer, loopback_headers)
+        assert not app.panel_client_address_is_allowed(sibling_container_peer, loopback_headers)
+        assert not app.panel_client_address_is_allowed(docker_gateway_peer, direct_ip_headers)
     finally:
         app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = original
         app.PANEL_LOCALHOST_FORWARD_TOKEN = original_token
+        app.PANEL_ALLOW_DOCKER_HOST_FORWARD = original_docker_forward
+        app.PANEL_DOCKER_HOST_FORWARD_PEERS = original_docker_peers
+
+
+def assert_memory_sensitive_runtime_inputs_are_bounded():
+    assert app.bounded_config_int("999999", 60, 1, 3600) == 3600
+    assert app.bounded_config_int("-10", 60, 1, 3600) == 1
+
+    class FakeResponse:
+        def __init__(self, chunks, content_length=None):
+            self.headers = {}
+            if content_length is not None:
+                self.headers["Content-Length"] = str(content_length)
+            self._chunks = chunks
+
+        def iter_content(self, chunk_size):
+            assert chunk_size > 0
+            yield from self._chunks
+
+    payload = app.read_bounded_json_response(
+        FakeResponse([b'{"rows":', b'[1,2]}'], content_length=14),
+        max_bytes=64,
+        label="fixture",
+    )
+    assert payload == {"rows": [1, 2]}
+
+    for response in (
+        FakeResponse([], content_length=65),
+        FakeResponse([b"{" + (b"x" * 64) + b"}"]),
+    ):
+        try:
+            app.read_bounded_json_response(response, max_bytes=64, label="fixture")
+        except RuntimeError as exc:
+            assert "safe response limit" in str(exc)
+        else:
+            raise AssertionError("oversized RouterOS response bypassed the bounded reader")
 
 
 def assert_connection_evidence_parser_contract():
@@ -1197,6 +1266,7 @@ def main():
     assert_collector_status_messages_are_specific()
     assert_health_findings_distinguishes_quality_display_values()
     assert_localhost_host_forward_guard_supports_routeros_container()
+    assert_memory_sensitive_runtime_inputs_are_bounded()
     assert_connection_evidence_parser_contract()
     assert_dhcp_client_rows_preserved()
     assert_endpoint_failure_snapshot_contract()
@@ -1223,6 +1293,7 @@ def main():
                     "collector startup/config/error states expose specific status messages instead of unknown-error banners",
                     "health findings distinguish cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
                     "RouterOS Container localhost Host-forward guard allows client-local tunnels without allowing direct veth/LAN browser hosts",
+                    "memory-sensitive configuration and RouterOS JSON response bodies are hard-bounded",
                     "connection and DNS evidence normalization is isolated, deduplicated, and IPv4/IPv6 aware",
                     "DHCP client rows survive collector normalization with route and DNS flags",
                     "endpoint failure dictionaries become typed channel/path/time arrays without credential material",

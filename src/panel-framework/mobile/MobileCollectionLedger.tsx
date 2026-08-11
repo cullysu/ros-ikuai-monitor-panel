@@ -30,12 +30,25 @@ export function MobileWorkspaceObjectList({
         const previewed = !selected && previewId === row.id;
         const evidence = collection && row.evidence.kind === "interface" ? row.evidence : null;
         const route = evidence?.defaultRoutes[0];
+        const accessibleName = [
+          `${row.table}${row.table.endsWith("对象") ? "" : "对象"}：${row.primary}`,
+          ...row.columns
+            .map((column) => {
+              const value = row.values[column.key];
+              return value && value !== "—" ? `${column.label}：${value}` : "";
+            })
+            .filter(Boolean),
+          evidence
+            ? `默认路由关系：${evidence.defaultRouteRelation === "unverified" ? "待核对" : `${evidence.defaultRoutes.length} 条`}`
+            : "",
+        ].filter(Boolean).join("，");
         return (
           <button
             type="button"
             className={selected ? "is-selected" : previewed ? "is-preview" : ""}
             data-mobile-row-id={row.id}
             aria-current={selected ? "true" : undefined}
+            aria-label={accessibleName}
             onClick={() => onOpen(row)}
             ref={rowRef(row.id)}
             key={row.id}

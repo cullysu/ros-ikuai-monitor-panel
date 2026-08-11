@@ -92,6 +92,85 @@ export interface PanelNavigationContext {
   evidenceAt: string | null;
 }
 
+/**
+ * Per-entry mobile collection state. URLs carry navigation evidence, while
+ * history retains only bounded presentation choices for the route that owns
+ * the entry.
+ */
+export interface PanelWorkspaceHistoryState {
+  version: 1;
+  route: PanelRouteId;
+  search: string;
+  filter: string;
+  sort: string;
+  page: number;
+  toolsOpen: boolean;
+  focusId: string | null;
+  scrollY: number;
+}
+
+export type PanelWorkspaceHistoryUpdate = Omit<PanelWorkspaceHistoryState, "version" | "route">;
+
+const MAX_WORKSPACE_TOKEN_LENGTH = 80;
+const MAX_WORKSPACE_SEARCH_LENGTH = 160;
+const MAX_WORKSPACE_FOCUS_LENGTH = 160;
+const MAX_WORKSPACE_PAGE = 1_000;
+const MAX_WORKSPACE_SCROLL_Y = 1_000_000;
+
+function boundedHistoryToken(value: unknown, maxLength: number): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  return normalized && normalized.length <= maxLength ? normalized : null;
+}
+
+function boundedWorkspaceSearch(value: unknown): string {
+  return boundedHistoryToken(value, MAX_WORKSPACE_SEARCH_LENGTH) || "";
+}
+
+function boundedHistoryNumber(value: unknown, maximum: number, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.min(maximum, Math.max(0, Math.trunc(value)))
+    : fallback;
+}
+
+export function createPanelWorkspaceHistoryState(route: PanelRouteId, value: Partial<PanelWorkspaceHistoryUpdate>): PanelWorkspaceHistoryState {
+  return {
+    version: 1,
+    route,
+    search: boundedWorkspaceSearch(value.search),
+    filter: boundedHistoryToken(value.filter, MAX_WORKSPACE_TOKEN_LENGTH) || "all",
+    sort: boundedHistoryToken(value.sort, MAX_WORKSPACE_TOKEN_LENGTH) || "name-asc",
+    page: Math.max(1, boundedHistoryNumber(value.page, MAX_WORKSPACE_PAGE, 1)),
+    toolsOpen: value.toolsOpen === true,
+    focusId: boundedHistoryToken(value.focusId, MAX_WORKSPACE_FOCUS_LENGTH),
+    scrollY: boundedHistoryNumber(value.scrollY, MAX_WORKSPACE_SCROLL_Y, 0),
+  };
+}
+
+export function panelWorkspaceStateFromHistoryState(
+  historyState: unknown,
+  route: PanelRouteId,
+): PanelWorkspaceHistoryState | null {
+  if (!historyState || typeof historyState !== "object") return null;
+  const workspace = (historyState as { panelWorkspace?: unknown }).panelWorkspace;
+  if (!workspace || typeof workspace !== "object") return null;
+  const value = workspace as Partial<PanelWorkspaceHistoryState>;
+  if (
+    value.version !== 1
+    || value.route !== route
+    || !boundedHistoryToken(value.filter, MAX_WORKSPACE_TOKEN_LENGTH)
+    || !boundedHistoryToken(value.sort, MAX_WORKSPACE_TOKEN_LENGTH)
+    || typeof value.toolsOpen !== "boolean"
+  ) return null;
+  return createPanelWorkspaceHistoryState(route, value as PanelWorkspaceHistoryUpdate);
+}
+
+export function withoutPanelWorkspaceHistoryState(historyState: unknown): Record<string, unknown> {
+  if (!historyState || typeof historyState !== "object") return {};
+  const { panelWorkspace: _workspace, ...rest } = historyState as Record<string, unknown>;
+  return rest;
+}
+
 export type PanelNavigate = (route: PanelRouteId, options?: PanelNavigateOptions) => void;
 
 export const PANEL_ROUTES: Record<PanelRouteId, PanelRouteDefinition> = {
@@ -149,7 +228,13 @@ export function navigationContextFromLocation(location: Pick<Location, "search">
 export function routeFromLocation(location: Pick<Location, "hash" | "search">): PanelRouteId {
   const queryRoute = new URLSearchParams(location.search).get("section");
   if (isPanelRouteId(queryRoute)) return queryRoute;
-  const legacyHash = decodeURIComponent(location.hash.replace(/^#/, "").trim());
+  const legacyHash = (() => {
+    try {
+      return decodeURIComponent(location.hash.replace(/^#/, "").trim());
+    } catch {
+      return "";
+    }
+  })();
   return isPanelRouteId(legacyHash) ? legacyHash : "overview";
 }
 
@@ -160,6 +245,10 @@ export function routeUrl(
 ): string {
   const query = new URLSearchParams(location.search);
   query.set("section", route);
+  if (route !== "overview") query.delete("view");
+  const overviewView = route === "overview" && query.get("view") === "incidents"
+    ? "incidents"
+    : null;
   if (options.objectId !== undefined) {
     if (options.objectId) query.set("object", options.objectId);
     else query.delete("object");
@@ -183,9 +272,16 @@ export function routeUrl(
   }
 
   const context = navigationContextFromLocation({ search: `?${query.toString()}` });
-  if (!context.objectId) query.delete("object");
-  if (!context.risk) query.delete("risk");
-  if (!context.returnRoute) query.delete("from");
-  if (!context.evidenceAt) query.delete("evidenceAt");
-  return `${location.pathname}?${query.toString()}`;
+  // Rebuild rather than prune: the address bar may only represent context the
+  // current surface can actually restore. In particular, a bare `q` cannot
+  // filter a route and must not survive a refresh or history traversal.
+  const canonical = new URLSearchParams();
+  canonical.set("section", route);
+  if (overviewView) canonical.set("view", overviewView);
+  if (context.objectId) canonical.set("object", context.objectId);
+  if (context.query) canonical.set("q", context.query);
+  if (context.risk) canonical.set("risk", context.risk);
+  if (context.returnRoute) canonical.set("from", context.returnRoute);
+  if (context.evidenceAt) canonical.set("evidenceAt", context.evidenceAt);
+  return `${location.pathname}?${canonical.toString()}`;
 }

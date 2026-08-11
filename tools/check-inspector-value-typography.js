@@ -21,9 +21,9 @@ const monoFamily = /font-family:\s*(?:ui-monospace|var\(--mono\))/.test(css);
 const checks = {
   factValueKindContract: /valueKind/.test(primitives) && /is-value-\$\{/.test(primitives),
   relationValueKindContract: /primaryKind|valueKind/.test(primitives) && /is-value-\$\{/.test(primitives),
-  semanticFactsDefaultToBodyFont: /font-family:\s*inherit/.test(factBlock) && !/font-family:\s*ui-monospace/.test(factBlock),
+  semanticFactsDefaultToBodyFont: !/font-family:\s*(?:ui-monospace|var\(--mono\))/.test(factBlock),
   machineFactsRemainScoped: /\.mdi-facts\s*>\s*\.is-value-machine\s+b/.test(css) && monoToken && monoFamily,
-  semanticRelationsDefaultToBodyFont: /font-family:\s*inherit/.test(relationBlock) && !/font-family:\s*ui-monospace/.test(relationBlock),
+  semanticRelationsDefaultToBodyFont: !/font-family:\s*(?:ui-monospace|var\(--mono\))/.test(relationBlock),
   numericReadingsRemainTabular: /\.mdi-readings\s+\.is-value-(?:machine|numeric)\s+b[\s\S]*font-family:\s*(?:ui-monospace|var\(--mono\))/.test(css),
 };
 

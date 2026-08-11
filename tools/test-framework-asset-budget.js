@@ -12,7 +12,7 @@ const {
 } = require('./framework-asset-budget');
 
 assert.deepEqual(FRAMEWORK_ASSET_BUDGETS, {
-  script: { bytes: 768000, gzipBytes: 155000, brotliBytes: 132000 },
+  script: { bytes: 600000, gzipBytes: 160000, brotliBytes: 130000 },
   style: { bytes: 120000, gzipBytes: 20000, brotliBytes: 18000 },
   desktopStyle: { bytes: 40000, gzipBytes: 10000, brotliBytes: 8000 },
 });

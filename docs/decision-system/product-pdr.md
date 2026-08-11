@@ -1,12 +1,12 @@
 # Product Decision Record — Operations console acceptance
 
 - status: `current-draft`
-- validForCommit: current local remediation; current release truth is delegated to `docs/decision-system/current-state.md` (Step798)
-- currentPointer: Step798 `public-matrix-and-independent-review-boundary-verified-release-open`
-- currentBoundary: FAIL overall; Product/Design/Visual, Accessibility, route maturity, RouterOS soak, clean candidate and external CL remain open; public release closed
+- validForCommit: Step938 exact local-independent Product/Design/Visual/Accessibility/Engineering P0/P1 closure; current release truth is delegated to `docs/decision-system/current-state.md`
+- currentPointer: Step938 `938:fourth-exact-review-p0p1-zero-local-signoff-closed-release-closed`
+- currentBoundary: Step938 local four-role review is P0/P1=0 for artifact 188e; full route/state/security, tablet/physical-device P2, RouterOS soak, clean exact SHA, authorization and external CL remain open; public release closed
 - supersededBy: `null`
 - decisionOwner: independent product acceptance remains external to the implementation loop
-- authorityNote: step sections below are historical or focused evidence; a scoped PASS never overrides the Step798 current-state authority or grants public release.
+- authorityNote: step sections below are historical or focused evidence; Step938 structured reviews close only local exact-artifact Product/Design/Visual/Accessibility/Engineering P0/P1 and explicitly do not grant promotion or public-release acceptance.
 
 ## Operator decision
 
@@ -1163,3 +1163,75 @@ The public asset reference must match browser-effective HTML semantics: duplicat
 Active entry, bytes and sidecars are independently accepted. Keep the generated-HTML tokenizer limitation as P2 and move to strict Origin/Referer endpoint binding tests.
 
 - latestStepOutcome: `243:asset-identity-independent-pass-origin-referer-strictness-red-next`
+
+### Step906 current product acceptance contract
+
+The current clean engineering candidate passes its declared automated matrices, but current independent Product, Design, Visual and Accessibility reviews fail. Product maturity is task depth, not URL count: 19 real destinations remain `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, and they may not be described as 19 completed operational modules. Collection summaries must disclose coverage; a total of 42 connections beside one captured detail row must say whether the row set is sampled, truncated or incomplete rather than implying full enumeration.
+
+Responsive layout is also task ownership, not a breakpoint decoration. At 667×932 the Overview generic branch owns no context inspector, so it must use the full available task width; a second column is allowed only when a second real task owner exists. Proof, Signal and Object must answer different operator questions, the highest concrete risk must control the page rhythm, and fixed navigation may never obscure the next operational object.
+
+Accessibility evidence must be physically honest. A half-size CSS viewport with DPR2 is a zoom-equivalent stress test, not browser 200% zoom. Release evidence must separately prove actual zoom, current-route semantics in the accessibility tree, reduced-motion runtime behavior, and large-text object-detail/back journeys for every route family. The selected remediation order is: owner-based Overview geometry, connection coverage truth, fixed-nav safe end, repetition/risk hierarchy, honest accessibility probes, desktop resource first-screen density, then a new clean SHA and fresh independent reviews.
+
+- latestStepOutcome: `906:independent-review-reds-recorded-owner-based-remediation-next`
+
+### Step907 owner-based mobile workbench acceptance
+
+Generic Overview workspaces now split only when a real context owner exists. At 667×932, ownerless normal and incident workspaces consume the full 569px task width and omit the empty context DOM; they no longer reserve a 250px decorative rail. Scenario-focus actions and evidence rows use the same operational grid, reset and state-marker grammar through 1199px, so wide phones and tablets cannot leak browser-default button chrome.
+
+The focused acceptance is seven scenarios at 667×932 plus all-offline, no-snapshot and collection-down at 844×1024, with original-image review and explicit owner/style geometry. This closes only those P1s. Connection coverage truth, fixed-navigation continuation, repetition and incident rhythm, honest accessibility probes, desktop resource density and all formal release gates remain open.
+
+- latestStepOutcome: `907:owner-based-overview-and-scenario-action-style-focused-green-next-connection-coverage`
+
+### Step908 connection-detail coverage acceptance
+
+The connections task must distinguish reported total count from the rendered activity-detail sample. A trusted complete-enumeration claim requires explicit, internally consistent `sampled=false`, `hasMore=false`, total and shown metadata. Sampled/truncated data must say `非全量枚举`; absent metadata must say `完整性未声明`; contradictory metadata must remain a warning rather than selecting a convenient count.
+
+Coverage is decision context, so mobile renders it before connection rows and desktop repeats the same model-owned scope in the list header. Focused acceptance covers 390×844, 768×1024 and 1366×768 plus a narrow wording-order recheck. This closes only the ambiguous-coverage Product P1; route depth, module maturity, independent acceptance and every release gate remain open.
+
+- latestStepOutcome: `908:connection-detail-coverage-truth-focused-green-next-fixed-nav`
+
+### Step909 short-phone fixed-navigation task boundary
+
+Current incident proof already answers freshness and collection truth, so the first-screen operator sequence is primary risk, factual proof, primary investigation, concurrent risks, then the secondary source ledger. The ledger may continue below the first viewport, but fixed navigation may not bisect any visible task row or interactive summary. The fit calculation reserves a primary task only when DOM geometry proves that task actually follows the ledger.
+
+Focused runtime acceptance covers 375×667 and 390×844. At 375 the concurrent-risk row ends at 576 before navigation begins at 607, and the deferred ledger starts wholly below the navigation boundary; at 390 the same row is followed by an expanded ledger ending at 748 before navigation at 784. Primary action visibility, touch size, task proximity, evidence reachability and zero horizontal overflow remain blocking. This closes only the navigation-masking P1; repetition, risk-specific rhythm, honest accessibility, desktop density and formal release gates remain open.
+
+- latestStepOutcome: `909:short-phone-fixed-navigation-task-boundary-focused-green-next-repetition`
+
+### Step910 independent re-signoff acceptance
+
+The current production-runtime report passes `271 checks / 146 screenshots`. Independent Product, Design, Visual, Accessibility and Code review re-signoff is PASS with `P0=0 / P1=0` after inspecting current source and original 430 normal, 390 all-offline, 390 no-snapshot and 390 Fleet captures. The states answer different questions: all-offline prioritizes named WAN outage and recovery criteria; no-snapshot withdraws current business numbers and exposes collection recovery; normal retains current route and signal evidence.
+
+Fleet is a true scope, not a representative teaser: all 12 actionable objects render, and severity ordering is danger, warn, missing, trust, then ok. Proof owns the decision facts, Signal owns current-window telemetry or resource evidence, and Object owns identity, relationship and detail evidence; those layers may not replay one another. Route structure gates pass, but maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; 19 URLs are not 19 complete operational modules.
+
+This closes local product acceptance only. GitHub remains untouched, and release remains closed until a clean exact-SHA matrix, real RouterOS soak, and Linux/Windows/GHCR CL are complete.
+
+- latestStepOutcome: `910:independent-resignoff-pass-release-evidence-remains-closed`
+
+### Step911 decision-truth boundary
+
+The four Step910 review records are historical local evidence only. Each is bound to `worktree-f8a12846eebd-20a6c4555b4c` / fingerprint `20a6c4555b4cbdb59d6ad8bd93b06ddaaf3c21f6551896152909b300b174940d`; they do not review the changed current runtime or the focus, security, and workflow fixes, and they cannot make `releaseEligible=true`.
+
+The product decision remains FAIL and release CLOSED. Engineering release evidence and final product/visual external acceptance are both open. The next closure set is final exact-SHA external four-role review, real RouterOS read-only soak, signed route acceptance, and Linux/Windows/GHCR CL. The task is active, `blocked=false`, and GitHub is not uploaded.
+
+- latestStepOutcome: `911:step910-historical-artifact-demoted-current-reverification-required`
+
+## Step917 focused contract amendment
+
+Public time is normalized at the final JSON boundary: timezone-less timestamps are not accepted as current evidence, while duration fields remain durations. Canonical navigation serializes only recoverable context, so a bare `q` cannot misstate workspace state. Real Windows Microsoft Edge toolbar 200% is now evidenced on normal Overview and interfaces-down with viewport/DPR transition, visible keyboard focus, no clipped operational text and cleanup. These close focused P1 contracts only; final clean exact-SHA runtime, route/a11y/matrix evidence, independent acceptance, 300-second RouterOS soak and exact remote CL remain required.
+
+## Step918 evidence-boundary correction
+
+Step917's `contracts-closed` wording was too broad. The valid claim is narrower: public-time, canonical-URL and lifecycle focused tests pass, and real Windows-owned Microsoft Edge captures prove the two declared toolbar-200% routes. Playwright's narrow zoom rasters are diagnostic artifacts and are not product screenshots. The release tooling now also binds independent reviews to the clean candidate artifact identity, accepts only immutable SHA-pinned build actions, verifies the pushed GHCR index and both platform revisions, and provides an exact-remote-SHA Linux/Windows/container verifier. These focused gate tests prove the verifier contracts, not a release.
+
+Product, Design, Visual, Accessibility, Engineering and Security acceptance remain pending for one unchanged clean exact SHA. The required current runtime, Overview/routes/a11y evidence, 28/76/266 matrices, 300-second RouterOS read-only soak, signed promotion authorization and exact-SHA Linux/Windows/GHCR CL have not yet been produced. GitHub remains untouched and public release remains closed.
+
+- latestStepOutcome: `918:edge-zoom-proof-corrected-release-evidence-hardening-green-final-acceptance-open`
+
+## Step921 — Linkboard mobile direction selection
+
+- latestStepOutcome: `921:linkboard-selected-clean-mobile-overview-ownership-approved`
+- decision: Select Linkboard / 运行场 over Evidence Pulse and Evidence River. Mobile Overview becomes one continuous object-comparison workspace with a verdict rail, object scanner, semantic comparison, one time-evidence view and one next investigation.
+- product boundary: Preserve evidence truth, route verification, RFC3339 time, missing/zero semantics and read-only safety. Glass is limited to real control/navigation layers. No ledger, KPI grid, card dashboard, fake topology, unproven relationship or empty tablet split may return.
+- implementation boundary: New seam `overview/mobile-overview/MobileOverviewEntry.tsx`; delete the old Overview-only Patrol/ledger/style closure after switching entry. Non-Overview mobile domains remain operational migration inputs and are not visually signed off.
+- acceptance: Seven scenarios at phone/tablet, original-image human review, 15px body/12px metadata/44px targets, scenario recomposition, proven comparisons and honest unavailable states. Direction selection is not release evidence.

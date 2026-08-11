@@ -106,7 +106,7 @@ export function OperationalSectionPage({ route, snapshot, onNavigate }: { route:
 
       {model.visualization ? <SectionTimeSeriesChart visualization={model.visualization} /> : null}
 
-      <DesktopDomainWorkspace route={route} model={model} />
+      <DesktopDomainWorkspace route={route} model={model} onNavigate={onNavigate} />
 
       {route === "readonlyDiagnostics" ? (
         <nav className="readonly-feature-nav" aria-label="只读状态入口">

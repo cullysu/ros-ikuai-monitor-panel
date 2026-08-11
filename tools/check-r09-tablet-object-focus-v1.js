@@ -12,16 +12,16 @@
  */
 const fs = require("node:fs");
 const path = require("node:path");
+const { readRuntimeReport, runtimeIdentityDetail } = require("./runtime-report-identity");
 
 const ROOT = path.resolve(__dirname, "..");
-const REPORT_PATH = path.join(ROOT, "_acceptance", "panel-runtime-browser", "report.json");
-const report = fs.existsSync(REPORT_PATH)
-  ? JSON.parse(fs.readFileSync(REPORT_PATH, "utf8"))
-  : null;
+const runtimeBinding = readRuntimeReport(ROOT);
+const REPORT_PATH = runtimeBinding.reportPath;
+const report = runtimeBinding.current ? runtimeBinding.report : null;
 
 const runtime = new Map((report?.checks || []).map((entry) => [entry.name, entry]));
 const geometry = runtime.get(
-  "tablet normal puts object comparison before supporting columns and keeps relation/evidence after the task workspace",
+  "tablet normal orders route/WAN, object comparison, follow-up tasks, then relation/evidence",
 )?.detail || null;
 
 const viewportHeight = 1024;
@@ -32,7 +32,12 @@ const objectWorkspace = geometry?.objectWorkspace || null;
 
 const checks = [
   {
-    name: "fresh 768px normal tablet geometry exists",
+    name: "runtime report belongs to the current worktree artifact",
+    pass: runtimeBinding.current,
+    detail: runtimeIdentityDetail(runtimeBinding),
+  },
+  {
+    name: "current 768px normal tablet geometry exists",
     pass: Boolean(report?.pass === true && geometry && objectWorkspace),
     detail: { reportPass: report?.pass ?? null, objectWorkspace },
   },
@@ -77,6 +82,7 @@ const result = {
   expectedRedBeforeImplementation: true,
   releaseEligible: false,
   reportPath: path.relative(ROOT, REPORT_PATH).replaceAll("\\", "/"),
+  runtimeIdentity: runtimeIdentityDetail(runtimeBinding),
   checks,
   failed,
 };

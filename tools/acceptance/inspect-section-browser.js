@@ -152,8 +152,11 @@ async function inspectSectionBrowser(
     nativeMobileInteractionProbe,
     nativeMobileFocusKeyboardOk,
     nativeMobileFocusKeyboardProbe,
+    nativeMobileObjectSelectionOk,
     nativeMobileObjectSelectionProbe,
     nativeMobileObjectNavigationOk,
+    nativeDetailSectionCount,
+    nativeDetailRawEvidenceCount,
     nativeDetailHasNovelEvidence,
     nativeDetailNoHomeReplay,
   });
@@ -229,16 +232,73 @@ async function inspectSectionBrowser(
     operationalTimeSeriesTimes.length === 2
   );
   const mobileDomainLayout = mobileDomainRoot?.getAttribute('data-mobile-domain-layout') || '';
+  const mobileDomainEvidenceMode = mobileDomainRoot?.getAttribute('data-mobile-evidence-mode') || '';
   const mobileDomainInspector = mobileDomainRoot?.querySelector('.mdw-inspector');
+  const mobileDomainObjectInspector = mobileDomainRoot?.querySelector(
+    '.mdw-inspector[data-mobile-object-detail], .mdw-inspector[data-mobile-object-preview]'
+  );
   const mobileDomainPreview = mobileDomainRoot?.querySelector('[data-mobile-object-preview]');
   const mobileDomainDetail = mobileDomainRoot?.querySelector('[data-mobile-object-detail]');
+  const mobileDomainObjectList = mobileDomainRoot?.querySelector('.mdw-object-list');
+  const mobileDomainEmpty = mobileDomainRoot?.querySelector('.mdw-empty');
+  const mobileDomainEvidenceWorkspace = mobileDomainRoot?.querySelector(
+    '[data-mobile-domain-evidence-workspace="' + CSS.escape(sectionName) + '"]'
+  );
+  const mobileDomainRecoveryBoundary = mobileDomainRoot?.querySelector(
+    '[data-route-recovery="' + CSS.escape(sectionName) + '"]'
+  );
+  const mobileDomainRecoveryActions = Array.from(
+    mobileDomainRecoveryBoundary?.querySelectorAll('[data-route-recovery-action]') || []
+  );
+  const mobileDomainRecoveryFactNodes = Array.from(
+    mobileDomainEvidenceWorkspace?.querySelectorAll('[data-mobile-evidence-workspace-fact]') || []
+  );
+  const mobileDomainRecoveryFactKeys = mobileDomainRecoveryFactNodes.map((node) => (
+    node.getAttribute('data-mobile-evidence-workspace-fact') || ''
+  ));
+  const mobileDomainExpectedRecoveryState = mobileDomainEvidenceMode === 'unavailable'
+    ? 'unavailable'
+    : mobileDomainEvidenceMode === 'historical'
+      ? 'historical'
+      : 'partial';
+  const mobileDomainRecoveryContractOk = Boolean(
+    mobileDomainEvidenceWorkspace &&
+    mobileDomainEvidenceWorkspace.getAttribute('data-mobile-evidence-workspace-mode') === mobileDomainEvidenceMode &&
+    mobileDomainRecoveryFactNodes.length === 4 &&
+    new Set(mobileDomainRecoveryFactKeys).size === 4 &&
+    ['missing', 'impact', 'last-success', 'collection'].every((key) => mobileDomainRecoveryFactKeys.includes(key)) &&
+    mobileDomainRecoveryFactNodes.every((node) => normalize(node.textContent)) &&
+    normalize(mobileDomainEvidenceWorkspace.querySelector('[data-mobile-evidence-workspace-investigation]')?.textContent || '') &&
+    mobileDomainRecoveryBoundary?.getAttribute('data-route-recovery-state') === mobileDomainExpectedRecoveryState &&
+    mobileDomainRecoveryActions.length >= 2 &&
+    !mobileDomainObjectList && !mobileDomainEmpty
+  );
   const mobileDomainMetricSurfaces = mobileDomainRoot?.querySelectorAll('.mdw-metrics').length || 0;
+  const mobileDomainLogRoutes = new Set(['logs', 'serviceLogs']);
+  const mobileDomainLogInspector = mobileDomainRoot?.querySelector(
+    '.mdw-inspector[data-domain-inspector-kind="log"][data-mobile-log-detail="v1"]'
+  );
+  const mobileDomainLogSections = Array.from(mobileDomainLogInspector?.querySelectorAll(
+    '.mdi-section h3, .mdi-disclosure summary b'
+  ) || []).map((node) => normalize(node.textContent));
+  const mobileDomainLogRequiredSections = sectionName === 'serviceLogs'
+    ? ['服务来源', '事件证据', '相邻服务事件', '服务记录身份']
+    : ['事件证据', '相邻事件', '记录身份'];
+  const mobileDomainLogEvidenceContractOk = !mobileDomainLogRoutes.has(sectionName) || Boolean(
+    mobileDomainLogInspector &&
+    mobileDomainLogInspector.querySelector('.mdi-facts') &&
+    mobileDomainLogInspector.querySelector('.mdi-relations, .mdi-message') &&
+    mobileDomainLogInspector.querySelector('.mdi-disclosure') &&
+    mobileDomainLogRequiredSections.every((title) => mobileDomainLogSections.includes(title))
+  );
   const mobileDomainLayoutRoot = mobileDomainRoot?.querySelector('.mdw-layout');
   const mobileDomainListPane = mobileDomainRoot?.querySelector('.mdw-list-pane');
   const mobileDomainLayoutRect = mobileDomainLayoutRoot?.getBoundingClientRect();
   const mobileDomainListRect = mobileDomainListPane?.getBoundingClientRect();
   const mobileDomainListOnly = /^(phone-list|compact-list|tablet-list)$/.test(mobileDomainLayout);
-  const mobileDomainListFillsLayout = !mobileDomainListOnly || Boolean(
+  const mobileDomainRecoveryLayout = /^(phone-evidence|compact-evidence|tablet-evidence)$/.test(mobileDomainLayout);
+  const mobileDomainOneColumnLayout = mobileDomainListOnly || /^(phone-evidence|compact-evidence)$/.test(mobileDomainLayout);
+  const mobileDomainListFillsLayout = !mobileDomainOneColumnLayout || Boolean(
     mobileDomainLayoutRect &&
     mobileDomainListRect &&
     mobileDomainLayoutRect.width > 0 &&
@@ -247,13 +307,25 @@ async function inspectSectionBrowser(
     Math.abs(mobileDomainListRect.right - mobileDomainLayoutRect.right) <= 2
   );
   const mobileDomainLayoutContractOk = mobileDomainListOnly
-    ? !mobileDomainInspector && mobileDomainListFillsLayout
+    ? !mobileDomainObjectInspector && !mobileDomainEvidenceWorkspace && mobileDomainListFillsLayout
+    : mobileDomainRecoveryLayout
+      ? mobileDomainRecoveryContractOk && Boolean(mobileDomainInspector) && (
+          mobileDomainLayout === 'tablet-evidence' || mobileDomainListFillsLayout
+        )
     : /^(phone-detail|compact-detail)$/.test(mobileDomainLayout)
       ? Boolean(mobileDomainDetail) && !mobileDomainPreview
       : mobileDomainLayout === 'workbench' && Boolean(mobileDomainInspector);
   const mobileDomainMetricsContractOk = mobileDomainLayout === 'workbench'
     ? mobileDomainMetricSurfaces > 0
     : true;
+  const mobileDomainCapabilityContractOk = mobileDomainLayout !== 'workbench'
+    ? true
+    : mobileDomainLogRoutes.has(sectionName)
+      ? mobileDomainLogEvidenceContractOk
+      : mobileDomainMetricsContractOk;
+  const mobileDomainContentContractOk = mobileDomainRecoveryLayout
+    ? mobileDomainRecoveryContractOk
+    : Boolean(mobileDomainObjectList || mobileDomainEmpty);
   const desktopDomainWorkspace = desktopDomainRoot?.querySelector(
     '[data-desktop-domain-workspace="' + CSS.escape(sectionName) + '"]'
   );
@@ -284,11 +356,11 @@ async function inspectSectionBrowser(
     sectionRoot && operationalTitle && operationalTimeSeriesContractOk && (
       mobileDomainRoot
         ? mobileDomainRoot.getAttribute('data-mobile-domain-workspace') === sectionName &&
-          /^(current|historical|unavailable)$/.test(mobileDomainRoot.getAttribute('data-mobile-evidence-mode') || '') &&
+          /^(current|historical|unavailable)$/.test(mobileDomainEvidenceMode) &&
           (sectionName === 'more'
             ? mobileDomainRoot.querySelectorAll('.mdw-directory-list [data-section]').length === 10
-            : mobileDomainMetricsContractOk &&
-              Boolean(mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')) &&
+            : mobileDomainCapabilityContractOk &&
+              mobileDomainContentContractOk &&
               mobileDomainLayoutContractOk)
         : sectionName === 'more'
           ? Boolean(sectionRoot.querySelector('.panel-more-list [data-section]'))
@@ -303,7 +375,9 @@ async function inspectSectionBrowser(
     .map((node) => normalize(node.textContent));
   const operationalInterfaceTableOk = sectionName !== 'interfaces' || Boolean(
     mobileDomainRoot
-      ? mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')
+      ? mobileDomainRecoveryLayout
+        ? mobileDomainRecoveryContractOk
+        : mobileDomainObjectList || mobileDomainEmpty
       : desktopDomainRoot?.getAttribute('data-panel-evidence-mode') === 'unavailable'
         ? desktopDomainRoot.querySelector('.panel-section-table .panel-empty-state, .ddw-empty')
         : desktopDomainWorkspace
@@ -323,13 +397,13 @@ async function inspectSectionBrowser(
     trafficLoad: ['CPU', '18%'],
     loadAudit: ['CPU', '6 个'],
     trafficAudit: ['TCP', /(?:3 个连接|TCP\s+3(?:\s|$))/],
-    connections: ['192.168.0.11', '203.0.113.20'],
+    connections: ['192.168.0.11', '203.0.113.20', '活动明细样本', /(?:非全量枚举|完整性未声明|快照声明完整枚举)/],
     dns4: ['lan.local'],
     dns6: ['bridge-lan'],
     security: ['allow established'],
     logs: ['smoke fixture ready'],
     serviceLogs: ['smoke fixture ready'],
-    readonlyDiagnostics: ['\u65e0\u5931\u8d25\u8bb0\u5f55'],
+    readonlyDiagnostics: [/\u5df2\u8bb0\u5f55\u5931\u8d25\u7aef\u70b9\s*0/],
     more: [/(?:资源与负载|资源\s+CPU)/, /(?:IPv4 DNS|DNS v4)/, /(?:安全观察|安全\s+防火墙)/],
   };
   const requiredRouteEvidence = scaleScenario === 'single' ? singleRouteEvidence[sectionName] || [] : [];
@@ -6124,10 +6198,16 @@ async function inspectSectionBrowser(
       mobileLayoutWidth: mobileDomainLayoutRect ? Math.round(mobileDomainLayoutRect.width) : 0,
       mobileListWidth: mobileDomainListRect ? Math.round(mobileDomainListRect.width) : 0,
       mobileInspector: Boolean(mobileDomainInspector),
+      mobileObjectInspector: Boolean(mobileDomainObjectInspector),
+      mobileEvidenceWorkspace: Boolean(mobileDomainEvidenceWorkspace),
+      mobileRecoveryContract: mobileDomainRecoveryContractOk,
+      mobileRecoveryFacts: mobileDomainRecoveryFactKeys,
+      mobileRecoveryActions: mobileDomainRecoveryActions.length,
       mobileMetricSurfaces: mobileDomainMetricSurfaces,
       mobileMetricsContract: mobileDomainMetricsContractOk,
-      mobileObjectList: mobileDomainRoot?.querySelectorAll('.mdw-object-list').length || 0,
-      mobileEmpty: mobileDomainRoot?.querySelectorAll('.mdw-empty').length || 0,
+      mobileCapabilityContract: mobileDomainCapabilityContractOk,
+      mobileObjectList: mobileDomainObjectList ? 1 : 0,
+      mobileEmpty: mobileDomainEmpty ? 1 : 0,
       mobileTitle: Boolean(operationalTitle),
       timeSeries: operationalTimeSeriesContractOk,
     } : null,

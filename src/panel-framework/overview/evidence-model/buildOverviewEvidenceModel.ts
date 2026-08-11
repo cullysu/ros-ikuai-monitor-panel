@@ -10,6 +10,7 @@ import {
 } from "../index";
 import { panelObjectIdentityPartsForRaw, stablePanelObjectId } from "../../sections/panelObjectIdentity";
 import { assessRawInterfaceOperationalState } from "../../sections/interfaceOperationalAssessment";
+import { parseRfc3339Timestamp } from "../../timeContract";
 import {
   buildResourceInstrument,
   buildTrafficInstrument,
@@ -34,7 +35,9 @@ import type {
   OverviewEvidenceModel,
   OverviewEvidenceRisk,
   OverviewFocusObject,
+  OverviewInterfaceRouteDependency,
   OverviewPriorityObject,
+  OverviewRouteEvidencePath,
   OverviewRiskTask,
 } from "./overviewEvidenceTypes";
 
@@ -105,6 +108,81 @@ function routeStatus(mode: OverviewEvidenceMode, state: OverviewDerivedState, ro
   return "unknown" as const;
 }
 
+function routePath(route: OverviewRawRoute | null, source: string, observedAt: string | null = null): OverviewRouteEvidencePath | null {
+  if (!route) return null;
+  const gateway = clean(route.gateway || route.gatewayStatus, "");
+  if (!gateway) return null;
+  return {
+    gateway,
+    table: clean(route.table || route.routingTable, "main"),
+    destination: clean(route.dstAddress, "0.0.0.0/0"),
+    source,
+    observedAt,
+  };
+}
+
+function routeSource(snapshot: OverviewRawSnapshot, route: OverviewRawRoute): string {
+  const explicit = Array.isArray(snapshot.routes?.defaultRoutes) ? snapshot.routes.defaultRoutes : [];
+  const explicitIndex = explicit.indexOf(route);
+  if (explicitIndex >= 0) return `routes.defaultRoutes[${explicitIndex}]`;
+  const items = Array.isArray(snapshot.routes?.items) ? snapshot.routes.items : [];
+  const itemIndex = items.indexOf(route);
+  return itemIndex >= 0 ? `routes.items[${itemIndex}]` : "routes.defaultRoutes";
+}
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+}
+
+function historicalRouteRecords(snapshot: OverviewRawSnapshot): Array<{ row: OverviewRawRoute; source: string; timestamp: string }> {
+  const history = record(snapshot.overview?.history);
+  if (!history) return [];
+  const collections = ["routeSamples", "defaultRouteSamples"];
+  const result: Array<{ row: OverviewRawRoute; source: string; timestamp: string }> = [];
+  for (const key of collections) {
+    const rows = Array.isArray(history[key]) ? history[key] : [];
+    rows.forEach((candidate, index) => {
+      const row = record(candidate);
+      const timestamp = typeof row?.timestamp === "string" ? row.timestamp.trim() : "";
+      const source = typeof row?.source === "string" ? row.source.trim() : "";
+      if (!row || !timestamp || !source || parseRfc3339Timestamp(timestamp) === null) return;
+      const active = row.active === true;
+      const disabled = row.disabled === true;
+      const destination = clean(row.dstAddress || row.destination, "");
+      const defaultRoute = row.default === true || destination === "0.0.0.0/0" || destination === "::/0";
+      if (!active || disabled || !defaultRoute) return;
+      result.push({ row: row as OverviewRawRoute, source: `overview.history.${key}[${index}].${source}`, timestamp });
+    });
+  }
+  return result;
+}
+
+function lastConfirmedActivePath(snapshot: OverviewRawSnapshot): OverviewRouteEvidencePath | null {
+  const candidates = historicalRouteRecords(snapshot)
+    .map((candidate) => ({ ...candidate, time: parseRfc3339Timestamp(candidate.timestamp) }))
+    .filter((candidate): candidate is typeof candidate & { time: number } => candidate.time !== null)
+    .sort((left, right) => right.time - left.time);
+  const latest = candidates[0];
+  return latest ? routePath(latest.row, latest.source, latest.timestamp) : null;
+}
+
+function interfaceRouteDependencies(snapshot: OverviewRawSnapshot): OverviewInterfaceRouteDependency[] {
+  return (snapshot.interfaces || []).flatMap((row, index) => {
+    const assessment = assessRawInterfaceOperationalState(row, snapshot.routes);
+    if (assessment.observation !== "not-running" || assessment.enabledDefaultRouteDependencies.length === 0) return [];
+    const interfaceId = stablePanelObjectId("interfaces", "interface", panelObjectIdentityPartsForRaw("interfaces", "接口对象", row));
+    return assessment.enabledDefaultRouteDependencies.flatMap((dependency) => {
+      const path = routePath(dependency as OverviewRawRoute, routeSource(snapshot, dependency as OverviewRawRoute));
+      return path ? [{
+        interfaceId,
+        interfaceName: clean(row.name || row.interface, `接口 ${index + 1}`),
+        interfaceSource: `interfaces[${index}]`,
+        route: path,
+      }] : [];
+    });
+  });
+}
+
 function resourceMetrics(state: OverviewDerivedState) {
   return RESOURCE_METRIC_DEFINITIONS
     .map(({ key, label, threshold }) => ({ key, label, threshold, value: state.facts.resource[key] }))
@@ -168,13 +246,14 @@ function factsFor(
   ];
   if (risk === "resource") {
     const metrics = resourceMetrics(state);
-    const leading = leadingResourceMetric(snapshot, state);
     const breached = metrics.filter((metric) => metric.value >= metric.threshold).length;
-    const durationSeconds = leading?.evidence.durationSeconds; const observed = leading?.evidence.observed ?? 0;
+    const completeCurrentSample = RESOURCE_METRIC_DEFINITIONS.every(
+      ({ key }) => state.facts.resource[key] !== null,
+    );
     return [
       fact("resource-breaches", "超阈值", `${breached} / ${metrics.length}`, breached ? "danger" : "trust", "当前值与策略阈值的比较"),
-      fact("resource-trailing", "证据跨度", durationSeconds !== null && durationSeconds !== undefined ? `${durationSeconds} 秒` : "未取得", leading?.evidence.trailing ? "danger" : "missing", leading?.evidence.trailing ? "同一时间窗的连续证据" : "连续时长未取得"),
-      fact("resource-samples", "采样来源", observed ? "原子序列" : "未取得", observed ? "trust" : "missing", observed ? `${observed} 个当前样本` : "当前样本不可用"),
+      fact("resource-sample", "当前样本", completeCurrentSample ? "完整" : "部分", completeCurrentSample ? "trust" : "missing", completeCurrentSample ? "仅用于当前阈值判断" : "缺失项不按零处理"),
+      fact("collection", "采集通道", `${(rest.status === "current" ? 1 : 0) + (ssh.status === "current" ? 1 : 0)} / 2`, "trust", "REST + SSH"),
     ];
   }
   if (risk === "interfaces") return [
@@ -213,14 +292,14 @@ function verdictFor(state: OverviewDerivedState, mode: OverviewEvidenceMode, ris
     return { label: "证据已降级", title: "当前采集状态不可确认", summary: "仅保留上次成功记录；不代表当前业务。", tone: "warn" as OverviewTone };
   }
   if (risk === "wan") return { label: "出口中断", title: `全部 ${state.facts.wan.total} 条 WAN 未运行`, summary: "无活动默认路由；先查链路、认证与上游。", tone: "danger" as OverviewTone };
-  if (risk === "resource") return { label: "资源压力", title: "资源策略已触发", summary: "资源超限已持续；不推断网络中断。", tone: "danger" as OverviewTone };
-  if (risk === "interfaces") return { label: "配置依赖异常", title: `${state.facts.interfaces.confirmedRisk} 个出口依赖接口未运行`, summary: route ? "活动默认路由有记录；核对出口冗余。" : "当前证据无法核实活动默认路由。", tone: "danger" as OverviewTone };
+  if (risk === "resource") return { label: "资源压力", title: "资源策略已触发", summary: "当前资源策略触发；不推断网络中断。", tone: "danger" as OverviewTone };
+  if (risk === "interfaces") return { label: "配置依赖异常", title: `${state.facts.interfaces.confirmedRisk} 个出口依赖接口未运行`, summary: route ? "先核对出口冗余；不据此声明互联网中断。" : "当前证据无法核实活动默认路由。", tone: "danger" as OverviewTone };
   if (risk === "interface-review") return { label: "接口状态待确认", title: `${state.facts.interfaces.impactUnverified} 个接口未运行，影响未判定`, summary: "仅确认运行标志；没有足够关系证据声明业务或转发受影响。", tone: "warn" as OverviewTone };
   if (risk === "route") return { label: "出口证据不完整", title: "默认路由无法核实", summary: "WAN 有记录；无明确活动默认路由。", tone: "warn" as OverviewTone };
   return {
     label: state.scale === "fleet" ? "多对象巡检" : "当前出口证据",
-    title: "默认出口与采集已核实",
-    summary: "已核实默认路由、采集通道与当前证据；外部业务未探测。",
+    title: state.scale === "fleet" ? "多对象采样已更新" : "当前管理证据已核实",
+    summary: state.scale === "fleet" ? "按对象展示本次采样；外部业务未探测。" : "外部业务未探测；不据此声明互联网可用。",
     tone: "trust" as OverviewTone,
   };
 }
@@ -329,41 +408,19 @@ function priorityObjectsFor(
   if (risk === "resource") {
     const leadingResource = leadingResourceMetric(snapshot, state);
     if (!leadingResource) return { total: 0, rows: [] };
-    const { evidence } = leadingResource;
-    const continuity = evidence.observed
-      ? evidence.trailing >= 2 && evidence.durationSeconds !== null
-        ? `连续 ${evidence.trailing} / ${evidence.observed} 个样本 · ${evidence.durationSeconds} 秒`
-        : evidence.trailing === 1 ? `连续 1 / ${evidence.observed} 个样本 · 持续时间不可证明` : `最新样本未超阈 · 共 ${evidence.observed} 个`
-      : "连续性未取得";
-    const series = resourceEvidenceWindow(snapshot).metrics[leadingResource.key].points;
-    const firstSample = series[0]?.timestamp;
-    const lastSample = series[series.length - 1]?.timestamp;
-    const sampleRange = firstSample !== undefined && lastSample !== undefined
-      ? `${shortTimestamp(new Date(firstSample).toISOString())} → ${shortTimestamp(new Date(lastSample).toISOString())}`
-      : "时间范围未取得";
-    const sampleInterval = series.length > 1 && firstSample !== undefined && lastSample !== undefined
-      ? `${Math.max(1, Math.round((lastSample - firstSample) / ((series.length - 1) * 1000)))} 秒 / 点`
-      : "间隔未取得";
     return {
       total: 1,
       rows: [{
         id: `resource:${leadingResource.key}`,
         category: "系统资源",
         name: leadingResource.label,
-        state: `${Math.round(leadingResource.value)}% · 阈值 ${Math.round(leadingResource.threshold)}%${evidence.observed ? ` · +${Math.round(leadingResource.value - leadingResource.threshold)}pp` : ""}`,
-        reason: `高出 ${Math.round(leadingResource.value - leadingResource.threshold)} 个百分点 · ${continuity} · ${sampleRange} · ${sampleInterval}`,
+        state: `${Math.round(leadingResource.value)}% · 阈值 ${Math.round(leadingResource.threshold)}% · +${Math.round(leadingResource.value - leadingResource.threshold)}pp`,
+        reason: "当前样本已越过策略阈值；趋势与持续性见历史证据。",
         tone: "danger",
         route: "trafficLoad",
         targetObjectId: stablePanelObjectId("trafficLoad", "resource", panelObjectIdentityPartsForRaw("trafficLoad", "资源证据", { key: leadingResource.key })),
         sourcePath: "overview + overview.history",
-        attributes: [
-          { label: "阈值差", value: `${Math.round(leadingResource.value - leadingResource.threshold)} 个百分点` },
-          { label: "连续证据", value: continuity },
-          { label: "证据时间", value: evidence.evidenceAt || "未取得" },
-          { label: "样本范围", value: sampleRange },
-          { label: "采样间隔", value: sampleInterval },
-          { label: "采样来源", value: "当前快照 + 原子历史样本" },
-        ]
+        attributes: [],
       }],
     };
   }
@@ -471,9 +528,13 @@ export function buildOverviewEvidenceModel(snapshot: OverviewRawSnapshot, state:
   const evidenceAt = mode === "unavailable" ? null : latestBusinessSuccessTime(snapshot);
   const identity = deviceIdentity(snapshot, state, mode);
   const verdict = verdictFor(state, mode, risk, route);
+  const facts = factsFor(snapshot, state, mode, risk, route);
   const priority = priorityObjectsFor(snapshot, state, risk);
   const priorityHeading = priorityCopy(risk, priority.total);
   const coverageObjects = mode === "current" ? buildOverviewComparisonObjects(snapshot) : [];
+  const activePath = mode === "current" && route
+    ? routePath(route, routeSource(snapshot, route))
+    : null;
   return {
     scenario: state.scenario,
     risk,
@@ -491,7 +552,7 @@ export function buildOverviewEvidenceModel(snapshot: OverviewRawSnapshot, state:
     verdictSummary: verdict.summary,
     verdictTone: verdict.tone,
     scenarioFocus: buildOverviewScenarioFocus(snapshot, state, risk),
-    facts: factsFor(snapshot, state, mode, risk, route),
+    facts,
     priorityLabel: priorityHeading.label,
     priorityTitle: priorityHeading.title,
     priorityObjects: priority.rows.slice(0, 3),
@@ -502,6 +563,11 @@ export function buildOverviewEvidenceModel(snapshot: OverviewRawSnapshot, state:
     comparisonObjects: comparisonObjectsFor(coverageObjects, mode, risk, route, state.scale),
      tabletComparisonObjects: buildTabletComparisonObjects(coverageObjects, mode, risk, route, state.scale),
     secondaryDecisions: buildOverviewOperationalDecisions(snapshot, state, mode, risk),
+    routeEvidence: {
+      activePath,
+      interfaceDependencies: mode === "current" ? interfaceRouteDependencies(snapshot) : [],
+      lastConfirmedActivePath: risk === "wan" ? lastConfirmedActivePath(snapshot) : null,
+    },
     traffic: buildTrafficInstrument(snapshot, mode, risk),
     resource: buildResourceInstrument(snapshot, risk),
     evidenceRows: evidenceRows(snapshot, state, risk),

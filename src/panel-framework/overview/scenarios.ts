@@ -96,6 +96,20 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
       upRate: 2000 + index * 100,
       downRate: 4000 + index * 200,
     })),
+    interfaces: [
+      { name: "ether1", type: "ether", running: true, bridge: "bridge-lan" },
+      { name: "ether9", type: "ether", running: false, disabled: false },
+      { name: "vlan30", type: "vlan", running: false, disabled: false, parent: "ether9" },
+      { name: "sfp-lan", type: "ether", running: false, disabled: false },
+    ],
+    routes: {
+      defaultRoutes: [
+        { table: "main", gateway: "1.1.1.1", distance: 1, active: true, disabled: false },
+        { table: "main", gateway: "ether9", distance: 2, active: false, disabled: false },
+        { table: "main", gateway: "vlan30", distance: 3, active: false, disabled: false },
+        { table: "main", gateway: "sfp-lan", distance: 4, active: false, disabled: false },
+      ],
+    },
     connections: { total: 8600, active: [{}, {}, {}], topIps: [{}, {}] },
   },
   "all-offline": {

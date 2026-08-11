@@ -4,9 +4,7 @@ import {
   ChevronDown,
   CircleAlert,
   LoaderCircle,
-  LockKeyhole,
   Router,
-  SlidersHorizontal,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -14,6 +12,7 @@ import type { RouterConnectionInput } from "../runtime/panelApi";
 import type { PanelRuntimeController } from "../runtime/usePanelRuntime";
 import type { RouterChannelTest, SavedRouterLogin } from "../runtime/panelRuntimeSchema";
 import { parseRfc3339Timestamp } from "../timeContract";
+import { validateRouterAddress } from "./routerAddress";
 import connectionStyles from "./router-connection.css?inline";
 
 const MOBILE_CONNECTION_QUERY = "(max-width: 1199px)";
@@ -172,6 +171,11 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
       setClientError("请填写设备地址、用户名和密码");
       return;
     }
+    const addressError = validateRouterAddress(cleanHost);
+    if (addressError) {
+      setClientError(addressError);
+      return;
+    }
     if (!Number.isInteger(sshPort) || sshPort < 1 || sshPort > 65535) {
       setClientError("SSH 端口必须在 1–65535 之间");
       return;
@@ -323,7 +327,6 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
         <details className="router-advanced-settings" data-router-advanced-settings>
           <summary>
             <span>
-              <SlidersHorizontal aria-hidden="true" size={18} />
               <span>
                 <b>高级连接设置</b>
                 <small>{restScheme.toUpperCase()} {restPort} · SSH {sshPort} · {insecureRest ? "风险模式" : "证书校验"}</small>
@@ -413,7 +416,7 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
           aria-labelledby="ssh-host-key-heading"
           data-trust-expires-at={matchingPendingHostKey.trustExpiresAt || ""}
         >
-          <LockKeyhole size={19} aria-hidden="true" />
+          <ShieldCheck size={19} aria-hidden="true" />
           <div>
             <h2 id="ssh-host-key-heading">
               {matchingPendingHostKey.kind === "changed" ? "SSH 主机密钥已变化" : "确认 SSH 主机密钥"}
@@ -480,7 +483,7 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
       ) : null}
 
       <div className="router-transport-boundary">
-        <LockKeyhole size={17} aria-hidden="true" />
+        <ShieldCheck size={17} aria-hidden="true" />
         <p>{restScheme === "https" && restVerifyTls ? "REST 使用 HTTPS 并验证证书；不会自动降级到 HTTP。" : "当前使用已显式确认的风险模式；面板不会静默切换传输方式。"}</p>
       </div>
 

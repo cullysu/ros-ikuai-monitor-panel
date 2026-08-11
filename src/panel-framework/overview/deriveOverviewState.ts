@@ -561,7 +561,7 @@ function interfaceState(snapshot: OverviewRawSnapshot): OverviewInterfaceState {
 }
 
 function connectionState(snapshot: OverviewRawSnapshot) {
-  return { total: toNumber(snapshot.connections?.total, 0), active: Array.isArray(snapshot.connections?.active) ? snapshot.connections.active.length : 0, topIps: Array.isArray(snapshot.connections?.topIps) ? snapshot.connections.topIps.length : 0 };
+  return { total: toFiniteNumber(snapshot.connections?.total), active: Array.isArray(snapshot.connections?.active) ? snapshot.connections.active.length : 0, topIps: Array.isArray(snapshot.connections?.topIps) ? snapshot.connections.topIps.length : 0 };
 }
 
 function deviceFacts(snapshot: OverviewRawSnapshot): OverviewDeviceFacts {
@@ -580,10 +580,10 @@ function countsOf(wan: ReturnType<typeof wanState>, interfaces: ReturnType<typeo
     wanOnline: wan.online,
     wanOffline: wan.offline,
     wanUnknown: wan.unknown,
-    interfacesTotal: interfaces.total,
-    interfacesOnline: interfaces.online,
-    interfacesDown: interfaces.down,
-    interfacesUnknown: interfaces.unknown,
+    interfacesTotal: interfaces.available ? interfaces.total : null,
+    interfacesOnline: interfaces.available ? interfaces.online : null,
+    interfacesDown: interfaces.available ? interfaces.down : null,
+    interfacesUnknown: interfaces.available ? interfaces.unknown : null,
     failures: failures.count,
     connections: connections.total,
   };
@@ -594,10 +594,10 @@ function scenarioOf(snapshot: OverviewRawSnapshot, counts: OverviewCounts, resou
   if (options.scenarioHint) return options.scenarioHint;
   if (isSnapshotUnavailable(snapshot)) return "no-snapshot";
   if (counts.wanTotal > 0 && counts.wanOnline === 0 && counts.wanUnknown === 0) return "all-offline";
-  if (counts.interfacesDown > 0) return "interfaces-down";
+  if (toNumber(counts.interfacesDown) > 0) return "interfaces-down";
   if (resource.level === "danger") return "resource-full";
   if (collection.channelDegraded) return "collection-down";
-  if (counts.wanTotal >= 4 || counts.interfacesTotal >= 8 || counts.connections >= 5000) return "fleet";
+  if (counts.wanTotal >= 4 || toNumber(counts.interfacesTotal) >= 8 || toNumber(counts.connections) >= 5000) return "fleet";
   return "single";
 }
 

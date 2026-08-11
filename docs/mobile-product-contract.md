@@ -3,16 +3,20 @@
 ## Status
 
 - status: `current-contract / acceptance-failed`
-- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- validForCommit: current Step939 dirty-worktree remediation; Step938 review is historical and no current clean candidate exists
 - supersededBy: `null`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
-- Latest independent review: Product `48/100`, Design `65/100` (step 137)
-- Product/design/visual gate: **FAIL / FAIL / PENDING independent review**
-- Current loop stage: **Remediate**
-- Matrix evidence: step-135 dirty engineering matrices passed 28/76/266 under one fingerprint, but step-137 contract changes make that runtime identity stale; no product conclusion or release candidate may inherit it
+- Current local review boundary: Step938 binds historical Optical Patrol artifact `188e…` to 63 original cells, 10 zero-origin responsive captures, accessibility evidence and four independent exact-artifact review records; tracked Step939 remediation prevents those records from representing the current worktree
+- Product/design/visual gate: **FAIL for the current worktree; Step938 is historical local evidence and final external product/visual acceptance is not closed**
+- Current loop stage: **Whole-product matrices, soak, clean-candidate hygiene and release evidence**
+- Matrix evidence: local Optical Patrol 63/63 plus 10/10 responsive boundary captures; `releaseEligible=false`
 - Surface: a read-only RouterOS/iKuai operational console, not a health dashboard or shrunken desktop table
 
 Previous green matrices are regression evidence only. They missed local refresh failure, timezone ambiguity, dead visible controls, an invalid DNS route, and missing mobile workflows.
+
+Step938 keeps the task active with `blocked=false` and GitHub not uploaded. Optical Patrol is the isolated production mobile owner and Pocket presentation ownership is physically deleted. Route/state/security/recovery/public matrices, real RouterOS read-only soak, clean-candidate hygiene, exact-SHA external promotion and Linux/Windows/GHCR CL remain pending.
+
+The current presentation contract is `docs/mobile-optical-patrol-design-contract.md`. Pocket-specific navigation/composition sections below remain only as rejected-baseline requirements for diffing and test cleanup; they do not authorize reuse of the rejected visual hierarchy.
 
 ## User job
 
@@ -83,8 +87,8 @@ Less frequent tools live in a top More menu. Tabs remain visible when empty and 
 2. **28–34px evidence boundary** — current/history/unavailable and absolute time.
 3. **58–76px verdict row** — icon, one factual conclusion, one consequence; not a hero.
 4. **Three independent facts** — default route, WAN carrier, collection channel.
-5. **One primary module** — normal uses an honest WAN instrument; incidents use top three affected objects.
-6. **One focus object** — adds dependency, source, impact, or raw flags not repeated above.
+5. **One primary module** — normal binds honest current WAN readings to the verified active-route object; incidents use the highest-priority affected objects.
+6. **One focus object** — the normal primary module owns route identity plus current readings; incident focus adds dependency, source, impact, or raw flags not repeated above.
 7. **Evidence disclosure** after the primary workflow.
 
 Identity, freshness, verdict, metrics, and object values cannot repeat across layers.

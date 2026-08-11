@@ -1,23 +1,22 @@
 - status: `reference`
-- validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
+- validForCommit: Step940 focused supplemental signoff; whole-product clean exact evidence remains pending
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `905`
-- currentOutcome: `905:short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open`
-- currentBoundary: `905`
-- latestRecordedStep: `905`
-- latestStepOutcome: `905:short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open`
+- currentStep: `940`
+- currentOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
+- currentBoundary: `940`
+- latestRecordedStep: `940`
+- latestStepOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
 
 ## Current pointer
 
-The authority is current-state.md; this page is discovery only.
+The authority is `current-state.md`; this page is discovery only.
 
-- Current conclusion: FAIL overall; local engineering evidence is complete in declared scopes, while independent public acceptance and trusted external release gates remain open. The task remains active, not blocked.
-- Current engineering boundary: Step905 removes the empty inspector track from list-only short-landscape domain workspaces, adds 667×375 and 844×390 geometry/screenshots to the required runtime contract, and passes focused visual/runtime checks; a clean exact-SHA rebind remains pending until this tracked change is committed.
-- Latest result: exact-SHA local engineering evidence is green; strict readiness remains fail-closed at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
-- Full process: panel-redesign-decision-log.md.
-- Product handoff: product-loop-current.md.
-- Release boundary: release-journal.md.
-
-
-- Step806 closes the generic section-evidence regression and scoped Product/Visual P1 review; it does not close formal signoff.
+- Current implementation: isolated Optical Patrol owns mobile Overview; rejected Pocket presentation is deleted; desktop remains separate at 1200+. Supplemental connections, DNS and global-health evidence share one truth state but keep isolated mobile/desktop presentation owners.
+- Current focused acceptance: production-bundle supplemental runtime is `12/12`, 16 signed originals are present, and fresh Product/Visual, Responsive/Tablet and Engineering/Accessibility reviews are P0/P1=`0`.
+- Historical exact evidence: artifact `188e…` passed types/build, full-63, responsive 10 zero-origin captures, Overview 18 and accessibility reports; its 63+10 PNG integrity and four structured records remain immutable local history.
+- Current acceptance: the supplemental slice is locally signed off; the intended clean candidate must still regenerate whole-product bound evidence and receive fresh Product, Design/Visual, Accessibility and Engineering review.
+- Current open release gates: full route/state/security, physical-device text acceptance, RouterOS soak, clean exact SHA, promotion authorization, GitHub upload and exact remote-SHA CL.
+- Full process: `docs/panel-redesign-decision-log.md`.
+- Product handoff: `docs/product-loop-current.md`.
+- Release boundary: `docs/decision-system/release-journal.md`.

@@ -1,11 +1,16 @@
-import type { PanelRouteDefinition, PanelRouteId, PanelRouteMaturity } from "./panelRoutes";
+import {
+  PANEL_ROUTE_IDS,
+  PANEL_ROUTES,
+  type PanelRouteDefinition,
+  type PanelRouteId,
+  type PanelRouteMaturity,
+} from "./panelRoutes";
 
 export type PanelRouteRenderer = "overview" | "section-model" | "directory";
 export type PanelRouteDataDepth = "domain-specific" | "shared" | "none";
 export type PanelRouteObjectDetailDepth = "novel" | "bounded" | "none";
 export type PanelRouteFailureRecoveryDepth = "route-specific" | "bounded" | "none";
 export type PanelRouteVerification = "independent-pass" | "automated-only" | "pending" | "none";
-export const PANEL_EXTERNAL_ACCEPTANCE_PREFIX = "docs/decision-system/external-acceptance/";
 
 export interface PanelRouteMaturityEvidence {
   route: PanelRouteId;
@@ -28,6 +33,120 @@ export interface PanelRouteMaturityEvidence {
   automatedAccessibilityRoutes: readonly PanelRouteId[];
   acceptanceRefs: readonly string[];
   evidenceRefs: readonly string[];
+}
+
+/**
+ * Navigation consumes these projections, but this module remains the sole
+ * owner of their maturity semantics and validation.
+ */
+export const ROUTE_MATURITY_STATES = ["complete", "bounded-readonly", "fallback", "unavailable"] as const satisfies readonly PanelRouteMaturity[];
+export type RouteMaturityState = (typeof ROUTE_MATURITY_STATES)[number];
+export type RoutePresentationRequirement = "module-required" | "directory-only";
+
+export interface RouteMaturityContract {
+  route: string;
+  maturity: PanelRouteMaturity | null;
+  presentation: RoutePresentationRequirement | "missing";
+  consumable: boolean;
+}
+
+export interface RouteMaturityValidation {
+  missing: string[];
+  extra: string[];
+  duplicateRouteIds: string[];
+  violations: string[];
+  contracts: RouteMaturityContract[];
+  counts: Record<RouteMaturityState, number>;
+  completeRoutes: string[];
+  contractPass: boolean;
+}
+
+function owns(object: object, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+function isRouteMaturityState(value: unknown): value is RouteMaturityState {
+  return typeof value === "string" && (ROUTE_MATURITY_STATES as readonly string[]).includes(value);
+}
+
+/** Build a UI-consumable projection directly from the active route registry. */
+export function deriveRouteMaturityContracts(
+  routeIds: readonly string[] = PANEL_ROUTE_IDS,
+  definitions: Readonly<Record<string, PanelRouteDefinition>> = PANEL_ROUTES,
+): RouteMaturityContract[] {
+  return routeIds.map((route) => {
+    const definition = definitions[route];
+    if (!definition) return { route, maturity: null, presentation: "missing", consumable: false };
+    const presentation: RoutePresentationRequirement = definition.placement === "directory"
+      ? "directory-only"
+      : "module-required";
+    return {
+      route,
+      maturity: definition.maturity,
+      presentation,
+      consumable: definition.maturity !== "unavailable",
+    };
+  });
+}
+
+/** Validates registry-level maturity facts for navigation consumers. */
+export function validateRouteMaturityContract(
+  routeIds: readonly string[] = PANEL_ROUTE_IDS,
+  definitions: Readonly<Record<string, PanelRouteDefinition>> = PANEL_ROUTES,
+): RouteMaturityValidation {
+  const expected = new Set(routeIds);
+  const definitionIds = Object.keys(definitions);
+  const duplicateRouteIds = routeIds.filter((route, index) => routeIds.indexOf(route) !== index);
+  const missing = routeIds.filter((route) => !owns(definitions, route));
+  const extra = definitionIds.filter((route) => !expected.has(route));
+  const violations: string[] = [];
+
+  for (const route of routeIds) {
+    const definition = definitions[route];
+    if (!definition) {
+      violations.push(`${route}: route definition is missing`);
+      continue;
+    }
+    if (definition.id !== route) violations.push(`${route}: definition id does not match its registry key`);
+    if (!isRouteMaturityState(definition.maturity)) violations.push(`${route}: maturity is not a supported state`);
+    if (definition.placement === "directory" && definition.maturity !== "unavailable") {
+      violations.push(`${route}: directory routes must be unavailable, never modules`);
+    }
+    if (definition.maturity === "complete" && definition.placement === "directory") {
+      violations.push(`${route}: a directory route cannot be complete`);
+    }
+    if (definition.maturity === "fallback" && definition.placement === "directory") {
+      violations.push(`${route}: a directory route cannot be a fallback module`);
+    }
+  }
+
+  const contracts = deriveRouteMaturityContracts(routeIds, definitions);
+  const counts: Record<RouteMaturityState, number> = {
+    complete: 0,
+    "bounded-readonly": 0,
+    fallback: 0,
+    unavailable: 0,
+  };
+  for (const contract of contracts) {
+    if (contract.maturity && isRouteMaturityState(contract.maturity)) counts[contract.maturity] += 1;
+  }
+
+  return {
+    missing,
+    extra,
+    duplicateRouteIds,
+    violations,
+    contracts,
+    counts,
+    completeRoutes: contracts.filter((contract) => contract.maturity === "complete").map((contract) => contract.route),
+    contractPass: missing.length === 0 && extra.length === 0 && duplicateRouteIds.length === 0 && violations.length === 0,
+  };
+}
+
+export const PANEL_ROUTE_MATURITY_V1 = deriveRouteMaturityContracts();
+
+export function routeMaturityV1(route: string): RouteMaturityContract | undefined {
+  return PANEL_ROUTE_MATURITY_V1.find((contract) => contract.route === route);
 }
 
 const currentAutomatedEvidence = [
@@ -69,21 +188,23 @@ const sectionEvidence = (
   rendererToken: "data-mobile-domain-workspace={route}",
   objectDetailSource: "src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx",
   objectDetailToken: "data-mobile-object-detail={preview ? undefined : row.id}",
-  failureRecoverySource: "src/panel-framework/sections/sectionModels.ts",
-  failureRecoveryToken: "function applyEvidenceBoundary",
+  failureRecoverySource: "src/panel-framework/sections/RouteEvidenceBoundary.tsx",
+  failureRecoveryToken: "data-route-recovery={route}",
   accessibilitySource: "tools/check-panel-runtime-browser.js",
   accessibilityToken: automatedAccessibilityRoutes.includes(route as (typeof automatedAccessibilityRoutes)[number])
     ? `{ route: '${route}', selector: '[data-mobile-domain-workspace=\"${route}\"]' }`
     : "",
   dataDepth: "domain-specific",
   objectDetail: "novel",
-  failureRecovery: "bounded",
+  failureRecovery: "route-specific",
   accessibility: automatedAccessibilityRoutes.includes(route as (typeof automatedAccessibilityRoutes)[number]) ? "automated-only" : "pending",
   independentAcceptance: "pending",
   automatedAccessibilityRoutes,
   acceptanceRefs: [],
   evidenceRefs: [
     "src/panel-framework/sections/sectionModels.ts",
+    "src/panel-framework/sections/RouteEvidenceBoundary.tsx",
+    "src/panel-framework/sections/route-recovery/routeRecoveryPolicies.ts",
     "src/panel-framework/mobile/MobileDomainWorkspace.tsx",
     `src/panel-framework/mobile/mobile-inspector/${inspector}`,
     ...currentAutomatedEvidence,
@@ -145,38 +266,48 @@ export const PANEL_ROUTE_MATURITY_EVIDENCE: Record<PanelRouteId, PanelRouteMatur
   overview: {
     route: "overview",
     renderer: "overview",
-    modelSource: "src/panel-framework/mobile/MobilePatrolScreen.tsx",
-    modelToken: "buildOverviewEvidenceModel",
-    rendererSource: "src/panel-framework/mobile/MobilePatrolScreen.tsx",
-    rendererToken: "data-mobile-overview",
-    objectDetailSource: "src/panel-framework/mobile/MobileFocusObject.tsx",
-    objectDetailToken: "data-mobile-object-id={objectId}",
-    failureRecoverySource: "src/panel-framework/mobile/MobileEvidenceLedger.tsx",
-    failureRecoveryToken: 'data-overview-task-landmark="evidence-boundary"',
-    accessibilitySource: "tools/check-panel-runtime-browser.js",
-    accessibilityToken: "{ route: 'overview', selector: '[data-mobile-overview]' }",
+    modelSource: "src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts",
+    modelToken: "buildOpticalPatrolModel",
+    rendererSource: "src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx",
+    rendererToken: "data-optical-patrol-root",
+    objectDetailSource: "src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx",
+    objectDetailToken: "data-optical-patrol-expanded-claim",
+    failureRecoverySource: "src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx",
+    failureRecoveryToken: "data-optical-patrol-forbids-current",
+    accessibilitySource: "src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx",
+    accessibilityToken: "data-optical-patrol-root",
     dataDepth: "domain-specific",
     objectDetail: "novel",
-    failureRecovery: "bounded",
+    failureRecovery: "route-specific",
     accessibility: "automated-only",
     independentAcceptance: "pending",
     automatedAccessibilityRoutes: ["overview"],
     acceptanceRefs: [],
     evidenceRefs: [
       "src/panel-framework/overview/deriveOverviewState.ts",
-      "src/panel-framework/mobile/MobilePatrolScreen.tsx",
-      "src/panel-framework/mobile/MobileEvidenceLedger.tsx",
+      "src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts",
+      "src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts",
+      "src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx",
+      "src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx",
+      "src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx",
+      "src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolEvidenceDeck.tsx",
+      "src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts",
+      "src/panel-framework/overview/mobile-overview/optical-patrol/opticalPatrolTypes.ts",
+      "src/panel-framework/overview/mobile-overview/optical-patrol/useOpticalPatrolSelectionHistory.ts",
+      "tools/check-optical-patrol-model.js",
+      "tools/check-optical-patrol-architecture.js",
+      "tools/check-optical-patrol-accessibility-static.js",
       ...currentAutomatedEvidence,
     ],
   },
   interfaces: {
     ...sectionEvidence("interfaces", "NetworkInspectors.tsx", 'if (route === "interfaces")'),
-    failureRecoverySource: "src/panel-framework/mobile/MobileInterfaceEvidenceBoundary.tsx",
-    failureRecoveryToken: "data-mobile-interface-recovery",
+    failureRecoverySource: "src/panel-framework/sections/RouteEvidenceBoundary.tsx",
+    failureRecoveryToken: "data-route-recovery={route}",
     failureRecovery: "route-specific",
     evidenceRefs: [
       ...sectionEvidence("interfaces", "NetworkInspectors.tsx", 'if (route === "interfaces")').evidenceRefs,
-      "src/panel-framework/mobile/MobileInterfaceEvidenceBoundary.tsx",
+      "src/panel-framework/sections/RouteEvidenceBoundary.tsx",
       "src/panel-framework/mobile/mobile-interface-recovery.css",
       "tools/check-mobile-interface-evidence-boundary.js",
       "tools/check-mobile-interface-route-evidence.js",
@@ -184,7 +315,7 @@ export const PANEL_ROUTE_MATURITY_EVIDENCE: Record<PanelRouteId, PanelRouteMatur
       "tools/check-mobile-interface-evidence-dedup.js",
       "tools/check-mobile-interface-risk-object-focus.js",
       "tools/check-mobile-interface-route-evidence-runtime.js",
-      "tools/check-interfaces-route-maturity-expected-red.js",
+      "tools/check-interfaces-route-maturity-boundary.js",
     ],
   },
   lineStatus: sectionEvidence("lineStatus", "NetworkInspectors.tsx", 'if (route === "lineStatus")'),
@@ -208,7 +339,7 @@ export const PANEL_ROUTE_MATURITY_EVIDENCE: Record<PanelRouteId, PanelRouteMatur
     renderer: "directory",
     modelSource: "src/panel-framework/routes/panelRoutes.ts",
     modelToken: 'maturity: "unavailable"',
-    rendererSource: "src/panel-framework/mobile/MobileDomainWorkspace.tsx",
+    rendererSource: "src/panel-framework/mobile/MobileDomainDirectory.tsx",
     rendererToken: 'data-mobile-domain-workspace="more"',
     objectDetailSource: "src/panel-framework/mobile/MobileDomainWorkspace.tsx",
     objectDetailToken: 'if (route === "more")',
@@ -280,11 +411,8 @@ export function validatePanelRouteMaturity(
     if (evidence.accessibility === "independent-pass" && (!evidence.accessibilitySource || !evidence.accessibilityToken)) {
       violations.push(`${route}: independent accessibility needs a source token`);
     }
-    if (evidence.independentAcceptance === "independent-pass" && evidence.acceptanceRefs.length === 0) {
-      violations.push(`${route}: independent acceptance needs explicit refs`);
-    }
-    if (evidence.independentAcceptance === "independent-pass" && evidence.acceptanceRefs.some((ref) => !ref.startsWith(PANEL_EXTERNAL_ACCEPTANCE_PREFIX))) {
-      violations.push(`${route}: independent acceptance refs must use the external-acceptance boundary`);
+    if (evidence.acceptanceRefs.length > 0) {
+      violations.push(`${route}: route-local acceptance refs cannot prove public-release acceptance`);
     }
     if (definition.maturity === "complete") {
       if (evidence.renderer === "directory") violations.push(`${route}: complete route cannot use directory renderer`);
@@ -292,7 +420,7 @@ export function validatePanelRouteMaturity(
       if (evidence.objectDetail !== "novel") violations.push(`${route}: complete route needs novel object detail`);
       if (evidence.failureRecovery !== "route-specific") violations.push(`${route}: complete route needs route-specific failure/recovery`);
       if (evidence.accessibility !== "independent-pass") violations.push(`${route}: complete route needs independent accessibility pass`);
-      if (evidence.independentAcceptance !== "independent-pass") violations.push(`${route}: complete route needs independent acceptance`);
+      if (evidence.independentAcceptance !== "pending") violations.push(`${route}: complete route acceptance is established only by a signed public-release manifest`);
     }
     if (definition.maturity === "bounded-readonly") {
       if (evidence.renderer === "directory") violations.push(`${route}: bounded-readonly route cannot use directory renderer`);

@@ -22,9 +22,7 @@
   background: #e8eff2;
 }
 
-.section-timeseries figcaption span,
-.section-timeseries figcaption b,
-.section-timeseries figcaption small {
+.section-timeseries figcaption :is(span, b, small) {
   display: block;
   min-width: 0;
 }
@@ -79,21 +77,18 @@
   height: 104px;
 }
 
-.section-series-grid,
-.section-series-threshold,
-.section-series-line {
+.section-timeseries :is(.section-series-grid, .section-series-threshold, .section-series-line) {
   fill: none;
   vector-effect: non-scaling-stroke;
+  stroke-width: 1;
 }
 
 .section-series-grid {
   stroke: rgba(70, 98, 111, 0.18);
-  stroke-width: 1;
 }
 
 .section-series-threshold {
   stroke: rgba(138, 83, 61, 0.42);
-  stroke-width: 1;
   stroke-dasharray: 4 4;
 }
 
@@ -194,12 +189,10 @@
     background: #fbfcfd;
   }
   .section-timeseries-body {
-    padding-right: 11px;
-    padding-left: 11px;
+    padding-inline: 11px;
   }
   .section-timeseries footer {
-    padding-right: 11px;
-    padding-left: 11px;
+    padding-inline: 11px;
   }
 }
 
@@ -210,16 +203,14 @@
 }
 
 @media (forced-colors: active) {
-  .section-series-line,
-  .section-series-threshold {
+  .section-timeseries :is(.section-series-line, .section-series-threshold) {
     stroke: CanvasText;
   }
   .section-timeseries footer i {
     border-color: ButtonText;
     background: ButtonText;
   }
-  .section-timeseries footer i.is-memory,
-  .section-timeseries footer i.is-disk {
+  .section-timeseries footer i:is(.is-memory, .is-disk) {
     background: transparent;
   }
 }

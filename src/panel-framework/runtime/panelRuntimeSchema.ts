@@ -117,7 +117,7 @@ const SNAPSHOT_RATE_FIELDS = {
 } as const;
 const CONNECTION_RATE_FIELDS = ["upRate", "downRate", "totalRate", "sessionBytes"] as const;
 const MAX_SNAPSHOT_COLLECTION_ROWS = 20_000;
-const TIMESTAMP_FIELD = /^(?:timestamp|updatedAt|generatedAt|sourceUpdatedAt|cachedAt|lastUsedAt|createdAt|systemTime|.*UpdatedAt|.*LastErrorAt)$/;
+const TIMESTAMP_FIELD = /^(?:observedAt|timestamp|updatedAt|generatedAt|sourceUpdatedAt|cachedAt|lastUsedAt|createdAt|systemTime|.*At|.*Timestamp)$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -179,7 +179,8 @@ function validateSnapshotTree(
   if (!isRecord(value)) return;
   Object.entries(value).forEach(([key, item]) => {
     const nextPath = path ? `${path}.${key}` : key;
-    if (!(path === "" && key === "updatedAt") && TIMESTAMP_FIELD.test(key) && item !== null && !validTimestamp(item)) {
+    const isLogTime = /^logs\.(?:all|system|firewall|dhcp|dns)\[\d+\]\.time$/.test(nextPath);
+    if (!(path === "" && key === "updatedAt") && (TIMESTAMP_FIELD.test(key) || isLogTime) && item !== null && !validTimestamp(item)) {
       issues.push(`${nextPath} 必须是带时区的 RFC 3339 时间或 null`);
     }
     validateSnapshotTree(item, nextPath, issues, depth + 1);

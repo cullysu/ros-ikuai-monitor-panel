@@ -69,6 +69,17 @@ assert.strictEqual(schema.validatePanelSnapshot({ ...operational, updatedAt: '20
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, meta: { ...operational.meta, realtimeUpdatedAt: '2026-07-16 10:00:00' } }).ok, false, 'offset-free nested time must be rejected');
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, overview: { ...operational.overview, systemTime: '2026-07-16 10:00:00' } }).ok, false, 'offset-free RouterOS device clock must be rejected');
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, overview: { ...operational.overview, systemTime: '2026-07-16T10:00:00+08:00' } }).ok, true, 'timezone-qualified RouterOS device clock must pass');
+assert.strictEqual(schema.validatePanelSnapshot({
+  ...operational,
+  collectionEvidence: { lastSuccessAt: '2026-07-16 10:00:00', lastFailureAt: null },
+}).ok, false, 'offset-free late-added collection evidence must make the snapshot malformed');
+assert.strictEqual(schema.validatePanelSnapshot({
+  ...operational,
+  collectionEvidence: { lastSuccessAt: '2026-07-16T10:00:00Z', lastFailureAt: null },
+}).ok, true, 'timezone-qualified late-added collection evidence must pass');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, logs: { all: [{ time: '12:00:01' }] } }).ok, false, 'offset-free log time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, logs: { all: [{ observedAt: '2026-07-16 10:00:00' }] } }).ok, false, 'offset-free log observation time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, logs: { all: [{ observedAt: '2026-07-16T10:00:00Z' }] } }).ok, true, 'qualified log observation time must pass');
 const validAtomicTrafficSample = {
   ...operational,
   overview: {

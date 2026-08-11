@@ -7,7 +7,12 @@ const http = require('http');
 const net = require('net');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
-const { chromium } = require('playwright-core');
+const {
+  LifecycleError,
+  bounded: lifecycleBounded,
+  browserExecutable,
+  launchManagedBrowser,
+} = require('./acceptance/browser-lifecycle-v2/browser-lifecycle');
 const { inspectMobileNativeOverview, inspectOverviewMobileInteraction } = require('./acceptance/inspect-overview-mobile');
 const { inspectSectionBrowser } = require('./acceptance/inspect-section-browser');
 const { inspectOverviewDesktopLayout } = require('./acceptance/inspect-overview-desktop-layout');
@@ -1274,13 +1279,41 @@ class PlaywrightSession {
     throw new Error(`Unsupported Playwright browser command: ${method}`);
   }
 
-  close() {}
+  close() {
+    this.closed = true;
+  }
 
   async closeTarget() {
     if (this.closed) return;
     this.closed = true;
-    await this.page.close({ runBeforeUnload: false }).catch(() => {});
-    await this.context.close();
+    const failures = [];
+    if (!this.page.isClosed()) {
+      try {
+        await lifecycleBounded(
+          'matrix.target.page.close',
+          () => this.page.close({ runBeforeUnload: false }),
+          3_000,
+        );
+      } catch (error) {
+        failures.push({ target: 'page', message: error && error.message ? error.message : String(error) });
+      }
+    }
+    try {
+      await lifecycleBounded(
+        'matrix.target.context.close',
+        () => this.context.close(),
+        8_000,
+      );
+    } catch (error) {
+      failures.push({ target: 'context', message: error && error.message ? error.message : String(error) });
+    }
+    if (failures.length) {
+      throw new LifecycleError(
+        'TARGET_CLOSE_FAILED',
+        'matrix browser target could not be closed cleanly',
+        { failures },
+      );
+    }
   }
 }
 
@@ -1289,9 +1322,10 @@ async function launchBrowser(args, report) {
   if (!browserPath) {
     throw new Error('Edge/Chrome executable not found. Set BROWSER or CHROME_PATH.');
   }
-  const browser = await chromium.launch({
-    executablePath: browserPath,
-    headless: true,
+  const managedBrowser = (await lifecycleBounded('matrix.browser.managed.launch', () => launchManagedBrowser({
+    executablePath: browserExecutable(browserPath),
+    launchTimeoutMs: 15_000,
+    cleanupTimeoutMs: 8_000,
     args: [
       '--disable-background-networking',
       '--disable-dev-shm-usage',
@@ -1303,32 +1337,60 @@ async function launchBrowser(args, report) {
       '--metrics-recording-only',
       ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
     ],
-  });
-  report.browser = { driver: 'playwright-core', path: browserPath };
+  }), 15_000, async (lateManagedBrowser) => {
+    if (lateManagedBrowser) await lateManagedBrowser.close();
+  })).value;
+  const browser = managedBrowser.browser;
+  report.browser = {
+    driver: 'playwright-core-managed-v2',
+    path: browserPath,
+    ownedBrowserPid: managedBrowser.diagnostics.ownedBrowserPid,
+    lifecycle: null,
+  };
 
   return {
     browserPath,
     connect: async () => {
-      const context = await browser.newContext({
-        locale: 'zh-CN',
-        colorScheme: 'light',
-        reducedMotion: 'reduce',
-      });
+      let context = null;
       try {
-        const page = await context.newPage();
+        context = (await lifecycleBounded(
+          'matrix.context.create',
+          () => managedBrowser.openContext({
+            locale: 'zh-CN',
+            colorScheme: 'light',
+            reducedMotion: 'reduce',
+          }),
+          15_000,
+          async (lateContext) => {
+            if (lateContext) await lateContext.close();
+          },
+        )).value;
+        const page = (await lifecycleBounded(
+          'matrix.page.create',
+          () => context.newPage(),
+          15_000,
+          async (latePage) => {
+            if (latePage && !latePage.isClosed()) await latePage.close({ runBeforeUnload: false });
+          },
+        )).value;
         page.setDefaultTimeout(15000);
         page.setDefaultNavigationTimeout(15000);
         return new PlaywrightSession(context, page);
       } catch (error) {
-        await context.close().catch(() => {});
+        if (context) {
+          try {
+            await lifecycleBounded('matrix.context.abort-close', () => context.close(), 8_000);
+          } catch (cleanupError) {
+            error.lifecycleCleanupError = cleanupError && cleanupError.message ? cleanupError.message : String(cleanupError);
+          }
+        }
         throw error;
       }
     },
     stop: async () => {
-      for (const context of browser.contexts()) {
-        await context.close().catch(() => {});
-      }
-      await browser.close();
+      const lifecycle = await managedBrowser.close();
+      report.browser.lifecycle = lifecycle;
+      return lifecycle;
     },
   };
 }
@@ -1644,17 +1706,25 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
           { name: 'status-bus', selector: '[data-desktop-status-bus]' },
         ] : requireMobileOverviewAnchors ? [
           {
-            name: 'mobile-runtime-bar',
-            selector: '[data-panel-runtime-toolbar="mobile"], .panel-runtime-bar-mobile, .mp-device-context',
+            name: 'optical-patrol-root',
+            selector: '[data-optical-patrol-root]',
           },
           {
-            name: 'mobile-device-identity',
-            selector: '.mp-device-context > span:first-child > span > b, [data-panel-runtime-toolbar="mobile"] .panel-runtime-device b',
+            name: 'optical-patrol-evidence-boundary',
+            selector: '[data-optical-patrol-evidence-boundary]',
           },
           {
-            name: 'mobile-runtime-actions',
-            selector: '.mp-device-context > span:last-child, [data-panel-runtime-toolbar="mobile"] .panel-runtime-actions',
+            name: 'optical-patrol-decision',
+            selector: '[data-optical-patrol-decision]',
           },
+          {
+            name: 'optical-patrol-expanded-claim',
+            selector: '[data-optical-patrol-expanded-claim]',
+          },
+          ...(window.innerHeight >= 568 ? [{
+            name: 'optical-patrol-object-action',
+            selector: '[data-optical-patrol-action]',
+          }] : []),
         ] : [];
         const scaleX = width / Math.max(1, window.innerWidth);
         const scaleY = height / Math.max(1, window.innerHeight);
@@ -1922,7 +1992,6 @@ async function captureScreenshot(cdp, filePath, options = {}) {
 async function runBrowserChecks(args, report, baseUrl) {
   const profiles = args.profile === 'both' ? ['public', 'private'] : [args.profile];
   const browser = await launchBrowser(args, report);
-  report.browser = { driver: 'playwright-core', path: browser.browserPath };
   try {
     for (const profile of profiles) {
     const sections = args.sections || (profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS);
@@ -2084,13 +2153,16 @@ async function runBrowserChecks(args, report, baseUrl) {
           if (cdp) {
             cdp.close();
             if (typeof cdp.closeTarget === 'function') {
-              await withTimeout(
-                cdp.closeTarget(),
-                3000,
-                `close browser target ${profile}/${scaleScenario}/${viewport.name}`,
-              ).catch((error) => {
-                warn(report, `browser target close timed out ${profile}/${scaleScenario}/${viewport.name}`, { error: error.message });
-              });
+              const targetLabel = `close browser target ${profile}/${scaleScenario}/${viewport.name}`;
+              try {
+                await withTimeout(cdp.closeTarget(), 12_000, targetLabel);
+                record(report, targetLabel, true, { lifecycle: 'managed-context-and-page-close' });
+              } catch (error) {
+                record(report, targetLabel, false, {
+                  lifecycle: 'managed-context-and-page-close',
+                  error: error && (error.stack || error.message) ? (error.stack || error.message) : String(error),
+                });
+              }
             }
           }
         }
@@ -2098,9 +2170,20 @@ async function runBrowserChecks(args, report, baseUrl) {
     }
   }
   } finally {
-    await withTimeout(browser.stop(), 30000, 'browser stop').catch((error) => {
-      warn(report, 'browser stop timed out', { error: error.message });
-    });
+    try {
+      const lifecycle = await withTimeout(browser.stop(), 30_000, 'browser stop');
+      const cleanup = Array.isArray(lifecycle?.cleanup) ? lifecycle.cleanup : [];
+      const cleanupOk = cleanup.length > 0 && cleanup.every((entry) => entry.status === 'ok');
+      record(report, 'browser managed lifecycle closes owned process tree', cleanupOk, {
+        ownedBrowserPid: lifecycle?.ownedBrowserPid || report.browser?.ownedBrowserPid || null,
+        cleanup,
+      });
+    } catch (error) {
+      record(report, 'browser managed lifecycle closes owned process tree', false, {
+        error: error && (error.stack || error.message) ? (error.stack || error.message) : String(error),
+        lifecycle: report.browser?.lifecycle || null,
+      });
+    }
   }
 }
 
@@ -2463,15 +2546,15 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       tables: [{ name: 'main', activeRoutes: 3, staticCount: 3 }],
     },
     logs: {
-      system: [{ time: '12:00:01', topics: 'system,info', message: 'smoke fixture ready' }],
-      firewall: [{ time: '12:01:01', topics: 'firewall,info', message: 'accepted established session' }],
-      dhcp: [{ time: '12:02:01', topics: 'dhcp,info', message: 'lease bound' }],
-      dns: [{ time: '12:03:01', topics: 'dns,info', message: 'cache hit' }],
+      system: [{ time: historyTimestamps[2], topics: 'system,info', message: 'smoke fixture ready' }],
+      firewall: [{ time: historyTimestamps[3], topics: 'firewall,info', message: 'accepted established session' }],
+      dhcp: [{ time: historyTimestamps[4], topics: 'dhcp,info', message: 'lease bound' }],
+      dns: [{ time: historyTimestamps[5], topics: 'dns,info', message: 'cache hit' }],
       all: [
-        { time: '12:00:01', topics: 'system,info', message: 'smoke fixture ready' },
-        { time: '12:01:01', topics: 'firewall,info', message: 'accepted established session' },
-        { time: '12:02:01', topics: 'dhcp,info', message: 'lease bound' },
-        { time: '12:03:01', topics: 'dns,info', message: 'cache hit' },
+        { time: historyTimestamps[2], topics: 'system,info', message: 'smoke fixture ready' },
+        { time: historyTimestamps[3], topics: 'firewall,info', message: 'accepted established session' },
+        { time: historyTimestamps[4], topics: 'dhcp,info', message: 'lease bound' },
+        { time: historyTimestamps[5], topics: 'dns,info', message: 'cache hit' },
       ],
     },
     statusFindings: {
@@ -3359,6 +3442,7 @@ if (require.main === module) {
 
 module.exports = {
   OVERVIEW_RELEASE_SCALE_SCENARIOS,
+  PlaywrightSession,
   analyzeScreenshotAnchorPixels,
   buildSnapshot,
   finalizeReportTruth,

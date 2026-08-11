@@ -6,9 +6,12 @@ const path = require('path');
 
 const FRAMEWORK_ASSET_BUDGETS = Object.freeze({
   script: Object.freeze({
-    bytes: 768000,
-    gzipBytes: 155000,
-    brotliBytes: 132000,
+    // The supplemental evidence routes are shipped in the same offline-safe
+    // IIFE. Terser absorbs most of that cost; keep raw and Brotli ceilings
+    // tighter than the former budget while allowing a bounded gzip variance.
+    bytes: 600000,
+    gzipBytes: 160000,
+    brotliBytes: 130000,
   }),
   style: Object.freeze({
     bytes: 120000,

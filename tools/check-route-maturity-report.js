@@ -28,25 +28,13 @@ if (result.error || result.status !== 0) {
   }
 }
 
-const expectedCounts = {
-  complete: 0,
-  "bounded-readonly": 18,
-  fallback: 0,
-  unavailable: 1,
-};
 const routeMaturity = report?.routeMaturity;
 const maturityCounts = report?.maturityCounts;
 if (!Array.isArray(routeMaturity)) failures.push("routeMaturity must be an explicit per-route array");
 if (!maturityCounts || typeof maturityCounts !== "object") failures.push("maturityCounts must be present");
-for (const [maturity, expected] of Object.entries(expectedCounts)) {
-  if (maturityCounts?.[maturity] !== expected) {
-    failures.push(`${maturity} route count must be ${expected}, received ${maturityCounts?.[maturity]}`);
-  }
-}
 if (Array.isArray(routeMaturity)) {
   if (routeMaturity.length !== 19) failures.push(`routeMaturity must contain 19 routes, received ${routeMaturity.length}`);
   if (new Set(routeMaturity.map((entry) => entry.route)).size !== routeMaturity.length) failures.push("routeMaturity route ids must be unique");
-  if (routeMaturity.some((entry) => entry.maturity === "complete")) failures.push("no route may be called complete without independent acceptance");
   if (routeMaturity.some((entry) => !["complete", "bounded-readonly", "fallback", "unavailable"].includes(entry.maturity))) failures.push("routeMaturity contains an unknown maturity label");
 }
 
@@ -63,6 +51,13 @@ for (const match of routeDoc.matchAll(/^\|\s*([^|]+?)\s*\|\s*(complete|bounded-r
 if (documentedMaturity.size !== 19) {
   failures.push(`route maturity authority table must contain 19 route rows, received ${documentedMaturity.size}`);
 }
+const expectedCounts = { complete: 0, "bounded-readonly": 0, fallback: 0, unavailable: 0 };
+for (const maturity of documentedMaturity.values()) expectedCounts[maturity] += 1;
+for (const [maturity, expected] of Object.entries(expectedCounts)) {
+  if (maturityCounts?.[maturity] !== expected) {
+    failures.push(`${maturity} route count must match the authority document (${expected}), received ${maturityCounts?.[maturity]}`);
+  }
+}
 if (Array.isArray(routeMaturity)) {
   for (const entry of routeMaturity) {
     if (documentedMaturity.get(entry.route) !== entry.maturity) {
@@ -70,8 +65,11 @@ if (Array.isArray(routeMaturity)) {
     }
   }
 }
-if (report?.releasePass !== false) failures.push("contract-only route report must retain releasePass=false");
+if (report?.structuralPass !== true) failures.push("structural route report must pass without promoting bounded routes to complete");
+if (report?.routePolicyPass !== true) failures.push("bounded public-release policy must match the active route registry");
 if (report?.acceptanceComplete !== false) failures.push("contract-only route report must retain acceptanceComplete=false");
+if (report?.publicReleasePass !== false) failures.push("acceptanceComplete=false must never produce publicReleasePass=true");
+if (Object.hasOwn(report || {}, "releasePass")) failures.push("structural route report must not expose the legacy releasePass field");
 
 const output = {
   pass: failures.length === 0,

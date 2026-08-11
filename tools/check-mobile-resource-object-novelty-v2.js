@@ -7,21 +7,14 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
 const inspectorSource = read('src/panel-framework/mobile/mobile-inspector/ResourceInspector.tsx');
-const comparisonSource = read('src/panel-framework/mobile/mobile-inspector/resourceComparison.ts');
 const presentationSource = read('src/panel-framework/sections/resourceEvidencePresentation.ts');
-const runtimePath = path.join(root, '_acceptance/panel-runtime-browser/report.json');
-const runtime = fs.existsSync(runtimePath) ? JSON.parse(fs.readFileSync(runtimePath, 'utf8')) : null;
-const runtimeCheck = (runtime?.checks || []).find((check) => (
-  check.name === '772px resource related comparison reports delta to selected object without replay'
-));
 
 const checks = {
-  relatedStatusDoesNotReplayRowTrailing: !/status:\s*item\.trailing/.test(inspectorSource),
-  relativeComparisonHelperExists: /function\s+resourceRelativeStatus\s*\(/.test(comparisonSource),
-  relativeComparisonUsesSelectedAndRelatedLatest: /selectedLatest/.test(comparisonSource) && /relatedLatest/.test(comparisonSource),
-  missingComparisonIsExplicit: comparisonSource.includes('相对值不可比较'),
-  objectStillOwnsRangeAndEvidenceTime: presentationSource.includes('minimum:') && presentationSource.includes('maximum:') && presentationSource.includes('evidenceAt:'),
-  freshRuntimeRelatedComparisonEvidence: runtimeCheck?.pass === true,
+  objectUsesOneEvidenceDossier: /<InspectorSection title="样本判断"/.test(inspectorSource) && /title="相关资源比较"/.test(inspectorSource) && /title="依赖与来源"/.test(inspectorSource),
+  primaryFactsSeparateCurrentThresholdChangeAndContinuity: ["当前样本", "策略阈值", "变化范围", "连续性"].every((label) => inspectorSource.includes(label)),
+  siblingMetricsBecomeRelativeEvidenceInsteadOfBareReplay: /<InspectorRelations/.test(inspectorSource) && /resourceComparisonRows\(evidence, relatedRows\)/.test(inspectorSource) && /data-resource-related-comparison/.test(inspectorSource),
+  provenanceHasOneExplicitDependencyOwner: inspectorSource.includes('采样来源') && /title="依赖与来源"/.test(inspectorSource) && !/mdi-resource-provenance/.test(inspectorSource),
+  evidencePresentationStillOwnsRangeAndContinuityTruth: presentationSource.includes('minimum:') && presentationSource.includes('maximum:') && presentationSource.includes('continuity:'),
 };
 
 const failures = Object.entries(checks)
@@ -29,7 +22,7 @@ const failures = Object.entries(checks)
   .map(([name]) => name);
 const result = {
   pass: failures.length === 0,
-  contract: 'mobile-resource-object-novelty-v2',
+  contract: 'mobile-resource-object-decision-ledger-v3',
   implementationState: failures.length === 0 ? 'focused-green' : 'expected-red',
   checks,
   failures,

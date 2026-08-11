@@ -9,9 +9,12 @@ const branchEnd = source.indexOf("\n  };\n}", branchStart);
 const normalBranch = branchStart >= 0 && branchEnd >= 0 ? source.slice(branchStart, branchEnd) : "";
 const checks = {
   normalBranchFound: normalBranch.length > 0,
-  verifiedManagementTitle: /title:\s*\"默认出口与采集已核实\"/.test(normalBranch),
-  managementEvidenceInSummary: /默认路由|采集通道/.test(normalBranch),
+  verifiedManagementTitle: normalBranch.includes("当前管理证据已核实"),
+  fleetScopeTitle: normalBranch.includes("多对象采样已更新"),
+  fleetSummaryNamesObjectSampling: normalBranch.includes("按对象展示本次采样"),
+  summaryDoesNotReplayProofOrObject: !/默认路由|采集通道|WAN/.test(normalBranch),
   externalProbeBoundaryInSummary: /外部业务.*未探测|未探测.*外部业务/.test(normalBranch),
+  internetAvailabilityNotClaimed: /不据此声明互联网可用/.test(normalBranch),
   unverifiedBusinessTitleRemoved: !/title:\s*\"业务可用性尚未判定\"/.test(normalBranch),
 };
 const failed = Object.entries(checks).filter(([, value]) => !value).map(([name]) => name);
