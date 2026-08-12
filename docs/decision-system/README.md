@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step941 architecture remediation; a new clean exact candidate and whole-product evidence remain pending
+- validForCommit: Step942 accessibility inventory remediation; a replacement clean exact candidate and whole-product evidence remain pending
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `941`
-- latestRecordedStep: `941`
-- latestStepOutcome: `941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed`
+- currentBoundaryForStep: `942`
+- latestRecordedStep: `942`
+- latestStepOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 `current-state.md` 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -16,4 +16,4 @@
 - 完整历史：`../panel-redesign-decision-log.md`
 - 历史索引：`historical-index.md`
 
-任务 active、`blocked=false`。Step940 supplemental 聚焦本地签收仍有效；Step941 记录首个冻结 SHA `aee71c34…` 被 3900 行架构门禁淘汰，健康发现已从 `app.py` 迁移到独立后端模块且 focused backend 回归恢复绿色。新的 clean SHA 尚未创建，整个产品也尚未完成 Overview/route/Edge 矩阵、四角色全产品签收、真实 RouterOS soak、实体设备、授权和远端 CL。发布保持 FAIL/CLOSED，GitHub 未上传，CL 未触发。
+任务 active、`blocked=false`。Step940 supplemental 聚焦本地签收仍有效；Step941 的后端职责拆分进入 `42d1d1d…` 并通过基础门禁；Step942 记录完整门禁发现的 DNS supplemental ownership 竞态及 focused 原生缩放/强制色修复。新的 clean SHA 与完整 replay 尚未完成，整个产品也尚未完成 Overview/route/Edge 矩阵、四角色全产品签收、真实 RouterOS soak、实体设备、授权和远端 CL。发布保持 FAIL/CLOSED，GitHub 未上传，CL 未触发。

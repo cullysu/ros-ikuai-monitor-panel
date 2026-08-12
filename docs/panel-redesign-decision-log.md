@@ -26405,3 +26405,41 @@ ocused-green-engineering
 - latestStepOutcome: `941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Commit the isolated health-findings extraction as a new clean SHA, then rerun all exact-candidate base gates before starting browser matrices.
+
+## 第 942 步：原生 200% 强制色门禁识别到 DNS 集合所有权竞态，用稳定语义分类替代过渡帧行数猜测
+
+### 触发 / 问题
+
+- 健康发现拆分提交为替代候选 `42d1d1d9c9e2f8538c76915963ffb845ff347c9b` 后，Python 编译、后端安全、collector `22/22`、public backend `18/18`、supplemental `7/7`、依赖锁、类型、决策系统、构建与静态资产均通过。
+- 完整 `check:release-gates` 继续运行到真实浏览器原生 page-scale/forced-colors 阶段时准确变红：DNS4 在第一次 inventory 被当成通用对象详情路由，第二次访问却找不到 `[data-mobile-row-id]`。
+- 根因不是 DNS 数据丢失，也不是强制色本身失效。DNS 补充请求挂载后会从 `idle → loading → success`；成功且契约被接受时，supplemental DNS 分页集合成为唯一可见集合，并按设计移除通用 snapshot 对象列表。旧门禁在过渡帧看到通用行就把 DNS4 加入 `detailRoutes`，随后又用不属于 DNS 分页模型的通用对象详情历史契约验它。
+
+### 决策
+
+- 自动启动的 DNS / health supplemental 路由在做对象能力 inventory 前，必须等待请求进入 `success | error` 终态；不得读取 `idle` 过渡 DOM 作为能力真值。
+- DNS4 是否由补充集合接管，必须同时依据 `request=success`、语义 UI state 为 `ready | empty`、kind 为 `dns-static` 且真实 DNS list 存在；不能只靠路由名或瞬时行数。
+- 已接管的 DNS 分页集合明确记为“不适用通用 object-detail history”，但不降低无障碍覆盖：门禁另行验证 DNS 行仍可见、两个分页按钮均有名称、可用分页按钮可聚焦，并在 forced-colors 下拥有至少 2px 的非颜色焦点指示。
+- supplemental 请求失败、不可用或 malformed 时不伪造接管；若 fallback snapshot 通用对象仍存在，原通用详情、`aria-current`、Back/Forward 和焦点恢复合同继续执行。
+
+### Emil Before / After / Why
+
+| Before | After | Why |
+| --- | --- | --- |
+| 用一次瞬时 `[data-mobile-row-id]` 计数推断路由永久具备通用详情 | 等待自动 supplemental 终态，再按真实集合所有权分类 | 过渡帧不是产品能力，稳定语义才是 |
+| DNS 分页证据被送入通用对象 ID / detail / history 合同 | DNS 验自己的分页、名称、可见行和 forced-colors 焦点合同 | 不把两种交互模型混为一谈，也不靠排除路由偷减覆盖 |
+| 超时报错只显示 selector，无法说明为何 DNS 行消失 | 报告写入明确 ownership reason 与 DNS 专属证据 | 失败与通过都能被复核，不再靠猜测解释 |
+
+### 验证
+
+- `node --check tools/check-mobile-accessibility-runtime-v2.js`：PASS。
+- `npm run check:mobile-accessibility-runtime-v2-native`：PASS，`browser-page-scale` 总耗时约 65 秒。
+- 新报告把 DNS4 记录为 accepted supplemental owner；`rowCount=2`、分页按钮 `2/2` 有可访问名称、可用分页按钮 `:focus-visible=true`、outline `2px solid`、`forcedColorAdjust=auto`。
+- 独立只读工程复核确认：DNS 历史契约是页码，不是通用对象 ID；已接受补充集合不应进入 generic object-detail history，error/unavailable/malformed fallback 仍须保留通用覆盖。
+
+### 边界 / 心得
+
+- `42d1d1d…` 已因 tracked 门禁修复变为父候选，不能承载最终精确证据；必须形成新的 clean SHA 后重新跑完整 `release-gates`，不能把 focused 重跑冒充全门禁。
+- 这一步修的是验收真值，不是放宽验收：同一页面可以有不同对象模型，门禁必须先识别谁拥有最终可见集合，再验证该模型真正承诺的操作和辅助技术合同。
+- latestStepOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Commit the stable supplemental route-inventory and DNS forced-colors contract as a replacement clean SHA, then rerun exact-candidate base and full release gates before generating the bound browser matrices.

@@ -1,21 +1,21 @@
 - status: `current`
-- currentConclusionForStep: `941`
-- latestRecordedStep: `941`
-- latestStepOutcome: `941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed`
-- currentBoundaryForStep: `941`
-- validForCommit: Step941 architecture remediation may enter a new clean candidate; whole-product exact evidence and release qualification remain pending
+- currentConclusionForStep: `942`
+- latestRecordedStep: `942`
+- latestStepOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
+- currentBoundaryForStep: `942`
+- validForCommit: Step942 accessibility inventory remediation requires a replacement clean candidate; whole-product exact evidence and release qualification remain pending
 - supersededBy: `null`
-- updatedAt: 2026-08-12T07:36:00+08:00
+- updatedAt: 2026-08-12T09:05:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
-**FAIL overall / supplemental route local Product/Visual/Responsive/Accessibility signoff is closed / whole-product exact-candidate acceptance is pending / release CLOSED.** Pocket presentation ownership remains deleted. Connections, DNS and global health findings now have bounded backend envelopes plus isolated mobile/desktop presentation, production-bundle interaction gates and 16 signed local originals. This closes the focused supplemental P1s but does not freeze a clean candidate or renew stale Overview/route/Edge evidence. Task remains active with `blocked=false`; GitHub has not been uploaded.
+**FAIL overall / supplemental route local Product/Visual/Responsive/Accessibility signoff is closed / exact-candidate release-gate remediation is green only in focused replay / whole-product acceptance is pending / release CLOSED.** Candidate `42d1d1d…` passed base contracts but the full gate exposed a DNS supplemental ownership race in forced-colors inventory. The gate now waits for stable ownership and separately verifies DNS pagination accessibility; that tracked repair requires another clean SHA and complete replay. Task remains active with `blocked=false`; GitHub has not been uploaded.
 
-## Current decision record: Step 941
+## Current decision record: Step 942
 
-- The first frozen SHA `aee71c34…` failed the unchanged backend architecture ceiling because `app.py` had reached 4050 lines. The gate was not relaxed: 533 lines of public-safe health finding logic moved to `panel_backend/health_findings.py`, while the app keeps only configuration wiring and the runtime exports required by collector/snapshot mixins.
-- The first collector rerun caught a missing `ACTION_SEVERITY_RANK` runtime export; the app now explicitly re-exports the shared constant. Backend security, 22 collector checks, 18 public backend tests, seven supplemental tests and Python compilation pass. Because this is a tracked repair, `aee71c34…` is superseded and a new clean SHA must restart exact evidence.
+- Replacement candidate `42d1d1d…` includes the Step941 health-finding extraction and passes Python compilation, backend security, 22 collector checks, 18 public backend tests, seven supplemental tests, dependency lock, types, decision system, deterministic build and static assets.
+- Full release gates then exposed a real inventory race: accepted DNS supplemental evidence replaces generic snapshot rows, but the forced-colors test classified the transient idle DOM as generic object-detail capability. The inventory now waits for automatic requests to settle, records accepted DNS ownership explicitly, verifies named pagination and a 2px non-color focus indicator, and keeps generic detail coverage for fallback states. Focused native page-scale replay passes; a new clean SHA and complete replay remain mandatory.
 
 - Connections, DNS and global health findings use one shared request/evidence state while mobile and desktop keep separate presentation trees. Accepted DNS/connection results own exactly one visible collection; the snapshot list is fallback-only.
 - The common evidence boundary exposes current/historical mode, a visible localized time backed by raw RFC3339, source and coverage. Missing rates remain unavailable; observed zero remains zero.
@@ -52,14 +52,14 @@
 |---|---|---|
 | R07 Product | focused supplemental PASS; whole-product pending | Phone supplemental review is P0/P1=0; a clean exact-candidate whole-product review is still required. |
 | R09 Design / Visual | focused supplemental PASS; whole-product pending | Signed supplemental originals and Emil review pass; the clean candidate still needs current bound Overview/route originals and full visual review. |
-| R10 Accessibility / Interaction | focused supplemental PASS; exact candidate/physical boundary open | Live status, focus history, paging and touch pass production runtime; full candidate and physical-device text/AT remain open. |
-| Engineering / bounded matrix | focused supplemental green; exact-candidate evidence pending | Backend 7/7, public 18/18, collector 22/22, production supplemental 12/12 and static/asset gates pass. Prior Edge/28/63/76/266 reports remain stale. |
+| R10 Accessibility / Interaction | focused native gate PASS; exact candidate/physical boundary open | Stable DNS ownership, forced-colors pagination focus, live status and history pass focused runtime; full clean-candidate replay and physical-device text/AT remain open. |
+| Engineering / bounded matrix | base gates green; replacement exact-candidate evidence pending | Backend 7/7, public 18/18, collector 22/22, build/static and focused native accessibility pass. Prior Edge/28/63/76/266 reports remain stale. |
 | State / route / security matrices | local automated coverage passed; independent/external acceptance open | Historical route/state matrices and current security/container regressions pass; real RouterOS soak, minimum privilege and external route acceptance remain open. |
 | R14 Release | closed | No clean candidate, real RouterOS soak, promotion authorization, GitHub upload or exact-SHA Linux/Windows/GHCR CL. |
 
 ## Authority and evidence
 
-- Full reasoning: `docs/panel-redesign-decision-log.md` Step941.
+- Full reasoning: `docs/panel-redesign-decision-log.md` Step942.
 - Historical navigation: `docs/decision-system/historical-index.md`; this page remains the sole current-state authority rather than duplicating chronology.
 - Product originals/report target: `_acceptance/optical-patrol-runtime/` (`63` viewport cells after regeneration).
 - Focused supplemental signed originals/report: `_acceptance/supplemental-route-visual/signed/` (`16` originals, `12/12` production-bundle checks).
@@ -74,4 +74,4 @@
 
 ## One next action
 
-- nextAction: Commit the isolated health-findings extraction as a new clean SHA, rerun all exact-candidate base gates, then begin Edge 200%, Overview 28, Optical 63 and route 76/266 evidence on that identity only.
+- nextAction: Commit the stable supplemental inventory and DNS forced-colors contract as a replacement clean SHA, rerun exact-candidate base and full release gates, then begin Edge 200%, Overview 28, Optical 63 and route 76/266 evidence on that identity only.

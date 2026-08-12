@@ -1421,6 +1421,66 @@ async function selectedItemEvidence(page, cdp, route) {
   return evidence;
 }
 
+async function waitForRouteInventoryStable(page, route) {
+  await page.waitForFunction((candidate) => {
+    const supplement = document.querySelector(`[data-supplemental-surface="${candidate}"]`);
+    // DNS and health evidence start automatically after mount. Their idle DOM
+    // is transitional and can expose snapshot rows that the accepted
+    // supplemental collection replaces on the next React commit.
+    if (candidate === "dns4" || candidate === "security") {
+      if (!supplement) return false;
+      const requestStatus = supplement.getAttribute("data-supplemental-request") || "";
+      return requestStatus === "success" || requestStatus === "error";
+    }
+    return !supplement || supplement.getAttribute("data-supplemental-request") !== "loading";
+  }, route);
+}
+
+async function supplementalDnsForcedColorsEvidence(page) {
+  const focusTarget = page.locator(
+    '[data-supplemental-surface="dns4"] [data-supplemental-next-page]:not([disabled]), ' +
+      '[data-supplemental-surface="dns4"] [data-supplemental-prev-page]:not([disabled])',
+  ).first();
+  await focusTarget.focus();
+  const evidence = await page.evaluate(() => {
+    const surface = document.querySelector('[data-supplemental-surface="dns4"]');
+    const list = surface?.querySelector('.mrs-dns-list');
+    const buttons = Array.from(surface?.querySelectorAll('.mrs-pager button') || []);
+    const active = document.activeElement;
+    const style = active instanceof Element ? getComputedStyle(active) : null;
+    return {
+      forcedColorsActive: matchMedia('(forced-colors: active)').matches,
+      requestStatus: surface?.getAttribute('data-supplemental-request') || '',
+      uiState: surface?.getAttribute('data-supplemental-state') || '',
+      kind: surface?.getAttribute('data-supplemental-kind') || '',
+      listPresent: Boolean(list),
+      rowCount: list?.querySelectorAll('article').length || 0,
+      pagerButtonCount: buttons.length,
+      namedPagerButtons: buttons.filter((button) => Boolean(button.getAttribute('aria-label')?.trim())).length,
+      focusedPager: active?.hasAttribute('data-supplemental-next-page') || active?.hasAttribute('data-supplemental-prev-page') || false,
+      focusVisible: active instanceof Element && active.matches(':focus-visible'),
+      outlineWidth: Number.parseFloat(style?.outlineWidth || '0'),
+      outlineStyle: style?.outlineStyle || 'none',
+      forcedColorAdjust: style?.forcedColorAdjust || '',
+    };
+  });
+  assert(
+    evidence.forcedColorsActive && evidence.requestStatus === 'success' &&
+      ['ready', 'empty'].includes(evidence.uiState) && evidence.kind === 'dns-static' &&
+      evidence.listPresent && evidence.rowCount > 0,
+    'accepted supplemental DNS collection did not remain available in forced colors',
+    evidence,
+  );
+  assert(
+    evidence.pagerButtonCount === 2 && evidence.namedPagerButtons === 2 && evidence.focusedPager &&
+      evidence.focusVisible && evidence.forcedColorAdjust !== 'none' &&
+      evidence.outlineWidth >= 2 && evidence.outlineStyle !== 'none',
+    'supplemental DNS pagination lacks a named, non-color-only forced-colors focus indicator',
+    evidence,
+  );
+  return evidence;
+}
+
 async function inspectForcedColorsRouteDetails() {
   const runtime = await launchRuntime({ forcedColors: "active" });
   try {
@@ -1432,23 +1492,36 @@ async function inspectForcedColorsRouteDetails() {
     const notApplicable = [];
     for (const route of registry) {
       await visitRoute(runtime.page, runtime.mock.url, route, { requireWorkspace: false });
+      await waitForRouteInventoryStable(runtime.page, route);
       const controlNames = await assertOperableControlNames(runtime.page, { route, surface: "route" });
       const inventory = await runtime.page.evaluate((candidate) => {
         const workspace = document.querySelector(`[data-mobile-domain-workspace="${candidate}"]`);
         const rows = workspace ? workspace.querySelectorAll("[data-mobile-row-id]").length : 0;
+        const supplement = document.querySelector(`[data-supplemental-surface="${candidate}"]`);
+        const supplementalDnsOwnsCollection = candidate === 'dns4' &&
+          supplement?.getAttribute('data-supplemental-request') === 'success' &&
+          ['ready', 'empty'].includes(supplement?.getAttribute('data-supplemental-state') || '') &&
+          supplement?.getAttribute('data-supplemental-kind') === 'dns-static' &&
+          Boolean(supplement.querySelector('.mrs-dns-list'));
         return {
           activeRoute: document.querySelector("[data-panel-app]")?.getAttribute("data-active-section") || "",
           hash: location.hash,
           workspace: Boolean(workspace),
           rows,
           directory: Boolean(document.querySelector("[data-mobile-more-directory]")),
+          supplementalDnsOwnsCollection,
         };
       }, route);
       assert(inventory.activeRoute === route && !inventory.hash, "route inventory was not canonical at runtime", { route, inventory });
-      if (inventory.workspace && inventory.rows > 0) detailRoutes.push(route);
+      const supplementalEvidence = inventory.supplementalDnsOwnsCollection
+        ? await supplementalDnsForcedColorsEvidence(runtime.page)
+        : null;
+      if (!inventory.supplementalDnsOwnsCollection && inventory.workspace && inventory.rows > 0) detailRoutes.push(route);
       else notApplicable.push({
         route,
-        reason: route === "more"
+        reason: inventory.supplementalDnsOwnsCollection
+          ? "accepted supplemental DNS collection owns the list; paginated DNS evidence rows do not implement generic object-detail history"
+          : route === "more"
           ? "registry marks this as the directory route and runtime has zero [data-mobile-row-id] objects"
           : inventory.directory
           ? "runtime rendered a directory surface, not an object-detail workspace"
@@ -1457,12 +1530,14 @@ async function inspectForcedColorsRouteDetails() {
             : "runtime rendered no mobile domain workspace or object rows",
         ...inventory,
         controlNames,
+        supplementalEvidence,
       });
     }
     assert(detailRoutes.length > 0, "runtime inventory found no detail-capable routes", { registry, notApplicable });
     const evidence = [];
     for (const route of detailRoutes) {
       await visitRoute(runtime.page, runtime.mock.url, route);
+      await waitForRouteInventoryStable(runtime.page, route);
       const selection = await selectedItemEvidence(runtime.page, cdp, route);
       await runtime.page.goBack({ waitUntil: "domcontentloaded" });
       await runtime.page.locator(`[data-mobile-domain-workspace="${route}"]`).waitFor();
