@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step940 current decision boundary; historical entries remain immutable
+- validForCommit: Step941 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `940`
-- latestRecordedStep: `940`
+- coveredStepMax: `941`
+- latestRecordedStep: `941`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -60,7 +60,8 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 937 | third exact VETO remediation, complete action geometry, decisive-evidence ordering, responsive label/name repair, and exact `2c89…` evidence later superseded by the Step938 scroll-state finding | current-state.md |
 | 938 | fourth exact local Product/Design/Visual/Accessibility/Engineering P0/P1 closure for artifact `188e…`; later tracked release-gate remediation makes it historical rather than current acceptance | Step939/current-state.md |
 | 939 | tracked remediation invalidated Step938 as current acceptance while complete matrices and a clean candidate remained open | Step940/current-state.md |
-| 940 | supplemental connections, DNS and global-health evidence closed focused local Product/Visual/Responsive/Accessibility P1s while whole-product exact acceptance and release remain open | current-state.md |
+| 940 | supplemental connections, DNS and global-health evidence closed focused local Product/Visual/Responsive/Accessibility P1s while whole-product exact acceptance remained open | Step941/current-state.md |
+| 941 | first exact SHA rejected by the unchanged app architecture ceiling; health findings extracted to a dedicated backend module and replacement clean SHA required | current-state.md |
 
 ## Reading rule
 

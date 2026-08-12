@@ -1,13 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step940 focused supplemental signoff; whole-product clean exact acceptance remains pending; not a public release approval
+- validForCommit: Step941 architecture remediation; replacement clean exact acceptance remains pending; not a public release approval
 - supersededBy: null
-- currentStep: `940`
-- currentOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
-- latestStepOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
+- currentStep: `941`
+- currentOutcome: `941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed`
+- latestStepOutcome: `941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
+- Step941: The first frozen SHA `aee71c34…` failed the unchanged 3900-line `app.py` architecture ceiling. The gate stayed strict: public-safe health finding logic moved into `panel_backend/health_findings.py`, the app retains only configuration wiring and explicit runtime exports, and backend security, collector 22, public backend 18 and supplemental seven checks pass. This tracked repair supersedes `aee71c34…`; a replacement clean SHA must restart exact evidence. GitHub untouched; release FAIL/CLOSED.
 - Step940: Supplemental connections, DNS and global-health findings now use bounded evidence envelopes, one accepted visible collection, localized visible time backed by raw RFC3339 and separate mobile/desktop presentation owners. Production-bundle gates cover 44px targets, live status, `aria-busy`, paging, Back/Forward focus and no duplicate collection; 16 signed originals plus fresh Product/Visual, Responsive/Tablet and Engineering/Accessibility reviews close focused P0/P1 locally. This focused local signoff does not approve the whole product: current Edge/Overview/Optical/route/state evidence must be regenerated on one clean exact candidate, then four-role whole-product review, real RouterOS soak, promotion authorization and exact-SHA CL remain required. GitHub untouched; release FAIL/CLOSED.
 - Step939: historical after Step940. Tracked browser-lifecycle, focus, timestamp geometry, contrast, route/recovery and decision-truth remediation changed the worktree after Step938. The four exact `188e…` records remain immutable historical local evidence and cannot sign the current candidate.
 - Step938: Four fresh reviews first inspected exact `2c89…` and found the real `.op` scroll-owner/screenshot mismatch. After the root fix and governance sync, exact artifact `188e…` passed full-63, responsive 10 zero-origin captures, Overview 18 and all current accessibility reports with 63+10 PNG integrity. Four new agents inspected every bound image and returned Product `0/0/1`, Design/Visual `0/0/0`, Accessibility `0/0/0`, Engineering `0/0/0`; four structured records pass with `releaseEligible=false`. It is historical after Step939 and cannot sign the current worktree.

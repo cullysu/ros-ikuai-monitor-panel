@@ -1,9 +1,9 @@
 - status: `current`
-- currentConclusionForStep: `940`
-- latestRecordedStep: `940`
-- latestStepOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
-- currentBoundaryForStep: `940`
-- validForCommit: Step940 focused supplemental route signoff may enter a clean candidate; whole-product exact evidence and release qualification remain pending
+- currentConclusionForStep: `941`
+- latestRecordedStep: `941`
+- latestStepOutcome: `941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed`
+- currentBoundaryForStep: `941`
+- validForCommit: Step941 architecture remediation may enter a new clean candidate; whole-product exact evidence and release qualification remain pending
 - supersededBy: `null`
 - updatedAt: 2026-08-12T07:36:00+08:00
 - authority: This is the only human-readable current-state source.
@@ -12,7 +12,10 @@
 
 **FAIL overall / supplemental route local Product/Visual/Responsive/Accessibility signoff is closed / whole-product exact-candidate acceptance is pending / release CLOSED.** Pocket presentation ownership remains deleted. Connections, DNS and global health findings now have bounded backend envelopes plus isolated mobile/desktop presentation, production-bundle interaction gates and 16 signed local originals. This closes the focused supplemental P1s but does not freeze a clean candidate or renew stale Overview/route/Edge evidence. Task remains active with `blocked=false`; GitHub has not been uploaded.
 
-## Current decision record: Step 940
+## Current decision record: Step 941
+
+- The first frozen SHA `aee71c34…` failed the unchanged backend architecture ceiling because `app.py` had reached 4050 lines. The gate was not relaxed: 533 lines of public-safe health finding logic moved to `panel_backend/health_findings.py`, while the app keeps only configuration wiring and the runtime exports required by collector/snapshot mixins.
+- The first collector rerun caught a missing `ACTION_SEVERITY_RANK` runtime export; the app now explicitly re-exports the shared constant. Backend security, 22 collector checks, 18 public backend tests, seven supplemental tests and Python compilation pass. Because this is a tracked repair, `aee71c34…` is superseded and a new clean SHA must restart exact evidence.
 
 - Connections, DNS and global health findings use one shared request/evidence state while mobile and desktop keep separate presentation trees. Accepted DNS/connection results own exactly one visible collection; the snapshot list is fallback-only.
 - The common evidence boundary exposes current/historical mode, a visible localized time backed by raw RFC3339, source and coverage. Missing rates remain unavailable; observed zero remains zero.
@@ -56,7 +59,7 @@
 
 ## Authority and evidence
 
-- Full reasoning: `docs/panel-redesign-decision-log.md` Step940.
+- Full reasoning: `docs/panel-redesign-decision-log.md` Step941.
 - Historical navigation: `docs/decision-system/historical-index.md`; this page remains the sole current-state authority rather than duplicating chronology.
 - Product originals/report target: `_acceptance/optical-patrol-runtime/` (`63` viewport cells after regeneration).
 - Focused supplemental signed originals/report: `_acceptance/supplemental-route-visual/signed/` (`16` originals, `12/12` production-bundle checks).
@@ -71,4 +74,4 @@
 
 ## One next action
 
-- nextAction: Freeze the intended source and create one clean exact candidate. Only that identity may regenerate Edge 200%, Overview 28, Optical 63, route 76/266, readiness/container/Windows evidence, fresh four-role whole-product signoff and real RouterOS soak before any authorized upload.
+- nextAction: Commit the isolated health-findings extraction as a new clean SHA, rerun all exact-candidate base gates, then begin Edge 200%, Overview 28, Optical 63 and route 76/266 evidence on that identity only.

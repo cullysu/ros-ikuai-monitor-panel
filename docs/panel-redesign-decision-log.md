@@ -26366,3 +26366,42 @@ ocused-green-engineering
 - 这轮最重要的心得不是“把表格做得更好看”，而是：先确定一屏回答什么、哪个集合拥有当前事实、详情必须新增什么证据，再决定玻璃、颜色和分隔线。自动矩阵证明结构不坏，原图和独立角色才证明任务节奏成立。
 - latestStepOutcome: `940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed`
 - nextAction：冻结 intended source、清理非候选临时工件并形成唯一 clean exact candidate；在同一身份上重建 Edge 200%、Overview 28、Optical 63、route responsive 76、route-state 266、容器/Windows/readiness，然后完成四角色整产品复签与真实 RouterOS 只读 soak。未获得 promotion authorization 前继续禁止上传；上传后必须核验精确远端 SHA 的 Linux、Windows 与 GHCR CL。
+
+## 第 941 步：精确候选首次基础门禁击中 `app.py` 职责回流，拆出健康发现模块而不是放宽架构上限
+
+### 触发 / 问题
+
+- Step940 源码冻结为本地提交 `aee71c34f3b041c0972f139224f2e745b9f5ad15` 后，第一轮 exact-candidate 基础门禁中，编译、依赖锁、类型、决策系统和 collector 初始检查通过，但 `tools/check-backend-security.py` 真实失败：`app.py` 为 `4050` 行，越过“不重新吸收 HTTP / snapshot builder / collector service 职责”的 `3900` 行硬上限。
+- 该红项属于候选自身，不是环境阻塞；若直接把阈值抬高，会让“巨型入口文件”以门禁绿灯继续增长，和本项目反复要求的职责隔离相冲突。
+
+### 决策
+
+- 保持 `3900` 行上限不变。
+- 将公共安全健康发现的清洗、状态文案、证据裁剪和 `build_health_findings` 从 `app.py` 物理迁移到 `panel_backend/health_findings.py`；`app.py` 只保留受 `ROS_PANEL_STATUS_FINDINGS_LIMIT` 约束的适配器。
+- 继续从 `app` 顶层导出 `ACTION_SEVERITY_RANK`、`collector_status_message` 和 `normalize_collector_snapshot_status`，因为现有 `SnapshotBuilderMixin` / `CollectorServiceMixin` 通过绑定 runtime namespace 调用这些契约；迁移不能偷偷改变既有运行时接口。
+- 第一次 collector 回归准确捕获了遗漏的 `ACTION_SEVERITY_RANK` runtime 导出；修复方式是显式重导出，而不是在 snapshot builder 内复制排序规则。
+
+### Emil Before / After / Why
+
+| Before | After | Why |
+| --- | --- | --- |
+| `app.py` 直接拥有约 533 行公共健康发现实现，总长 4050 行 | `app.py` 降至 3529 行；健康发现成为 586 行独立模块 | 入口只负责组装与配置边界，证据语义由可单测模块拥有，避免继续形成巨型文件 |
+| 架构门禁红后存在“提高行数阈值”的诱惑 | 阈值保持不变，代码迁移关闭红项 | 门禁应推动职责改进，而不是被实现追着改口径 |
+| mixin 隐式依赖 app runtime 中的严重度常量 | app 明确重导出同一常量 | 保持调用契约，同时让依赖关系在 import 列表中可见 |
+
+### 验证
+
+- `py -3 -m py_compile app.py panel_backend/health_findings.py`：PASS。
+- `py -3 tools/check-backend-security.py`：PASS；`app.py` 行数重新低于 3900。
+- `py -3 tools/check-collector-regressions.py`：22 项 PASS。
+- `py -3 tools/test_backend_public_contract.py`：18/18 PASS。
+- `py -3 tools/test_supplemental_api_contract.py`：7/7 PASS。
+- `git diff --check`：PASS。
+
+### 边界 / 心得
+
+- `aee71c34…` 作为 exact candidate 已被本次 tracked 修复淘汰；它不能继续承载矩阵或独立签收。必须提交一个新的 clean SHA，并从基础门禁重新开始绑定证据。
+- 本步只关闭入口职责回流的工程 P1，不替代 Edge、Overview、Optical、route/state、whole-product review、真实 RouterOS soak 或远端 CL。
+- latestStepOutcome: `941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Commit the isolated health-findings extraction as a new clean SHA, then rerun all exact-candidate base gates before starting browser matrices.
