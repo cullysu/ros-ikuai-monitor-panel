@@ -7,8 +7,9 @@
  * validator so a deleted presentation owner cannot leave a script that only
  * fails later with ENOENT.
  *
- * It does not attempt to evaluate dynamic paths. Dynamic discovery needs a
- * dedicated runtime contract rather than a brittle source-text approximation.
+ * It resolves literal reads made through the repository's common wrappers as
+ * well as direct fs calls. Truly dynamic discovery still needs a dedicated
+ * runtime contract rather than a brittle source-text approximation.
  */
 
 const fs = require("node:fs");
@@ -74,7 +75,7 @@ function pathFromExpression(node, constants) {
 
 function isReadCall(node) {
   if (!ts.isCallExpression(node)) return false;
-  if (ts.isIdentifier(node.expression)) return ["read", "readText", "readFile"].includes(node.expression.text);
+  if (ts.isIdentifier(node.expression)) return ["read", "readText", "readFile", "source"].includes(node.expression.text);
   return ts.isPropertyAccessExpression(node.expression)
     && ["readFileSync", "readFile"].includes(node.expression.name.text);
 }
@@ -84,10 +85,10 @@ function visit(node, callback) {
   ts.forEachChild(node, (child) => visit(child, callback));
 }
 
-function inspectTool(file) {
-  const source = fs.readFileSync(file, "utf8");
-  const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+function collectToolReadPaths(source, fileName = "validator.js") {
+  const ast = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
   const constants = new Map();
+  const targets = [];
   visit(ast, (node) => {
     if (!ts.isVariableDeclaration(node) || !ts.isIdentifier(node.name) || !node.initializer) return;
     const resolved = pathFromExpression(node.initializer, constants);
@@ -96,8 +97,20 @@ function inspectTool(file) {
   visit(ast, (node) => {
     if (!isReadCall(node) || node.arguments.length === 0) return;
     const target = pathFromExpression(node.arguments[0], constants);
-    if (target) addCheckedPath(target, relative(file));
+    if (target) targets.push(target);
   });
+  return [...new Set(targets.map(normalize))];
+}
+
+function missingToolReadFailures(source, owner, exists = fs.existsSync) {
+  return collectToolReadPaths(source, owner)
+    .filter((target) => !exists(target))
+    .map((target) => `${owner} reads missing repository file: ${relative(target)}`);
+}
+
+function inspectTool(file) {
+  const source = fs.readFileSync(file, "utf8");
+  for (const target of collectToolReadPaths(source, file)) addCheckedPath(target, relative(file));
 }
 
 function inspectPythonTool(file) {
@@ -130,16 +143,22 @@ function inspectScript(name) {
   inspectCommand(name, scripts[name]);
 }
 
-for (const name of Object.keys(scripts)) inspectScript(name);
-for (const file of toolFiles) inspectTool(file);
-for (const file of pythonToolFiles) inspectPythonTool(file);
+function main() {
+  for (const name of Object.keys(scripts)) inspectScript(name);
+  for (const file of toolFiles) inspectTool(file);
+  for (const file of pythonToolFiles) inspectPythonTool(file);
 
-if (failures.length) {
-  console.error("package script file-reference gate: FAIL");
-  for (const failure of [...new Set(failures)].sort()) console.error(`- ${failure}`);
-  process.exitCode = 1;
-} else {
-  console.log("package script file-reference gate: PASS");
-  console.log(`Checked ${seenScripts.size} package scripts, ${toolFiles.size} JavaScript validators, ${pythonToolFiles.size} Python validators, and ${checkedPaths.size} statically resolved repository file reads.`);
-  console.log("LIMITATION: dynamically constructed file paths require their owning runtime contract.");
+  if (failures.length) {
+    console.error("package script file-reference gate: FAIL");
+    for (const failure of [...new Set(failures)].sort()) console.error(`- ${failure}`);
+    process.exitCode = 1;
+  } else {
+    console.log("package script file-reference gate: PASS");
+    console.log(`Checked ${seenScripts.size} package scripts, ${toolFiles.size} JavaScript validators, ${pythonToolFiles.size} Python validators, and ${checkedPaths.size} statically resolved repository file reads.`);
+    console.log("LIMITATION: non-literal dynamically constructed file paths require their owning runtime contract.");
+  }
 }
+
+if (require.main === module) main();
+
+module.exports = { collectToolReadPaths, missingToolReadFailures };

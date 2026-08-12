@@ -71,6 +71,7 @@ export function usePanelRoute() {
       const title = document.querySelector<HTMLElement>("[data-panel-route-title]");
       if (!title) return false;
       title.focus({ preventScroll: true });
+      title.scrollIntoView({ behavior: "auto", block: "nearest", inline: "nearest" });
       return true;
     };
     if (focusRouteTarget()) return;

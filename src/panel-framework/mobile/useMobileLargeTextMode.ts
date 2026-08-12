@@ -1,23 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useMobileLargeTextMode() {
-  const sentinelRef = useRef<HTMLSpanElement>(null);
+  const [sentinel, setSentinel] = useState<HTMLSpanElement | null>(null);
   const [largeText, setLargeText] = useState(false);
+  const sentinelRef = useCallback((node: HTMLSpanElement | null) => setSentinel(node), []);
 
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const sync = () => setLargeText(sentinel.getBoundingClientRect().height >= 24);
+    if (!sentinel) {
+      setLargeText(false);
+      return;
+    }
+    let active = true;
+    const sync = () => {
+      if (active) setLargeText(sentinel.getBoundingClientRect().height >= 24);
+    };
     sync();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(sync);
     observer?.observe(sentinel);
     window.addEventListener("resize", sync);
     document.fonts?.ready.then(sync).catch(() => {});
     return () => {
+      active = false;
       observer?.disconnect();
       window.removeEventListener("resize", sync);
     };
-  }, []);
+  }, [sentinel]);
 
   return { largeText, sentinelRef };
 }

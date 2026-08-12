@@ -525,6 +525,59 @@ async function inspectTextResizeSurface(page, { label, rootSelector, expectedVie
         : 1;
     const titleEffectiveRatio = titleBefore ? (titleAfter * titleRenderedScale) / titleBefore : null;
     const visualViewport = window.visualViewport;
+    const taskNavigation = root.querySelector(".panel-task-navigation");
+    const focusedRouteTitle = title instanceof HTMLElement ? (() => {
+      const style = getComputedStyle(title);
+      const rect = title.getBoundingClientRect();
+      const navigationRect = taskNavigation?.getBoundingClientRect() || null;
+      const outlineWidth = Number.parseFloat(style.outlineWidth || "0") || 0;
+      const outlineOffset = Number.parseFloat(style.outlineOffset || "0") || 0;
+      const outlineExtent = style.outlineStyle === "none" ? 0 : Math.max(0, outlineWidth + outlineOffset);
+      const visualRect = {
+        left: rect.left - outlineExtent,
+        top: rect.top - outlineExtent,
+        right: rect.right + outlineExtent,
+        bottom: rect.bottom + outlineExtent,
+        width: rect.width + outlineExtent * 2,
+        height: rect.height + outlineExtent * 2,
+      };
+      const overlapsTaskNavigation = navigationRect ? !(
+        visualRect.right <= navigationRect.left ||
+        visualRect.left >= navigationRect.right ||
+        visualRect.bottom <= navigationRect.top ||
+        visualRect.top >= navigationRect.bottom
+      ) : false;
+      const scrollAncestors = [];
+      for (let ancestor = title.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const ancestorStyle = getComputedStyle(ancestor);
+        if (!/(auto|scroll)/.test(ancestorStyle.overflowY)) continue;
+        const ancestorRect = ancestor.getBoundingClientRect();
+        scrollAncestors.push({
+          className: ancestor.className || "",
+          rect: { top: ancestorRect.top, bottom: ancestorRect.bottom, height: ancestorRect.height },
+          scrollTop: ancestor.scrollTop,
+          scrollHeight: ancestor.scrollHeight,
+          clientHeight: ancestor.clientHeight,
+        });
+      }
+      return {
+        focused: document.activeElement === title,
+        focusVisible: title.matches(":focus-visible"),
+        rect: visualRect,
+        navigationRect: navigationRect ? {
+          left: navigationRect.left,
+          top: navigationRect.top,
+          right: navigationRect.right,
+          bottom: navigationRect.bottom,
+          width: navigationRect.width,
+          height: navigationRect.height,
+        } : null,
+        fullyInsideViewport: visualRect.left >= -1 && visualRect.top >= -1 && visualRect.right <= innerWidth + 1 && visualRect.bottom <= innerHeight + 1,
+        overlapsTaskNavigation,
+        outline: { width: outlineWidth, offset: outlineOffset, style: style.outlineStyle },
+        scrollAncestors,
+      };
+    })() : null;
     const clippedText = Array.from(root.querySelectorAll("h1,h2,h3,h4,p,small,b,strong,em,dt,dd,label,button,summary,span,time,code,a"))
       .filter((node) => node instanceof HTMLElement && !node.closest('[aria-hidden="true"]') && isVisuallyInspectableText(node) && (node.textContent || "").replace(/\s+/g, " ").trim())
       .filter(hasClippedText)
@@ -546,9 +599,12 @@ async function inspectTextResizeSurface(page, { label, rootSelector, expectedVie
       devicePixelRatio: window.devicePixelRatio,
       screen: { width: window.screen.width, height: window.screen.height },
       requestedNativeScale: scale,
+      largeTextMode: root.getAttribute("data-panel-large-text"),
+      pageScrollY: window.scrollY,
       layoutOverflow: document.documentElement.scrollWidth - window.innerWidth,
       textSamples,
       title: { before: titleBefore || null, after: titleAfter || null, effectiveRatio: titleEffectiveRatio },
+      focusedRouteTitle,
       controls,
       sub44CssControls: controls.filter((control) => control.width < 44 || control.height < 44),
       positiveTabIndexes: controls.filter((control) => control.tabIndex > 0),
@@ -563,6 +619,13 @@ async function inspectTextResizeSurface(page, { label, rootSelector, expectedVie
   assert(evidence.textVisibilityClassifierProbe.ancestorClippingDetected, "ancestor clipping fixture no longer exercises the blocking path", evidence);
   assert(evidence.textVisibilityClassifierProbe.viewportClippingDetected, "viewport clipping fixture no longer exercises the blocking path", evidence);
   assert(evidence.clippedText.length === 0, "text-resize clipped visible text within itself, an ancestor, or the viewport", evidence);
+  if (mode === "css-text-resize-fixture" && label === "optical-patrol-phone-320") {
+    assert(evidence.focusedRouteTitle?.focused === true, "320px 200% text resize lost programmatic route-title focus", evidence);
+    assert(evidence.focusedRouteTitle?.focusVisible === true, "320px 200% text resize hid the route-title focus indicator", evidence);
+    assert(evidence.focusedRouteTitle?.fullyInsideViewport === true, "320px 200% text resize left the focused route title outside the viewport", evidence);
+    assert(evidence.focusedRouteTitle?.overlapsTaskNavigation === false, "320px 200% text resize obscured the focused route title behind task navigation", evidence);
+    assert(evidence.pageScrollY <= 1, "320px 200% route-title focus scrolled the persistent runtime chrome off screen", evidence);
+  }
   assert(evidence.controls.length > 0, "text-resize left a surface without reachable controls", evidence);
   if (mode !== "rendered-scale-reflow-fixture") {
     assert(evidence.controls.every((control) => control.width >= 44 && control.height >= 44), "text-resize reduced a control below 44x44px", evidence);
@@ -775,6 +838,39 @@ async function inspectTextResize(modeRequested = requestedMode, afterInspection 
     const mode = useNativePageScale ? "browser-page-scale" : "css-text-resize-fixture";
     const cases = [];
 
+    runtime.mock.state.scenario = "";
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await visitRoute(page, runtime.mock.url, "overview", { requireWorkspace: false });
+    await page.locator(".panel-text-scale-sentinel").first().waitFor({ state: "attached" });
+    const desktopTextScaleSentinel = await page.evaluate(() => {
+      const sentinel = document.querySelector(".panel-text-scale-sentinel");
+      if (!(sentinel instanceof HTMLElement)) return null;
+      const style = getComputedStyle(sentinel);
+      const rect = sentinel.getBoundingClientRect();
+      const toolbarRect = document.querySelector("[data-panel-runtime-toolbar='desktop']")?.getBoundingClientRect() || null;
+      return {
+        ariaHidden: sentinel.getAttribute("aria-hidden"),
+        position: style.position,
+        opacity: Number.parseFloat(style.opacity),
+        clipPath: style.clipPath,
+        pointerEvents: style.pointerEvents,
+        measurable: rect.width > 0 && rect.height > 0,
+        rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height },
+        toolbarTop: toolbarRect?.top ?? null,
+      };
+    });
+    assert(
+      desktopTextScaleSentinel?.ariaHidden === "true" &&
+        desktopTextScaleSentinel.position === "fixed" &&
+        desktopTextScaleSentinel.opacity === 0 &&
+        desktopTextScaleSentinel.clipPath !== "none" &&
+        desktopTextScaleSentinel.pointerEvents === "none" &&
+        desktopTextScaleSentinel.measurable === true &&
+        Math.abs(desktopTextScaleSentinel.toolbarTop || 0) <= 1,
+      "desktop runtime exposed the measurable text-scale sentinel or let it shift visible chrome",
+      desktopTextScaleSentinel,
+    );
+
     async function openOpticalScenario(expectedScene, { expanded = false } = {}) {
       const target = new URL(runtime.mock.url);
       target.searchParams.set("section", "overview");
@@ -796,10 +892,22 @@ async function inspectTextResize(modeRequested = requestedMode, afterInspection 
         await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       } else {
         fixture = await applyAuditableTextResize(page, rootSelector);
+        if (label === "optical-patrol-phone-320") {
+          await page.waitForFunction(() => (
+            document.querySelector("[data-panel-runtime-phase]")?.getAttribute("data-panel-large-text") === "true"
+          ));
+        }
         await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       }
       try {
-        const surface = await inspectTextResizeSurface(page, { label, rootSelector, expectedViewport: viewport, mode, nativeScale: 2, nativeBaseline });
+        let surface;
+        try {
+          surface = await inspectTextResizeSurface(page, { label, rootSelector, expectedViewport: viewport, mode, nativeScale: 2, nativeBaseline });
+        } catch (error) {
+          fs.mkdirSync(artifactDir, { recursive: true });
+          await page.screenshot({ path: path.join(artifactDir, `${label}-failure.png`), animations: "disabled" });
+          throw error;
+        }
         const landmarks = await inspectLandmarks(page, rootSelector, label);
         fs.mkdirSync(artifactDir, { recursive: true });
         const screenshotPath = path.join(artifactDir, `${label}.png`);
@@ -896,6 +1004,7 @@ async function inspectTextResize(modeRequested = requestedMode, afterInspection 
         ? "Verified Chromium CDP page-scale visual zoom. It does not prove browser-toolbar zoom reflow or physical OS text-size evidence."
         : "Real-browser CSS text-resize reflow assertion: it injects 200% computed text growth into the rendered product surface, then verifies reflow, bounded in-surface keyboard focus, and landmarks. It is not browser-toolbar zoom or OS text-size evidence.",
       nativeProbe,
+      desktopTextScaleSentinel,
       requestedTextScale: 2,
       cases,
       afterInspectionEvidence,

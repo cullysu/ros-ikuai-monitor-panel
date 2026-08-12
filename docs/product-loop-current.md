@@ -1,13 +1,13 @@
 - status: `current-handoff`
-- validForCommit: Step942 accessibility inventory remediation; replacement clean exact acceptance remains pending
-- currentHandoffForStep: `942`
+- validForCommit: Step943 release-blocker and large-text remediation; replacement clean exact acceptance and independent Accessibility re-signoff remain pending
+- currentHandoffForStep: `943`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
 - updated: 2026-08-12
-- latestRecordedStep: `942`
-- latestStepOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
+- latestRecordedStep: `943`
+- latestStepOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
 - releaseCandidate: not a release candidate; this is only a source-freeze candidate until whole-product exact evidence and release qualification are complete
-- currentConclusion: **FAIL overall / Step942 DNS ownership and forced-colors inventory remediation focused-green / replacement clean exact Product/Design/Visual/Accessibility/Engineering acceptance pending / GitHub publication closed / release CLOSED.** Candidate `42d1d1d…` passed base gates but is superseded by the tracked accessibility gate repair. The task remains active with `blocked=false`.
+- currentConclusion: **FAIL overall / Step943 release-blocker and 200% large-text remediation locally green / independent Accessibility and replacement clean exact Product/Design/Visual/Engineering acceptance pending / GitHub publication closed / release CLOSED.** Historical `b836adc…` evidence is superseded by tracked source/tool/asset changes. The task remains active with `blocked=false`.
 
 ## Loop refinement applied
 
@@ -17,7 +17,7 @@
 - Screenshot acceptance now uses true viewport images with SHA-256 provenance. The Optical matrix is seven scenarios × nine viewports (`63`), and responsive boundary captures carry a separate exact worktree identity.
 - Browser accessibility evidence is named narrowly. Rendered-scale, CSS text reflow and page-scale are automated evidence; physical mobile text settings and browser-toolbar UI zoom remain separate gates.
 
-## Current handoff: Step942 forced-colors route inventory repaired; replacement exact candidate required
+## Current handoff: Step943 false-green release blocker and large-text focus ownership repaired; replacement exact candidate required
 
 - Preserve evidence truth: `current | historical | unavailable`, RFC3339, visible numeric zero, missing-value withdrawal, verified route only, trailing consecutive resource samples and read-only boundaries.
 - Preserve isolated owners: Optical Patrol for mobile Overview, desktop Overview at 1200+, no Pocket imports/classes/history keys.
@@ -35,6 +35,10 @@
 - Preserve the signed supplemental boundary: `_acceptance/supplemental-route-visual/signed/` has 16 originals and 12/12 production checks with focused P0/P1=`0`; it does not sign Overview, all routes or the clean candidate.
 - Preserve the backend ownership boundary: public health finding construction belongs to `panel_backend/health_findings.py`; `app.py` must remain below the unchanged 3900-line ceiling and only adapt the configured finding limit/runtime exports.
 - Preserve supplemental inventory truth: DNS/health automatic requests must reach a terminal state before capability classification; accepted DNS owns a paginated evidence list with named forced-colors controls, while fallback generic rows retain object-detail/history coverage.
+- Preserve release truth: `check:release-blockers` and the package reference regression remain inside `check:release-gates`; literal `source(...)` targets cannot bypass file existence checks.
+- Preserve large-text ownership: callback-ref detection must survive late mount; route focus scrolls only the nearest real owner; 320×568 at 200% must keep the focused title fully visible and clear of fixed navigation with page scroll zero.
+- Preserve sentinel invisibility at every viewport: desktop must prove the measurable `M` probe remains clipped, transparent, pointer-inert and does not move the runtime toolbar.
+- Do not convert the failed independent Accessibility agent run into a pass. Retry a fresh independent reviewer when capacity exists; until then Accessibility remains pending.
 - Run full route/state/security/recovery, public matrices, RouterOS soak and clean-candidate hygiene before rebinding release evidence on a committed SHA.
 - Never use normal `git push`. Only after all product, route, security, soak and release gates pass may an authorized Git Data API `force:false` publication occur.
 - After every GitHub upload, verify the exact remote SHA on Linux, Windows packaging and GHCR; any failed CL reopens implementation.
@@ -53,4 +57,4 @@
 
 ## One next action
 
-- Commit the stable supplemental inventory and DNS forced-colors contract as a replacement clean SHA, rerun exact-candidate base and full release gates, then regenerate Edge 200%, Overview 28, Optical 63, route 76/266, readiness/container/Windows evidence, obtain four fresh whole-product reviews, and run the real RouterOS soak before any authorized publication and same-SHA Linux/Windows/GHCR CL.
+- Commit Step943 as a replacement clean SHA, rerun exact-candidate base and full release gates, then regenerate Edge 200%, Overview 28, Optical 63, route 76/266, readiness/container/Windows evidence, obtain fresh whole-product reviews including Accessibility, and run the real RouterOS soak before any authorized publication and same-SHA Linux/Windows/GHCR CL.

@@ -167,6 +167,31 @@
   .panel-runtime-empty button { width: 100%; }
 }
 
+@media (max-width: 599px) {
+  .panel-runtime-live[data-panel-large-text="true"] .panel-runtime-bar-mobile {
+    grid-template-areas:
+      "device device"
+      "mode actions";
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 5px;
+    padding: 8px 8px 7px 12px;
+  }
+
+  .panel-runtime-live[data-panel-large-text="true"] .panel-runtime-bar-mobile .panel-runtime-device {
+    grid-area: device;
+  }
+
+  .panel-runtime-live[data-panel-large-text="true"] .panel-runtime-bar-mobile .panel-runtime-mode {
+    grid-area: mode;
+    justify-self: start;
+  }
+
+  .panel-runtime-live[data-panel-large-text="true"] .panel-runtime-bar-mobile .panel-runtime-actions {
+    grid-area: actions;
+    justify-self: end;
+  }
+}
+
 @media (prefers-reduced-transparency: reduce) and (max-width: 1199px) {
   .panel-runtime-bar-mobile {
     border-color: #b9c8cf;

@@ -1,18 +1,25 @@
 - status: `current`
-- currentConclusionForStep: `942`
-- latestRecordedStep: `942`
-- latestStepOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
-- currentBoundaryForStep: `942`
-- validForCommit: Step942 accessibility inventory remediation requires a replacement clean candidate; whole-product exact evidence and release qualification remain pending
+- currentConclusionForStep: `943`
+- latestRecordedStep: `943`
+- latestStepOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
+- currentBoundaryForStep: `943`
+- validForCommit: Step943 clean candidate source boundary for release-blocker and large-text remediation; exact evidence and independent Accessibility re-signoff remain pending
 - supersededBy: `null`
-- updatedAt: 2026-08-12T09:05:00+08:00
+- updatedAt: 2026-08-12T14:04:11+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
-**FAIL overall / supplemental route local Product/Visual/Responsive/Accessibility signoff is closed / exact-candidate release-gate remediation is green only in focused replay / whole-product acceptance is pending / release CLOSED.** Candidate `42d1d1d…` passed base contracts but the full gate exposed a DNS supplemental ownership race in forced-colors inventory. The gate now waits for stable ownership and separately verifies DNS pagination accessibility; that tracked repair requires another clean SHA and complete replay. Task remains active with `blocked=false`; GitHub has not been uploaded.
+**FAIL overall / release-blocker and 200% large-text P1 remediation are locally green / independent Accessibility re-signoff and whole-product exact acceptance are pending / release CLOSED.** Historical candidate `b836adc…` passed broad local engineering evidence, but review found an unwired release blocker and a 320px 200% focus/navigation defect. Both roots and the follow-up desktop sentinel defect are repaired and covered by runtime gates; tracked changes require a replacement clean SHA and complete replay. The independent Accessibility agent could not return a verdict because the platform usage limit was reached, so that gate remains pending rather than self-signed. Task remains active with `blocked=false`; GitHub has not been uploaded.
 
-## Current decision record: Step 942
+## Current decision record: Step 943
+
+- `check:release-blockers` is now wired into the aggregate release gate and follows current Optical Patrol ownership. Package-script reference validation recognizes `source(...)` and includes a fail-closed regression for missing targets.
+- The large-text detector follows the actual sentinel node through a callback ref, so late mounting after the connection phase no longer leaves the runtime permanently undetected.
+- At 320×568 and 200% text, the focused route title is fully inside the viewport, retains a visible focus indicator, does not intersect the fixed task navigation and keeps page scroll at zero. The nearest real scroll owner, not the entire document, owns correction.
+- The text-scale sentinel is globally invisible but measurable. A 1366×768 runtime assertion proves `aria-hidden`, fixed positioning, opacity zero, clipping, no pointer events and an undisturbed desktop toolbar.
+- Build passes with 1906 modules; rendered-scale and native page-scale accessibility reports pass; Overview's 18 current contracts pass. Independent Engineering incremental review is P0/P1/P2 zero. Independent Accessibility re-signoff remains pending because the requested reviewer could not run under the platform usage limit.
+- Historical `b836adc…` exact reports are stale after tracked source/tool/asset changes. A replacement clean SHA must regenerate all bound evidence.
 
 - Replacement candidate `42d1d1d…` includes the Step941 health-finding extraction and passes Python compilation, backend security, 22 collector checks, 18 public backend tests, seven supplemental tests, dependency lock, types, decision system, deterministic build and static assets.
 - Full release gates then exposed a real inventory race: accepted DNS supplemental evidence replaces generic snapshot rows, but the forced-colors test classified the transient idle DOM as generic object-detail capability. The inventory now waits for automatic requests to settle, records accepted DNS ownership explicitly, verifies named pagination and a 2px non-color focus indicator, and keeps generic detail coverage for fallback states. Focused native page-scale replay passes; a new clean SHA and complete replay remain mandatory.
@@ -52,14 +59,14 @@
 |---|---|---|
 | R07 Product | focused supplemental PASS; whole-product pending | Phone supplemental review is P0/P1=0; a clean exact-candidate whole-product review is still required. |
 | R09 Design / Visual | focused supplemental PASS; whole-product pending | Signed supplemental originals and Emil review pass; the clean candidate still needs current bound Overview/route originals and full visual review. |
-| R10 Accessibility / Interaction | focused native gate PASS; exact candidate/physical boundary open | Stable DNS ownership, forced-colors pagination focus, live status and history pass focused runtime; full clean-candidate replay and physical-device text/AT remain open. |
+| R10 Accessibility / Interaction | local runtime remediation PASS; independent/exact/physical pending | Rendered and native 200% gates plus desktop sentinel checks pass; independent Accessibility re-signoff, full clean-candidate replay and physical-device text/AT remain open. |
 | Engineering / bounded matrix | base gates green; replacement exact-candidate evidence pending | Backend 7/7, public 18/18, collector 22/22, build/static and focused native accessibility pass. Prior Edge/28/63/76/266 reports remain stale. |
 | State / route / security matrices | local automated coverage passed; independent/external acceptance open | Historical route/state matrices and current security/container regressions pass; real RouterOS soak, minimum privilege and external route acceptance remain open. |
 | R14 Release | closed | No clean candidate, real RouterOS soak, promotion authorization, GitHub upload or exact-SHA Linux/Windows/GHCR CL. |
 
 ## Authority and evidence
 
-- Full reasoning: `docs/panel-redesign-decision-log.md` Step942.
+- Full reasoning: `docs/panel-redesign-decision-log.md` Step943.
 - Historical navigation: `docs/decision-system/historical-index.md`; this page remains the sole current-state authority rather than duplicating chronology.
 - Product originals/report target: `_acceptance/optical-patrol-runtime/` (`63` viewport cells after regeneration).
 - Focused supplemental signed originals/report: `_acceptance/supplemental-route-visual/signed/` (`16` originals, `12/12` production-bundle checks).
@@ -74,4 +81,4 @@
 
 ## One next action
 
-- nextAction: Commit the stable supplemental inventory and DNS forced-colors contract as a replacement clean SHA, rerun exact-candidate base and full release gates, then begin Edge 200%, Overview 28, Optical 63 and route 76/266 evidence on that identity only.
+- nextAction: Commit Step943 as a replacement clean SHA, regenerate exact-candidate base and full release evidence on that identity only, then obtain fresh independent whole-product reviews and real RouterOS soak before any authorized publication.

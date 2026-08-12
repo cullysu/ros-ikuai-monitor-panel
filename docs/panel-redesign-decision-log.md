@@ -26443,3 +26443,48 @@ ocused-green-engineering
 - latestStepOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Commit the stable supplemental route-inventory and DNS forced-colors contract as a replacement clean SHA, then rerun exact-candidate base and full release gates before generating the bound browser matrices.
+
+## 第 943 步：发布阻断器接回总门禁，200% 路由焦点改由真实滚动所有者负责，桌面文本哨兵保持不可见
+
+### 触发 / 问题
+
+- `b836adc82e57973c910d921074195495d2313c1d` 曾通过完整本地 release gates、Edge 工具栏 200%、Overview `28/28`、Optical `63/63`、route responsive `76/76` 与 route-state `266/266`；但随后四角色增量审查发现两个不能被旧绿灯掩盖的 P1。
+- Engineering P1：`check-release-blockers.js` 引用了已经删除的验证器，却没有接入 `check:release-gates`；包脚本文件引用检查也不识别 `source("...")`。这会让失效阻断器和缺失脚本目标在总门禁外形成假绿。
+- Accessibility P1：320×568、200% 文本下，路由标题获得焦点后可能落在固定任务导航后方。第一次修复又暴露生命周期根因：`useEffect([])` 在连接页阶段看到空 ref 后永不重新观察真正挂载的文本比例哨兵。
+- 增量 Accessibility 复审关闭了手机 P1 后，又发现新的桌面 P1：哨兵隐藏规则只写在移动 media query 内，桌面可能显示字母 `M`；同时缺少桌面运行时断言。该问题现已修复并被自动门禁覆盖，但新的独立复签代理因平台额度限制没有产生裁决，不能被写成已签收。
+
+### 决策
+
+- `check:release-blockers` 成为 `check:release-gates` 的阻断步骤；删除对退役验证器的依赖，改为绑定当前 Optical Patrol 运行时合同。包脚本引用检查同时覆盖字面量 `source(...)`，并用独立回归证明缺失目标会 fail closed。
+- 文本比例检测改用 callback ref 持有真实 DOM 节点；节点晚于连接页挂载时会启动观察，卸载时有明确 cleanup/active 边界。不得再把“初次 render 没有 ref”当成永久状态。
+- 200% 路由焦点只滚动最近的真实纵向滚动所有者；Optical Overview 对齐 summary 上下文，不滚动全页和持久运行时工具栏。标题必须完整处于视窗内、保留 `:focus-visible`，并与固定任务导航零相交。
+- `.panel-text-scale-sentinel` 的隐藏/可测量合同提升为全视口基础规则，而不是手机特例。桌面 1366×768 必须证明 `aria-hidden=true`、fixed、opacity 0、clip 生效、pointer-events none、仍可测量且 toolbarTop=0。
+- 旧 `b836adc…` 报告因 tracked 源码、工具和资产变化全部降为历史证据；新提交前不得继续称 exact candidate。独立 Accessibility 复签保持 pending，不以主线程自检代签。
+
+### Emil Before / After / Why
+
+| Before | After | Why |
+| --- | --- | --- |
+| 200% 聚焦只调用通用 `scrollIntoView`，固定底栏与持久工具栏不参与所有权判断 | 找到最近的真实滚动所有者，只移动该 owner，并把标题连同证据 summary 放入安全视区 | 焦点可见是任务反馈，不应通过滚走全局 chrome 或把标题塞到导航后方实现 |
+| 文本比例 hook 首次拿不到 ref 就永久退出 | callback ref 在真实节点挂载时触发 effect，ResizeObserver、resize 与 fonts-ready 共用有界同步 | 异步挂载是正常生命周期；检测逻辑必须跟随元素而不是猜首次 render |
+| 哨兵隐藏属于移动 media query，桌面没有产品级约束 | 哨兵在所有视口都不可见但可测量，桌面 runtime gate 明确阻断可见 `M` | 隐形测量工具不能成为任何断点的可见产品内容 |
+| 发布阻断脚本存在于仓库但不在总门禁，文件引用扫描漏掉 `source(...)` | 总门禁先执行包引用回归与当前 release blocker；失效目标立即失败 | 发布证据必须证明阻断器真的被执行，而不是只证明文件存在 |
+
+### 验证
+
+- `npm run build`：PASS，1906 modules；生产 framework 资产已重建。
+- `npm run check:mobile-accessibility-runtime-v2`：PASS，约 90.16 秒。320 原图已人工检查；标题 focus rect `top=327.625 / bottom=443.3125`，任务导航 `top=498.203125`，`fullyInsideViewport=true`、`overlapsTaskNavigation=false`、`pageScrollY=0`、`largeTextMode=true`。
+- 同一报告的桌面哨兵：`ariaHidden=true`、`position=fixed`、`opacity=0`、`clipPath=inset(50%)`、`pointerEvents=none`、`measurable=true`、`toolbarTop=0`。
+- `npm run check:mobile-accessibility-runtime-v2-native`：PASS，约 65.08 秒。
+- `npm run check:overview`：18 个当前合同全部 PASS；Optical owner、truth、静态 accessibility、desktop continuity 与 source-built WAN geometry 均保持绿色。
+- 包脚本引用回归、101 个 package scripts / 117 个 JavaScript validators / 10 个 Python validators / 223 个静态读取目标检查以及 `check:release-blockers` 均已通过；独立 Engineering 增量审查 P0=0/P1=0/P2=0。
+- 新的独立 Accessibility 代理未给出结论：平台返回 usage limit。此项记录为 pending，而不是 PASS 或 blocked。
+
+### 边界 / 心得
+
+- 当前修复关闭的是发布门禁假绿根因和本地可复核的 200%/桌面哨兵缺陷；它不等于新的 exact-SHA 全产品签收。Product、Design/Visual、Accessibility 与最终 Engineering 仍需绑定新候选重新签署。
+- `b836adc…` 的 Linux 本地门禁、矩阵、Edge、容器和 Windows 构建是历史工程证据，不得与下一提交混用。新 clean SHA 必须重新生成全套同身份报告。
+- 真实 RouterOS 300 秒只读 soak 仍没有可用本地目标；不读取或暴露凭据，也不因此停止其余候选验证。GitHub 未上传，远端 Linux/Windows/GHCR CL 未触发。
+- latestStepOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Synchronize Step943 as the sole current decision, commit a replacement clean candidate, then regenerate all exact-SHA local evidence; obtain fresh independent four-role signoff and real RouterOS soak before any authorized Git Data API publication and same-SHA Linux/Windows/GHCR CL.

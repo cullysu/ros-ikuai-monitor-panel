@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo } from "react";
 import {
   deriveOverviewState,
   OVERVIEW_SCENARIO_KEYS,
@@ -8,6 +8,7 @@ import {
 } from "./overview";
 import { OverviewPanel } from "./overview/OverviewPanel";
 import { RouterConnectionScreen } from "./connection/RouterConnectionScreen";
+import { useMobileLargeTextMode } from "./mobile/useMobileLargeTextMode";
 import type { PanelNavigate, PanelRouteId } from "./routes/panelRoutes";
 import { usePanelRoute } from "./routes/usePanelRoute";
 import { PanelRuntimeChrome, PanelRuntimeEmptyState, PanelRuntimeNotice } from "./runtime/PanelRuntimeChrome";
@@ -87,6 +88,33 @@ function StaticSnapshotApp({ snapshot, options }: { snapshot: unknown; options?:
 function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
   const runtime = usePanelRuntime();
   const { route, navigate } = usePanelRoute();
+  const { largeText, sentinelRef: textScaleSentinelRef } = useMobileLargeTextMode();
+  useLayoutEffect(() => {
+    if (!largeText) return;
+    const frame = window.requestAnimationFrame(() => {
+      const title = document.querySelector<HTMLElement>("[data-panel-route-title]");
+      if (title && document.activeElement === title) {
+        let scrollOwner: HTMLElement | null = title.parentElement;
+        while (scrollOwner) {
+          const overflowY = window.getComputedStyle(scrollOwner).overflowY;
+          if (/(auto|scroll)/.test(overflowY) && scrollOwner.scrollHeight > scrollOwner.clientHeight + 1) break;
+          scrollOwner = scrollOwner.parentElement;
+        }
+        if (scrollOwner) {
+          const ownerRect = scrollOwner.getBoundingClientRect();
+          const focusRegion = title.closest<HTMLElement>(".op__summary") || title.parentElement || title;
+          const focusRegionRect = focusRegion.getBoundingClientRect();
+          scrollOwner.scrollTo({
+            behavior: "auto",
+            top: Math.max(0, scrollOwner.scrollTop + focusRegionRect.top - ownerRect.top - 16),
+          });
+        } else {
+          title.scrollIntoView({ behavior: "auto", block: "start", inline: "nearest" });
+        }
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [largeText, route]);
   if (runtime.view === "connection" || runtime.connection.phase !== "ready") {
     return <RouterConnectionScreen runtime={runtime} />;
   }
@@ -117,7 +145,8 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
             : "正在读取监控快照";
 
   return (
-    <div className="panel-runtime-live" data-panel-runtime-phase={runtime.snapshot.phase}>
+    <div className="panel-runtime-live" data-panel-runtime-phase={runtime.snapshot.phase} data-panel-large-text={largeText ? "true" : "false"}>
+      <span className="panel-text-scale-sentinel" aria-hidden="true" ref={textScaleSentinelRef}>M</span>
       <div className="panel-runtime-announcement" role="status" aria-live="polite" aria-atomic="true" style={{ position: "absolute", clip: "rect(0 0 0 0)" }}>
         {runtimeAnnouncement}
       </div>

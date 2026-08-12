@@ -32,7 +32,8 @@ const apiSchemaSource = source('panel_backend/api_schema.py');
 const browserGateSource = source('tools/check-panel-runtime-browser.js');
 const browserLifecycleSource = source('tools/check-runtime-browser-lifecycle.js');
 const browserLifecycleV2Source = source('tools/acceptance/browser-lifecycle-v2/browser-lifecycle.js');
-const mobileIncidentVisualWeightSource = source('tools/check-mobile-incident-visual-weight.js');
+const opticalPatrolRuntimeSource = source('tools/check-optical-patrol-runtime.js');
+const opticalPatrolRuntimeOwnerSource = source('tools/lib/optical-patrol-runtime/runtime.js');
 const tabletRiskFocusSource = source('tools/check-tablet-risk-focus.js');
 const desktopBrowserGateSource = source('tools/check-resource-trend-balance.js');
 const desktopRuntimeWrapperSource = [
@@ -178,10 +179,24 @@ check(
   'the runtime gate must verify process completion separately from report contents'
 );
 check(
-  'mobile incident visual weight contract is independently gated',
-  mobileIncidentVisualWeightSource.includes("mobile-incident-visual-weight-v1") &&
-    packageJson.scripts['check:mobile-incident-visual-weight'] === 'node --max-old-space-size=2048 tools/check-mobile-incident-visual-weight.js',
-  'the mobile incident scan hierarchy must remain an explicit regression contract'
+  'Optical Patrol incident priority and short-phone visibility are independently gated',
+  opticalPatrolRuntimeSource.includes('SHORT_PHONE_INCIDENT_SCENES') &&
+    opticalPatrolRuntimeSource.includes('incident object action') &&
+    opticalPatrolRuntimeSource.includes('Scale facts must not decorate single or incident scenes') &&
+    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "interfaces-down"') &&
+    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "resource-full"') &&
+    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "collection-down"') &&
+    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "all-offline"') &&
+    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "no-snapshot"') &&
+    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-runtime.js'),
+  'the current mobile owner must prove incident-first semantics and unobscured short-phone actions'
+);
+check(
+  'the public release aggregate executes the release blocker and its file-reference regression',
+  packageJson.scripts['check:release-blockers'] === 'node --max-old-space-size=2048 tools/check-release-blockers.js' &&
+    packageJson.scripts['check:release-gates'].includes('npm run check:release-blockers') &&
+    packageJson.scripts['check:package-script-file-references'].includes('tools/test-package-script-file-references.js'),
+  'the declared release blocker must run in the aggregate, and nested source() dependencies must fail closed before runtime'
 );
 check(
   'tablet risk focus contract is independently gated',

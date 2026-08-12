@@ -1,13 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step942 accessibility inventory remediation; replacement clean exact acceptance remains pending; not a public release approval
+- validForCommit: Step943 release-blocker and large-text remediation; replacement clean exact acceptance and independent Accessibility re-signoff remain pending; not a public release approval
 - supersededBy: null
-- currentStep: `942`
-- currentOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
-- latestStepOutcome: `942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed`
+- currentStep: `943`
+- currentOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
+- latestStepOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
+- Step943: Historical `b836adc…` passed broad local engineering evidence, then independent review found an unwired release blocker and a 320×568 200% focused-title/fixed-navigation P1. The aggregate now executes current release blockers and a `source(...)` reference regression; large-text detection follows a late-mounted callback ref; only the nearest scroll owner moves; rendered/native 200% gates pass; a desktop assertion proves the measurable sentinel is invisible. Independent Engineering incremental review is clean. A fresh independent Accessibility verdict could not be obtained because the platform usage limit was reached, so it remains pending. All old exact evidence is stale, GitHub untouched, release FAIL/CLOSED.
 - Step942: Replacement SHA `42d1d1d…` passed base contracts but full release gates found a DNS forced-colors inventory race: accepted supplemental DNS owns the final paginated collection, while the test sampled transient generic rows and later demanded the wrong object-detail history. Inventory now waits for terminal ownership, records DNS as a dedicated pagination model, verifies named controls plus a 2px forced-colors focus indicator, and preserves generic fallback coverage. Focused native replay passes; tracked repair requires another clean SHA and complete replay. GitHub untouched; release FAIL/CLOSED.
 - Step941: The first frozen SHA `aee71c34…` failed the unchanged 3900-line `app.py` architecture ceiling. The gate stayed strict: public-safe health finding logic moved into `panel_backend/health_findings.py`, the app retains only configuration wiring and explicit runtime exports, and backend security, collector 22, public backend 18 and supplemental seven checks pass. This tracked repair supersedes `aee71c34…`; it entered `42d1d1d…`, now superseded by Step942. GitHub untouched; release FAIL/CLOSED.
 - Step940: Supplemental connections, DNS and global-health findings now use bounded evidence envelopes, one accepted visible collection, localized visible time backed by raw RFC3339 and separate mobile/desktop presentation owners. Production-bundle gates cover 44px targets, live status, `aria-busy`, paging, Back/Forward focus and no duplicate collection; 16 signed originals plus fresh Product/Visual, Responsive/Tablet and Engineering/Accessibility reviews close focused P0/P1 locally. This focused local signoff does not approve the whole product: current Edge/Overview/Optical/route/state evidence must be regenerated on one clean exact candidate, then four-role whole-product review, real RouterOS soak, promotion authorization and exact-SHA CL remain required. GitHub untouched; release FAIL/CLOSED.
