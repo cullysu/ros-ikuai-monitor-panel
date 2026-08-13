@@ -447,7 +447,7 @@ function inspectMobileNativeOverview({
   const pass = Boolean(app && active && (requested || active.id === sectionName) && !hasBadLiteral && scaleMetaOk && Object.values(checks).every(Boolean));
   const mobileOverviewAppHomeGateProbe = {
     appHomePass: pass,
-    contract: 'incident-split-lens-v1',
+    contract: 'incident-split-lens-runtime-v1',
     truthMode: runtimeMode,
     runtimeMode,
     scenario: incidentLens.getAttribute('data-incident-lens-scenario') || '',

@@ -36,6 +36,7 @@ const rootSource = read(path.join(owner, "IncidentLens.tsx"));
 const modelSource = read(path.join(owner, "buildIncidentLensModel.ts"));
 const typeSource = read(path.join(owner, "types.ts"));
 const entrySource = read(path.join(root, "src", "panel-framework", "overview", "mobile-overview", "MobileOverviewEntry.tsx"));
+const acceptanceSource = read(path.join(root, "tools", "acceptance", "inspect-overview-mobile.js"));
 const cssSource = sources.filter((file) => file.endsWith(".css")).map(read).join("\n");
 
 check(sources.length >= 7, "incident-lens must own a real render/model/style slice");
@@ -58,6 +59,7 @@ check(!/\|\|\s*0|\?\?\s*0/.test(modelSource), "IncidentLens model must not turn 
 check(/targetObjectIdFor\(evidence,\s*["']lineStatus["']\)/.test(modelSource), "normal WAN actions must bind to a real domain object when one exists");
 check(/objectId:\s*object\.action\.targetObjectId\s*\|\|\s*null/.test(entrySource), "mobile object actions must not send presentation-only claim ids to domain inspectors");
 check(/data-incident-lens-action-target/.test(combined) && /data-incident-lens-action-route/.test(combined), "object actions must expose their explicit domain target and route for runtime verification");
+check(/contract:\s*["']incident-split-lens-runtime-v1["']/.test(acceptanceSource), "public matrix semantics must report the same runtime contract version consumed by release readiness");
 check(!/preserveAspectRatio=["']none["']/.test(combined), "IncidentLens must not stretch SVG evidence");
 check(!/transition:\s*all\b/.test(cssSource), "IncidentLens motion must name exact properties");
 check(!/!important/.test(cssSource), "IncidentLens CSS must not start a new override sediment layer");
