@@ -232,11 +232,13 @@ function inspectMobileNativeOverview({
     const style = getComputedStyle(node);
     const fontSize = Number.parseFloat(style.fontSize || '0');
     const lineHeight = Number.parseFloat(style.lineHeight || '') || fontSize * 1.35;
+    const text = normalize(node.textContent || '');
+    const minimumHorizontalWidth = text.length <= 3 ? 20 : 32;
     return {
-      text: normalize(node.textContent || ''),
+      text,
       rect: box,
       lineHeight,
-      horizontallyReadable: Boolean(box && box.width >= 32 && box.height <= lineHeight * 2.2),
+      horizontallyReadable: Boolean(box && box.width >= minimumHorizontalWidth && box.height <= lineHeight * 2.2),
     };
   });
   const incidentIdentityReadable = !riskIdentity || (
