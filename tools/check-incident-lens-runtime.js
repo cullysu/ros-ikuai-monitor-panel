@@ -531,6 +531,16 @@ async function inspectMatrix(runtime) {
       observation = await openOverview(runtime, cell.scene, cell.viewport);
       assertViewport(observation, context);
       assertSceneTruth(cell.scene, observation, context);
+      if (observation.selectedIdentity) {
+        assert(observation.selectedIdentity?.categoryLines?.length > 0
+          && observation.selectedIdentity.categoryLines.length <= 2
+          && observation.selectedIdentity?.titleLines?.length > 0
+          && observation.selectedIdentity.titleLines.length <= 2,
+        "Incident identity must remain horizontally scannable rather than stacking one glyph per line", {
+          context,
+          selectedIdentity: observation.selectedIdentity,
+        });
+      }
       if (cell.viewport.id === "tablet768") {
         assert(observation.tabletEvidenceDeck?.visible, "Tablet Incident Split Lens must expose its evidence deck", {
           context,

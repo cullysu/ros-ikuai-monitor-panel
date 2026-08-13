@@ -163,6 +163,16 @@
   .incident-lens__tablet-audit { grid-column:1; grid-row:2; border-top:1px solid var(--il-line); }
 }
 
+@media (min-width:600px) and (max-width:719px) and (min-height:501px) {
+  .incident-lens__patrol, .incident-lens__incident { grid-template-columns:minmax(0,1fr); }
+  .incident-lens__patrol-list { grid-column:1; grid-row:1; }
+  .incident-lens__patrol .incident-lens__inspector { grid-column:1; grid-row:2; border-left:1px solid var(--il-line); }
+  .incident-lens__patrol .incident-lens__tablet-crosscheck { grid-column:1; grid-row:3; }
+  .incident-lens__impact-workspace { grid-column:1; grid-row:1; }
+  .incident-lens__evidence-workspace { grid-column:1; grid-row:2; }
+  .incident-lens__tablet-audit { grid-column:1; grid-row:3; }
+}
+
 @media (min-width:900px) and (min-height:501px) {
   .incident-lens__tablet-crosscheck > div { grid-template-columns:repeat(4,minmax(0,1fr)); }
   .incident-lens__tablet-crosscheck article { border-bottom:0; }

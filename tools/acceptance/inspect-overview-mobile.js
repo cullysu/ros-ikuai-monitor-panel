@@ -224,6 +224,24 @@ function inspectMobileNativeOverview({
   const claimControls = Array.from(incidentLens.querySelectorAll('[data-incident-lens-claim-control]'));
   const action = incidentLens.querySelector('[data-incident-lens-action]');
   const evidenceDeck = incidentLens.querySelector('[data-incident-lens-evidence-deck]');
+  const riskIdentity = incidentLens.querySelector('[data-incident-lens-risk-identity]');
+  const identityCategory = riskIdentity?.querySelector('small');
+  const identityTitle = riskIdentity?.querySelector('h2');
+  const identityTextGeometry = [identityCategory, identityTitle].filter(Boolean).map((node) => {
+    const box = rect(node);
+    const style = getComputedStyle(node);
+    const fontSize = Number.parseFloat(style.fontSize || '0');
+    const lineHeight = Number.parseFloat(style.lineHeight || '') || fontSize * 1.35;
+    return {
+      text: normalize(node.textContent || ''),
+      rect: box,
+      lineHeight,
+      horizontallyReadable: Boolean(box && box.width >= 32 && box.height <= lineHeight * 2.2),
+    };
+  });
+  const incidentIdentityReadable = !riskIdentity || (
+    identityTextGeometry.length === 2 && identityTextGeometry.every((item) => item.horizontallyReadable)
+  );
   const runtimeManaged = incidentLens.getAttribute('data-incident-lens-runtime-managed') === 'true';
   const runtimeScope = app?.querySelector?.('[data-panel-runtime-toolbar="mobile"]');
   const standaloneScope = incidentLens.querySelector(':scope > [data-incident-lens-command-chrome]');
@@ -434,6 +452,7 @@ function inspectMobileNativeOverview({
     navigationClearance: navigationClearanceOk,
     noHorizontalOverflow,
     readableText: unreadableText.length === 0 && clippedOperationalText.length === 0,
+    incidentIdentityReadable,
     noLegacyPresentation,
     isolatedTree: !sectionRoot?.querySelector('[data-pocket-console-root], [data-desktop-overview]'),
     interaction: Boolean(nativeMobileInteractionOk),
@@ -465,6 +484,7 @@ function inspectMobileNativeOverview({
     selectedClaim: { id: selectedId, focusId: expandedClaim?.id || '', name: normalize(expandedClaim?.getAttribute('aria-label') || '') },
     claimControls: claimControls.map((control) => ({ tag: control.tagName, label: normalize(control.getAttribute('aria-label') || control.textContent || '') })),
     textReadability: { scopes: auditedTextScopes, unreadable: unreadableText, clipped: clippedOperationalText },
+    incidentIdentity: { readable: incidentIdentityReadable, text: identityTextGeometry },
     targets: {
       undersized: undersizedTargets,
       obscuredByNavigation: obscuredTargets.map((node) => normalize(node.getAttribute('aria-label') || node.textContent || node.tagName)),

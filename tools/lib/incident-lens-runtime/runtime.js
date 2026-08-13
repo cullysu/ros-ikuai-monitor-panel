@@ -230,6 +230,7 @@ async function inspectRoot(page) {
       return lines.sort((left, right) => left.top - right.top).map((line) => line.text);
     };
     const selected = root?.querySelector(selectors.expandedClaim) || null;
+    const selectedIdentity = selected?.querySelector(selectors.riskIdentity) || null;
     const selectedKind = selected?.getAttribute("data-incident-lens-claim-kind") || "";
     const selectedTrafficGeometry = selected?.querySelector(selectors.trafficGeometry) || null;
     const selectedDecisiveGeometry = selectedKind === "resource"
@@ -300,6 +301,13 @@ async function inspectRoot(page) {
         text: label(selected),
         rect: rect(selected),
         visibleRect: visibleRect(selected),
+      } : null,
+      selectedIdentity: selectedIdentity ? {
+        category: label(selectedIdentity.querySelector("small")),
+        categoryLines: renderedLines(selectedIdentity.querySelector("small")),
+        title: label(selectedIdentity.querySelector("h2")),
+        titleLines: renderedLines(selectedIdentity.querySelector("h2")),
+        state: label(selectedIdentity.querySelector(":scope > strong")),
       } : null,
       selectedCriticalMeasurement: selectedTrafficGeometry ? {
         rect: rect(selectedTrafficGeometry),
@@ -390,6 +398,7 @@ async function inspectRoot(page) {
   }, {
     root: ROOT,
     expandedClaim: "[data-incident-lens-expanded-claim]",
+    riskIdentity: "[data-incident-lens-risk-identity]",
     claimControl: "[data-incident-lens-claim-control]",
     action: "[data-incident-lens-action]",
     routeTitle: "[data-incident-lens-route-title]",
