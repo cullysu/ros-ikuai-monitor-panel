@@ -13,7 +13,7 @@ const { readBoundedFileSnapshotSync } = require('./lib/bounded-file-snapshot');
 const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
 
 const ROOT = path.resolve(__dirname, '..');
-const REQUIRED_ROLES = ['product-information-architecture', 'visual-interaction', 'accessibility-interaction', 'engineering-code-review'];
+const REQUIRED_ROLES = ['product-information-architecture', 'visual-interaction', 'accessibility-interaction', 'engineering-code-review', 'route-owner'];
 const REQUIRED_CHANNELS = ['health', 'snapshot'];
 const DEFAULT_MIN_SOAK_SECONDS = 300;
 const DEFAULT_MIN_SOAK_SAMPLES = 10;
@@ -70,7 +70,53 @@ function evidencePaths(evidence) {
   return paths.every(isSafeRelativePath) ? paths : null;
 }
 
-function inspectIndependentReviewRecords(records, candidateCommit, candidateRuntimeIdentity) {
+function operationalRouteClaims(routeManifest) {
+  if (!isPlainObject(routeManifest) || !Array.isArray(routeManifest.routes)) return null;
+  const claims = routeManifest.routes.filter((entry) => entry?.kind === 'module');
+  if (!claims.length || claims.some((entry) => typeof entry.route !== 'string' || !entry.route || !['bounded-readonly', 'complete'].includes(entry.declaredMaturity))) return null;
+  if (new Set(claims.map((entry) => entry.route)).size !== claims.length) return null;
+  return claims;
+}
+
+function inspectRouteOwnerRecord(record, routeClaims, fail) {
+  const entries = record.routeAcceptance;
+  if (!Array.isArray(entries) || entries.length !== routeClaims.length) { fail('route_owner_coverage_invalid'); return; }
+  const expected = new Map(routeClaims.map((entry) => [entry.route, entry.declaredMaturity]));
+  const seen = new Set();
+  const recordEvidence = new Set(evidencePaths(record.evidence) || []);
+  for (const entry of entries) {
+    if (!isPlainObject(entry) || Object.keys(entry).some((key) => !['route', 'declaredMaturity', 'result', 'evidence'].includes(key))) { fail('route_owner_entry_invalid'); continue; }
+    if (!expected.has(entry.route) || seen.has(entry.route)) fail('route_owner_coverage_invalid');
+    seen.add(entry.route);
+    if (entry.result !== 'pass' || entry.declaredMaturity !== expected.get(entry.route)) fail('route_owner_claim_invalid');
+    if (!isSafeRelativePath(entry.evidence) || !recordEvidence.has(entry.evidence)) fail('route_owner_evidence_invalid');
+  }
+  if (seen.size !== expected.size || [...expected.keys()].some((route) => !seen.has(route))) fail('route_owner_coverage_invalid');
+}
+
+function inspectAssistiveTechnologyRecord(record, routeClaims, fail) {
+  const tests = record.assistiveTechnologyTests;
+  if (!Array.isArray(tests) || tests.length === 0) { fail('assistive_technology_tests_missing'); return; }
+  const expected = new Set(routeClaims.map((entry) => entry.route));
+  const covered = new Set();
+  const recordEvidence = new Set(evidencePaths(record.evidence) || []);
+  for (const test of tests) {
+    const allowedFields = ['operatingSystem', 'assistiveTechnology', 'assistiveTechnologyVersion', 'browserOrHost', 'deviceContext', 'interactionModes', 'protocol', 'result', 'routeResults', 'evidence'];
+    if (!isPlainObject(test) || Object.keys(test).some((key) => !allowedFields.includes(key))) { fail('assistive_technology_test_invalid'); continue; }
+    const requiredText = ['operatingSystem', 'assistiveTechnology', 'assistiveTechnologyVersion', 'browserOrHost', 'deviceContext', 'protocol'];
+    if (requiredText.some((field) => typeof test[field] !== 'string' || !test[field].trim()) || /automated|playwright|axe/i.test(test.assistiveTechnology) || test.result !== 'pass') fail('assistive_technology_test_invalid');
+    if (!Array.isArray(test.interactionModes) || test.interactionModes.length === 0 || test.interactionModes.some((mode) => typeof mode !== 'string' || !mode.trim())) fail('assistive_technology_test_invalid');
+    if (!isSafeRelativePath(test.evidence) || !recordEvidence.has(test.evidence)) fail('assistive_technology_evidence_invalid');
+    if (!Array.isArray(test.routeResults) || test.routeResults.length === 0) { fail('assistive_technology_route_coverage_invalid'); continue; }
+    for (const routeResult of test.routeResults) {
+      if (!isPlainObject(routeResult) || Object.keys(routeResult).some((key) => !['route', 'result'].includes(key)) || routeResult.result !== 'pass' || typeof routeResult.route !== 'string' || !expected.has(routeResult.route)) fail('assistive_technology_route_coverage_invalid');
+      else covered.add(routeResult.route);
+    }
+  }
+  if (covered.size !== expected.size || [...expected].some((route) => !covered.has(route))) fail('assistive_technology_route_coverage_invalid');
+}
+
+function inspectIndependentReviewRecords(records, candidateCommit, candidateRuntimeIdentity, routeManifest) {
   const failures = [];
   const fail = (code) => { if (!failures.includes(code)) failures.push(code); };
   if (!Array.isArray(records) || records.length !== REQUIRED_ROLES.length) return { pass: false, failures: ['independent_review_count_invalid'] };
@@ -84,6 +130,8 @@ function inspectIndependentReviewRecords(records, candidateCommit, candidateRunt
   }
   const reviewerIds = [];
   const roles = [];
+  const routeClaims = operationalRouteClaims(routeManifest);
+  if (!routeClaims) fail('route_manifest_claims_invalid');
   let firstArtifact = null;
   for (const record of records) {
     if (!isPlainObject(record)) { fail('independent_review_record_invalid'); continue; }
@@ -104,6 +152,8 @@ function inspectIndependentReviewRecords(records, candidateCommit, candidateRunt
     if (artifact.artifactKey !== candidateRuntimeIdentity.artifactKey) fail('independent_review_artifact_key_mismatch');
     if (artifact.fingerprint !== candidateRuntimeIdentity.worktreeFingerprint) fail('independent_review_fingerprint_mismatch');
     if (firstArtifact === null) firstArtifact = artifact; else if (!isDeepStrictEqual(artifact, firstArtifact)) fail('independent_review_artifact_identity_mismatch');
+    if (routeClaims && record.role === 'route-owner') inspectRouteOwnerRecord(record, routeClaims, fail);
+    if (routeClaims && record.role === 'accessibility-interaction') inspectAssistiveTechnologyRecord(record, routeClaims, fail);
   }
   if (roles.length !== REQUIRED_ROLES.length || new Set(roles).size !== REQUIRED_ROLES.length || REQUIRED_ROLES.some((role) => !roles.includes(role))) fail('independent_review_roles_invalid');
   if (reviewerIds.length !== REQUIRED_ROLES.length || new Set(reviewerIds).size !== REQUIRED_ROLES.length) fail('independent_review_reviewers_not_unique');
@@ -245,6 +295,7 @@ function loadCurrentRouteManifest(root = ROOT) {
     return {
       pass: true,
       bytes,
+      manifest,
       productContractDigest: sha256Digest(productContractBytes),
       routePolicyDigest: sha256Digest(policyBytes),
       routeManifestDigest: sha256Digest(bytes),
@@ -333,7 +384,7 @@ function inspectReleaseCandidateEvidence(options, { root = ROOT, verifySoak = ve
   append(routeManifest.failures || []);
   const reviews = loadIndependentReviewRecords(frozen);
   append(reviews.failures || []);
-  if (reviews.ok) append(inspectIndependentReviewRecords(reviews.records, options.candidateCommit, candidateRuntimeIdentity).failures);
+  if (reviews.ok) append(inspectIndependentReviewRecords(reviews.records, options.candidateCommit, candidateRuntimeIdentity, routeManifest.manifest).failures);
   const soak = loadSoakReport(frozen);
   append(soak.failures || []);
   if (soak.ok) {

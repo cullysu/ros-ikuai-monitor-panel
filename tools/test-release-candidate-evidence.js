@@ -13,8 +13,15 @@ const candidate = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding:
 assert.match(candidate, /^[0-9a-f]{40}$/);
 
 function writeJson(file, value) { fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`); }
-function review(role, reviewerAgentId, runtimeIdentity) {
-  return { schema: 'independent-review/v1', role, reviewerAgentId, verdict: 'pass', p0: 0, p1: 0, scope: 'external-release-scope', releaseEligible: true, evidence: ['evidence.txt'], reviewedArtifact: { artifactKey: runtimeIdentity.artifactKey, fingerprint: runtimeIdentity.worktreeFingerprint, generatedAt: '2026-08-09T00:00:00.000Z', commit: candidate, pass: true } };
+function review(role, reviewerAgentId, runtimeIdentity, routeManifest) {
+  const operationalRoutes = routeManifest.routes.filter((entry) => entry.kind === 'module');
+  return {
+    schema: 'independent-review/v1', role, reviewerAgentId, verdict: 'pass', p0: 0, p1: 0,
+    scope: 'external-release-scope', releaseEligible: true, evidence: ['evidence.txt'],
+    reviewedArtifact: { artifactKey: runtimeIdentity.artifactKey, fingerprint: runtimeIdentity.worktreeFingerprint, generatedAt: '2026-08-09T00:00:00.000Z', commit: candidate, pass: true },
+    ...(role === 'route-owner' ? { routeAcceptance: operationalRoutes.map((entry) => ({ route: entry.route, declaredMaturity: entry.declaredMaturity, result: 'pass', evidence: 'evidence.txt' })) } : {}),
+    ...(role === 'accessibility-interaction' ? { assistiveTechnologyTests: [{ operatingSystem: 'Windows 11', assistiveTechnology: 'Narrator', assistiveTechnologyVersion: 'current', browserOrHost: 'Microsoft Edge', deviceContext: 'desktop keyboard', interactionModes: ['keyboard', 'spoken-announcement'], protocol: 'keyboard-navigation-and-announcement-v1', result: 'pass', routeResults: operationalRoutes.map((entry) => ({ route: entry.route, result: 'pass' })), evidence: 'evidence.txt' }] } : {}),
+  };
 }
 function soak() {
   return { schema: 'routeros-readonly-soak/v2', outcome: 'pass', interrupted: false, expectedCommit: candidate, durationSeconds: 300, elapsedSeconds: 300, samples: Array.from({ length: 10 }, () => ({ outcome: 'ok', channels: ['health', 'snapshot'].map((channel) => ({ channel, outcome: 'ok', freshness: 'fresh', failureState: 'clear', commitCheck: 'match', buildCommit: candidate })) })) };
@@ -38,8 +45,8 @@ try {
   assert.equal(candidateRuntimeIdentity.worktreeClean, true, 'candidate identity must come from a clean isolated worktree');
   assert.equal(candidateRuntimeIdentity.releaseEvidenceEligible, true, 'clean candidate identity must be release-evidence eligible');
   fs.writeFileSync(path.join(reviews, 'route-manifest.json'), manifest.bytes);
-  const roles = ['product-information-architecture', 'visual-interaction', 'accessibility-interaction', 'engineering-code-review'];
-  roles.forEach((role, index) => writeJson(path.join(reviews, `${index}.json`), review(role, `reviewer-${index}`, candidateRuntimeIdentity)));
+  const roles = ['product-information-architecture', 'visual-interaction', 'accessibility-interaction', 'engineering-code-review', 'route-owner'];
+  roles.forEach((role, index) => writeJson(path.join(reviews, `${index}.json`), review(role, `reviewer-${index}`, candidateRuntimeIdentity, manifest.manifest)));
   writeJson(soakPath, soak());
   const baseOptions = {
     candidateCommit: candidate,
@@ -55,26 +62,32 @@ try {
   assert.match(digest, /^sha256:[0-9a-f]{64}$/);
 
   assert.equal(checker.inspectCandidateCommit('a'.repeat(39)).pass, false, 'wrong SHA must fail');
-  const canonicalReviews = roles.map((role, index) => review(role, `reviewer-${index}`, candidateRuntimeIdentity));
-  assert.equal(checker.inspectIndependentReviewRecords(canonicalReviews, candidate, candidateRuntimeIdentity).pass, true, 'reviews must pass only when their artifact identity exactly matches the clean candidate runtime identity');
+  const canonicalReviews = roles.map((role, index) => review(role, `reviewer-${index}`, candidateRuntimeIdentity, manifest.manifest));
+  assert.equal(checker.inspectIndependentReviewRecords(canonicalReviews, candidate, candidateRuntimeIdentity, manifest.manifest).pass, true, 'reviews must pass only when their artifact identity, route-owner claims, and AT coverage match the clean candidate');
+  const missingRouteOwnerCoverage = structuredClone(canonicalReviews);
+  missingRouteOwnerCoverage.find((record) => record.role === 'route-owner').routeAcceptance.pop();
+  assert.equal(checker.inspectIndependentReviewRecords(missingRouteOwnerCoverage, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('route_owner_coverage_invalid'), true, 'route owner must cover every operational route');
+  const automatedOnlyAccessibility = structuredClone(canonicalReviews);
+  automatedOnlyAccessibility.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0].assistiveTechnology = 'Playwright';
+  assert.equal(checker.inspectIndependentReviewRecords(automatedOnlyAccessibility, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_test_invalid'), true, 'automation cannot impersonate real assistive technology acceptance');
   const wrongArtifactKey = structuredClone(canonicalReviews);
   wrongArtifactKey.forEach((record) => { record.reviewedArtifact.artifactKey = 'other-candidate'; });
   assert.deepEqual(
-    checker.inspectIndependentReviewRecords(wrongArtifactKey, candidate, candidateRuntimeIdentity),
+    checker.inspectIndependentReviewRecords(wrongArtifactKey, candidate, candidateRuntimeIdentity, manifest.manifest),
     { pass: false, failures: ['independent_review_artifact_key_mismatch'] },
     'four internally consistent review artifact keys that differ from the clean candidate identity must fail closed',
   );
   const wrongFingerprint = structuredClone(canonicalReviews);
   wrongFingerprint.forEach((record) => { record.reviewedArtifact.fingerprint = '0'.repeat(64); });
   assert.deepEqual(
-    checker.inspectIndependentReviewRecords(wrongFingerprint, candidate, candidateRuntimeIdentity),
+    checker.inspectIndependentReviewRecords(wrongFingerprint, candidate, candidateRuntimeIdentity, manifest.manifest),
     { pass: false, failures: ['independent_review_fingerprint_mismatch'] },
     'four internally consistent review fingerprints that differ from the clean candidate identity must fail closed',
   );
   const missingFingerprint = structuredClone(canonicalReviews);
   delete missingFingerprint[0].reviewedArtifact.fingerprint;
   assert.deepEqual(
-    checker.inspectIndependentReviewRecords(missingFingerprint, candidate, candidateRuntimeIdentity),
+    checker.inspectIndependentReviewRecords(missingFingerprint, candidate, candidateRuntimeIdentity, manifest.manifest),
     { pass: false, failures: ['independent_review_artifact_identity_invalid'] },
     'reviews that omit the exact candidate fingerprint must fail closed',
   );
@@ -107,7 +120,7 @@ try {
     root,
     snapshot,
     inspectCheckout: () => ({ pass: true, failures: [] }),
-    verifyRoute: (frozen, candidateRoot) => ({ pass: path.resolve(candidateRoot) !== root && frozen === snapshot, failures: [] }),
+    verifyRoute: (frozen, candidateRoot) => ({ pass: path.resolve(candidateRoot) !== root && frozen === snapshot, failures: [], manifest: manifest.manifest }),
     verifySoak: ({ soakBytes }) => ({ pass: soakBytes.equals(frozenSoak), failures: [] }),
   });
   assert.equal(frozenResult.pass, true, 'post-snapshot path replacements must not influence frozen verification bytes');
@@ -119,7 +132,7 @@ try {
     root,
     snapshot,
     inspectCheckout: () => ({ pass: true, failures: [] }),
-    verifyRoute: () => ({ pass: true, failures: [] }),
+    verifyRoute: () => ({ pass: true, failures: [], manifest: manifest.manifest }),
     verifySoak: () => ({ pass: true, failures: [] }),
   });
   assert.equal(belowPolicyResult.pass, false, 'publication evidence cannot lower the 300-second and 10-sample soak policy');

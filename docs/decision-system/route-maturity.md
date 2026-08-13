@@ -4,15 +4,15 @@
 - validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
 - supersededBy: `null`
 - sourceOfTruth: `src/panel-framework/routes/panelRoutes.ts` plus `src/panel-framework/routes/panelRouteMaturity.ts`
-- structuralGate: `tools/check-route-maturity-contract.js --mode=structural` (validates every declared bounded-readonly/unavailable contract without promoting it)
-- completePromotionGate: `tools/check-route-maturity-contract.js --mode=complete --routes=<route> --acceptance-record=<absolute-external-path> --acceptance-keyring=<absolute-external-path> --candidate-commit=<40-hex-sha> --evidence-digest=sha256:<64-hex>` (requires independent Accessibility and signed external acceptance for one requested complete route)
+- structuralGate: `tools/check-route-maturity-contract.js --mode=structural` (validates every declared implementation-maturity contract without promoting it)
+- completeImplementationEligibilityGate: `tools/check-route-maturity-contract.js --mode=complete --routes=<route>` (checks implementation eligibility only; it cannot consume or assert external acceptance, public-release authorization, or release completion)
 
 Maturity describes implemented operational depth, not URL existence.
 
 | Label | Meaning |
 |---|---|
-| `complete` | Domain-specific data, search/filter/sort/paging where applicable, object detail that adds evidence, error/recovery, accessibility, and independent acceptance. |
-| `bounded-readonly` | Real typed read-only data and bounded inspection exist, but one or more complete-module criteria or independent acceptance remain open. |
+| `complete` | The implementation provides domain-specific data, search/filter/sort/paging where applicable, object detail that adds evidence, error/recovery, and implementation-level accessibility support. External acceptance remains a separate release-evidence concern. |
+| `bounded-readonly` | Real typed read-only data and bounded inspection exist, but one or more complete implementation criteria remain open. |
 | `fallback` | Route is real but reuses a broader model/inspector and provides limited route-specific depth. |
 | `unavailable` | Not an operational module; directory or unavailable capability only. |
 
@@ -40,14 +40,16 @@ Maturity describes implemented operational depth, not URL existence.
 | readonlyDiagnostics | bounded-readonly | Read-only diagnostics workspace |
 | more | unavailable | Tool directory, not a module |
 
-No route is currently labelled `complete`. The structural registry covers all 19 routes with `missing=0`, `extra=0`, `violations=0`; this structural gate may pass while `acceptanceComplete=false` because the public claim is explicitly bounded-readonly rather than complete. Promotion requires direct evidence for every complete criterion and independent acceptance; matrix navigation coverage alone cannot promote a route. `evidenceRefs` are checked for file existence and source tokens by the contract; they do not replace human acceptance.
+No route is currently labelled `complete`. The structural registry covers all 19 routes with `missing=0`, `extra=0`, `violations=0`; this structural gate may pass while `acceptanceComplete=false`. Matrix navigation coverage alone cannot change a route's implementation maturity. `evidenceRefs` are checked for file existence and source tokens by the contract; they do not replace human acceptance.
+
+The source registry owns implementation maturity only. For every operational route, including any route declared `complete`, tracked evidence keeps `independentAcceptance: "pending"` and `acceptanceRefs: []`. Repository-local references, generated reports, and candidate-controlled files must not be used to turn that pending state into an acceptance claim. `--mode=complete` is therefore an implementation-eligibility check: it may verify that a requested route is declared `complete` and meets the implementation criteria, but it must not accept signature inputs or report independent acceptance, `publicReleasePass`, or release completion.
 
 ## External acceptance provenance
 
-The exact candidate is the explicit `--candidate-commit` value, not `HEAD`; the checker requires a resolvable 40-hex Git commit object but deliberately does not require the current worktree to be clean. This lets an independent Route Owner/real AT sign a candidate tree without making their signed record part of that same tree.
+External acceptance is candidate-wide, not a route-scoped signature flow. The exact candidate is the explicit `--candidate-commit` 40-hex SHA. Its external candidate bundle must contain five distinct review roles: Product/Information Architecture, Visual/Interaction, Accessibility/Interaction, Engineering/Code Review, and Route Owner. These reviews are evidence inputs only; none is created or trusted merely because it is referenced by the source registry.
 
-For a complete-promotion invocation, the acceptance record and its trusted keyring are both mandatory explicit **absolute paths outside this repository**. Repository-local paths, relative paths, symlinks, malformed keyrings, non-Ed25519 keys, unknown key IDs, route mismatch, candidate-SHA mismatch, evidence-digest mismatch, and invalid signatures remain red. `acceptanceRefs` remain a structural declaration of an external-acceptance boundary; the checker never reads a signed record from them or from the tracked `docs/` tree.
+The Route Owner record must enumerate every operational route and accept that route at the exact maturity claimed by the candidate manifest, whether `bounded-readonly` or `complete`. Missing routes, duplicate routes, an undeclared maturity, a claim mismatch, or a non-pass result remains red. The `more` directory is not an operational route and must remain governed by its declared `unavailable` boundary unless the implementation contract itself changes.
 
-The signed fixed-field `schema-version: 1` record binds repository, route, independent result, the exact reviewed candidate commit, reviewer, key ID, evidence digest, `ed25519`, and the signature over the canonical record bytes. The expected digest is provided as `--evidence-digest`, so a valid signature cannot be reused for different evidence. The external keyring is the explicit trust root for that invocation; no environment-provided key, in-repository fingerprint allowlist, or production private key is used. The standalone verifier is `tools/check-route-maturity-contract.js --verify-external-acceptance --route=<route>` with the same four external inputs. See [external acceptance format](external-acceptance/README.md) for the file formats.
+The Accessibility/Interaction record must cover every operational route with real assistive-technology testing. At minimum it must identify the assistive technology and version, operating system, browser or host, device context, interaction modes exercised, exact routes covered, per-route outcomes, exact candidate identity, and referenced evidence. Automated accessibility checks, screenshots, source tokens, or an agent-only review cannot be relabelled as real AT acceptance. Missing metadata, incomplete route coverage, candidate mismatch, or any non-pass result remains red.
 
-No route is promoted merely by this signature path: the structural registry and all complete criteria still apply. In particular, a `bounded-readonly` route remains bounded-readonly even when a testable external signature verifies.
+The candidate bundle and its evidence digest remain separate from global public-release authorization. A trusted Ed25519 `public-release` authorization is issued and verified only by an external promotion controller that pins its own policy and trust root and independently recomputes all bindings. Repository component checks cannot grant that authority. No route-scoped `schema-version: 1` record or `--route` signature invocation is part of this contract. See [external acceptance format](external-acceptance/README.md) for the candidate-bundle and global authorization boundaries.

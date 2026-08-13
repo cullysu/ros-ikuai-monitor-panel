@@ -410,11 +410,6 @@ for (const [route, evidence] of Object.entries(maturity.PANEL_ROUTE_MATURITY_EVI
     assert.equal(fs.existsSync(path.join(root, evidence.accessibilitySource)), true, `${route}: accessibility source must exist`);
     assert.equal(fs.readFileSync(path.join(root, evidence.accessibilitySource), "utf8").includes(evidence.accessibilityToken), true, `${route}: accessibility token must bind to source`);
   }
-  if (evidence.accessibility === "independent-pass") {
-    assert.ok(evidence.accessibilitySource && evidence.accessibilityToken, `${route}: independent accessibility needs a source token`);
-    assert.equal(fs.existsSync(path.join(root, evidence.accessibilitySource)), true, `${route}: independent accessibility source must exist`);
-    assert.equal(fs.readFileSync(path.join(root, evidence.accessibilitySource), "utf8").includes(evidence.accessibilityToken), true, `${route}: independent accessibility token must bind to source`);
-  }
   assert.equal(evidence.acceptanceRefs.length, 0, `${route}: route-local acceptance refs cannot establish public-release acceptance`);
 }
 
@@ -431,8 +426,8 @@ const completeClaim = structuredClone(routes.PANEL_ROUTES);
 completeClaim.overview.maturity = "complete";
 const completeClaimReport = maturity.validatePanelRouteMaturity(completeClaim, routes.PANEL_ROUTE_IDS);
 assert.ok(
-  completeClaimReport.violations.some((item) => item.includes("overview: complete route needs independent accessibility pass")),
-  "a complete claim without real accessibility proof must remain red",
+  completeClaimReport.violations.length === 0,
+  "a source-complete claim may prove implementation eligibility while external acceptance remains separate",
 );
 
 const missingRecord = { ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE };
@@ -458,12 +453,11 @@ assert.deepEqual(extraDefinitionReport.extraDefinitions, ["phantom"], "adding a 
 
 const completeEvidence = { ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE, overview: {
   ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE.overview,
-  accessibility: "independent-pass",
   independentAcceptance: "independent-pass",
   acceptanceRefs: [],
 } };
 const completeAcceptanceReport = maturity.validatePanelRouteMaturity(completeClaim, routes.PANEL_ROUTE_IDS, completeEvidence);
-assert.ok(completeAcceptanceReport.violations.some((item) => item.includes("signed public-release manifest")), "a route-local acceptance claim must remain red until a signed release manifest verifies");
+assert.ok(completeAcceptanceReport.violations.some((item) => item.includes("signed public-release manifest")), "candidate source cannot self-declare independent acceptance");
 
 const fakeAcceptanceEvidence = { ...completeEvidence, overview: {
   ...completeEvidence.overview,
@@ -472,13 +466,12 @@ const fakeAcceptanceEvidence = { ...completeEvidence, overview: {
 const fakeAcceptanceReport = maturity.validatePanelRouteMaturity(routes.PANEL_ROUTES, routes.PANEL_ROUTE_IDS, fakeAcceptanceEvidence);
 assert.ok(fakeAcceptanceReport.violations.some((item) => item.includes("route-local acceptance refs cannot prove")), "an arbitrary local reference must not satisfy independent acceptance");
 
-const fakeIndependentAccessibilityEvidence = { ...completeEvidence, overview: {
-  ...completeEvidence.overview,
-  accessibilityToken: "",
-  acceptanceRefs: ["package.json"],
+const missingAutomatedAccessibilityEvidence = { ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE, overview: {
+  ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE.overview,
+  accessibility: "pending",
 } };
-const fakeIndependentAccessibilityReport = maturity.validatePanelRouteMaturity(routes.PANEL_ROUTES, routes.PANEL_ROUTE_IDS, fakeIndependentAccessibilityEvidence);
-assert.ok(fakeIndependentAccessibilityReport.violations.some((item) => item.includes("independent accessibility needs a source token")), "independent accessibility must retain source binding");
+const missingAutomatedAccessibilityReport = maturity.validatePanelRouteMaturity(completeClaim, routes.PANEL_ROUTE_IDS, missingAutomatedAccessibilityEvidence);
+assert.ok(missingAutomatedAccessibilityReport.violations.some((item) => item.includes("automated accessibility coverage")), "complete implementation eligibility requires automated accessibility before external AT review");
 
 const forgedExternalAcceptance = [
   "route: public-release",
@@ -637,8 +630,11 @@ if (printPublicReleaseManifest) {
         continue;
       }
       if (routeReport.maturity !== "complete") completeGateFailures.push(`${route}: route is not declared complete`);
-      if (evidence?.accessibility !== "independent-pass") completeGateFailures.push(`${route}: independent accessibility is missing`);
-      if (evidence?.independentAcceptance !== "independent-pass") completeGateFailures.push(`${route}: independent acceptance is missing`);
+      if (evidence?.dataDepth !== "domain-specific") completeGateFailures.push(`${route}: domain-specific data is missing`);
+      if (evidence?.objectDetail !== "novel") completeGateFailures.push(`${route}: novel object detail is missing`);
+      if (evidence?.failureRecovery !== "route-specific") completeGateFailures.push(`${route}: route-specific failure/recovery is missing`);
+      if (evidence?.accessibility !== "automated-only") completeGateFailures.push(`${route}: automated accessibility coverage is missing`);
+      if (evidence?.independentAcceptance !== "pending") completeGateFailures.push(`${route}: candidate source must leave independent acceptance pending`);
     }
   }
   const structuralPass = report.contractPass === true;
@@ -650,6 +646,7 @@ if (printPublicReleaseManifest) {
     structuralPass,
     routePolicyPass,
     publicReleasePass: false,
+    externalAcceptanceRequired: true,
     gateMode,
     completeTargets,
     completeGateFailures,

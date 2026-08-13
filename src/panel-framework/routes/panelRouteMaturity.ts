@@ -406,12 +406,6 @@ export function validatePanelRouteMaturity(
     if (!evidence.evidenceRefs.length && definition.maturity !== "unavailable") {
       violations.push(`${route}: operational route has no evidence references`);
     }
-    if (evidence.accessibility === "independent-pass" && evidence.acceptanceRefs.length === 0) {
-      violations.push(`${route}: independent accessibility needs explicit refs`);
-    }
-    if (evidence.accessibility === "independent-pass" && (!evidence.accessibilitySource || !evidence.accessibilityToken)) {
-      violations.push(`${route}: independent accessibility needs a source token`);
-    }
     if (evidence.acceptanceRefs.length > 0) {
       violations.push(`${route}: route-local acceptance refs cannot prove public-release acceptance`);
     }
@@ -420,7 +414,7 @@ export function validatePanelRouteMaturity(
       if (evidence.dataDepth !== "domain-specific") violations.push(`${route}: complete route needs domain-specific data`);
       if (evidence.objectDetail !== "novel") violations.push(`${route}: complete route needs novel object detail`);
       if (evidence.failureRecovery !== "route-specific") violations.push(`${route}: complete route needs route-specific failure/recovery`);
-      if (evidence.accessibility !== "independent-pass") violations.push(`${route}: complete route needs independent accessibility pass`);
+      if (evidence.accessibility !== "automated-only") violations.push(`${route}: complete route needs automated accessibility coverage before external AT acceptance`);
       if (evidence.independentAcceptance !== "pending") violations.push(`${route}: complete route acceptance is established only by a signed public-release manifest`);
     }
     if (definition.maturity === "bounded-readonly") {
@@ -446,12 +440,10 @@ export function validatePanelRouteMaturity(
   }
 
   const contractPass = missing.length === 0 && extra.length === 0 && missingDefinitions.length === 0 && extraDefinitions.length === 0 && violations.length === 0;
-  const acceptanceComplete = routeIds
-    .filter((route) => routes[route]?.maturity !== "unavailable")
-    .every((route) => {
-      const evidence = evidenceRecords[route];
-      return evidence?.accessibility === "independent-pass" && evidence.independentAcceptance === "independent-pass";
-    });
+  // Candidate source can prove implementation maturity, never its own human
+  // acceptance. Route-owner and real assistive-technology acceptance are
+  // frozen external overlays consumed by the release-candidate evidence gate.
+  const acceptanceComplete = false;
   const routeMaturity = routeIds.map((route) => ({
     route,
     maturity: routes[route]?.maturity || null,
