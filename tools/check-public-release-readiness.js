@@ -1227,12 +1227,13 @@ function main(argv = process.argv.slice(2)) {
       'tools/check-release-candidate-evidence.js',
       args.candidateEvidenceArgs
     );
-    if (candidateEvidence?.candidateEvidencePass !== true || candidateEvidence?.publicReleasePass !== false) {
+    if (candidateEvidence?.candidateEvidenceShapePass !== true || candidateEvidence?.candidateEvidencePass !== false || candidateEvidence?.publicReleasePass !== false) {
       throw new Error(`release candidate evidence gate remains closed\n${JSON.stringify(candidateEvidence, null, 2)}`);
     }
     console.log(JSON.stringify({
       engineeringReadinessPass: true,
-      candidateEvidencePass: true,
+      candidateEvidenceShapePass: true,
+      candidateEvidencePass: false,
       publicReleasePass: false,
       releaseComplete: false,
       promotionAuthority: 'external-controller-required',

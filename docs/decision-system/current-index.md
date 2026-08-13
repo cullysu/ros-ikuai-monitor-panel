@@ -1,20 +1,20 @@
 - status: `reference`
-- validForCommit: Step947 exact clean runtime candidate local acceptance and engineering readiness; release remains closed
+- validForCommit: Step948 candidate-side release-trust contract focused green; external authority and exact candidate replay remain open
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `947`
-- currentOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
-- currentBoundary: `947`
-- latestRecordedStep: `947`
-- latestStepOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
+- currentStep: `948`
+- currentOutcome: `948:release-trust-contract-separated-and-focused-green-external-authority-open`
+- currentBoundary: `948`
+- latestRecordedStep: `948`
+- latestStepOutcome: `948:release-trust-contract-separated-and-focused-green-external-authority-open`
 
 ## Current pointer
 
 The authority is `current-state.md`; this page is discovery only.
 
 - Current implementation: isolated Incident Split Lens owns mobile Overview; rejected Optical presentation is physically deleted; desktop remains independent at 1200+.
-- Current local evidence: exact clean runtime artifact `d45b428535d9beadd5abbe980d6485c77338d483`, Incident 63/63, responsive 10/10, Accessibility plus Edge 22/22, Overview 28/28, route 76/76, route-state 266/266, readiness pass, and four-role P0/P1/P2=0.
-- Current release boundary: this governance write is not a publishable clean worktree; route maturity is 0/18/0/1, real RouterOS soak, trusted promotion authorization, GitHub upload and exact remote Linux/Windows/GHCR CL remain open.
+- Current local evidence: focused trust-contract tests and independent re-audits pass; repository output is explicitly shape-only and source maturity remains externally unaccepted.
+- Current release boundary: the worktree is not a clean exact candidate; external five-role/AT authority, real RouterOS soak, full exact-SHA replay, trusted promotion authorization, GitHub upload and exact remote Linux/Windows/GHCR CL remain open.
 - Full process: `docs/panel-redesign-decision-log.md`.
 - Product handoff: `docs/product-loop-current.md`.
 - Release chronology: `docs/decision-system/release-journal.md`.

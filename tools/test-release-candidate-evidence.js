@@ -17,10 +17,10 @@ function review(role, reviewerAgentId, runtimeIdentity, routeManifest) {
   const operationalRoutes = routeManifest.routes.filter((entry) => entry.kind === 'module');
   return {
     schema: 'independent-review/v1', role, reviewerAgentId, verdict: 'pass', p0: 0, p1: 0,
-    scope: 'external-release-scope', releaseEligible: true, evidence: ['evidence.txt'],
+    scope: 'external-release-scope', releaseEligible: true, evidence: ['evidence.txt', 'evidence/at-session.json'],
     reviewedArtifact: { artifactKey: runtimeIdentity.artifactKey, fingerprint: runtimeIdentity.worktreeFingerprint, generatedAt: '2026-08-09T00:00:00.000Z', commit: candidate, pass: true },
     ...(role === 'route-owner' ? { routeAcceptance: operationalRoutes.map((entry) => ({ route: entry.route, declaredMaturity: entry.declaredMaturity, result: 'pass', evidence: 'evidence.txt' })) } : {}),
-    ...(role === 'accessibility-interaction' ? { assistiveTechnologyTests: [{ operatingSystem: 'Windows 11', assistiveTechnology: 'Narrator', assistiveTechnologyVersion: 'current', browserOrHost: 'Microsoft Edge', deviceContext: 'desktop keyboard', interactionModes: ['keyboard', 'spoken-announcement'], protocol: 'keyboard-navigation-and-announcement-v1', result: 'pass', routeResults: operationalRoutes.map((entry) => ({ route: entry.route, result: 'pass' })), evidence: 'evidence.txt' }] } : {}),
+    ...(role === 'accessibility-interaction' ? { assistiveTechnologyTests: [{ schema: 'assistive-technology-session/v1', sessionId: 'at-session-20260809-001', startedAt: '2026-08-09T00:00:00.000Z', endedAt: '2026-08-09T00:30:00.000Z', operatingSystem: 'Windows', operatingSystemVersion: '11 24H2', assistiveTechnology: 'Narrator', assistiveTechnologyVersion: '11.2506.4', browserOrHost: 'Microsoft Edge', browserOrHostVersion: '140.0', deviceContext: 'desktop keyboard', interactionModes: ['keyboard', 'screen-reader', 'spoken-announcement'], protocol: 'manual-assistive-technology-route-review/v1', result: 'pass', routeResults: operationalRoutes.map((entry) => ({ route: entry.route, result: 'pass', evidence: 'evidence/at-session.json' })), evidence: 'evidence/at-session.json' }] } : {}),
   };
 }
 function soak() {
@@ -34,7 +34,9 @@ try {
   const reviews = path.join(temporary, 'reviews');
   const soakPath = path.join(temporary, 'soak.json');
   fs.mkdirSync(reviews);
+  fs.mkdirSync(path.join(reviews, 'evidence'));
   fs.writeFileSync(path.join(reviews, 'evidence.txt'), 'external evidence\n');
+  fs.writeFileSync(path.join(reviews, 'evidence', 'at-session.json'), '{"session":"external-manual-at-evidence"}\n');
   const manifest = checker.loadCurrentRouteManifest(root);
   assert.equal(manifest.pass, true, 'fixture manifest must be generated from the active route registry and policy');
   const candidateRuntimeIdentity = checker.withIsolatedCandidateWorktree(root, candidate, (candidateRoot) => {
@@ -69,7 +71,29 @@ try {
   assert.equal(checker.inspectIndependentReviewRecords(missingRouteOwnerCoverage, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('route_owner_coverage_invalid'), true, 'route owner must cover every operational route');
   const automatedOnlyAccessibility = structuredClone(canonicalReviews);
   automatedOnlyAccessibility.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0].assistiveTechnology = 'Playwright';
-  assert.equal(checker.inspectIndependentReviewRecords(automatedOnlyAccessibility, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_test_invalid'), true, 'automation cannot impersonate real assistive technology acceptance');
+  assert.equal(checker.inspectIndependentReviewRecords(automatedOnlyAccessibility, candidate, candidateRuntimeIdentity, manifest.manifest).pass, true, 'the candidate checker validates evidence shape, not whether a caller-provided AT identity is authentic');
+  const duplicateAccessibilityRoute = structuredClone(canonicalReviews);
+  const atRoutes = duplicateAccessibilityRoute.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0].routeResults;
+  atRoutes.push(structuredClone(atRoutes[0]));
+  assert.equal(checker.inspectIndependentReviewRecords(duplicateAccessibilityRoute, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_route_coverage_invalid'), true, 'one AT session cannot duplicate a route result');
+  const genericAtVersion = structuredClone(canonicalReviews);
+  genericAtVersion.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0].assistiveTechnologyVersion = 'current';
+  assert.equal(checker.inspectIndependentReviewRecords(genericAtVersion, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_test_invalid'), true, 'AT versions must be reproducible rather than generic labels');
+  for (const field of ['operatingSystemVersion', 'browserOrHostVersion']) {
+    const genericVersion = structuredClone(canonicalReviews);
+    genericVersion.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0][field] = 'current';
+    assert.equal(checker.inspectIndependentReviewRecords(genericVersion, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_test_invalid'), true, `${field} must be reproducible rather than generic`);
+  }
+  const zeroDurationAtSession = structuredClone(canonicalReviews);
+  const zeroDurationTest = zeroDurationAtSession.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0];
+  zeroDurationTest.endedAt = zeroDurationTest.startedAt;
+  assert.equal(checker.inspectIndependentReviewRecords(zeroDurationAtSession, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_test_invalid'), true, 'AT session duration must be positive');
+  const missingRouteEvidence = structuredClone(canonicalReviews);
+  delete missingRouteEvidence.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0].routeResults[0].evidence;
+  assert.equal(checker.inspectIndependentReviewRecords(missingRouteEvidence, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_evidence_invalid'), true, 'every AT route result must link to frozen evidence');
+  const unlistedRouteEvidence = structuredClone(canonicalReviews);
+  unlistedRouteEvidence.find((record) => record.role === 'accessibility-interaction').assistiveTechnologyTests[0].routeResults[0].evidence = 'evidence/not-listed.json';
+  assert.equal(checker.inspectIndependentReviewRecords(unlistedRouteEvidence, candidate, candidateRuntimeIdentity, manifest.manifest).failures.includes('assistive_technology_evidence_invalid'), true, 'AT route evidence must be listed by the review record');
   const wrongArtifactKey = structuredClone(canonicalReviews);
   wrongArtifactKey.forEach((record) => { record.reviewedArtifact.artifactKey = 'other-candidate'; });
   assert.deepEqual(
@@ -123,8 +147,9 @@ try {
     verifyRoute: (frozen, candidateRoot) => ({ pass: path.resolve(candidateRoot) !== root && frozen === snapshot, failures: [], manifest: manifest.manifest }),
     verifySoak: ({ soakBytes }) => ({ pass: soakBytes.equals(frozenSoak), failures: [] }),
   });
-  assert.equal(frozenResult.pass, true, 'post-snapshot path replacements must not influence frozen verification bytes');
-  assert.equal(frozenResult.candidateEvidencePass, true, 'repository checker may establish candidate evidence');
+  assert.equal(frozenResult.pass, true, `post-snapshot path replacements must not influence frozen verification bytes: ${JSON.stringify(frozenResult)}`);
+  assert.equal(frozenResult.candidateEvidenceShapePass, true, 'repository checker may establish only the frozen evidence structure');
+  assert.equal(frozenResult.candidateEvidencePass, false, 'repository checker cannot authenticate externally supplied reviewer or AT identities');
   assert.equal(frozenResult.publicReleasePass, false, 'candidate-controlled code must never authorize its own public release');
   assert.equal(frozenResult.releaseComplete, false, 'pre-promotion evidence must not claim exact-SHA CL completion');
 

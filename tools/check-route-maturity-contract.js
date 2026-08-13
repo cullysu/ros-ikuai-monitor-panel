@@ -459,6 +459,14 @@ const completeEvidence = { ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE, overview: 
 const completeAcceptanceReport = maturity.validatePanelRouteMaturity(completeClaim, routes.PANEL_ROUTE_IDS, completeEvidence);
 assert.ok(completeAcceptanceReport.violations.some((item) => item.includes("signed public-release manifest")), "candidate source cannot self-declare independent acceptance");
 
+const boundedAcceptanceEvidence = { ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE, overview: {
+  ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE.overview,
+  independentAcceptance: "independent-pass",
+  acceptanceRefs: [],
+} };
+const boundedAcceptanceReport = maturity.validatePanelRouteMaturity(routes.PANEL_ROUTES, routes.PANEL_ROUTE_IDS, boundedAcceptanceEvidence);
+assert.ok(boundedAcceptanceReport.violations.some((item) => item.includes("external promotion authority")), "bounded-readonly source claims must also remain pending");
+
 const fakeAcceptanceEvidence = { ...completeEvidence, overview: {
   ...completeEvidence.overview,
   acceptanceRefs: ["package.json"],

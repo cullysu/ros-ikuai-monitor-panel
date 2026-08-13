@@ -1,12 +1,12 @@
 # Product Decision Record — Operations console acceptance
 
-- status: `current-local-acceptance`
-- validForCommit: Step947 exact clean d45b428 Product/Design/Visual/Accessibility/Engineering P0/P1/P2 closure and engineering readiness; current release truth is delegated to `docs/decision-system/current-state.md`
-- currentPointer: Step947 `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
-- currentBoundary: Step947 local four-role review is P0/P1/P2=0 for artifact `d45b428535d9beadd5abbe980d6485c77338d483`; route maturity 0/18/0/1, real RouterOS soak, trusted authorization and remote exact-SHA CL remain open; public release closed
+- status: `current-contract-repair`
+- validForCommit: Step948 candidate-side release-trust separation and focused independent closure; current release truth is delegated to `docs/decision-system/current-state.md`
+- currentPointer: Step948 `948:release-trust-contract-separated-and-focused-green-external-authority-open`
+- currentBoundary: Repository checks establish evidence shape only; reviewer/manual-AT authenticity, RouterOS soak, exact candidate replay, trusted authorization and remote exact-SHA CL remain open; public release closed
 - supersededBy: `null`
 - decisionOwner: independent product acceptance remains external to the implementation loop
-- authorityNote: step sections below are historical or focused evidence; Step947 structured reviews close only local exact-artifact Product/Design/Visual/Accessibility/Engineering P0/P1/P2 and explicitly do not grant promotion or public-release acceptance.
+- authorityNote: step sections below are historical or focused evidence; Step948 explicitly prevents candidate code and source maturity from granting external acceptance or public-release authority.
 
 ## Operator decision
 
@@ -1242,3 +1242,10 @@ Product, Design, Visual, Accessibility, Engineering and Security acceptance rema
 - Compact tablet is capability-driven: 600–719 uses one ordered task column; 768 keeps the two-column evidence workspace. This closes the former per-glyph incident identity defect without shrinking text or removing evidence.
 - Independent Product, Visual, Accessibility and Engineering reviewers inspected all 63 originals and each returned P0/P1/P2=0. Overview 28/28, bounded route 76/76, route-state 266/266, Edge 22/22 and engineering readiness also pass.
 - This is local product acceptance, not public promotion. Route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; real RouterOS duration evidence, trusted promotion and remote exact-SHA CL remain required.
+
+## Step948 — Release trust boundary correction
+
+- Source maturity describes implementation depth only. Every operational route remains `independentAcceptance: pending`, including any future route declared `complete`; local acceptance references are prohibited.
+- Candidate-controlled code may freeze and validate the evidence bundle structure, exact candidate identity, Route Owner coverage, and AT session schema, but returns `candidateEvidencePass=false` because it cannot authenticate the caller.
+- Manual AT sessions require separate versioned OS/AT/browser fields, positive UTC duration, a fixed protocol, unique modes/routes, and per-route frozen evidence links. The external authority must pin reviewer identities and attest the actual sessions.
+- Focused contract tests and two independent re-audits close all P0/P1 findings. This does not reopen publication: exact-SHA whole-product replay, real RouterOS soak, external authority, upload, and remote CL remain absent.

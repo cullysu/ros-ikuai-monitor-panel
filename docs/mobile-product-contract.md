@@ -7,7 +7,7 @@
 - supersededBy: `null`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
 - Current local review boundary: Step947 binds exact clean artifact `d45b428535d9beadd5abbe980d6485c77338d483` to Incident 63/63, responsive 10/10, Edge 22/22, Overview 28/28, route 76/76, route-state 266/266 and four independent records; review records remain `releaseEligible=false`
-- Product/design/visual gate: **PASS for the declared current local scope; public release remains FAIL because route maturity, real RouterOS soak, trusted promotion and remote CL are not closed**
+- Product/design/visual gate: **FAIL because the Step947 local review is historical after tracked source changes; final external product/visual acceptance is not closed**
 - Current loop stage: **Route maturity, real RouterOS duration evidence and release authorization**
 - Matrix evidence: exact clean Incident 63/63, responsive 10/10, Edge 22/22 and public 28/76/266; engineering readiness pass
 - Surface: a read-only RouterOS/iKuai operational console, not a health dashboard or shrunken desktop table

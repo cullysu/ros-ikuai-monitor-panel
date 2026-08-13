@@ -422,7 +422,7 @@ export function validatePanelRouteMaturity(
       if (evidence.dataDepth === "none") violations.push(`${route}: bounded-readonly route needs real data depth`);
       if (evidence.objectDetail === "none") violations.push(`${route}: bounded-readonly route needs bounded object evidence`);
       if (evidence.failureRecovery === "none") violations.push(`${route}: bounded-readonly route needs a failure boundary`);
-      if (evidence.independentAcceptance === "none") violations.push(`${route}: bounded-readonly route must remain auditable`);
+      if (evidence.independentAcceptance !== "pending") violations.push(`${route}: bounded-readonly route acceptance is established only by the external promotion authority`);
     }
     if (definition.maturity === "fallback") {
       if (evidence.renderer !== "section-model") violations.push(`${route}: fallback route must identify its shared section renderer`);

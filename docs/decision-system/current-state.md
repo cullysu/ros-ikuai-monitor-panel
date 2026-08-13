@@ -1,57 +1,57 @@
 - status: `current`
-- currentConclusionForStep: `947`
-- latestRecordedStep: `947`
-- latestStepOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
-- currentBoundaryForStep: `947`
-- validForCommit: Step947 records the clean candidate reviewed before this uncommitted governance write; the review is local and release-ineligible
+- currentConclusionForStep: `948`
+- latestRecordedStep: `948`
+- latestStepOutcome: `948:release-trust-contract-separated-and-focused-green-external-authority-open`
+- currentBoundaryForStep: `948`
+- validForCommit: Step948 records the uncommitted candidate-side release-trust contract repair over df19de9; focused checks and two independent re-audits pass, but the worktree is not yet a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-08-14T03:35:00+08:00
+- updatedAt: 2026-08-14T15:20:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
-**FAIL overall / exact clean candidate local Product, Design/Visual, Accessibility and Engineering acceptance PASS / engineering readiness PASS / public release CLOSED.** Incident Split Lens is the isolated mobile Overview owner. The reviewed product artifact is clean commit `d45b428535d9beadd5abbe980d6485c77338d483`; this Step947 governance write does not mutate that reviewed runtime artifact, but makes the current worktree governance-dirty and therefore not directly publishable.
+**FAIL overall / candidate-side trust contract focused PASS / public release CLOSED.** Step948 removes a self-acceptance ambiguity: source route maturity never owns external acceptance, and repository code can validate only the frozen evidence bundle's structure. It cannot authenticate reviewer identity or prove that a manual assistive-technology session occurred. The current worktree contains this tracked repair over `df19de95de9d3f185b89b6703c5c2d77d742d052`; it is not yet a clean exact release candidate.
 
-## Current decision record: Step 947
+## Current decision record: Step 948
 
-- `600–719px` tall layouts use a one-column task flow so incident category, object and status remain horizontally scannable. `768px` retains the two-column evidence workbench.
-- `incidentIdentityReadable` is a required public-readiness semantic check. Short network abbreviations such as `WAN` are accepted; longer labels fail when width/line geometry indicates glyph stacking.
-- Normal evidence uses Patrol Lens; risk evidence uses Incident Split Lens. Fleet is scale context unless an observed incident outranks it.
-- Presentation claim identity stays separate from domain target identity. Object actions carry a real route and target; Back/Forward restores the presentation claim and focus.
-- Evidence remains `current | historical | unavailable`; missing values do not become zero, route activity requires explicit linkage, and historical/unavailable states withdraw current business values.
+- `complete` and `bounded-readonly` routes must keep `independentAcceptance: pending`; local `acceptanceRefs` remain forbidden as public-release proof.
+- `candidateEvidenceShapePass` means only that the frozen bundle is structurally coherent and candidate-bound. Repository output must keep `candidateEvidencePass=false`, `publicReleasePass=false`, and `releaseComplete=false`.
+- The external bundle requires five roles, including Route Owner. Route Owner must cover every operational route exactly once at its exact declared maturity with linked evidence.
+- Accessibility structure uses `assistive-technology-session/v1`: separate versioned OS/AT/browser fields, a positive UTC interval, fixed manual protocol, unique modes and route results, and per-route frozen evidence links.
+- Reviewer authenticity, manual-AT attestation, trusted signature, promotion authorization, GitHub publication, and exact-SHA CL remain external responsibilities.
 
-## Exact reviewed evidence
+## Focused reviewed evidence
 
-- Artifact/commit: `d45b428535d9beadd5abbe980d6485c77338d483`; fingerprint `b5f6c6a27e3034ed2d9f0340e6109cb5758373c7c2f655b82beb9b8fe00c5ef7`.
-- Incident runtime: `63/63` original screenshots and seven runtime checks pass; every bound image hash, dimension and byte count matches.
-- Responsive boundary: `10/10` pass with exact framework/worktree identity.
-- Accessibility: rendered-scale and browser-page-scale reports pass; actual Microsoft Edge toolbar 200% passes `22/22`.
-- Public Overview matrix: `28/28`; bounded single-scenario route matrix: `76/76`; route-state matrix: `266/266`.
-- Public readiness consumes the exact clean-SHA matrices and returns `engineeringReadinessPass=true`.
-- Four distinct read-only reviewers inspected all 63 originals. Product, Visual, Accessibility and Engineering each report `P0=0 / P1=0 / P2=0`.
+- Base commit: `df19de95de9d3f185b89b6703c5c2d77d742d052`; current tracked trust-contract repair is uncommitted at this record.
+- `test:release-candidate-evidence`, `test:route-maturity-external-acceptance`, `check:route-maturity`, and `check:types` pass under the 2GB Node limit.
+- A bounded-route self-declaration probe now fails; duplicate AT route results, generic versions, zero-duration sessions, and missing/unlisted route evidence each fail closed.
+- Independent engineering re-audit returns PASS with no P0/P1; independent Accessibility re-audit after the final regression additions returns `P0=0 / P1=0 / P2=0`.
+- Step947 remains historical exact visual/runtime evidence only. Step948 has not yet regenerated whole-product exact-SHA matrices or external release evidence.
 
 ## Gate status
 
 | Gate | Status | Boundary |
 |---|---|---|
-| R07 Product | local exact-artifact pass | Step947 independent review passes the bounded-readonly product promise; it is not external promotion authority. |
-| R09 Design / Visual | local exact-artifact pass | All 63 originals pass; the former 600px glyph-stacking P1 is closed and release-blocking regression coverage exists. |
-| R10 Accessibility / Interaction | local exact-artifact pass | 44px, semantics, real history/focus, rendered/page scale, reduced motion, forced colors and Edge 200% pass in the declared scope. |
-| Engineering readiness | pass | Build/types, assets, runtime, 28/76/266 matrices and readiness bind to exact clean commit `d45b428…`. |
-| Route maturity | open | `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; structural and matrix coverage do not make the routes mature modules. |
+| R07 Product | open | Step947 local review is historical after tracked changes; current exact-candidate external acceptance is absent. |
+| R09 Design / Visual | open | No current exact-candidate visual signoff exists; the final clean SHA must be re-rendered and independently reviewed. |
+| R10 Accessibility / Interaction | open | Candidate AT structure is focused green; authenticated manual AT evidence remains external and absent. |
+| Candidate trust contract | focused pass | Route-source maturity, bundle structure, Route Owner coverage and AT session shape are fail-closed; repository self-authorization is impossible by contract. |
+| External review authority | open | The external controller must pin five role identities, validate Route Owner and signed manual-AT attestations, and bind the whole frozen bundle. |
+| Engineering readiness | stale after tracked change | Step947 exact matrices remain historical; the final clean Step948 SHA requires a complete replay. |
+| Route maturity | declared bounded | `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; this satisfies only the bounded implementation policy, not external acceptance. |
 | RouterOS duration evidence | open | No verified 300-second read-only soak against a real RouterOS-backed panel is recorded for this candidate. |
 | R14 Release | closed | No trusted promotion authorization, GitHub upload, or exact remote Linux/Windows/GHCR CL exists. |
 
 ## Explicit non-claims
 
-- Local four-role review is independent within this task but is not a trusted external signature, physical-device study or real-user acceptance.
+- Candidate-side schema checks do not authenticate reviewer identities or establish that manual assistive-technology testing occurred.
 - `76/76` is an honest bounded single-scenario route shard; its top-level release flag remains false by design.
-- Engineering readiness does not override route maturity, RouterOS soak, promotion authority or remote CL.
-- GitHub remains untouched for Step947. Every future upload must be followed by exact-SHA Linux, Windows and GHCR CL verification; any failed, missing, cancelled or stale CL reopens the release loop.
+- Focused contract tests do not replace a clean exact-SHA whole-product replay, real RouterOS soak, trusted promotion authority, or remote CL.
+- GitHub remains untouched for Step948. Every future upload must be followed by exact-SHA Linux, Windows and GHCR CL verification; any failed, missing, cancelled or stale CL reopens the release loop.
 
 ## One next action
 
-Synchronize Step947 byte-identically to `D:\想法\面板`, verify the decision system and independent records, then continue the earliest remaining release gate: real RouterOS duration evidence and route-owner maturity/acceptance. Do not upload while those gates and promotion authority remain open.
+Synchronize Step948 byte-identically to `D:\想法\面板`, commit the candidate-side contract repair, harden and test the external authority, then regenerate every exact-SHA local gate. Do not upload while real RouterOS soak, authenticated external acceptance, or promotion authority remains open.
 
 ## Authority links
 

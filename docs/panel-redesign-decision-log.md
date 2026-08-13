@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（公众发布）/ Step947 exact clean runtime artifact d45b428 已完成 63/10/22 与 28/76/266、本地四角色 P0/P1/P2=0 和工程 readiness；route maturity 0/18/0/1、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
+> 当前产品结论：**FAIL（公众发布）/ Step948 已关闭候选自验收歧义并通过 focused tests 与独立复审；外部 reviewer/AT authority、真实 RouterOS soak、clean exact-SHA 全量重放、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26668,3 +26668,39 @@ ocused-green-engineering
 - latestStepOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Synchronize Step947 byte-identically to D, verify decision/review records, then continue real RouterOS duration evidence and route-owner maturity without publishing.
+
+## 第 948 步：候选证据只证明结构，route maturity 与外部签收彻底分层
+
+### 触发 / 问题
+
+- 对 `df19de9` 的独立审计发现两处发布信任缺陷：`bounded-readonly` 可在源码中自报 `independent-pass`；候选仓库只凭任意 AT 名称和非空字符串，就会把 bundle 写成 `candidateEvidencePass=true`。
+- 这不是外部条件阻塞，而是可修复的契约错误。候选代码不能同时提交产品、描述评审身份并认证自身已经通过真实 AT 或独立签收。
+
+### 观察事实
+
+- `complete` 已保持 `pending`，但 bounded 分支只拒绝 `none`，因此 `independent-pass` 可漏过；修复后所有 operational maturity 都只能由源码声明 `pending`。
+- Route Owner 已具备完整 route/maturity/evidence 结构；AT 结构原先缺少 OS/browser 独立版本、正时长、重复 route 检查和每 route evidence 的持久回归。
+- 仓库工具可以冻结外部目录、核对候选 SHA 和结构，但无法知道 caller 写的 reviewer 或 AT 名称是否真实。把这一结果叫作 candidate evidence pass 会越过信任边界。
+
+### 决策、理由与拒绝项
+
+- 将仓库结果降格并精确命名为 `candidateEvidenceShapePass`；即使结构通过，也固定 `candidateEvidencePass=false / publicReleasePass=false / releaseComplete=false`。
+- 五角色 bundle 继续要求 Product、Visual、Accessibility、Engineering 和 Route Owner；Route Owner 必须逐 route 接受 exact declared maturity，AT session 必须有独立 OS/AT/browser version、正 UTC 时长、固定 manual protocol、唯一 mode/route 和 per-route evidence。
+- 拒绝用 AT 名称黑名单推断“真实测试”；自动化字符串可以满足 shape，但只有外部固定 authority 对 reviewer identity 和 manual session 的签名/策略绑定才能赋予真实性。
+- 拒绝把 18 个 `bounded-readonly` 强行升级为 `complete`。当前 bounded policy 是诚实的产品声明，route maturity 和 external acceptance 是两条独立轴。
+
+### 验证证据
+
+- `test:release-candidate-evidence`、`test:route-maturity-external-acceptance`、`check:route-maturity`、`check:types` 均通过 2GB Node 上限。
+- 负向回归覆盖 bounded 自报 acceptance、AT duplicate route、generic OS/AT/browser version、zero-duration session、missing/unlisted route evidence。
+- Engineering re-audit 在修复后给出 PASS、P0=0/P1=0；Accessibility 最终复审给出 PASS、P0/P1/P2=0。
+- 当前工作树仍是 `df19de9` 上的 tracked repair；没有把 focused green 写成 clean exact candidate 或发布证据。
+
+### 边界 / 心得
+
+- 证据“长得像真的”与“由可信主体证明是真的”必须分开。候选 verifier 负责 bytes、shape、coverage 和 exact candidate；外部 authority 负责 identities、attestation、signature 与 promotion。
+- Step947 的 63/10/22 与 28/76/266 是历史 exact visual/runtime 证据，不能倒签当前 changed source。提交 Step948 后必须重新生成 final SHA 的全部矩阵和 readiness。
+- 真实 RouterOS 300 秒只读 soak、外部五角色/AT 签收、promotion authorization、GitHub upload 和 exact-SHA Linux/Windows/GHCR CL 仍未发生。
+- latestStepOutcome: `948:release-trust-contract-separated-and-focused-green-external-authority-open`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Synchronize Step948 byte-identically to D, commit the candidate contract, harden the external authority, then replay all exact-SHA gates before any publication decision.

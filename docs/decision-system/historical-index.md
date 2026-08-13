@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step947 current decision boundary; historical entries remain immutable
+- validForCommit: Step948 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `947`
-- latestRecordedStep: `947`
+- coveredStepMax: `948`
+- latestRecordedStep: `948`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -68,6 +68,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 945 | three-direction adjudication selects Incident-first Split Lens; rejects equal-weight object dashboard and unproven event timeline; clean isolated replacement boundary approved | current-state.md |
 | 946 | Incident Split Lens physical replacement, 667x375 false-green closure, current full63/responsive/a11y evidence and four-role local P0/P1/P2 closure; release remains closed | current-state.md |
 | 947 | exact clean d45b428 local four-role P0/P1/P2 closure, 600px identity repair, 63/10/22 and 28/76/266 evidence, engineering readiness pass, route maturity/soak/promotion/remote CL still open | current-state.md |
+| 948 | candidate evidence reduced to structural proof, bounded/complete source acceptance forced pending, strict Route Owner and reproducible AT session schemas, external authority and exact replay still open | current-state.md |
 
 ## Reading rule
 

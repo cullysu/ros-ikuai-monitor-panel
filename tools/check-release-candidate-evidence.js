@@ -100,17 +100,26 @@ function inspectAssistiveTechnologyRecord(record, routeClaims, fail) {
   const expected = new Set(routeClaims.map((entry) => entry.route));
   const covered = new Set();
   const recordEvidence = new Set(evidencePaths(record.evidence) || []);
+  const allowedInteractionModes = new Set(['keyboard', 'screen-reader', 'spoken-announcement', 'touch-exploration', 'switch-control']);
   for (const test of tests) {
-    const allowedFields = ['operatingSystem', 'assistiveTechnology', 'assistiveTechnologyVersion', 'browserOrHost', 'deviceContext', 'interactionModes', 'protocol', 'result', 'routeResults', 'evidence'];
+    const allowedFields = ['schema', 'sessionId', 'startedAt', 'endedAt', 'operatingSystem', 'operatingSystemVersion', 'assistiveTechnology', 'assistiveTechnologyVersion', 'browserOrHost', 'browserOrHostVersion', 'deviceContext', 'interactionModes', 'protocol', 'result', 'routeResults', 'evidence'];
     if (!isPlainObject(test) || Object.keys(test).some((key) => !allowedFields.includes(key))) { fail('assistive_technology_test_invalid'); continue; }
-    const requiredText = ['operatingSystem', 'assistiveTechnology', 'assistiveTechnologyVersion', 'browserOrHost', 'deviceContext', 'protocol'];
-    if (requiredText.some((field) => typeof test[field] !== 'string' || !test[field].trim()) || /automated|playwright|axe/i.test(test.assistiveTechnology) || test.result !== 'pass') fail('assistive_technology_test_invalid');
-    if (!Array.isArray(test.interactionModes) || test.interactionModes.length === 0 || test.interactionModes.some((mode) => typeof mode !== 'string' || !mode.trim())) fail('assistive_technology_test_invalid');
+    const requiredText = ['operatingSystem', 'operatingSystemVersion', 'assistiveTechnology', 'assistiveTechnologyVersion', 'browserOrHost', 'browserOrHostVersion', 'deviceContext', 'protocol'];
+    const versionFields = ['operatingSystemVersion', 'assistiveTechnologyVersion', 'browserOrHostVersion'];
+    const timestampsValid = [test.startedAt, test.endedAt].every((value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value) && Number.isFinite(Date.parse(value))) && Date.parse(test.endedAt) > Date.parse(test.startedAt);
+    if (test.schema !== 'assistive-technology-session/v1' || typeof test.sessionId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/.test(test.sessionId) || !timestampsValid || requiredText.some((field) => typeof test[field] !== 'string' || test[field].trim().length < 3) || versionFields.some((field) => !/\d/.test(test[field]) || /^(?:current|latest|unknown|unspecified)$/i.test(test[field].trim())) || test.protocol !== 'manual-assistive-technology-route-review/v1' || test.result !== 'pass') fail('assistive_technology_test_invalid');
+    if (!Array.isArray(test.interactionModes) || test.interactionModes.length === 0 || new Set(test.interactionModes).size !== test.interactionModes.length || test.interactionModes.some((mode) => !allowedInteractionModes.has(mode))) fail('assistive_technology_test_invalid');
     if (!isSafeRelativePath(test.evidence) || !recordEvidence.has(test.evidence)) fail('assistive_technology_evidence_invalid');
     if (!Array.isArray(test.routeResults) || test.routeResults.length === 0) { fail('assistive_technology_route_coverage_invalid'); continue; }
+    const sessionRoutes = new Set();
     for (const routeResult of test.routeResults) {
-      if (!isPlainObject(routeResult) || Object.keys(routeResult).some((key) => !['route', 'result'].includes(key)) || routeResult.result !== 'pass' || typeof routeResult.route !== 'string' || !expected.has(routeResult.route)) fail('assistive_technology_route_coverage_invalid');
-      else covered.add(routeResult.route);
+      if (!isPlainObject(routeResult) || Object.keys(routeResult).some((key) => !['route', 'result', 'evidence'].includes(key)) || routeResult.result !== 'pass' || typeof routeResult.route !== 'string' || !expected.has(routeResult.route) || sessionRoutes.has(routeResult.route)) {
+        fail('assistive_technology_route_coverage_invalid');
+        continue;
+      }
+      sessionRoutes.add(routeResult.route);
+      covered.add(routeResult.route);
+      if (!isSafeRelativePath(routeResult.evidence) || !recordEvidence.has(routeResult.evidence)) fail('assistive_technology_evidence_invalid');
     }
   }
   if (covered.size !== expected.size || [...expected].some((route) => !covered.has(route))) fail('assistive_technology_route_coverage_invalid');
@@ -396,16 +405,17 @@ function inspectReleaseCandidateEvidence(options, { root = ROOT, verifySoak = ve
   append(inspectCheckout(root, options.candidateCommit).failures);
   return {
     pass: failures.length === 0,
-    candidateEvidencePass: failures.length === 0,
+    candidateEvidenceShapePass: failures.length === 0,
+    candidateEvidencePass: false,
     publicReleasePass: false,
     releaseComplete: false,
-    authority: 'candidate-component-check-only',
+    authority: 'candidate-structural-check-only',
     candidateCommit: options.candidateCommit,
     evidenceDigest: digest.evidenceDigest,
     productContractDigest: routeManifest.productContractDigest || null,
     routePolicyDigest: routeManifest.routePolicyDigest || null,
     routeManifestDigest: routeManifest.routeManifestDigest || null,
-    trustBoundary: 'signature-and-promotion-authorization-are-external',
+    trustBoundary: 'reviewer-authenticity-signature-and-promotion-authorization-are-external',
     failures,
   };
 }
