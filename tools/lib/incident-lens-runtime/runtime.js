@@ -181,6 +181,8 @@ async function inspectRoot(page) {
       kind,
       id: node.id || "",
       claimId: node.getAttribute("data-incident-lens-claim-id") || "",
+      actionRoute: node.getAttribute("data-incident-lens-action-route") || "",
+      actionTarget: node.getAttribute("data-incident-lens-action-target") || "",
       label: label(node),
       content: (node.textContent || "").replace(/\s+/g, " ").trim(),
       rect: rect(node),

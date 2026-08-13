@@ -712,10 +712,18 @@ async function inspectObjectBoundAction(runtime) {
       selectedId,
       destination,
     });
-  assert(selectedId === destination.objectId, "Object action destination does not belong to the selected claim", {
+  assert(before.action.actionTarget && before.action.actionTarget === destination.objectId,
+    "Object action destination does not match the selected claim's explicit domain target", {
     selectedId,
+    action: before.action,
     destination,
   });
+  assert(before.action.actionRoute === destination.section,
+    "Object action destination does not match the selected claim's explicit domain route", {
+      selectedId,
+      action: before.action,
+      destination,
+    });
   assert(destination.historyRoute === destination.section, "Object action route and history state diverged", {
     selectedId,
     destination,

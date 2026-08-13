@@ -57,6 +57,7 @@ check(!/parseFloat|parseInt/.test(modelSource), "IncidentLens model must not par
 check(!/\|\|\s*0|\?\?\s*0/.test(modelSource), "IncidentLens model must not turn missing measurements into observed zero");
 check(/targetObjectIdFor\(evidence,\s*["']lineStatus["']\)/.test(modelSource), "normal WAN actions must bind to a real domain object when one exists");
 check(/objectId:\s*object\.action\.targetObjectId\s*\|\|\s*null/.test(entrySource), "mobile object actions must not send presentation-only claim ids to domain inspectors");
+check(/data-incident-lens-action-target/.test(combined) && /data-incident-lens-action-route/.test(combined), "object actions must expose their explicit domain target and route for runtime verification");
 check(!/preserveAspectRatio=["']none["']/.test(combined), "IncidentLens must not stretch SVG evidence");
 check(!/transition:\s*all\b/.test(cssSource), "IncidentLens motion must name exact properties");
 check(!/!important/.test(cssSource), "IncidentLens CSS must not start a new override sediment layer");

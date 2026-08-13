@@ -53,7 +53,7 @@ export function PatrolLens({ model, selectedId, onSelect, onOpen }: { model: Inc
       <Signal object={selected} />
       <dl>{selected.facts.slice(0, 4).map((item) => <div key={item.label} data-incident-lens-tone={item.tone}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl>
       <section className="incident-lens__tablet-support" aria-label="支撑证据"><header>支撑证据</header><dl>{supportFacts.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}<div><dt>来源</dt><dd title={selected.source}>{sourceLabel}</dd></div></dl></section>
-      {selected.action ? <button className="incident-lens__object-action" type="button" data-incident-lens-action onClick={() => onOpen?.(selected.id)}><span><small>{selected.action.note}</small><strong>{selected.action.label}</strong></span><ArrowUpRight size={18} aria-hidden="true" /></button> : null}
+      {selected.action ? <button className="incident-lens__object-action" type="button" data-incident-lens-action data-incident-lens-action-route={selected.action.route} data-incident-lens-action-target={selected.action.targetObjectId} onClick={() => onOpen?.(selected.id)}><span><small>{selected.action.note}</small><strong>{selected.action.label}</strong></span><ArrowUpRight size={18} aria-hidden="true" /></button> : null}
     </section> : null}
     <section className="incident-lens__patrol-list" aria-label="巡检对象列表">
       <header className="incident-lens__section-heading"><span>巡检对象</span><small data-incident-lens-fleet-summary={fleetSummary ? "true" : undefined}>{fleetSummary || "按当前证据排列"}</small></header>

@@ -47,7 +47,7 @@ export function IncidentWorkspace({ model, selectedId, onSelect, onOpen }: { mod
       <LensFacts label="证据" facts={activeObject.evidence} marker="evidence" />
       <section className="incident-lens__next-actions" aria-label="优先检查">
         <header>下一步</header>
-        <button type="button" data-incident-lens-action onClick={() => onOpen?.(activeObject.id)}><span><small>{activeObject.action?.note}</small><strong>{activeObject.action?.label || "查看对象证据"}</strong></span><ArrowUpRight size={18} aria-hidden="true" /></button>
+        <button type="button" data-incident-lens-action data-incident-lens-action-route={activeObject.action?.route} data-incident-lens-action-target={activeObject.action?.targetObjectId} onClick={() => onOpen?.(activeObject.id)}><span><small>{activeObject.action?.note}</small><strong>{activeObject.action?.label || "查看对象证据"}</strong></span><ArrowUpRight size={18} aria-hidden="true" /></button>
         {model.secondaryObjects.slice(0, 3).map((object) => <button type="button" key={object.id} data-incident-lens-claim-control data-incident-lens-claim-id={object.id} data-incident-lens-secondary={object.kind} aria-pressed={selectedId === object.id} onClick={() => onSelect(object.id)}><span><small>{object.category}</small><strong><span className="incident-lens__followup-title">{object.title}</span><i className="incident-lens__followup-state"> · {object.state}</i></strong></span><ChevronRight size={18} aria-hidden="true" /></button>)}
       </section>
     </section>
