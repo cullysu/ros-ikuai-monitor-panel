@@ -18,6 +18,16 @@ function capability(): Capability {
 function subscribe(listener: () => void) { window.addEventListener("resize", listener); window.addEventListener("orientationchange", listener); return () => { window.removeEventListener("resize", listener); window.removeEventListener("orientationchange", listener); }; }
 function useCapability() { return useSyncExternalStore(subscribe, capability, () => "phone" as Capability); }
 
+function activeScene(model: IncidentLensModel): IncidentLensModel["scenario"] {
+  if (model.surface !== "incident") return model.scenario;
+  if (model.risk === "interfaces" || model.risk === "interface-review") return "interfaces-down";
+  if (model.risk === "resource") return "resource-full";
+  if (model.risk === "collection") return "collection-down";
+  if (model.risk === "evidence") return "no-snapshot";
+  if (model.risk === "wan" && model.scenario === "all-offline") return "all-offline";
+  return model.scenario;
+}
+
 export interface IncidentLensProps {
   model: IncidentLensModel;
   scope?: string;
@@ -41,7 +51,8 @@ export function IncidentLens({ model, scope = "overview", runtimeManaged = false
   const routeTitle = model.surface === "incident"
     ? `事故检查 · ${model.incident?.title || "当前风险"}`
     : `巡检 · ${selectedObject?.title || "默认路径"}`;
-  return <main className="incident-lens" data-incident-lens-root data-incident-lens-scope={scope} data-incident-lens-scenario={model.scenario} data-incident-lens-scene={model.scenario} data-incident-lens-scale={model.scale} data-incident-lens-surface={model.surface} data-incident-lens-mode={model.surface} data-incident-lens-risk={model.risk} data-incident-lens-evidence-mode={model.command.mode} data-incident-lens-capability={capabilityMode} data-incident-lens-current-numbers={model.currentNumbersAllowed ? "allowed" : "withdrawn"} data-incident-lens-forbids-current={model.currentNumbersAllowed ? "false" : "true"} data-incident-lens-runtime-managed={runtimeManaged ? "true" : "false"} aria-labelledby={titleId}>
+  const scene = activeScene(model);
+  return <main className="incident-lens" data-incident-lens-root data-incident-lens-scope={scope} data-incident-lens-scenario={model.scenario} data-incident-lens-scene={scene} data-incident-lens-scale={model.scale} data-incident-lens-surface={model.surface} data-incident-lens-mode={model.surface} data-incident-lens-risk={model.risk} data-incident-lens-evidence-mode={model.command.mode} data-incident-lens-capability={capabilityMode} data-incident-lens-current-numbers={model.currentNumbersAllowed ? "allowed" : "withdrawn"} data-incident-lens-forbids-current={model.currentNumbersAllowed ? "false" : "true"} data-incident-lens-runtime-managed={runtimeManaged ? "true" : "false"} aria-labelledby={titleId}>
     {!runtimeManaged ? <><header className="incident-lens__chrome" data-incident-lens-command-chrome>
       <span><strong>RouterOS</strong><small>只读巡检</small></span>
       <button type="button" aria-label="更多操作" title="更多操作" onClick={() => onNavigate?.("more")}><MoreHorizontal size={20} aria-hidden="true" /></button>

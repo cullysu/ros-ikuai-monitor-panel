@@ -58,6 +58,7 @@ export interface IncidentLensObject {
     label: string;
     note: string;
     route: PanelRouteId;
+    targetObjectId?: string;
   } | null;
 }
 

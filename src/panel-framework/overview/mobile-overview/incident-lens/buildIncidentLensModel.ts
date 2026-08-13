@@ -22,6 +22,13 @@ function fact(label: string, value: string, tone: IncidentLensFact["tone"], note
   return { label, value, tone, ...(note ? { note } : {}) };
 }
 
+function targetObjectIdFor(evidence: OverviewEvidenceModel, route: NonNullable<IncidentLensObject["action"]>["route"]): string | undefined {
+  return evidence.priorityObjectsAll.find((object) => object.route === route && object.targetObjectId)?.targetObjectId
+    || evidence.coverageObjects.find((object) => object.route === route && object.targetObjectId)?.targetObjectId
+    || evidence.investigationActions.find((action) => action.route === route && action.navigation?.objectId)?.navigation?.objectId
+    || undefined;
+}
+
 function currentTrafficFacts(evidence: OverviewEvidenceModel): IncidentLensFact[] {
   if (evidence.evidenceMode !== "current" || !evidence.traffic || evidence.traffic.status !== "ready") return [];
   return [
@@ -143,7 +150,12 @@ function resourceObject(evidence: OverviewEvidenceModel, state: OverviewDerivedS
       threshold: lead.threshold,
       note: evidence.resource?.windowLabel || "当前采样",
     } : null,
-    action: { label: "查看资源证据", note: "阈值、连续性与样本", route: "trafficLoad" },
+    action: {
+      label: "查看资源证据",
+      note: "阈值、连续性与样本",
+      route: "trafficLoad",
+      targetObjectId: targetObjectIdFor(evidence, "trafficLoad"),
+    },
   };
 }
 
@@ -173,7 +185,12 @@ function interfaceObject(evidence: OverviewEvidenceModel, state: OverviewDerived
       ...routeFacts(evidence),
     ],
     signal: null,
-    action: { label: "查看接口证据", note: "运行标记与路由依赖", route: priority?.route ?? "interfaces" },
+    action: {
+      label: "查看接口证据",
+      note: "运行标记与路由依赖",
+      route: priority?.route ?? "interfaces",
+      targetObjectId: priority?.targetObjectId || targetObjectIdFor(evidence, "interfaces"),
+    },
   };
 }
 
@@ -206,7 +223,12 @@ function wanObject(evidence: OverviewEvidenceModel, state: OverviewDerivedState)
       secondaryValue: currentTrafficFacts(evidence)[1].value,
       note: evidence.traffic?.windowLabel || "当前采样",
     } : null,
-    action: { label: "查看 WAN 对象", note: "链路与当前记录", route: "lineStatus" },
+    action: {
+      label: "查看 WAN 对象",
+      note: "链路与当前记录",
+      route: "lineStatus",
+      targetObjectId: targetObjectIdFor(evidence, "lineStatus"),
+    },
   };
 }
 

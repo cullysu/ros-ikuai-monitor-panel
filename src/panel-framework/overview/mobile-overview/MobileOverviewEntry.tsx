@@ -26,7 +26,7 @@ export function MobileOverviewEntry({
       .find((candidate) => candidate?.id === objectId);
     if (!object?.action) return;
     onNavigate(object.action.route, {
-      objectId: object.id,
+      objectId: object.action.targetObjectId || null,
       risk: overviewNavigationRisk(evidence.investigationActions, object.action.route),
       returnRoute: "overview",
       evidenceAt: evidence.evidenceAt,
