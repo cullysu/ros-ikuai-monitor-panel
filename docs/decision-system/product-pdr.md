@@ -1,12 +1,12 @@
 # Product Decision Record — Operations console acceptance
 
 - status: `current-contract-repair`
-- validForCommit: Step948 candidate-side release-trust separation and focused independent closure; current release truth is delegated to `docs/decision-system/current-state.md`
-- currentPointer: Step948 `948:release-trust-contract-separated-and-focused-green-external-authority-open`
-- currentBoundary: Repository checks establish evidence shape only; reviewer/manual-AT authenticity, RouterOS soak, exact candidate replay, trusted authorization and remote exact-SHA CL remain open; public release closed
+- validForCommit: Step949 d13ac20 short-landscape remediation; current release truth is delegated to `docs/decision-system/current-state.md`
+- currentPointer: Step949 `949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required`
+- currentBoundary: c075 evidence is historical after d13ac20; final governance commit requires exact candidate replay. Real manual AT, RouterOS soak, five-role signatures, trusted authorization and remote exact-SHA CL remain open; public release closed
 - supersededBy: `null`
 - decisionOwner: independent product acceptance remains external to the implementation loop
-- authorityNote: step sections below are historical or focused evidence; Step948 explicitly prevents candidate code and source maturity from granting external acceptance or public-release authority.
+- authorityNote: step sections below are historical or focused evidence; Step949 preserves Step948's external-acceptance boundary and prevents candidate code or source maturity from granting public-release authority.
 
 ## Operator decision
 
@@ -1249,3 +1249,9 @@ Product, Design, Visual, Accessibility, Engineering and Security acceptance rema
 - Candidate-controlled code may freeze and validate the evidence bundle structure, exact candidate identity, Route Owner coverage, and AT session schema, but returns `candidateEvidencePass=false` because it cannot authenticate the caller.
 - Manual AT sessions require separate versioned OS/AT/browser fields, positive UTC duration, a fixed protocol, unique modes/routes, and per-route frozen evidence links. The external authority must pin reviewer identities and attest the actual sessions.
 - Focused contract tests and two independent re-audits close all P0/P1 findings. This does not reopen publication: exact-SHA whole-product replay, real RouterOS soak, external authority, upload, and remote CL remain absent.
+
+## Step949 — Short-landscape P2 remediation and exact-evidence reset
+
+- c075 exact gates, Overview `28/28`, bounded route `76/76`, route-state `266/266`, and real Edge `22/22` passed. External authority pin audit is PASS `P0/P1/P2=0`; Product exact review is PASS `P0=0 / P1=0 / P2=1`.
+- The only P2 was standalone `844×390` Chrome branding covered by navigation. d13ac202f2d9648e8f9631a6756149adbdd56ac6 moves short-landscape nav left `140→220`, preserves the RouterOS / 只读巡检 two-line label, and passes focused types, mobile visual, incident runtime, production build and `844×390` fleet bounded smoke; screenshot review confirms no crop.
+- This corrective commit invalidates c075 exact evidence. The final governance commit invalidates d13ac20 in turn, so the next evidence must be rebuilt on one final clean SHA. Public release remains closed until real manual AT, real RouterOS 300s soak, external five-role signatures, promotion, upload, and exact remote Linux/Windows/GHCR CL exist.

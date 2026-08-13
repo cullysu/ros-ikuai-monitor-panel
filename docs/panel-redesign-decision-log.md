@@ -26704,3 +26704,30 @@ ocused-green-engineering
 - latestStepOutcome: `948:release-trust-contract-separated-and-focused-green-external-authority-open`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Synchronize Step948 byte-identically to D, commit the candidate contract, harden the external authority, then replay all exact-SHA gates before any publication decision.
+
+## 第 949 步：短横屏导航遮挡修复；c075 精确证据历史化并要求最终 SHA 重建
+
+### 触发 / 问题
+
+- clean candidate `c075cac1e67525f27134eb98ed074a085efab50a` 已完成其声明范围内的精确本地 gates、Overview `28/28`、bounded route `76/76`、route-state `266/266` 和真实 Microsoft Edge `22/22`。
+- 外部 authority pin 审计最终 PASS `P0=0 / P1=0 / P2=0`。Product exact review 也为 PASS `P0=0 / P1=0 / P2=1`，唯一 P2 是 standalone Chrome 在 `844×390` 时品牌区被导航遮挡。
+
+### 决策、理由与拒绝项
+
+- commit `d13ac202f2d9648e8f9631a6756149adbdd56ac6` 将 short-landscape nav left 从 `140` 调整为 `220`，同时保留 RouterOS / 只读巡检两行标签；这是直接消除可见裁切的最小几何修复。
+- 拒绝把 c075 Product PASS 或 authority pin PASS 倒签为 d13ac20 的 final exact evidence。源代码变化使 c075 的全部 exact matrices、Edge captures、review 与 readiness 证据历史化；最终治理提交也会使 d13ac20 不再是最终候选，必须在该最终 clean SHA 上整体重建。
+- 拒绝因 focused gate 都绿就开放发布：真实手工 AT、真实 RouterOS 300 秒 soak、外部五角色签名、可信 promotion、GitHub 上传和远端 Linux/Windows/GHCR exact-SHA CL 都仍不存在。
+
+### 验证证据
+
+- d13ac20 上的 focused types、mobile visual、incident runtime、production build 与 `844×390` fleet bounded smoke 均 PASS。
+- standalone `844×390` 截图已人工确认品牌区不再被导航裁切；RouterOS / 只读巡检信息仍保留两行。
+- 外部 authority 的固定五角色、pinned reviewer identity、Route Owner exact maturity/evidence、`assistive-technology-session/v1`、manual AT attestation 与 acceptance-signature frozen-bundle 绑定审计为 PASS `P0/P1/P2=0`。
+
+### 边界 / 心得
+
+- 这一步关闭的是已观察到的 standalone short-landscape P2，不是一次新的 whole-product exact acceptance。`28/76/266` 与 Edge `22/22` 是 c075 的历史事实，不可跨 SHA 引用。
+- Step949 治理文件提交后，唯一下一步是针对最终 clean SHA 重建完整本地 gates、矩阵、真实 Edge 与 scoped review；随后仍需等待真实外部 AT、RouterOS soak、五角色签名和远端三端 CL。
+- latestStepOutcome: `949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Commit Step949 governance, then rebuild all exact-SHA gates and reviews on the resulting final clean SHA; do not upload before real manual AT, RouterOS 300s soak, five-role signatures, promotion and remote CL.
