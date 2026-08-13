@@ -25,6 +25,7 @@ const MOBILE_OVERVIEW_REQUIRED_CHECKS = Object.freeze([
   'navigationClearance',
   'noHorizontalOverflow',
   'readableText',
+  'incidentIdentityReadable',
   'noLegacyPresentation',
   'isolatedTree',
   'interaction',
