@@ -1,12 +1,12 @@
 # Product Decision Record — Operations console acceptance
 
 - status: `current-local-acceptance`
-- validForCommit: Step946 Incident Split Lens exact dirty-worktree Product/Design/Visual/Accessibility/Engineering P0/P1/P2 closure; current release truth is delegated to `docs/decision-system/current-state.md`
-- currentPointer: Step946 `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
-- currentBoundary: Step946 local four-role review is P0/P1/P2=0 for artifact `worktree-4162a99b38d5-be3181b1a21f`; full route/state/security, physical-device evidence, RouterOS soak, clean exact SHA, authorization and external CL remain open; public release closed
+- validForCommit: Step947 exact clean d45b428 Product/Design/Visual/Accessibility/Engineering P0/P1/P2 closure and engineering readiness; current release truth is delegated to `docs/decision-system/current-state.md`
+- currentPointer: Step947 `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
+- currentBoundary: Step947 local four-role review is P0/P1/P2=0 for artifact `d45b428535d9beadd5abbe980d6485c77338d483`; route maturity 0/18/0/1, real RouterOS soak, trusted authorization and remote exact-SHA CL remain open; public release closed
 - supersededBy: `null`
 - decisionOwner: independent product acceptance remains external to the implementation loop
-- authorityNote: step sections below are historical or focused evidence; Step946 structured reviews close only local exact-artifact Product/Design/Visual/Accessibility/Engineering P0/P1/P2 and explicitly do not grant promotion or public-release acceptance.
+- authorityNote: step sections below are historical or focused evidence; Step947 structured reviews close only local exact-artifact Product/Design/Visual/Accessibility/Engineering P0/P1/P2 and explicitly do not grant promotion or public-release acceptance.
 
 ## Operator decision
 
@@ -1235,3 +1235,10 @@ Product, Design, Visual, Accessibility, Engineering and Security acceptance rema
 - product boundary: Preserve evidence truth, route verification, RFC3339 time, missing/zero semantics and read-only safety. Glass is limited to real control/navigation layers. No ledger, KPI grid, card dashboard, fake topology, unproven relationship or empty tablet split may return.
 - implementation boundary: New seam `overview/mobile-overview/MobileOverviewEntry.tsx`; delete the old Overview-only Patrol/ledger/style closure after switching entry. Non-Overview mobile domains remain operational migration inputs and are not visually signed off.
 - acceptance: Seven scenarios at phone/tablet, original-image human review, 15px body/12px metadata/44px targets, scenario recomposition, proven comparisons and honest unavailable states. Direction selection is not release evidence.
+
+## Step947 — Exact local product acceptance
+
+- The exact clean runtime artifact `d45b428535d9beadd5abbe980d6485c77338d483` passes the declared bounded-readonly task: evidence mode, highest risk, affected object and one real domain destination remain distinguishable.
+- Compact tablet is capability-driven: 600–719 uses one ordered task column; 768 keeps the two-column evidence workspace. This closes the former per-glyph incident identity defect without shrinking text or removing evidence.
+- Independent Product, Visual, Accessibility and Engineering reviewers inspected all 63 originals and each returned P0/P1/P2=0. Overview 28/28, bounded route 76/76, route-state 266/266, Edge 22/22 and engineering readiness also pass.
+- This is local product acceptance, not public promotion. Route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; real RouterOS duration evidence, trusted promotion and remote exact-SHA CL remain required.

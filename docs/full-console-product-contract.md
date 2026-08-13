@@ -3,17 +3,17 @@
 ## Status
 
 - status: `current-contract / acceptance-failed`
-- validForCommit: Step946 decision truth; mobile local acceptance is current, whole-product release acceptance remains failed
+- validForCommit: Step947 exact local acceptance and engineering readiness; whole-product release acceptance remains failed
 - supersededBy: `null`
-- Current local review boundary: Step946 has four records bound to mobile artifact `worktree-4162a99b38d5-be3181b1a21f`; it is current local evidence only, not whole-product or external release acceptance, and `releaseEligible=false`
+- Current local review boundary: Step947 has four records bound to exact clean runtime artifact `d45b428535d9beadd5abbe980d6485c77338d483`; they are local evidence only, not external promotion acceptance, and `releaseEligible=false`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
-- Product release gate: **FAIL — mobile local four-role acceptance is closed, but clean exact whole-product matrices, route maturity, real RouterOS soak, external promotion and current-SHA CL are not closed**
+- Product release gate: **FAIL — local four-role acceptance, exact matrices and engineering readiness are closed, but route maturity, real RouterOS soak, trusted promotion and current remote-SHA CL are not closed**
 - Current loop stage: Verify release evidence
 - Baseline failure evidence: `_acceptance/review-ced6386-all-sections/report.json`
 
 The previous overview-only matrices are retained as regression evidence for the overview surface. They are not evidence that the full product is releasable.
 
-Step946 requires a clean exact-SHA whole-product replay, real RouterOS read-only soak, signed route acceptance, and Linux/Windows/GHCR CL. GitHub is not uploaded; the task is active with `blocked=false`; current local mobile review and historical engineering results do not open release.
+Step947 records an exact clean-SHA whole-product replay and local independent acceptance. It still requires real RouterOS read-only soak, route-owner maturity/acceptance, trusted promotion authorization, GitHub publication and exact uploaded-SHA Linux/Windows/GHCR CL. GitHub is not uploaded; the task is active with `blocked=false`.
 
 ## Operator jobs
 

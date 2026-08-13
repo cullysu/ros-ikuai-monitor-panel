@@ -1,0 +1,45 @@
+{
+  "schema": "independent-review/v1",
+  "step": 947,
+  "role": "engineering-code-review",
+  "scope": "local-independent-scope",
+  "releaseEligible": false,
+  "reviewerAgentId": "019ffbc6-5a11-7241-ab5a-227cd5d9ccec",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/incident-lens-runtime/report.json",
+    "_acceptance/responsive-boundary-current/report.json",
+    "_acceptance/release-matrix-d45b428535d9beadd5abbe980d6485c77338d483/report.json",
+    "_acceptance/route-matrix-d45b428535d9beadd5abbe980d6485c77338d483/report.json",
+    "_acceptance/route-state-matrix-d45b428535d9beadd5abbe980d6485c77338d483/report.json",
+    "tools/acceptance/inspect-overview-mobile.js",
+    "tools/check-public-release-readiness.js"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "d45b428535d9beadd5abbe980d6485c77338d483",
+    "worktreeFingerprint": "b5f6c6a27e3034ed2d9f0340e6109cb5758373c7c2f655b82beb9b8fe00c5ef7",
+    "generatedAt": "2026-08-13T19:06:01.324Z",
+    "commit": "d45b428535d9beadd5abbe980d6485c77338d483",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "identity-regression-gate",
+      "result": "pass",
+      "summary": "The regression gate records rendered identity lines and readiness requires the new semantic check instead of trusting a self-authored flag."
+    },
+    {
+      "id": "exact-artifact-integrity",
+      "result": "pass",
+      "summary": "Incident63, responsive10, Overview28, bounded route76, route-state266, Edge22 and accessibility evidence bind to the same clean SHA."
+    },
+    {
+      "id": "readiness-truth",
+      "result": "pass",
+      "summary": "Public readiness consumes the complete required-check set and returns engineeringReadinessPass=true without promoting bounded route maturity."
+    }
+  ]
+}

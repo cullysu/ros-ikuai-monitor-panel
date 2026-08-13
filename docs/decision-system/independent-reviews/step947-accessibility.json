@@ -1,0 +1,44 @@
+{
+  "schema": "independent-review/v1",
+  "step": 947,
+  "role": "accessibility-interaction",
+  "scope": "local-independent-scope",
+  "releaseEligible": false,
+  "reviewerAgentId": "019ffbc6-56fc-7062-b8d2-fee3a9be2063",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/incident-lens-runtime/report.json",
+    "_acceptance/responsive-boundary-current/report.json",
+    "_acceptance/mobile-accessibility-runtime-v2/rendered-scale-reflow-fixture/report.json",
+    "_acceptance/mobile-accessibility-runtime-v2/browser-page-scale/report.json",
+    "_acceptance/edge-toolbar-zoom200/report.json",
+    "tools/check-incident-lens-accessibility-static.js"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "d45b428535d9beadd5abbe980d6485c77338d483",
+    "worktreeFingerprint": "b5f6c6a27e3034ed2d9f0340e6109cb5758373c7c2f655b82beb9b8fe00c5ef7",
+    "generatedAt": "2026-08-13T19:06:01.324Z",
+    "commit": "d45b428535d9beadd5abbe980d6485c77338d483",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "identity-reflow-and-targets",
+      "result": "pass",
+      "summary": "Risk identity remains horizontally readable across 63 cells, and controls retain 44px minimum geometry and reachability."
+    },
+    {
+      "id": "history-focus-semantics",
+      "result": "pass",
+      "summary": "Native controls, names, Back/Forward selection, scroll and focus restoration pass without test-injected history state."
+    },
+    {
+      "id": "scale-motion-forced-colors",
+      "result": "pass",
+      "summary": "Rendered/page scale, real Edge toolbar 200%, reduced motion and forced-colors evidence pass within their declared scope."
+    }
+  ]
+}

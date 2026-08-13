@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（公众发布）/ Step946 Incident Split Lens 已完成当前 dirty artifact 的 63 格运行时、响应式、可访问性与四角色独立本地签收，P0/P1/P2=0；clean exact candidate、真实 RouterOS soak、授权发布及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
+> 当前产品结论：**FAIL（公众发布）/ Step947 exact clean runtime artifact d45b428 已完成 63/10/22 与 28/76/266、本地四角色 P0/P1/P2=0 和工程 readiness；route maturity 0/18/0/1、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26628,3 +26628,43 @@ ocused-green-engineering
 - latestStepOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Write four Step946 structured records, synchronize the byte-identical D mirror, freeze a clean candidate and replay complete whole-product release gates before any publication decision.
+
+## 第 947 步：精确 clean candidate 完成本地四角色与工程 readiness；600px 身份 P1 闭环，发布继续关闭
+
+### 触发 / 问题
+
+- Step946 的本地 dirty-artifact 签收之后，完整 clean-SHA 重放曾在 Product/Engineering 通过时被 Visual 独立复核否决：`600×960` 刚进入双栏，左侧事故身份被压成“接口依赖”“业务快照”逐字竖排。
+- 第一次加入 identity-readability 门禁后，完整公开矩阵又拒绝合法缩写 `WAN` 的 27px 横排宽度；第二次 readiness 则发现新检查虽已写入报告，shared required-check 清单尚未登记，导致消费者正确 fail-closed。
+- 这些都不是“任务受阻”。每个红灯都指向可修改的布局或验收契约，必须继续修到真实通过。
+
+### 观察事实
+
+- `600–719px` 且高度充足时，Patrol 和 Incident 都改为单列任务流；`768px` 仍是对象/影响与证据/下一步的双栏工作区。
+- `incidentIdentityReadable` 同时检查类别和对象标题的存在、渲染宽度与行高。长度不超过三字符的网络缩写使用 20px 下限；更长标签使用 32px 下限并限制约两行，原 glyph stack 会失败。
+- public readiness 的共享 `MOBILE_OVERVIEW_REQUIRED_CHECKS` 已包含该项；没有通过隐藏字符串、删除断言或降低矩阵完整性换绿灯。
+- Fleet 的真实接口风险继续压过规模属性；`incident-lens:resource:cpu` 等展示 claim 继续导航到真实领域对象，并由 Back/Forward 恢复展示 claim 与焦点。
+
+### 决策、理由与拒绝项
+
+- 选择延后紧凑平板双栏能力，而不是缩字、隐藏类别、强制不换行或把 600 从验收中删除。运维对象身份必须先可扫读，纵向滚动比伪双栏更诚实。
+- 保留短缩写例外，但只由真实文本长度和渲染几何决定；不按场景名、截图尺寸或 `WAN` 字面量硬编码。
+- 将新语义检查升级为 readiness 必需项，避免 focused runtime 绿而公开矩阵/消费者不知情。
+- 拒绝把本地四角色 PASS 写成外部签名、真实用户研究或 promotion authority；拒绝把 `76/76` bounded shard 的顶层非 release 状态改成 true。
+
+### 验证证据
+
+- 精确 clean runtime artifact：`d45b428535d9beadd5abbe980d6485c77338d483`；fingerprint `b5f6c6a27e3034ed2d9f0340e6109cb5758373c7c2f655b82beb9b8fe00c5ef7`。
+- build/types/Overview、asset identity 与 static assets PASS；Incident runtime `63/63`、responsive boundary `10/10`、rendered/page-scale Accessibility PASS。
+- public Overview `28/28`、bounded single-scenario route `76/76`、route-state `266/266`；actual Microsoft Edge toolbar 200% `22/22`。
+- `check-public-release-readiness.js --require-matrix` 接受当前 exact clean-SHA 证据并返回 `engineeringReadinessPass=true`。
+- Product、Design/Visual、Accessibility/Interaction、Engineering 四个不同只读 reviewer 均人工查看全部 `63/63` 原图，并各自返回 `P0=0 / P1=0 / P2=0`。
+
+### 边界 / 心得
+
+- 当前本地产品、视觉、交互和工程证据已经闭环；工程矩阵与审美签收终于绑定同一 clean runtime artifact，而不是相互借名。
+- route maturity 仍是 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；真实 RouterOS 300 秒 read-only soak、route-owner acceptance、可信 promotion authority、GitHub 上传和 exact remote Linux/Windows/GHCR CL 仍没有证据。
+- 写入 Step947 治理文件会让工作树变为 governance-dirty，但不会倒签或重写已审查的 `d45b428` runtime artifact。发布前仍必须由外部控制器按固定策略冻结/授权，不允许拿本地记录自我授权。
+- 心得：验收门禁也必须接受验收。过宽会漏掉逐字竖排，过窄会误伤 `WAN`，消费者漏登记又会让生产者和 readiness 漂移；正确闭环是产品几何、共享合同和最终消费者三层同时一致。
+- latestStepOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Synchronize Step947 byte-identically to D, verify decision/review records, then continue real RouterOS duration evidence and route-owner maturity without publishing.

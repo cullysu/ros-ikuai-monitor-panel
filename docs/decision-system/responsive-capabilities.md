@@ -1,7 +1,7 @@
 # Responsive capability table
 
 - status: `active-step946-incident-lens-local-signoff-pass-release-open`
-- validForCommit: Step946 Incident Split Lens 63-cell runtime, responsive provenance and local independent P0/P1/P2 closure; clean release evidence open
+- validForCommit: Step947 exact clean Incident Split Lens 63-cell runtime, compact-tablet identity repair, responsive provenance and local independent P0/P1/P2 closure; release authorization open
 - supersededBy: `null`
 - owner: Product Design + Frontend Architecture
 
@@ -69,3 +69,16 @@ Focused evidence is mobile 56/56 and production browser 137/73/74 under worktree
 Density is now measured as task capacity. The 768px Overview keeps a stacked risk-to-inspector sequence because its real workspace is below 700px; 844px preserves master/detail with the highest-risk object, novel object evidence, source and action. Desktop normal and collection journeys explicitly use 1366×768 and 1440×900 rather than an inherited height.
 
 The first 1366×768 collection run proved a real failure: its first investigation action began at 998px. The single existing action surface now composes inside the incident task; final geometry is 709–761px with no duplicate DOM, reduced text, breakpoint move or budget increase. Production browser passes 140/75/76, fixed assets and 96-input identity pass, and the focused report is `_acceptance/step175-task-density-green/report.json`. Product/Design/Visual acceptance and full release matrices remain open.
+
+## Step947 current mobile Overview capability
+
+| Capability | Layout ownership | Blocking evidence |
+|---|---|---|
+| 320–430 portrait | one continuous Patrol or Incident task sequence | full identity/impact/evidence/action reachability, 44px controls, no fixed-navigation clipping |
+| 600–719 tall compact tablet | one ordered task column | category and object title remain horizontally scannable; no empty second column |
+| 720–899 tall tablet | object/impact and evidence/investigation split | both columns add novel evidence; 768 remains the reference split |
+| 600+ short landscape | compact side-by-side task with merged command state | complete primary action and provenance, no long-label collision |
+| 900–1199 mobile workbench | expanded mobile owner with the same task vocabulary | no product swap at 1199/1200 |
+| 1200+ desktop | independent desktop presentation owner | shared evidence semantics and route/action context |
+
+The former fixed “600 means two columns” rule is superseded. Exact clean `d45b428…` passes all seven scenes at 600×960 and 768×1024; the first is single-column, the second remains split. `incidentIdentityReadable` is required by both the runtime report and public readiness.

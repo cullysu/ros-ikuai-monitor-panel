@@ -3,18 +3,18 @@
 ## Status
 
 - status: `current-contract / acceptance-failed`
-- validForCommit: current Step946 dirty-worktree Incident Split Lens local acceptance; no clean release candidate exists
+- validForCommit: current Step947 exact clean Incident Split Lens local acceptance and engineering readiness; public release remains closed
 - supersededBy: `null`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
-- Current local review boundary: Step946 binds Incident Split Lens artifact `worktree-4162a99b38d5-be3181b1a21f` to 63 original cells, 10 responsive captures, rendered-scale Accessibility and four independent exact-artifact review records; `releaseEligible=false`
-- Product/design/visual gate: **PASS for the declared current local scope; public release remains FAIL because clean exact whole-product evidence, real RouterOS soak, authorization and remote CL are not closed**
-- Current loop stage: **Whole-product matrices, soak, clean-candidate hygiene and release evidence**
-- Matrix evidence: local Incident Split Lens 63/63 plus 10/10 responsive boundary captures; `releaseEligible=false`
+- Current local review boundary: Step947 binds exact clean artifact `d45b428535d9beadd5abbe980d6485c77338d483` to Incident 63/63, responsive 10/10, Edge 22/22, Overview 28/28, route 76/76, route-state 266/266 and four independent records; review records remain `releaseEligible=false`
+- Product/design/visual gate: **PASS for the declared current local scope; public release remains FAIL because route maturity, real RouterOS soak, trusted promotion and remote CL are not closed**
+- Current loop stage: **Route maturity, real RouterOS duration evidence and release authorization**
+- Matrix evidence: exact clean Incident 63/63, responsive 10/10, Edge 22/22 and public 28/76/266; engineering readiness pass
 - Surface: a read-only RouterOS/iKuai operational console, not a health dashboard or shrunken desktop table
 
 Previous green matrices are regression evidence only. They missed local refresh failure, timezone ambiguity, dead visible controls, an invalid DNS route, and missing mobile workflows.
 
-Step946 keeps the task active with `blocked=false` and GitHub not uploaded. Incident Split Lens is the isolated production mobile Overview owner; rejected Optical and Pocket presentation ownership is physically deleted. Route/state/security/recovery/public matrices, real RouterOS read-only soak, clean-candidate hygiene, exact-SHA external promotion and Linux/Windows/GHCR CL remain pending.
+Step947 keeps the task active with `blocked=false` and GitHub not uploaded. Incident Split Lens is the isolated production mobile Overview owner; rejected Optical and Pocket presentation ownership is physically deleted. Exact local matrices and reviews pass; real RouterOS read-only soak, route maturity/owner acceptance, trusted promotion and Linux/Windows/GHCR CL remain pending.
 
 The current presentation contract is `docs/mobile-incident-split-lens-design-contract.md`. Pocket/Optical-specific navigation and composition below remain only as rejected-baseline requirements for diffing and test cleanup; they do not authorize reuse of rejected visual hierarchy.
 

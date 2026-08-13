@@ -1,7 +1,7 @@
 # Architecture Decision Record — Truth and cross-surface continuity
 
 - status: `implemented-local-verified-release-pending`
-- validForCommit: Step946 Incident Split Lens local architecture and runtime evidence; clean exact whole-product integration remains pending
+- validForCommit: Step947 exact clean Incident Split Lens architecture, runtime and engineering-readiness evidence; release authorization remains pending
 - supersededBy: `null`
 
 ## ADR-001 Atomic traffic samples
@@ -264,3 +264,11 @@ The 619/620 regression proved that capability overrides must beat later broad-wi
 ## Step229 — Resource decision ownership
 
 Resource priority belongs to the shared section model, not desktop JSX. `resourceModel` may select only a current over-threshold metric and must reuse the established `compareResourceRisk` ordering over delta, trailing count and latest value. The model exposes structured evidence and an existing route destination; desktop owns its decision-band markup, while mobile retains its independent resource renderer. This avoids duplicated risk derivation, arbitrary table-row fallback and cross-surface DOM coupling.
+
+## ADR-030 Compact-tablet identity capability and release-consumer binding
+
+At tall `600–719px`, the available post-navigation width cannot reliably hold the Incident impact and evidence owners side-by-side. This capability therefore uses one ordered column; `720–899px` may use the split workbench, and short landscape retains its separate compact rule.
+
+The runtime inspector records category/title rendered lines. Public Overview acceptance additionally computes `incidentIdentityReadable`: legitimate abbreviations of at most three characters use a 20px minimum, longer labels use 32px, and both remain within the bounded line-height geometry. The same field is listed in `MOBILE_OVERVIEW_REQUIRED_CHECKS`, so readiness fails when a producer adds or removes it without synchronizing the consumer.
+
+This architecture was verified on exact clean commit `d45b428535d9beadd5abbe980d6485c77338d483` by Incident63, responsive10, Overview28, route76, route-state266, Edge22, public readiness and four independent P0/P1/P2=0 reviews. It does not alter the external promotion boundary.

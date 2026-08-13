@@ -1,12 +1,13 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step946 current dirty-worktree local acceptance; clean exact release evidence remains pending; not a public release approval
+- validForCommit: Step947 exact clean runtime candidate local acceptance and engineering readiness; not a public release approval
 - supersededBy: null
-- currentStep: `946`
-- currentOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
-- latestStepOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
+- currentStep: `947`
+- currentOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
+- latestStepOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
+- Step947: Exact clean runtime candidate `d45b428…` passes Incident 63/63, responsive 10/10, rendered/page scale, real Edge toolbar 200% 22/22, Overview 28/28, bounded route 76/76, route-state 266/266 and public engineering readiness. Four distinct reviewers inspect all 63 originals and return Product/Visual/Accessibility/Engineering P0/P1/P2=0. The 600px glyph-stacking P1 is closed by a 600–719 one-column flow and a required identity-readability gate that still permits legitimate abbreviations such as WAN. Local acceptance only: route maturity remains 0/18/0/1; real RouterOS soak, trusted promotion, GitHub upload and exact remote Linux/Windows/GHCR CL remain absent; release FAIL/CLOSED.
 - Step946: Incident Split Lens physically replaces Optical in an isolated mobile render/style tree. Exact dirty artifact `worktree-4162a99b38d5-be3181b1a21f` passes full mobile runtime 63/63, responsive 10/10 and rendered-scale Accessibility. Four distinct read-only reviewers inspect 28 critical originals and report Product/Visual/Accessibility/Engineering P0/P1/P2=0. The former 667x375 action false green and clipped provenance remnant are closed by blocking geometry and visible title-side status. Local signoff only: worktree is dirty, real RouterOS soak, clean exact candidate, authorized publication and exact remote Linux/Windows/GHCR CL remain absent; release FAIL/CLOSED, GitHub untouched.
 - Step945: Historical after Step946. Three materially different mobile architectures were adjudicated; Incident-first Split Lens was selected while implementation remained pending.
 - Step944: Historical after Step945. Its exact visual/Accessibility VETO and bounded Edge capture stabilization remain binding inputs.
@@ -120,7 +121,6 @@ Only a clean, independently accepted candidate with complete current-identity ma
 - Step878: the report quarantine scanner previously tokenized historical machine-state gate evidence as current references. It now reads only the current evidence ledger for current-report discovery while preserving historical records for audit. This tracked tool/governance change invalidates prior exact-SHA evidence; the task remains active and blocked=false.
 
 - Step880: The Step879 decision-source repair was synchronized to D:\想法\面板 and committed as parent 4e04813. All prior exact-SHA reports are now historical; regenerate the final clean-SHA runtime, tablet, route and truth families before independent Product/Design/Visual/Accessibility acceptance. Formal route maturity, Router Owner, RouterOS soak, exact-SHA CL and publication remain open; task active and blocked=false; GitHub untouched.
-
 
 - Step881: 在 Step880 决策修复后的 clean candidate 上完成 runtime、Overview 28/28、full route-responsive 532/532、bounded route 76/76、route-state 266/266、tablet visual shard 8/8、packet、report-truth 与 quarantine 重新绑定；严格 readiness 已接受当前矩阵后仍诚实停在 route maturity 0/18/0/1。此次 current-state / index / handoff 同步是 tracked change，提交后所有上述报告必须重新绑定到新 HEAD；Product/Design/Visual/Accessibility 正式签收、Route Owner、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub 发布仍关闭，task active、blocked=false。
 

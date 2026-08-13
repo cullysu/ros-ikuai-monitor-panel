@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step946 current decision boundary; historical entries remain immutable
+- validForCommit: Step947 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `946`
-- latestRecordedStep: `946`
+- coveredStepMax: `947`
+- latestRecordedStep: `947`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -67,6 +67,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 944 | exact 4162a99 Product/Visual VETO, Accessibility exact-Edge VETO, bounded last-moment Edge foreground reclaim, dirty 22/22 runner proof and return to three-direction mobile Design | Step945/current-state.md |
 | 945 | three-direction adjudication selects Incident-first Split Lens; rejects equal-weight object dashboard and unproven event timeline; clean isolated replacement boundary approved | current-state.md |
 | 946 | Incident Split Lens physical replacement, 667x375 false-green closure, current full63/responsive/a11y evidence and four-role local P0/P1/P2 closure; release remains closed | current-state.md |
+| 947 | exact clean d45b428 local four-role P0/P1/P2 closure, 600px identity repair, 63/10/22 and 28/76/266 evidence, engineering readiness pass, route maturity/soak/promotion/remote CL still open | current-state.md |
 
 ## Reading rule
 

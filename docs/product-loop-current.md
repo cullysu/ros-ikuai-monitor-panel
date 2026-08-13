@@ -1,13 +1,13 @@
 - status: `current-handoff`
-- validForCommit: Step946 current dirty-worktree local acceptance; clean exact acceptance remains pending
-- currentHandoffForStep: `946`
+- validForCommit: Step947 exact clean runtime candidate local acceptance and engineering readiness; release remains closed
+- currentHandoffForStep: `947`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
 - updated: 2026-08-14
-- latestRecordedStep: `946`
-- latestStepOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
-- releaseCandidate: not a release candidate; the current evidence is bound to a dirty worktree
-- currentConclusion: **FAIL overall / Incident Split Lens local Product/Design/Visual/Accessibility/Engineering acceptance PASS / GitHub publication closed / release CLOSED.** GitHub 关闭，当前本地签收不构成公众发布许可。
+- latestRecordedStep: `947`
+- latestStepOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
+- releaseCandidate: not a release candidate; exact clean runtime artifact d45b428 was reviewed, but this governance write is not a publishable candidate
+- currentConclusion: **FAIL overall / exact candidate local Product/Design/Visual/Accessibility/Engineering and engineering readiness PASS / GitHub publication closed / release CLOSED.** GitHub 关闭，本地签收不构成公众发布许可。
 
 ## Loop refinement applied
 
@@ -15,9 +15,9 @@
 - A primary action is accepted only when its complete initial rectangle is visible, at least 44px high and clear of navigation. This closes the former 667×375 false green.
 - Provenance must be visible and readable at every capability; hiding it behind chrome or leaving a glyph remnant is a defect.
 - Emil restraint remains subordinate to evidence truth: functional glass belongs to controls; operational content uses typography, alignment and limited status color; motion is short, interruptible and reduced-motion safe.
-- Dirty-worktree reviews close only local P0/P1/P2. They cannot open release or replace exact clean-SHA evidence.
+- Exact-artifact local reviews close only their declared P0/P1/P2 scope. They cannot replace route maturity, real-device duration evidence, promotion authority or remote CL.
 
-## Current handoff: Step946 local signoff closed; freeze and verify a clean candidate
+## Current handoff: Step947 exact local signoff closed; continue remaining release gates
 
 - Preserve `current | historical | unavailable`, RFC3339, visible numeric zero, missing-value withdrawal, verified-route-only logic, REST/SSH independence and trailing consecutive resource samples.
 - Preserve separate mobile/desktop render and style owners; share domain truth, route semantics and action context only.
@@ -31,14 +31,14 @@
 
 | Gate | Status | Meaning |
 |---|---|---|
-| Product | local `pass` | Independent Step946 review P0/P1/P2=0 on the current exact dirty artifact. |
-| Design / Visual | local `pass` | 28 critical originals independently reviewed; no local visual veto. |
-| Accessibility / Interaction | local `pass` | 44px, focus/history, rendered 200% reflow, reduced motion and forced colors pass in declared scope. |
-| Engineering | local `pass` | Static gates, build, 63-cell runtime and 10-cell responsive evidence pass. |
-| State matrix / security / release | `pending` | Must be replayed on a clean candidate; real RouterOS soak and external release inputs remain absent. |
+| Product | local `pass` | Independent Step947 review P0/P1/P2=0 on exact clean artifact d45b428. |
+| Design / Visual | local `pass` | All 63 originals independently reviewed; the 600px glyph-stacking P1 is closed. |
+| Accessibility / Interaction | local `pass` | 44px, focus/history, two scale modes, real Edge 200%, reduced motion and forced colors pass in declared scope. |
+| Engineering | `pass` | Build, assets, 63/10/22 and 28/76/266 evidence plus readiness pass on exact d45b428. |
+| Route maturity / real RouterOS / promotion | `pending` | 0/18/0/1 maturity, real 300-second soak and trusted promotion inputs remain absent. |
 | Current product release | `fail` | Local acceptance does not satisfy whole-product release qualification. |
-| Release | closed | No candidate, upload or current-SHA CL. |
+| Release | closed | No authorized upload or current remote-SHA Linux/Windows/GHCR CL. |
 
 ## One next action
 
-Write the Step946 structured records and D mirror, run decision truth gates, create a clean candidate excluding unrelated changes, then replay complete local release readiness before deciding whether GitHub publication is authorized.
+Synchronize Step947 decision truth to D, then continue real RouterOS duration evidence and route-owner maturity/acceptance. Do not publish until trusted promotion authority exists; after any upload verify exact-SHA Linux, Windows and GHCR CL.

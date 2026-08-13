@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step946 Incident Split Lens local four-role acceptance PASS / release CLOSED**.
+RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step947 exact candidate local four-role and engineering readiness PASS / release CLOSED**.
 
-这是当前面板工作的本地决策仓库镜像。Incident Split Lens 已物理替换被否决的 Optical presentation；当前精确 dirty artifact 的 63 格运行时、10 格响应式、rendered-scale Accessibility 与四角色独立复审均通过，P0/P1/P2=0。任务 active、`blocked=false`，GitHub 未上传。
+这是当前面板工作的本地决策仓库镜像。Incident Split Lens 已物理替换被否决的 Optical presentation；精确 clean runtime artifact `d45b428…` 的 63 格运行时、10 格响应式、Edge 22 格、Overview 28 格、route 76 格、route-state 266 格、readiness 与四角色独立复审均通过，P0/P1/P2=0。任务 active、`blocked=false`，GitHub 未上传。
 
 - status: `current-mirror-entry`
-- currentStep: `946`
-- currentOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
-- currentBoundary: `946`
+- currentStep: `947`
+- currentOutcome: `947:exact-clean-candidate-local-four-role-and-engineering-readiness-green-release-closed`
+- currentBoundary: `947`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -24,7 +24,7 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step946 Inci
 
 ## 当前边界
 
-当前产品结论：**FAIL overall / local Product, Visual, Accessibility and Engineering PASS / release CLOSED**。当前证据绑定 dirty worktree，不是 clean candidate；完整最终 route/state/security/recovery 矩阵、真实 RouterOS soak、授权发布与 exact remote SHA 的 Linux/Windows/GHCR CL 尚未完成。
+当前产品结论：**FAIL overall / local Product, Visual, Accessibility, Engineering and engineering readiness PASS / release CLOSED**。精确 clean runtime candidate 已签收，但本治理写入不构成发布工件；route maturity `0/18/0/1`、真实 RouterOS soak、可信 promotion authority 与 exact remote SHA 的 Linux/Windows/GHCR CL 尚未完成。
 
 ## 过程怎么记录
 
@@ -34,4 +34,4 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step946 Inci
 
 每个材料性切片结束后更新仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Historical Step858–945 remains in `decision-system\historical-index.md` and the full decision log. Step946 is the current local product/design truth boundary. Historical green reports and dirty-worktree review never satisfy whole-product release qualification.
+Historical Step858–946 remains in `decision-system\historical-index.md` and the full decision log. Step947 is the current local product/design truth boundary. Historical green reports and local review never satisfy whole-product release qualification by themselves.

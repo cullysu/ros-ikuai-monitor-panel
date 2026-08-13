@@ -1,10 +1,10 @@
 # Mobile Incident Split Lens design contract
 
 - status: `implemented / local independent acceptance passed / release closed`
-- decisionStep: `946`
+- decisionStep: `947`
 - supersedesPresentation: `overview/mobile-overview/optical-patrol`
 - desktopBoundary: desktop Overview remains isolated at 1200+
-- releaseBoundary: exact dirty-worktree local acceptance only; not a clean or public release candidate
+- releaseBoundary: exact clean runtime candidate local acceptance only; not a public promotion authorization
 
 ## Product thesis
 
@@ -43,7 +43,13 @@ This direction is selected over Object Matrix because a matrix risks another gen
 - Incident: risk identity first, then Impact Lens and Evidence Lens as compact consecutive regions, then at most two next actions and a secondary object strip.
 - No long title may consume more than two lines; no fixed navigation overlap.
 
-### 600–899 tablet
+### 600–719 compact tablet
+
+- Use one ordered task column: patrol list → inspector → cross-check, or impact → evidence/next step → cross-check.
+- Category, object and state text must remain horizontally scannable; per-glyph vertical stacking is a blocking defect.
+- Existing evidence remains reachable by natural vertical scroll; empty second columns are forbidden.
+
+### 720–899 tablet
 
 - Normal: patrol/object list on the left, selected object inspector on the right.
 - Incident: object and impact on the left; evidence boundary and next investigation on the right.
@@ -69,17 +75,18 @@ This direction is selected over Object Matrix because a matrix risks another gen
 
 ## Acceptance
 
-- Required originals: seven scenes × 320, 360, 375, 390, 430, 667×375, 768, 844×390 and 1199.
+- Required originals: seven scenes × 320, 360, 375, 390, 430, 600, 667×375, 768, 844×390 and 1199 as applicable to the current matrix contract.
 - 390 normal must expose current/path, four object classes and one inspectable object in the first viewport.
 - 390 incidents must expose risk identity plus both impact and evidence before secondary objects.
-- 768 and 844×390 must have no ownerless column or mechanically stretched phone module.
+- 600 must preserve horizontal identity readability; 768 and 844×390 must have no ownerless column or mechanically stretched phone module.
 - Back/Forward restores selected object, real scroll owner and focus.
 - Product, Visual, Accessibility and Engineering independent reviews require P0/P1=`0` on one exact artifact before release work resumes.
 
-## Step946 implementation evidence
+## Step947 implementation evidence
 
 - Owner: `src/panel-framework/overview/mobile-overview/incident-lens` with independent TSX/style/runtime contracts; rejected Optical presentation ownership is physically deleted.
-- Exact local artifact: `worktree-4162a99b38d5-be3181b1a21f`.
-- Runtime: seven scenes × nine viewports = 63/63; responsive boundary 10/10; rendered-scale Accessibility pass.
-- Four distinct independent reviewers inspected 28 critical originals and reported Product, Visual, Accessibility and Engineering P0/P1/P2=`0`.
-- This closes local implementation/design acceptance only. Clean exact evidence, whole-product matrices, real RouterOS soak, publication authorization and current remote-SHA Linux/Windows/GHCR CL remain mandatory.
+- Exact clean runtime artifact: `d45b428535d9beadd5abbe980d6485c77338d483`.
+- Runtime: seven scenes × nine viewports = 63/63; responsive boundary 10/10; rendered/page scale and actual Edge toolbar 200% 22/22 pass.
+- Whole-product local evidence: Overview 28/28, bounded route 76/76, route-state 266/266 and engineering readiness pass.
+- Four distinct independent reviewers inspected all 63 originals and reported Product, Visual, Accessibility and Engineering P0/P1/P2=`0`.
+- This closes local implementation/design acceptance only. Route maturity, real RouterOS soak, trusted publication authorization and current remote-SHA Linux/Windows/GHCR CL remain mandatory.
