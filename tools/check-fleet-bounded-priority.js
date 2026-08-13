@@ -2,9 +2,9 @@
 "use strict";
 
 /*
- * The retired Patrol preview ranked a synthetic object list. Optical Patrol
- * instead projects typed evidence claims; this gate protects the equivalent
- * product contract without reviving the old presentation tree.
+ * Incident Split Lens keeps fleet coverage as a normal patrol fact. A concrete
+ * incident must remain the first investigation object, and the phone follow-up
+ * set must be bounded by construction rather than silently hidden by CSS.
  */
 
 const fs = require("node:fs");
@@ -12,9 +12,9 @@ const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
 const read = (...segments) => fs.readFileSync(path.join(root, ...segments), "utf8");
-const model = read("src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "buildOpticalPatrolModel.ts");
-const claims = read("src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "OpticalPatrolClaim.tsx");
-const responsive = read("src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "styles", "responsive.css");
+const model = read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "buildIncidentLensModel.ts");
+const workspace = read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "IncidentWorkspace.tsx");
+const patrol = read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "PatrolLens.tsx");
 const failures = [];
 
 function check(name, pass, detail) {
@@ -23,35 +23,33 @@ function check(name, pass, detail) {
 
 check(
   "fleet scale is a normal-state summary rather than an incident override",
-  /if\s*\(evidence\.risk\s*===\s*"none"\s*&&\s*verifiedCurrentRoute\)\s*\{[\s\S]{0,500}?if\s*\(state\.scale\s*===\s*"fleet"\)/.test(model),
-  "fleet language must be conditional on no current higher-priority risk",
+  /scopeFacts:\s*state\.scale\s*===\s*"fleet"\s*&&\s*!incident\s*\?/.test(model),
+  "fleet facts must require the absence of a selected incident",
 );
 check(
-  "risk claims are assembled before normal route or fleet coverage claims",
-  /if\s*\(evidence\.risk\s*===\s*"evidence"\)[\s\S]{0,1300}?if\s*\(!claims\.length\)\s*addUnique\(claims,\s*\[routeClaim/.test(model),
-  "the selected claim must derive from evidence risk before normal coverage fallback",
+  "risk object selection happens before fleet coverage projection",
+  /const incident\s*=\s*evidence\.risk\s*===\s*"none"\s*\?\s*null\s*:\s*objectForRisk[\s\S]{0,2000}scopeFacts:\s*state\.scale\s*===\s*"fleet"\s*&&\s*!incident/.test(model),
+  "the incident object must derive from evidence risk before normal fleet facts",
 );
 check(
-  "phone follow-up queue has a bounded visible window",
-  /const followups\s*=\s*available\.slice\(0,\s*4\)/.test(claims),
-  "Optical Patrol must bound secondary claims on phone",
+  "phone investigation follow-ups have an explicit bounded visible window",
+  /model\.secondaryObjects\.slice\(0,\s*3\)\.map/.test(workspace) && /patrolObjects\.filter\([\s\S]{0,180}\.slice\(0,\s*3\)/.test(model),
+  "the model and incident workspace must both keep follow-ups to three visible evidence objects",
 );
 check(
-  "hidden claims retain an explicit reveal control",
-  /data-optical-patrol-overflow-control/.test(claims)
-    && /aria-controls=\{overflowPanelId\}/.test(claims)
-    && /aria-expanded=\{overflowExpanded\}/.test(claims),
-  "a bounded queue must expose its hidden claim set semantically",
+  "bounded follow-ups remain native selectable controls",
+  /data-incident-lens-claim-control[\s\S]{0,280}aria-pressed=\{selectedId\s*===\s*object\.id\}/.test(workspace),
+  "each bounded follow-up must remain an explicit, stateful investigation control",
 );
 check(
-  "fleet responsive treatment belongs to the Optical Patrol owner",
-  /data-optical-patrol-scale="fleet"/.test(responsive),
-  "fleet-specific layout may not rely on the retired mobile scope stylesheet",
+  "patrol scale facts belong to the Incident Split Lens owner",
+  /data-incident-lens-scope-facts/.test(patrol) && /data-incident-lens-scale=\{model\.scale\}/.test(read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "IncidentLens.tsx")),
+  "fleet-specific treatment must remain attached to Incident Split Lens evidence ownership",
 );
 
 const report = {
   pass: failures.length === 0,
-  contract: "fleet-bounded-priority-v2-optical-patrol",
+  contract: "fleet-bounded-priority-v3-incident-split-lens",
   checks: 5,
   failures,
 };

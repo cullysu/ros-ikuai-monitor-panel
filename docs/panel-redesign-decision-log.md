@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（独立复签与公开发布）/ Step936 已完成第二轮独立 VETO 的真实根因回修：63 格必测视窗、精确响应式溯源、短屏事故动作、语义状态公告和历史滚动恢复；最终精确工件尚待重生与四角色复签，完整发布证据未完成，release CLOSED**
+> 当前产品结论：**FAIL（公众发布）/ Step946 Incident Split Lens 已完成当前 dirty artifact 的 63 格运行时、响应式、可访问性与四角色独立本地签收，P0/P1/P2=0；clean exact candidate、真实 RouterOS soak、授权发布及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26488,3 +26488,143 @@ ocused-green-engineering
 - latestStepOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Synchronize Step943 as the sole current decision, commit a replacement clean candidate, then regenerate all exact-SHA local evidence; obtain fresh independent four-role signoff and real RouterOS soak before any authorized Git Data API publication and same-SHA Linux/Windows/GHCR CL.
+
+## 第 944 步：精确候选工程矩阵通过但视觉再次否决；停止发布证据，返回手机设计裁决
+
+### 触发 / 问题
+
+- `4162a99b38d5aed13da6008229cae6cfcc1f0b2d` 已完成 Overview `28/28`、Optical `63/63`、route-state `266/266` 与总 release gates，但这些自动证据没有回答“用户为什么愿意在手机上看它”。
+- 独立 Product/Visual 直接检查 320、390、768、844 原图后给出 P0=0、P1=4：青色粗描边长标题像调试标注；玻璃只停在顶栏、主体仍是平灰账本；768 是机械左右摆放并留下死空白；320/844 折行与空间分配没有形成有效巡检节奏。
+- 独立 Accessibility 给出 P0=0、P1=1：当前 clean SHA 没有真实 Edge 工具栏 200% 的 22 格证据。第一次真实运行又暴露捕获前台竞态，`check-public-release-readiness` 正确 fail closed。
+
+### 观察事实
+
+- 390 正常态的视觉中心是整句“默认出口正在承载流量”的高对比矩形，而不是默认路由对象、可信速率或可调查动作。资源态同样用大号酒红百分比与描边标题替换内容，状态变化更像海报换色。
+- 768 的左栏在结论与对象队列之间留下大块空白，右栏把来源台账纵向拉长；多出的面积没有增加对象比较、风险关联或调查详情。
+- 844×390 把事故结论挤在窄左栏反复折行，右栏却在有限内容后留空。这不是能力断点，只是旧布局缩放。
+- Edge runner 在 helper 聚焦 Edge 后等待 300ms 再检查前台；这段 settle 窗口允许其他进程抢走 foreground。失败不是产品 UI 失败，也不能通过放宽 `validWindowsCapture` 掩盖。
+
+### 决策
+
+- **停止继续生成发布证据，Product Company Loop 返回 Design。** 4162a99 的自动报告保留为工程历史，不再作为手机视觉候选。新的 presentation 必须先完成三方向裁决，再替换现有 Optical Patrol 视觉所有权；禁止在粗框、平灰账本和机械分栏上继续小修。
+- 三方向必须共同保留证据真值、verified-route-only、缺失速率撤回、四个稳定入口、44px、200%、七场景和手机/桌面隔离；差异必须来自信息架构与任务节奏，而不是三套配色。
+- Edge 捕获不降低安全标准。`capture_owned_edge` 在真正检查与截图前，只对唯一 owned HWND 做最后一次有界 foreground reclaim；仅精确匹配“捕获前失去前台”时在 3 秒内重试，并记录 `foregroundStabilizationAttempts`。其他窗口、句柄、遮挡或截图错误仍 fail closed。
+
+### Emil Before / After / Why
+
+| Before | After | Why |
+| --- | --- | --- |
+| 顶栏使用柔和玻璃，主体靠粗框与横线制造专业感 | 玻璃只属于真实命令 chrome；主体重新以状态、对象、可信测量和调查关系组织 | 材质不能替代层级，iKuai 感来自对象效率而不是蓝灰染色 |
+| 390 首屏由长句 verdict 占据最大视觉重量 | 新方向必须让短状态与最高价值对象/测量成为首屏主线 | 用户先判断和定位对象，再阅读解释 |
+| 768 把两个手机模块摆成两列 | 平板必须形成对象列表 ↔ 调查详情或有意义比较 | 宽度只有转化为新判断能力才算平板工作区 |
+| runner 聚焦后先等待，再检查是否仍为前台 | settle 完成后在捕获函数内部重取 exact HWND 并立即检查 | 稳定动作必须贴近副作用，同时保留前台/遮挡证据 |
+
+### 验证
+
+- 精确 4162a99：Overview report `pass=true / complete=true / 28`；Optical report `pass=true / 63`；route-state report `pass=true / complete=true / 266`。route-responsive 的 76 个限定 cell 执行完成，但因只含 `single` 场景顶层保持 `pass=false`，不得冒充完整七场景矩阵。
+- 原 Edge 报告：`pass=false`，`EDGE_WINDOW_CAPTURE_FAILED`，错误为 `owned Edge window is not foreground immediately before screen capture`。
+- RED-first offline source contract在实现前失败；实现后 `tools/test-browser-toolbar-zoom200.js` PASS（22 cells），Python `py_compile` PASS。
+- 真实 Windows Edge 22-cell runner 在修复后 PASS，耗时 702.9 秒，artifactKey=`worktree-4162a99b38d5-a4eaa3b04021`。它绑定 dirty worktree，只证明 runner 修复，不满足 clean-SHA Accessibility 或发布证据。
+
+### 边界 / 心得
+
+- 这次最重要的纠正是：矩阵完整只能证明我们测试了设计，不能证明设计值得发布。Product/Visual VETO 的优先级高于继续打包。
+- Edge 工具修复会改变 tracked SHA；所有 exact 证据以后仍要重生。当前 Product、Design/Visual、Accessibility 均未签收；RouterOS 真实 soak、授权、GitHub 和 Linux/Windows/GHCR CL 都未开始。
+- latestStepOutcome: `944:exact-visual-veto-edge-capture-stabilized-return-to-design-release-closed`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Adjudicate three materially different mobile architectures, record the winner, then physically replace the rejected Optical presentation before any further release-candidate evidence.
+
+## 第 945 步：三方向裁决选择 Incident-first Split Lens；正常巡检与事故调查不再共用一张账本
+
+### 三个真实方向
+
+- **A · Network Command Strip + Object Matrix**：极短可信状态条后直接比较 WAN、接口、采集、资源、终端、路由；优点是对象扫描密度高，风险是再次变成等权六宫格和通用仪表盘。
+- **B · Route Timeline Console**：以默认路径和最近证据变化为主结构；优点是可审计语义强，风险是当前产品并不拥有完整事件流，容易把离散快照拼成未经证明的时间线。
+- **C · Incident-first Split Lens**：正常态使用紧凑 Patrol Lens；异常态将风险身份、影响镜和证据镜并置，次要对象退到摘要带。它不依赖虚构事件，也不会让正常与事故只换文案/颜色。
+
+### 裁决
+
+- 选择 C。它最直接关闭 Step944 的四个视觉 P1：去掉粗框长结论；内容层不再是一张平灰账本；768 拥有对象/影响 ↔ 证据/调查的真实职责；320/844 用短状态和并行镜头，禁止长标题折行与空右栏。
+- 明确不“折中合并”三个方向。A 的对象摘要可作为 C 的次级巡检带，但不能成为六张等权卡片；B 的时间事实只在真实 `observedAt` 与变更证据存在时显示，不建立假时间线。
+- 新 owner 为独立 `incident-lens` render/style tree。可以复用经验证的数据语义和历史/focus 工具，但禁止保留 Optical 的 large outlined verdict、`.op` presentation classes、flat evidence ledger 或机械 tablet composition。
+- 设计合同：`docs/mobile-incident-split-lens-design-contract.md`。当前仅选择设计；Product、Visual、Accessibility、Implementation 与 Release 继续 fail/pending。
+
+### Emil Before / After / Why
+
+| Before | After | Why |
+| --- | --- | --- |
+| 正常、资源、采集和离线共用 summary → claim → ledger 骨架 | 正常用 Patrol Lens；事故用风险身份 + 影响镜 + 证据镜 | 状态优先级必须改变任务结构，而不是换标题 |
+| 大标题与描边承担主要反馈 | 64–76px command state + 对象/证据承担反馈 | 反馈应直接、短且与可调查事实相连 |
+| 平板把手机模块放进两列 | 左列拥有对象/影响，右列拥有证据/下一步 | 两列必须增加新判断，不是拉宽 |
+| Route Timeline 方向需要完整历史序列 | 只显示已有 RFC3339 事实与连续样本，不推断事件链 | 动效和时间线都不能填补数据契约空白 |
+
+### 视口与场景合同
+
+- 320–430：command state 最多两行；正常首屏出现四类对象和一个可检查对象；事故首屏先出现 risk identity，再出现 impact/evidence，次要对象最后。
+- 768：正常为 patrol/object list ↔ selected inspector；事故为 object/impact ↔ evidence/investigation。任何一栏不能只是空壳或复读。
+- 667/844 短横屏：状态合入顶部；两镜并排；次要对象横向摘要。禁止把长中文结论塞进窄左栏。
+- resource-full 默认资源；collection-down 默认采集；interfaces-down 默认异常接口；fleet 只有无风险时才表达规模；no-snapshot/all-offline 不显示当前数字。
+
+### 边界 / 心得
+
+- 设计选择不是视觉签收。实现后先做聚焦模型、types/build 和 320/390/768/844 原图审查，再扩大到 63/28/266 与 Edge 22。
+- 现有 desktop、evidence truth、route verification、missing-rate withdrawal、REST/SSH independence、trailing consecutive samples、Back/Forward focus 和四路由保持。
+- latestStepOutcome: `945:incident-split-lens-selected-clean-mobile-replacement-approved-release-closed`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Build an isolated Incident Split Lens owner, switch MobileOverviewEntry only after focused contracts pass, then delete the rejected Optical presentation and capture first originals.
+
+## 第 946 步：Incident Split Lens 完成物理替换和四角色本地签收；短横屏假绿与视觉残片闭环
+
+### 触发 / 问题
+
+- Step945 只完成方向选择，不能证明实现成立。随后的实现虽然让 63 格矩阵变绿，独立 Product 复核仍发现 `667×375` 的 single、fleet、all-offline 主操作底部超出首屏。
+- 原门禁只检查短横屏动作存在、位于证据之后且不撞导航，没有检查完整可见矩形，形成真实假绿。
+- 动作修复后，原图顶部仍露出被运行时 chrome 遮住的证据状态字形残片；它不是数据错误，但不符合交付精度。
+
+### 观察事实
+
+- 被否决的 `optical-patrol` presentation 文件和运行时门禁已物理删除；`MobileOverviewEntry` 只挂载 `incident-lens`。
+- 正常态拥有 Patrol Lens；异常态拥有 risk identity、Impact Lens、Evidence Lens 和对象绑定动作。平板新增判定依据与横向核验，短横屏拥有独立紧凑任务布局。
+- RED 证据准确复现旧布局：single/fleet 动作 bottom=`388.5`，all-offline=`390.9`，视口 bottom=`375`。
+- 修复后 single/fleet bottom=`366.3`，all-offline=`320.6`；所有七场景动作完整可见、高度至少 44px、与导航零相交。
+- 证据状态从被 chrome 遮挡的 `top:0` 绝对定位移到标题右侧 `y=70–104`，七个短横屏原图不再出现顶缘残片。
+
+### 决策
+
+- 将 `assertFullyVisibleInInitialViewport` 纳入 `assertShortLandscapePhone`，完整可见是阻断条件，不能由“存在”和“不相交”代替。
+- 短横屏先删除低优先级重复行，再压缩节奏；不得缩小 44px 触控目标或把动作提前到决定性证据之前。
+- provenance 必须保留可读文本，不允许为了省高度隐藏；运行时托管布局在标题右侧分配独立槽位，并给标题预留宽度。
+- Step946 只关闭当前 dirty artifact 的本地 Product、Visual、Accessibility 和 Engineering P0/P1/P2；不把它写成 clean candidate 或公众发布通过。
+
+### 理由与拒绝项
+
+- 拒绝放宽门禁、允许动作部分可见或只检查 `visibleRect` 存在；首屏任务必须完整可触达。
+- 拒绝把 provenance 直接 `display:none`；历史/不可用边界是监控产品的信任基础。
+- 拒绝用更小字号换空间；操作文字继续满足 12px 下限，触控目标继续满足 44px。
+- 拒绝把四角色本地复核包装成外部签名、真实用户研究或远端发布证据。
+
+### Emil Before / After / Why
+
+| Before | After | Why |
+| --- | --- | --- |
+| 短横屏主操作露出 30–39px，门禁仍绿 | 完整 44–55px 动作进入初始视口，门禁比较完整矩形 | 反馈和下一步必须在用户预期的位置完整出现 |
+| provenance 被 chrome 覆盖，只漏字形残片 | 完整状态点、证据模式和时间进入标题右侧槽位 | 隐形细节必须真的收干净，不能靠遮挡制造紧凑 |
+| 为压缩高度保留重复低优先级证据 | 每层只保留决定判断所需事实，次级内容可继续调查 | 高密度来自去重复，不来自缩字或塞满 |
+| 自动矩阵先于肉眼结论 | 同一精确工件分别经过 Product、Visual、Accessibility、Engineering 审查 | 工程门禁不能替产品和审美签字 |
+
+### 验证
+
+- `npm run build` PASS，1898 modules；Incident runtime `63/63` PASS。
+- Responsive boundary `10/10` PASS；rendered-scale Accessibility PASS。
+- Static contract、model、architecture、Accessibility static 与 Overview architecture 均 PASS；运行 CSS 保持 12px 文字下限。
+- 精确本地工件：`worktree-4162a99b38d5-be3181b1a21f`，fingerprint `be3181b1a21f1b26dd14f209bd325e4aa46f30356f0e8ba55d5a767e956f7d8a`。
+- 四个不同只读 reviewer 检查同一工件和 28 张关键原图：Product、Visual、Accessibility、Engineering 均为 P0=0、P1=0、P2=0。
+
+### 边界 / 心得
+
+- `pass=true` 只有在门禁检查了真实失败条件时才有意义；这次先让门禁 RED，再修产品，避免继续自我安慰。
+- dirty-worktree 证据可以关闭局部设计问题，但不能进入 release evidence。决策文档和 D 镜像完成后必须形成 clean candidate 并重绑全部证据。
+- physical iOS Dynamic Type、Android 系统字体、真实 RouterOS 长时间运行与远端三端 CL 仍未证明，不做扩大声明。
+- latestStepOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Write four Step946 structured records, synchronize the byte-identical D mirror, freeze a clean candidate and replay complete whole-product release gates before any publication decision.

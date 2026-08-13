@@ -27,7 +27,7 @@ function mobileReport(checks, requiredChecks = Object.keys(checks)) {
       detail: {
         surface: 'mobile-overview',
         mobileOverviewAppHomeGateProbe: {
-          contract: 'optical-patrol-v1',
+          contract: 'incident-split-lens-runtime-v1',
           appHomePass: true,
           truthMode: 'current',
           risk: 'none',
@@ -88,7 +88,7 @@ const missing = collectGateDetailFailures(mobileReport({
 }));
 assert(
   missing.mobileSemantic.some((failure) => failure.field === 'checks.expandedClaim'),
-  'release evidence must fail when the current Optical Patrol expanded-claim contract is omitted'
+  'release evidence must fail when the current Incident Split Lens expanded-claim contract is omitted'
 );
 
 const passing = collectGateDetailFailures(mobileReport(completeMobileChecks));
@@ -100,7 +100,7 @@ const unreadableOperationalText = collectGateDetailFailures(mobileReport({
 }));
 assert(
   unreadableOperationalText.mobileSemantic.some((failure) => failure.field === 'checks.readableText'),
-  'release evidence must fail when otherwise-complete Optical Patrol checks report unreadable operational text'
+  'release evidence must fail when otherwise-complete Incident Split Lens checks report unreadable operational text'
 );
 
 const staleProducer = mobileReport(completeMobileChecks);
@@ -164,30 +164,31 @@ const readinessSource = fs.readFileSync(path.join(__dirname, 'check-public-relea
 assert(!readinessSource.includes('src/panel-framework/mobile/MobilePatrolScreen.tsx'));
 assert(!readinessSource.includes('src/panel-framework/mobile/MobileEvidenceLedger.tsx'));
 assert(!readinessSource.includes('src/panel-framework/mobile/mobile-patrol.css'));
-assert(readinessSource.includes('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx'));
-assert(readinessSource.includes("contract !== 'optical-patrol-v1'"));
+assert(!readinessSource.includes('optical-patrol'));
+assert(readinessSource.includes('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx'));
+assert(readinessSource.includes("contract !== 'incident-split-lens-runtime-v1'"));
 assert(!readinessSource.includes("contract !== 'pocket-console-v1'"));
 assert(!readinessSource.includes("contract !== 'linkboard-overview-v1'"));
 assert(readinessSource.includes("assertNotContains('public/assets/framework/panel-framework.js', 'data-linkboard-root')"));
-assert(readinessSource.includes("'[data-optical-patrol-expanded-claim]'"));
-assert(readinessSource.includes("'[data-optical-patrol-action]'"));
-assert(readinessSource.includes("'[data-optical-patrol-evidence-deck]'"));
+assert(readinessSource.includes("'data-incident-lens-expanded-claim'"));
+assert(readinessSource.includes("'data-incident-lens-action'"));
+assert(readinessSource.includes("'data-incident-lens-evidence-deck'"));
 assert(readinessSource.includes("assertNotExists('tools/check-pocket-console-runtime.js')"));
 assert(readinessSource.includes("assertNotExists('tools/lib/pocket-console-runtime/runtime.js')"));
-assert(readinessSource.includes("assertContains('tools/check-optical-patrol-runtime.js', 'source: \"optical-patrol-runtime\"')"));
+assert(readinessSource.includes("assertContains('tools/check-incident-lens-runtime.js', 'source: \"incident-lens-runtime\"')"));
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 assert.equal(packageJson.scripts['check:mobile-linkboard'], undefined);
 assert.equal(packageJson.scripts['check:mobile-pocket-console'], undefined);
-assert.equal(typeof packageJson.scripts['check:mobile-optical-patrol'], 'string');
-assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-model.js'));
-assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-architecture.js'));
-assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-accessibility-static.js'));
-assert(packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-runtime.js'));
-assert.equal((packageJson.scripts['check:runtime-browser'].match(/check:mobile-optical-patrol/g) || []).length, 1);
+assert.equal(typeof packageJson.scripts['check:mobile-incident-lens'], 'string');
+assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-model.js'));
+assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-architecture.js'));
+assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-accessibility-static.js'));
+assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-runtime.js'));
+assert.equal((packageJson.scripts['check:runtime-browser'].match(/check:mobile-incident-lens/g) || []).length, 1);
 assert.equal(fs.existsSync(path.join(__dirname, 'check-pocket-console-runtime.js')), false);
 assert.equal(fs.existsSync(path.join(__dirname, 'lib', 'pocket-console-runtime', 'runtime.js')), false);
-assert.equal(fs.existsSync(path.join(__dirname, 'check-optical-patrol-runtime.js')), true);
+assert.equal(fs.existsSync(path.join(__dirname, 'check-incident-lens-runtime.js')), true);
 
 const supersededPocketReview = inspectIndependentReviewRecords({ step: 932 });
 assert.equal(supersededPocketReview.pass, true, 'the historical Step932 review record must remain readable without becoming current evidence');

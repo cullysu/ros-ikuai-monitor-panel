@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step943 release-blocker and large-text remediation; replacement clean exact evidence and independent Accessibility re-signoff remain pending
+- validForCommit: Step946 current dirty-worktree local acceptance; clean exact release evidence remains pending
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `943`
-- latestRecordedStep: `943`
-- latestStepOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
+- currentBoundaryForStep: `946`
+- latestRecordedStep: `946`
+- latestStepOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 `current-state.md` 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -15,5 +15,6 @@
 - 当前发布边界：`release-journal.md`
 - 完整历史：`../panel-redesign-decision-log.md`
 - 历史索引：`historical-index.md`
+- Step946 独立记录：`independent-reviews/step946-{product,visual,accessibility,engineering}.json`
 
-任务 active、`blocked=false`。Step940 supplemental 聚焦本地签收仍有效；Step941/942 的后端职责与 DNS ownership 修复保留；Step943 将当前 release blocker 接回总门禁，并关闭 320px 200% 标题/底栏与桌面可见哨兵的本地 P1。独立 Accessibility 复签因平台额度未返回，明确保持 pending。新的 clean SHA 与完整 replay、四角色全产品签收、真实 RouterOS soak、实体设备、授权和远端 CL 均未完成。发布保持 FAIL/CLOSED，GitHub 未上传，CL 未触发。
+任务 active、`blocked=false`。Incident Split Lens 已物理替换被否决的 Optical presentation；当前精确 dirty artifact 的 63 格运行时、10 格响应式、rendered-scale Accessibility 与四角色独立复审均通过，P0/P1/P2=0。它仍不是 clean candidate：真实 RouterOS soak、完整最终矩阵、授权发布及精确远端 SHA 的 Linux/Windows/GHCR CL 尚未完成。发布保持 FAIL/CLOSED，GitHub 未上传。

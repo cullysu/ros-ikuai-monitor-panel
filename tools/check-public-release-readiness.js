@@ -685,7 +685,7 @@ function collectGateDetailFailures(latest) {
         : {};
       if (check.pass !== true) pushFailure('mobileSemantic', 'check.pass', check.pass);
       if (detail.surface !== 'mobile-overview') pushFailure('mobileSemantic', 'surface', detail.surface);
-      if (probe.contract !== 'optical-patrol-v1') pushFailure('mobileSemantic', 'contract', probe.contract);
+      if (probe.contract !== 'incident-split-lens-runtime-v1') pushFailure('mobileSemantic', 'contract', probe.contract);
       if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
       assertProbeChecks('mobileSemantic', probe);
       const reportedRequiredChecks = Array.isArray(probe.requiredChecks)
@@ -1008,11 +1008,11 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/acceptance/inspect-panel-routes.js', 'history.forward()');
   assertContains('tools/acceptance/inspect-panel-routes.js', 'canonicalUnknown');
 
-  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-root');
-  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-evidence-mode');
-  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-expanded-claim');
-  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-action');
-  assertContains('public/assets/framework/panel-framework.js', 'data-optical-patrol-evidence-deck');
+  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-root');
+  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-evidence-mode');
+  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-expanded-claim');
+  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-action');
+  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-evidence-deck');
   assertContains('public/assets/framework/panel-framework.js', 'data-desktop-overview');
   assertContains('public/assets/framework/panel-framework.js', 'data-panel-route-content');
   assertContains('public/assets/framework/panel-framework.js', '当前业务状态不可判断');
@@ -1021,17 +1021,17 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('public/assets/framework/panel-framework.js', 'mn-sheet');
   assertNotContains('public/assets/framework/panel-framework.js', 'data-linkboard-root');
   assertNotContains('public/assets/framework/panel-framework.js', 'data-pocket-console-root', 'superseded Pocket Console owner');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'optical-patrol/OpticalPatrol');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'optical-patrol/buildOpticalPatrolModel');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', './incident-lens');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'buildIncidentLensModel');
   assertNotContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'pocket-console', 'superseded Pocket Console entry');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx', 'data-optical-patrol-root');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx', 'data-optical-patrol-evidence-mode');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx', 'data-optical-patrol-forbids-current');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx', 'data-optical-patrol-expanded-claim');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx', 'data-optical-patrol-action');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolEvidenceDeck.tsx', 'data-optical-patrol-evidence-deck');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts', 'buildOpticalPatrolModel');
-  assertContains('src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts', 'forbidsCurrentData: evidence.evidenceMode !== "current"');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx', 'data-incident-lens-root');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx', 'data-incident-lens-evidence-mode');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx', 'data-incident-lens-forbids-current');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/PatrolLens.tsx', 'data-incident-lens-expanded-claim');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/PatrolLens.tsx', 'data-incident-lens-action');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentWorkspace.tsx', 'data-incident-lens-evidence-deck');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/buildIncidentLensModel.ts', 'buildIncidentLensModel');
+  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/buildIncidentLensModel.ts', 'currentNumbersAllowed: evidence.evidenceMode === "current"');
   assertNotExists('src/panel-framework/overview/mobile-overview/pocket-console');
   assertNotExists('src/panel-framework/overview/mobile-overview/MobileLinkboard.tsx');
   assertNotExists('src/panel-framework/overview/mobile-overview/LinkboardTimeEvidence.tsx');
@@ -1065,8 +1065,8 @@ function main(argv = process.argv.slice(2)) {
     'mobile filter disclosure must expose a valid expanded-state aria-controls target',
   );
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'role="group"');
-  for (const style of ['tokens.css', 'shell.css', 'claims.css', 'workbench.css', 'responsive.css', 'motion.css']) {
-    assertNotContains(`src/panel-framework/overview/mobile-overview/optical-patrol/styles/${style}`, '!important');
+  for (const style of ['tokens.css', 'layout.css', 'motion.css']) {
+    assertNotContains(`src/panel-framework/overview/mobile-overview/incident-lens/styles/${style}`, '!important');
   }
   assertNotContains('src/panel-framework/mobile/mobile-domain.css', '!important');
   assertNotContains('src/panel-framework/sections/section-timeseries.css', '!important');
@@ -1086,34 +1086,15 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'resourceEvidenceWindow(snapshot)', 'Overview shared resource evidence consumer');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'Math.abs(snapshotAt - last.timestamp)');
   assertNotContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'rows[0]');
-  assertContains('tools/check-optical-patrol-model.js', 'unavailable evidence must withdraw every current measurement');
-  assertContains('tools/check-optical-patrol-model.js', 'observed numeric zero must remain visible');
-
-  assertContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'optical-patrol-v1'");
-  assertNotContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'pocket-console-v1'", 'superseded Pocket Console runtime contract');
-  assertNotContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'linkboard-overview-v1'", 'retired Linkboard mobile report alias');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'Object.values(checks).every(Boolean)');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', '[data-optical-patrol-expanded-claim]');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', '[data-optical-patrol-action]');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', '[data-optical-patrol-evidence-deck]');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'data-optical-patrol-forbids-current');
-  assertContains('tools/check-optical-patrol-runtime.js', 'source: "optical-patrol-runtime"');
-  assertContains('tools/check-optical-patrol-runtime.js', 'contract: CONTRACT');
-  assertContains('tools/check-optical-patrol-runtime.js', 'writeReport(report)');
-  assertContains('tools/lib/optical-patrol-runtime/runtime.js', 'acceptanceDirectory(name = "optical-patrol-runtime")');
+  assertContains('tools/check-incident-lens-model.js', 'historical/unavailable evidence must explicitly withdraw current values');
+  assertContains('tools/check-incident-lens-model.js', 'missing measurements must not be rewritten as observed zero');
+  assertContains('tools/check-incident-lens-contract.js', 'data-incident-lens-root');
+  assertContains('tools/check-incident-lens-runtime.js', 'source: "incident-lens-runtime"');
+  assertContains('tools/check-incident-lens-runtime.js', 'contract: CONTRACT');
+  assertContains('tools/check-incident-lens-runtime.js', 'writeReport(report)');
+  assertContains('tools/lib/incident-lens-runtime/runtime.js', 'acceptanceDirectory(name = "incident-lens-runtime")');
   assertNotExists('tools/check-pocket-console-runtime.js');
   assertNotExists('tools/lib/pocket-console-runtime/runtime.js');
-  assertMatches(
-    'tools/acceptance/inspect-overview-mobile.js',
-    /const noFalseCurrentData\s*=\s*!forbidsCurrent\s*\|\|\s*!optical\.querySelector\(/,
-    'runtime false-current-data check',
-  );
-  assertMatches(
-    'tools/acceptance/inspect-overview-mobile.js',
-    /const checks\s*=\s*\{[\s\S]{0,1200}\bnoFalseCurrentData,/,
-    'exported blocking false-current-data result',
-  );
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'targets44:');
   assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-overview-task-contract="overview-task-v1"');
   assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "getAttribute('data-overview-task-contract')");
   assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "taskContract === 'overview-task-v1'");

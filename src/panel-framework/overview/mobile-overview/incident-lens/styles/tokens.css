@@ -1,0 +1,17 @@
+.incident-lens {
+  --il-ink: #14212c;
+  --il-muted: #647381;
+  --il-line: rgba(72, 101, 124, .22);
+  --il-surface: #eef3f5;
+  --il-glass: color-mix(in srgb, #f5fbfd 76%, transparent);
+  --il-blue: #477d98;
+  --il-warn: #8a6c4b;
+  --il-danger: #80575b;
+  --il-radius: 12px;
+  color: var(--il-ink);
+  background: var(--il-surface);
+}
+.incident-lens [data-incident-lens-tone="danger"] { --il-accent: var(--il-danger); }
+.incident-lens [data-incident-lens-tone="warn"] { --il-accent: var(--il-warn); }
+.incident-lens [data-incident-lens-tone="trust"], .incident-lens [data-incident-lens-tone="ok"] { --il-accent: var(--il-blue); }
+.incident-lens [data-incident-lens-tone="missing"] { --il-accent: var(--il-muted); }

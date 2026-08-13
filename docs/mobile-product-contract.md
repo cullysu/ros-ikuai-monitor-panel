@@ -3,20 +3,20 @@
 ## Status
 
 - status: `current-contract / acceptance-failed`
-- validForCommit: current Step939 dirty-worktree remediation; Step938 review is historical and no current clean candidate exists
+- validForCommit: current Step946 dirty-worktree Incident Split Lens local acceptance; no clean release candidate exists
 - supersededBy: `null`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
-- Current local review boundary: Step938 binds historical Optical Patrol artifact `188e…` to 63 original cells, 10 zero-origin responsive captures, accessibility evidence and four independent exact-artifact review records; tracked Step939 remediation prevents those records from representing the current worktree
-- Product/design/visual gate: **FAIL for the current worktree; Step938 is historical local evidence and final external product/visual acceptance is not closed**
+- Current local review boundary: Step946 binds Incident Split Lens artifact `worktree-4162a99b38d5-be3181b1a21f` to 63 original cells, 10 responsive captures, rendered-scale Accessibility and four independent exact-artifact review records; `releaseEligible=false`
+- Product/design/visual gate: **PASS for the declared current local scope; public release remains FAIL because clean exact whole-product evidence, real RouterOS soak, authorization and remote CL are not closed**
 - Current loop stage: **Whole-product matrices, soak, clean-candidate hygiene and release evidence**
-- Matrix evidence: local Optical Patrol 63/63 plus 10/10 responsive boundary captures; `releaseEligible=false`
+- Matrix evidence: local Incident Split Lens 63/63 plus 10/10 responsive boundary captures; `releaseEligible=false`
 - Surface: a read-only RouterOS/iKuai operational console, not a health dashboard or shrunken desktop table
 
 Previous green matrices are regression evidence only. They missed local refresh failure, timezone ambiguity, dead visible controls, an invalid DNS route, and missing mobile workflows.
 
-Step938 keeps the task active with `blocked=false` and GitHub not uploaded. Optical Patrol is the isolated production mobile owner and Pocket presentation ownership is physically deleted. Route/state/security/recovery/public matrices, real RouterOS read-only soak, clean-candidate hygiene, exact-SHA external promotion and Linux/Windows/GHCR CL remain pending.
+Step946 keeps the task active with `blocked=false` and GitHub not uploaded. Incident Split Lens is the isolated production mobile Overview owner; rejected Optical and Pocket presentation ownership is physically deleted. Route/state/security/recovery/public matrices, real RouterOS read-only soak, clean-candidate hygiene, exact-SHA external promotion and Linux/Windows/GHCR CL remain pending.
 
-The current presentation contract is `docs/mobile-optical-patrol-design-contract.md`. Pocket-specific navigation/composition sections below remain only as rejected-baseline requirements for diffing and test cleanup; they do not authorize reuse of the rejected visual hierarchy.
+The current presentation contract is `docs/mobile-incident-split-lens-design-contract.md`. Pocket/Optical-specific navigation and composition below remain only as rejected-baseline requirements for diffing and test cleanup; they do not authorize reuse of rejected visual hierarchy.
 
 ## User job
 

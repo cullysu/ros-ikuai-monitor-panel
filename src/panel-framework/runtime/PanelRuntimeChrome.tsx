@@ -60,7 +60,7 @@ function MobileRuntimeBar({ runtime, onMore }: { runtime: PanelRuntimeController
   return (
     <header className="panel-runtime-bar panel-runtime-bar-mobile" data-panel-runtime-toolbar="mobile">
       <div className="panel-runtime-device"><b>{runtime.connection.profile?.host || "RouterOS"}</b><span>{mobilePhaseLabel(runtime.snapshot.phase)}</span></div>
-      <span className="panel-runtime-mode" aria-label="只读监控模式"><LockKeyhole size={14} aria-hidden="true" />只读</span>
+      <span className="panel-runtime-mode" aria-label="只读监控模式" title="只读监控模式"><LockKeyhole size={14} aria-hidden="true" /><span>只读</span></span>
       <RuntimeActions runtime={runtime} onMore={onMore} />
     </header>
   );
@@ -71,7 +71,7 @@ function DesktopRuntimeBar({ runtime, onMore }: { runtime: PanelRuntimeControlle
   return (
     <header className="panel-runtime-bar panel-runtime-bar-desktop" data-panel-runtime-toolbar="desktop">
       <div className="panel-runtime-device"><span>当前设备</span><b>{runtime.connection.profile?.host || "RouterOS"}</b><small>{identity}</small></div>
-      <span className="panel-runtime-mode" aria-label="只读监控模式"><LockKeyhole size={14} aria-hidden="true" />只读</span>
+      <span className="panel-runtime-mode" aria-label="只读监控模式" title="只读监控模式"><LockKeyhole size={14} aria-hidden="true" /><span>只读</span></span>
       <div className={`panel-runtime-phase is-${runtime.snapshot.phase}`}><i aria-hidden="true" /><span>{phaseLabel(runtime.snapshot.phase, runtime.evidenceAgeSeconds)}</span></div>
       <RuntimeActions runtime={runtime} onMore={onMore} />
     </header>

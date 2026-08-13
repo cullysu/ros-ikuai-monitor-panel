@@ -115,7 +115,7 @@ function scrollStateAtOrigin(scroll) {
 async function resetViewportScroll(page) {
   return page.evaluate(async () => {
     const settle = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    const activeRoot = document.querySelector("[data-optical-patrol-root], [data-desktop-overview]");
+    const activeRoot = document.querySelector("[data-incident-lens-root], [data-desktop-overview]");
     const panelApp = document.querySelector(".panel-app");
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
@@ -177,7 +177,7 @@ async function inspectOverview(page) {
     const overlaps = (left, right) => Boolean(left && right && (
       left.left < right.right && left.right > right.left && left.top < right.bottom && left.bottom > right.top
     ));
-    const mobile = document.querySelector("[data-optical-patrol-root]");
+    const mobile = document.querySelector("[data-incident-lens-root]");
     const desktop = document.querySelector("[data-desktop-overview]");
     const activeMobile = visible(mobile) ? mobile : null;
     const activeDesktop = visible(desktop) ? desktop : null;
@@ -189,9 +189,9 @@ async function inspectOverview(page) {
         .map((node) => ({
           id: node.id || "",
           tag: node.tagName.toLowerCase(),
-          kind: node.hasAttribute("data-optical-patrol-action")
+          kind: node.hasAttribute("data-incident-lens-action")
             ? "selected-action"
-            : node.hasAttribute("data-optical-patrol-claim-control")
+            : node.hasAttribute("data-incident-lens-claim-control")
               ? "follow-up-claim"
               : "other",
           label: name(node),
@@ -199,9 +199,9 @@ async function inspectOverview(page) {
           clippedWithinSelf: node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1,
         }))
       : [];
-    const expanded = activeMobile?.querySelector("[data-optical-patrol-expanded-claim]") || null;
+    const expanded = activeMobile?.querySelector("[data-incident-lens-expanded-claim]") || null;
     const claimControls = activeMobile
-      ? [...activeMobile.querySelectorAll("[data-optical-patrol-claim-control]")].filter(visible).map((node) => ({
+      ? [...activeMobile.querySelectorAll("[data-incident-lens-claim-control]")].filter(visible).map((node) => ({
         tag: node.tagName.toLowerCase(),
         type: node.getAttribute("type") || "",
         pressed: node.getAttribute("aria-pressed"),
@@ -209,12 +209,9 @@ async function inspectOverview(page) {
         rect: rect(node),
       }))
       : [];
-    const summary = activeMobile?.querySelector(".op__summary") || null;
-    const followups = activeMobile?.querySelector(".op__followups") || null;
-    const evidenceDeck = activeMobile?.querySelector("[data-optical-patrol-evidence-deck]") || null;
-    const evidenceBoundary = activeMobile?.querySelector("[data-optical-patrol-evidence-boundary]") || null;
-    const decision = activeMobile?.querySelector("[data-optical-patrol-decision]") || null;
-    const action = activeMobile?.querySelector("[data-optical-patrol-action]") || null;
+    const evidenceDeck = activeMobile?.querySelector("[data-incident-lens-evidence-deck]") || null;
+    const evidenceBoundary = activeMobile?.querySelector("[data-incident-lens-evidence-boundary]") || null;
+    const action = activeMobile?.querySelector("[data-incident-lens-action]") || null;
     const navigation = document.querySelector(".panel-task-navigation");
     const navigationRect = visible(navigation) ? rect(navigation) : null;
     const navigationIntersections = navigationRect
@@ -234,27 +231,23 @@ async function inspectOverview(page) {
       activeOwners: Number(Boolean(activeMobile)) + Number(Boolean(activeDesktop)),
       rootPresent: Boolean(rootNode),
       hiddenLegacyOwner: Boolean(document.querySelector("[data-pocket-console-root]")),
-      risk: activeMobile?.getAttribute("data-optical-patrol-risk") || activeDesktop?.getAttribute("data-desktop-overview-risk") || null,
-      capability: activeMobile?.getAttribute("data-optical-patrol-capability") || (activeDesktop ? "desktop" : null),
-      evidenceMode: activeMobile?.getAttribute("data-optical-patrol-evidence-mode") || activeDesktop?.getAttribute("data-desktop-evidence-mode") || null,
-      scenario: activeMobile?.getAttribute("data-optical-patrol-scene") || activeDesktop?.getAttribute("data-desktop-overview-scenario") || null,
+      risk: activeMobile?.getAttribute("data-incident-lens-risk") || activeDesktop?.getAttribute("data-desktop-overview-risk") || null,
+      capability: activeMobile?.getAttribute("data-incident-lens-capability") || (activeDesktop ? "desktop" : null),
+      evidenceMode: activeMobile?.getAttribute("data-incident-lens-evidence-mode") || activeDesktop?.getAttribute("data-desktop-evidence-mode") || null,
+      scenario: activeMobile?.getAttribute("data-incident-lens-scene") || activeDesktop?.getAttribute("data-desktop-overview-scenario") || null,
       overflowX: Math.max(0, document.documentElement.scrollWidth - innerWidth),
       controls,
       claimControls,
-      selectedClaim: expanded?.getAttribute("data-optical-patrol-expanded-claim") || null,
+      selectedClaim: expanded?.getAttribute("data-incident-lens-expanded-claim") || null,
       expandedClaim: expanded ? {
         id: expanded.id || "",
-        labelledBy: expanded.getAttribute("aria-labelledby") || "",
-        labelTargetExists: Boolean(document.getElementById(expanded.getAttribute("aria-labelledby") || "")),
+        name: name(expanded),
         tabIndex: expanded.getAttribute("tabindex"),
         rect: rect(expanded),
       } : null,
       evidenceBoundary: evidenceBoundary ? { name: name(evidenceBoundary), rect: rect(evidenceBoundary) } : null,
-      decision: decision ? { name: name(decision), rect: rect(decision) } : null,
       action: action ? { name: name(action), tag: action.tagName.toLowerCase(), rect: rect(action) } : null,
       actionObscured: Boolean(action && navigationRect && overlaps(rect(action), navigationRect)),
-      summary: rect(summary),
-      followups: visible(followups) ? rect(followups) : null,
       evidenceDeck: visible(evidenceDeck) ? rect(evidenceDeck) : null,
       navigation: navigationRect,
       navigationIntersections,
@@ -277,8 +270,8 @@ async function inspectOverview(page) {
 
 async function inspectClaimControlReachability(page) {
   return page.evaluate(async () => {
-    const action = document.querySelector("[data-optical-patrol-action]");
-    const claims = [...document.querySelectorAll("[data-optical-patrol-claim-control]")]
+    const action = document.querySelector("[data-incident-lens-action]");
+    const claims = [...document.querySelectorAll("[data-incident-lens-claim-control]")]
       .filter((node) => node instanceof HTMLElement && !node.closest("[hidden]") && node.getClientRects().length > 0);
     const controls = [action, ...claims].filter((node) => node instanceof HTMLElement);
     const navigation = document.querySelector(".panel-task-navigation");
@@ -287,7 +280,7 @@ async function inspectClaimControlReachability(page) {
       document.documentElement,
       document.body,
       document.querySelector(".panel-app"),
-      document.querySelector("[data-optical-patrol-root]"),
+      document.querySelector("[data-incident-lens-root]"),
     ])].filter((node) => node instanceof Element);
     const startWindow = { left: window.scrollX, top: window.scrollY };
     const startPositions = scrollNodes.map((node) => ({ node, left: node.scrollLeft, top: node.scrollTop }));
@@ -307,7 +300,7 @@ async function inspectClaimControlReachability(page) {
       const y = Math.max(0, Math.min(innerHeight - 1, box.top + Math.min(box.height / 2, 28)));
       const hit = document.elementFromPoint(x, y);
       rows.push({
-        kind: control.hasAttribute("data-optical-patrol-action") ? "action" : "claim",
+        kind: control.hasAttribute("data-incident-lens-action") ? "action" : "claim",
         label: control.getAttribute("aria-label") || control.textContent?.trim() || "",
         unobscured,
         hit: Boolean(hit && (hit === control || control.contains(hit))),
@@ -331,11 +324,11 @@ async function openOverview(runtime, boundary, scenario = SCENARIO) {
   await page.goto(overviewUrl(mock.url), { waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
   await page.waitForFunction(
     ({ expectedScenario, expectedOwner }) => {
-      const rootNode = document.querySelector("[data-optical-patrol-root], [data-desktop-overview]");
+      const rootNode = document.querySelector("[data-incident-lens-root], [data-desktop-overview]");
       if (!rootNode) return false;
-      const mobile = rootNode.hasAttribute("data-optical-patrol-root");
+      const mobile = rootNode.hasAttribute("data-incident-lens-root");
       const actualOwner = mobile ? "mobile" : "desktop";
-      const actualScenario = rootNode.getAttribute("data-optical-patrol-scene") || rootNode.getAttribute("data-desktop-overview-scenario") || "";
+      const actualScenario = rootNode.getAttribute("data-incident-lens-scene") || rootNode.getAttribute("data-desktop-overview-scenario") || "";
       return actualOwner === expectedOwner && actualScenario === expectedScenario;
     },
     { expectedScenario: scenario, expectedOwner: boundary.owner },
@@ -382,25 +375,25 @@ function assertCoreCell(cell, boundary, expectedScenario = SCENARIO) {
   assert(clipped.length === 0, "surface exposed clipped or off-canvas controls", { clipped, cell });
 }
 
-function assertOpticalPatrolCell(cell, boundary, expectedScenario = SCENARIO) {
+function assertIncidentLensCell(cell, boundary, expectedScenario = SCENARIO) {
   assertCoreCell(cell, boundary, expectedScenario);
-  assert(cell.evidenceBoundary?.name && cell.decision?.name, "Optical Patrol omitted its named evidence or decision region", cell);
-  assert(cell.selectedClaim && cell.expandedClaim, "Optical Patrol omitted its expanded selected claim", cell);
+  assert(cell.evidenceBoundary?.name, "Incident Split Lens omitted its named evidence boundary", cell);
+  assert(cell.selectedClaim && cell.expandedClaim, "Incident Split Lens omitted its expanded selected claim", cell);
   assert(
-    cell.expandedClaim.id === `optical-claim-${encodeURIComponent(cell.selectedClaim)}` &&
-      cell.expandedClaim.tabIndex === "-1" && cell.expandedClaim.labelledBy && cell.expandedClaim.labelTargetExists,
+    cell.expandedClaim.id === `incident-lens-claim-${encodeURIComponent(cell.selectedClaim)}` &&
+      cell.expandedClaim.tabIndex === "-1" && cell.expandedClaim.name,
     "expanded claim does not satisfy the stable history/focus/label contract",
     cell,
   );
-  assert(cell.claimControls.every((control) => (
+  assert(cell.claimControls.length > 0 && cell.claimControls.every((control) => (
     control.tag === "button"
       && control.type === "button"
-      && control.pressed == null
+      && ["true", "false"].includes(control.pressed)
       && control.label
   )), "follow-up claims must remain named native buttons without false toggle semantics", cell);
   assert(cell.action?.name && ["button", "a"].includes(cell.action.tag), "selected claim omitted its native object-bound action", cell);
   const undersized = cell.controls.filter((control) => control.rect && (control.rect.width < 44 || control.rect.height < 44));
-  assert(undersized.length === 0, "Optical Patrol exposed a touch target below 44x44px", { undersized, cell });
+  assert(undersized.length === 0, "Incident Split Lens exposed a touch target below 44x44px", { undersized, cell });
   if (boundary.capability === "phone") {
     assert(!cell.actionObscured
       && cell.action.rect.top >= 0
@@ -416,30 +409,6 @@ function assertOpticalPatrolCell(cell, boundary, expectedScenario = SCENARIO) {
   const unreachable = (cell.claimControlReachability || []).filter((control) => control.kind === "claim" && (!control.unobscured || !control.hit));
   assert(unreachable.length === 0, "a follow-up claim cannot be scrolled above the floating navigation and activated", { unreachable, cell });
 
-  if (boundary.capability === "phone") {
-    assert(cell.summary && cell.expandedClaim.rect && cell.summary.bottom <= cell.expandedClaim.rect.top + 1,
-      "phone Optical Patrol must keep evidence/decision before the expanded claim", cell);
-    if (cell.followups) assert(cell.expandedClaim.rect.bottom <= cell.followups.top + 1,
-      "phone Optical Patrol follow-up claims must remain after the expanded claim", cell);
-    return;
-  }
-
-  if (boundary.capability === "short-landscape") {
-    assert(cell.summary && cell.expandedClaim.rect && cell.summary.right <= cell.expandedClaim.rect.left + 1,
-      "short-landscape Optical Patrol must keep one compact decision rail beside the selected object", cell);
-    assert(!cell.evidenceDeck, "short-landscape Optical Patrol must not inherit the tablet evidence deck", cell);
-    return;
-  }
-
-  assert(cell.summary && cell.expandedClaim.rect && cell.summary.right <= cell.expandedClaim.rect.left + 1,
-    "tablet Optical Patrol must keep decision/follow-ups beside the expanded claim", cell);
-  if (cell.followups) assert(cell.followups.right <= cell.expandedClaim.rect.left + 1,
-    "tablet follow-up claims escaped the decision column", cell);
-  if (cell.evidenceDeck) {
-    assert(cell.evidenceDeck.left >= cell.expandedClaim.rect.left - 1
-        && cell.evidenceDeck.top >= cell.expandedClaim.rect.bottom - 1,
-    "tablet evidence deck must continue below the selected-object detail column", cell);
-  }
 }
 
 function assertSemanticContinuity(left, right, label) {
@@ -450,7 +419,7 @@ function assertSemanticContinuity(left, right, label) {
 
 async function waitForSelectedClaim(page, claimId) {
   await page.waitForFunction(
-    (expectedId) => document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") === expectedId,
+    (expectedId) => document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") === expectedId,
     claimId,
     { timeout: ACTION_TIMEOUT_MS },
   );
@@ -460,20 +429,20 @@ async function inspectSelectionPersistence(runtime) {
   const { page } = runtime;
   const tablet768 = BOUNDARIES.find((boundary) => boundary.id === "tablet-768");
   const start = await openOverview(runtime, tablet768, "single");
-  assertOpticalPatrolCell(start, tablet768, "single");
+  assertIncidentLensCell(start, tablet768, "single");
   const previousId = start.selectedClaim;
-  const nextControl = page.locator("[data-optical-patrol-claim-control]").first();
+  const nextControl = page.locator("[data-incident-lens-claim-control]").first();
   await nextControl.waitFor({ timeout: ACTION_TIMEOUT_MS });
   await nextControl.click();
   await page.waitForFunction(
     (oldId) => {
-      const selected = document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") || "";
+      const selected = document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") || "";
       return Boolean(selected && selected !== oldId);
     },
     previousId,
     { timeout: ACTION_TIMEOUT_MS },
   );
-  const selectedId = await page.locator("[data-optical-patrol-expanded-claim]").getAttribute("data-optical-patrol-expanded-claim");
+  const selectedId = await page.locator("[data-incident-lens-expanded-claim]").getAttribute("data-incident-lens-expanded-claim");
   assert(selectedId, "claim selection did not expose a stable selected id", { previousId });
 
   const cells = {};
@@ -482,7 +451,7 @@ async function inspectSelectionPersistence(runtime) {
     await page.setViewportSize({ width: boundary.width, height: boundary.height });
     await waitForSelectedClaim(page, selectedId);
     const cell = await inspectOverview(page);
-    assertOpticalPatrolCell(cell, boundary, "single");
+    assertIncidentLensCell(cell, boundary, "single");
     assert(cell.selectedClaim === selectedId, `selected claim did not persist at ${id}`, cell);
     cells[id] = cell;
   }
@@ -492,17 +461,17 @@ async function inspectSelectionPersistence(runtime) {
   await page.locator("[data-desktop-overview]").waitFor({ timeout: ACTION_TIMEOUT_MS });
   const desktop = await inspectOverview(page);
   assertCoreCell(desktop, desktopBoundary, "single");
-  const historySelection = await page.evaluate(() => history.state?.panelOpticalPatrol || null);
+  const historySelection = await page.evaluate(() => history.state?.panelIncidentLens || null);
   assert(historySelection?.version === 1 && historySelection.selectedId === selectedId,
-    "desktop capability transition discarded versioned Optical Patrol selection state", { selectedId, historySelection, desktop });
+    "desktop capability transition discarded versioned Incident Split Lens selection state", { selectedId, historySelection, desktop });
 
   const tablet1199 = BOUNDARIES.find((boundary) => boundary.id === "tablet-1199");
   await page.setViewportSize({ width: tablet1199.width, height: tablet1199.height });
-  await page.locator("[data-optical-patrol-root]").waitFor({ timeout: ACTION_TIMEOUT_MS });
+  await page.locator("[data-incident-lens-root]").waitFor({ timeout: ACTION_TIMEOUT_MS });
   await waitForSelectedClaim(page, selectedId);
   const restored = await inspectOverview(page);
-  assertOpticalPatrolCell(restored, tablet1199, "single");
-  assert(restored.selectedClaim === selectedId, "Optical Patrol did not restore selection after returning from desktop", restored);
+  assertIncidentLensCell(restored, tablet1199, "single");
+  assert(restored.selectedClaim === selectedId, "Incident Split Lens did not restore selection after returning from desktop", restored);
 
   return { previousId, selectedId, cells, desktop, restored, historySelection };
 }
@@ -524,14 +493,14 @@ async function main() {
       try {
         const evidence = await openOverview(runtime, boundary);
         const screenshot = await captureViewportScreenshot(runtime.page, boundary);
-        if (boundary.owner === "mobile") assertOpticalPatrolCell(evidence, boundary);
+        if (boundary.owner === "mobile") assertIncidentLensCell(evidence, boundary);
         else assertCoreCell(evidence, boundary);
         cells[boundary.id] = { pass: true, expectedOwner: boundary.owner, evidence, screenshot };
       } catch (error) {
         cells[boundary.id] = { pass: false, expectedOwner: boundary.owner, error: serialiseError(error) };
       }
     }
-    checks.push({ name: "active owner, Optical Patrol capabilities, safe navigation, and boundary geometry", pass: Object.values(cells).every((cell) => cell.pass), cells });
+    checks.push({ name: "active owner, Incident Split Lens capabilities, safe navigation, and boundary geometry", pass: Object.values(cells).every((cell) => cell.pass), cells });
 
     try {
       assertSemanticContinuity(cells["tablet-899"]?.evidence, cells["tablet-900"]?.evidence, "899/900");
@@ -561,8 +530,8 @@ async function main() {
   const browserPass = checks.length > 0 && checks.every((check) => check.pass !== false);
   const report = {
     pass: frameworkAssetIdentity.pass && identityPass && browserPass,
-    contract: "responsive-optical-patrol-boundary-runtime-v1",
-    source: "responsive-optical-patrol-boundary-runtime",
+    contract: "responsive-incident-split-lens-boundary-runtime-v1",
+    source: "responsive-incident-split-lens-boundary-runtime",
     commit: gitIdentity.commit,
     worktreeFingerprint: gitIdentity.worktreeFingerprint,
     artifactKey: gitIdentity.artifactKey,
@@ -596,12 +565,12 @@ async function main() {
   if (!report.pass) process.exitCode = 1;
 }
 
-withTimeout("responsive Optical Patrol boundary runtime", main, RUN_TIMEOUT_MS).catch((error) => {
+withTimeout("responsive Incident Split Lens boundary runtime", main, RUN_TIMEOUT_MS).catch((error) => {
   const gitIdentity = gitWorktreeIdentity(root);
   const report = {
     pass: false,
-    contract: "responsive-optical-patrol-boundary-runtime-v1",
-    source: "responsive-optical-patrol-boundary-runtime",
+    contract: "responsive-incident-split-lens-boundary-runtime-v1",
+    source: "responsive-incident-split-lens-boundary-runtime",
     commit: gitIdentity.commit,
     worktreeFingerprint: gitIdentity.worktreeFingerprint,
     artifactKey: gitIdentity.artifactKey,

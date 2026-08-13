@@ -67,6 +67,7 @@ const TOOLBAR_200_REQUIRED_CELLS = Object.freeze(TOOLBAR_200_MATRIX.flatMap((vie
 
 function toolbarScenarioConfig(scenario) {
   if (scenario === "normal") return { fixtureScenario: "single", route: "overview", surface: "overview", runtimePhase: "current" };
+  if (scenario === "fleet") return { fixtureScenario: "fleet-coverage", route: "overview", surface: "overview", runtimePhase: "current" };
   if (scenario === "interfaces-down") return { fixtureScenario: "interfaces-down", route: "interfaces", surface: "route", runtimePhase: "current" };
   if (scenario === "interfaces-down-overview") return { fixtureScenario: "interfaces-down", route: "overview", surface: "overview", runtimePhase: "current" };
   if (TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS.includes(scenario)) {
@@ -376,7 +377,7 @@ async function keyboardFocus(page, mainSelector) {
 
 async function inspectSurface(page, { label, mainSelector, primarySelector, screenshotName, windowTitle, windowHandle, identity, viewport }) {
   const primary = page.locator(primarySelector).first();
-  await primary.waitFor({ timeout: ACTION_TIMEOUT_MS });
+  await primary.waitFor({ state: "attached", timeout: ACTION_TIMEOUT_MS });
   await primary.scrollIntoViewIfNeeded();
   const surface = await page.evaluate(({ mainSelector: selector, primarySelector: targetSelector }) => {
      const main = document.querySelector(selector);
@@ -417,7 +418,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
             (computed.clip && computed.clip !== "auto");
           const screenReaderGeometry = /^(absolute|fixed)$/.test(computed.position) && box.width <= 2 && box.height <= 2 && clipped &&
             /(hidden|clip)/.test(computed.overflowX) && /(hidden|clip)/.test(computed.overflowY);
-          if (current.matches(".op__sr-only, [data-visually-hidden='true'], [hidden]") || !rendered(current) || screenReaderGeometry) return true;
+          if (current.matches(".incident-lens__sr-only, [data-visually-hidden='true'], [hidden]") || !rendered(current) || screenReaderGeometry) return true;
           if (current === boundary) break;
         }
         return false;
@@ -431,17 +432,15 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
       const containsFragment = (boundary, fragment, axis) => axis === "x"
         ? fragment.left >= boundary.left - 1 && fragment.right <= boundary.right + 1
         : fragment.top >= boundary.top - 1 && fragment.bottom <= boundary.bottom + 1;
-      const optical = main instanceof HTMLElement && main.matches("[data-optical-patrol-root]") ? main : null;
-      const scopeCandidates = optical ? [
+      const incidentLens = main instanceof HTMLElement && main.matches("[data-incident-lens-root]") ? main : null;
+      const scopeCandidates = incidentLens ? [
         document.querySelector('[data-panel-runtime-toolbar="mobile"]'),
-        optical.querySelector(':scope > [data-optical-patrol-chrome]'),
-        optical.querySelector('[data-optical-patrol-evidence-boundary]'),
-        optical.querySelector('[data-optical-patrol-decision]'),
-        optical.querySelector('[data-optical-patrol-action]'),
-        ...optical.querySelectorAll('[data-optical-patrol-claim-control]'),
-        optical.querySelector('[data-optical-patrol-evidence-deck]'),
-        optical.querySelector('[data-optical-patrol-expanded-claim]'),
-        optical.querySelector('[data-optical-patrol-task-navigation]'),
+        incidentLens.querySelector(':scope > [data-incident-lens-command-chrome]'),
+        incidentLens.querySelector('[data-incident-lens-evidence-boundary]'),
+        incidentLens.querySelector('[data-incident-lens-action]'),
+        ...incidentLens.querySelectorAll('[data-incident-lens-claim-control]'),
+        incidentLens.querySelector('[data-incident-lens-evidence-deck]'),
+        incidentLens.querySelector('[data-incident-lens-expanded-claim]'),
       ] : [main];
       const operationalScopes = [...new Set(scopeCandidates.filter((node) => node instanceof HTMLElement && rendered(node)))];
       const seenTextNodes = new Set();
@@ -450,7 +449,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
       const operationalTextScopes = [];
       for (const scope of operationalScopes) {
         const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
-        const scopeLabel = normalize(scope.getAttribute("data-optical-patrol-expanded-claim") || scope.getAttribute("class") || scope.tagName).slice(0, 80);
+        const scopeLabel = normalize(scope.getAttribute("data-incident-lens-expanded-claim") || scope.getAttribute("class") || scope.tagName).slice(0, 80);
         const rootBoundary = main instanceof HTMLElement && main.contains(scope) ? main : scope;
         let textNodes = 0;
         let fragments = 0;
@@ -629,9 +628,9 @@ async function runCell(viewport, scenario) {
     });
     const surface = await inspectSurface(runtime.page, {
       label: `${viewport.id}-${scenario}-${scenarioConfig.surface}`,
-      mainSelector: scenarioConfig.surface === "overview" ? "main[data-optical-patrol-root]" : "main[data-mobile-domain-workspace=\"interfaces\"]",
+      mainSelector: scenarioConfig.surface === "overview" ? "main[data-incident-lens-root]" : "main[data-mobile-domain-workspace=\"interfaces\"]",
       primarySelector: scenarioConfig.surface === "overview"
-        ? "[data-optical-patrol-root] [data-optical-patrol-expanded-claim] [data-optical-patrol-action]"
+        ? "[data-incident-lens-root] [data-incident-lens-action]"
         : "[data-mobile-domain-workspace=\"interfaces\"] [data-mobile-row-id]",
       screenshotName: `${viewport.id}-${scenario}-edge-toolbar-zoom200.png`,
       windowTitle: title,

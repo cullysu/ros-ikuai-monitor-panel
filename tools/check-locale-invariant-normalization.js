@@ -28,8 +28,8 @@ for (const file of walk(SOURCE_ROOT)) {
 }
 
 const contractSources = [
-  path.join(SOURCE_ROOT, 'overview', 'mobile-overview', 'optical-patrol', 'opticalPatrolCollectionClaims.ts'),
-  path.join(SOURCE_ROOT, 'overview', 'mobile-overview', 'optical-patrol', 'opticalPatrolResourceClaims.ts'),
+  path.join(SOURCE_ROOT, 'overview', 'mobile-overview', 'incident-lens', 'buildIncidentLensModel.ts'),
+  path.join(SOURCE_ROOT, 'overview', 'mobile-overview', 'incident-lens', 'types.ts'),
 ];
 
 function requireSourcePattern(file, pattern, label) {
@@ -39,9 +39,21 @@ function requireSourcePattern(file, pattern, label) {
   }
 }
 
-for (const file of contractSources) {
-  requireSourcePattern(file, /\.normalize\(["']NFKC["']\)[\s\S]{0,120}\.toLowerCase\(\)/, 'missing-locale-neutral-key-normalization');
-}
+requireSourcePattern(
+  contractSources[0],
+  /const failed\s*=\s*rest\.status\s*!==\s*"current"\s*\?\s*\{\s*name:\s*"REST"[\s\S]{0,240}ssh\.status\s*!==\s*"current"\s*\?\s*\{\s*name:\s*"SSH"/,
+  'collection-channel-identity-must-remain-enumerated',
+);
+requireSourcePattern(
+  contractSources[0],
+  /failed\.name\.toLowerCase\(\)/,
+  'collection-channel-id-must-use-locale-neutral-case-folding',
+);
+requireSourcePattern(
+  contractSources[1],
+  /kind:\s*IncidentLensObjectKind/,
+  'incident-object-kind-must-remain-typed-rather-than-display-normalized',
+);
 
 const localeProbe = 'I REST SSH';
 const localeIndependent = localeProbe.toLowerCase();

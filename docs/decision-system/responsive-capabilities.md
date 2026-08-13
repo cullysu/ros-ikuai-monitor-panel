@@ -1,7 +1,7 @@
 # Responsive capability table
 
-- status: `active-step938-local-exact-signoff-pass-release-open`
-- validForCommit: Step938 active scroll-owner restoration, screenshot-origin provenance and local independent P0/P1 closure; release evidence open
+- status: `active-step946-incident-lens-local-signoff-pass-release-open`
+- validForCommit: Step946 Incident Split Lens 63-cell runtime, responsive provenance and local independent P0/P1/P2 closure; clean release evidence open
 - supersededBy: `null`
 - owner: Product Design + Frontend Architecture
 

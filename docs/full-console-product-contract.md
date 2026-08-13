@@ -3,17 +3,17 @@
 ## Status
 
 - status: `current-contract / acceptance-failed`
-- validForCommit: Step911 decision truth; Step910 reviews are historical local evidence only, not a release candidate
+- validForCommit: Step946 decision truth; mobile local acceptance is current, whole-product release acceptance remains failed
 - supersededBy: `null`
-- Historical local review boundary: Step910 has four records bound only to artifact `worktree-f8a12846eebd-20a6c4555b4c` (`20a6c…`); they are not current or external acceptance and `releaseEligible=false`
+- Current local review boundary: Step946 has four records bound to mobile artifact `worktree-4162a99b38d5-be3181b1a21f`; it is current local evidence only, not whole-product or external release acceptance, and `releaseEligible=false`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
-- Product release gate: **FAIL — current runtime and focus/security/workflow fixes require re-verification; engineering release evidence and final product/visual external acceptance are not closed**
+- Product release gate: **FAIL — mobile local four-role acceptance is closed, but clean exact whole-product matrices, route maturity, real RouterOS soak, external promotion and current-SHA CL are not closed**
 - Current loop stage: Verify release evidence
 - Baseline failure evidence: `_acceptance/review-ced6386-all-sections/report.json`
 
 The previous overview-only matrices are retained as regression evidence for the overview surface. They are not evidence that the full product is releasable.
 
-Step911 requires a final exact-SHA external four-role review, real RouterOS read-only soak, signed route acceptance, and Linux/Windows/GHCR CL. GitHub is not uploaded; the task is active with `blocked=false`; no previous local or historical engineering result opens release.
+Step946 requires a clean exact-SHA whole-product replay, real RouterOS read-only soak, signed route acceptance, and Linux/Windows/GHCR CL. GitHub is not uploaded; the task is active with `blocked=false`; current local mobile review and historical engineering results do not open release.
 
 ## Operator jobs
 

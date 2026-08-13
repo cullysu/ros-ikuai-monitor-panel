@@ -12,8 +12,9 @@ const { readRuntimeReport, runtimeIdentityDetail } = require('./runtime-report-i
 
 const ROOT = path.resolve(__dirname, '..');
 const REVIEW_DIR = 'docs/decision-system/independent-reviews';
-const DEFAULT_RUNTIME_REPORT = '_acceptance/optical-patrol-runtime/report.json';
-const DEFAULT_RUNTIME_SOURCE = 'optical-patrol-runtime';
+const DEFAULT_RUNTIME_REPORT = '_acceptance/incident-lens-runtime/report.json';
+const DEFAULT_RUNTIME_SOURCE = 'incident-lens-runtime';
+const DEFAULT_RUNTIME_CONTRACT = 'incident-split-lens-runtime-v1';
 const SUPERSEDED_POCKET_REVIEW_STEP = 932;
 const SUPERSEDED_POCKET_RUNTIME_REPORT = '_acceptance/pocket-console-runtime/report.json';
 const REVIEW_SPECS = [
@@ -139,19 +140,22 @@ function inspectIndependentReviewRecords(options = {}) {
   if (historicalRecord && !requestedRuntimeReport) {
     const citedHistoricalRuntime = records
       .flatMap(({ record }) => evidencePaths(record.evidence))
-      .find((item) => typeof item === 'string' && /(?:pocket-console|optical-patrol)-runtime\/report\.json$/.test(item));
+      .find((item) => typeof item === 'string' && /(?:pocket-console|optical-patrol|incident-lens)-runtime\/report\.json$/.test(item));
     if (citedHistoricalRuntime) runtimeReportPath = citedHistoricalRuntime;
   }
   const historicalPocketRuntime = historicalRecord && runtimeReportPath === SUPERSEDED_POCKET_RUNTIME_REPORT;
   const runtimeSource = requestedRuntimeSource || (historicalPocketRuntime ? 'pocket-console-runtime' : DEFAULT_RUNTIME_SOURCE);
   const runtimeBinding = readRuntimeReport(root, runtimeReportPath, { expectedSource: runtimeSource });
   const runtimeReportExists = runtimeBinding.status !== 'missing';
-  if (!historicalRecord && !runtimeReportExists) failures.push(`missing current Optical Patrol runtime report: ${runtimeReportPath}`);
+  if (!historicalRecord && !runtimeReportExists) failures.push(`missing current Incident Split Lens runtime report: ${runtimeReportPath}`);
   let runtimeReportMatchesReviewedArtifact = false;
   if (runtimeReportExists) {
     const runtimeReport = readJson(root, runtimeReportPath, failures);
     if (runtimeReport) {
       if (runtimeReport.pass !== true) failures.push(`${runtimeReportPath} must be pass`);
+      if (!historicalRecord && runtimeReport.contract !== DEFAULT_RUNTIME_CONTRACT) {
+        failures.push(`${runtimeReportPath} must use ${DEFAULT_RUNTIME_CONTRACT}`);
+      }
       if (runtimeReport.releaseEvidenceEligible !== false) failures.push(`${runtimeReportPath} must remain ineligible for release evidence`);
       const reviewedArtifact = records[0]?.record?.reviewedArtifact || {};
       runtimeReportMatchesReviewedArtifact =

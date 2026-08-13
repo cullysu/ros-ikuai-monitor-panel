@@ -6,8 +6,8 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const desktopCss = fs.readFileSync(path.join(root, 'src/panel-framework/sections/section-console.css'), 'utf8');
-const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/optical-patrol/styles/tokens.css'), 'utf8');
-const mobileSource = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx'), 'utf8');
+const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/incident-lens/styles/layout.css'), 'utf8');
+const mobileSource = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx'), 'utf8');
 const routeSource = fs.readFileSync(path.join(root, 'src/panel-framework/routes/usePanelRoute.ts'), 'utf8');
 
 function block(source, selector) {
@@ -39,7 +39,9 @@ function hasVisibleRing(blockSource) {
     !/\b(?:display\s*:\s*none|visibility\s*:\s*hidden|content-visibility\s*:\s*hidden|opacity\s*:\s*0(?:\.0+)?)(?:\s*;|\s*$)/.test(blockSource);
   const insetMarker = /\binset\s+(?:2|3|4)px\s+0\s+(?!transparent(?:\s|$))\S+/.test(boxShadow) &&
     /\bpadding-left\s*:\s*(?:6|7|8|9|10)px\s*;/.test(blockSource);
-  return outlineRing || insetMarker;
+  const textDecoration = /\btext-decoration(?:-line)?\s*:\s*underline\b/.test(blockSource) &&
+    !/\btext-decoration-color\s*:\s*transparent\b/.test(blockSource);
+  return outlineRing || insetMarker || textDecoration;
 }
 
 function hasVisibleFocusRing(source, selector) {
@@ -58,10 +60,10 @@ const checks = {
     hasVisibleFocusRing(desktopCss, '.panel-section-heading [data-panel-route-title]'),
   'desktop route title does not show a ring for every programmatic focus':
     block(desktopCss, '.panel-section-heading [data-panel-route-title]:focus') === '',
-  'Optical Patrol title participates in the shared route-focus contract':
-    /<h1\b[^>]*\bdata-panel-route-title\b[^>]*\bdata-optical-patrol-route-title\b|<h1\b[^>]*\bdata-optical-patrol-route-title\b[^>]*\bdata-panel-route-title\b/.test(mobileSource),
+  'Incident Split Lens title participates in the shared route-focus contract':
+    /<h1\b[^>]*\bdata-panel-route-title\b[^>]*\bdata-incident-lens-route-title\b|<h1\b[^>]*\bdata-incident-lens-route-title\b[^>]*\bdata-panel-route-title\b/.test(mobileSource),
   'mobile route title has a visible keyboard focus ring':
-    hasVisibleRing(block(mobileCss, '.op :focus-visible')),
+    hasVisibleFocusRing(mobileCss, '.incident-lens__route-title'),
 };
 const failures = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
 const report = { pass: failures.length === 0, contract: 'route-title-focus-visible-v1', checks, failures };

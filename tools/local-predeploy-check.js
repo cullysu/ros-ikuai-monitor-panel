@@ -1697,6 +1697,8 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
         const requireOverviewAnchors = ${JSON.stringify(section === 'overview')};
         const requireDesktopOverviewAnchors = requireOverviewAnchors && window.innerWidth >= 1200;
         const requireMobileOverviewAnchors = requireOverviewAnchors && window.innerWidth < 900;
+        const incidentLensRoot = document.querySelector('[data-incident-lens-root]');
+        const incidentLensHistory = window.history.state?.panelIncidentLens;
         const specs = requireDesktopOverviewAnchors ? [
           {
             name: 'desktop-toolbar',
@@ -1706,24 +1708,35 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
           { name: 'status-bus', selector: '[data-desktop-status-bus]' },
         ] : requireMobileOverviewAnchors ? [
           {
-            name: 'optical-patrol-root',
-            selector: '[data-optical-patrol-root]',
+            name: 'incident-split-lens-root',
+            selector: '[data-incident-lens-root]',
           },
           {
-            name: 'optical-patrol-evidence-boundary',
-            selector: '[data-optical-patrol-evidence-boundary]',
+            name: 'incident-split-lens-evidence-boundary',
+            selector: '[data-incident-lens-evidence-boundary]',
           },
           {
-            name: 'optical-patrol-decision',
-            selector: '[data-optical-patrol-decision]',
+            name: 'incident-split-lens-expanded-claim',
+            selector: '[data-incident-lens-expanded-claim]',
           },
           {
-            name: 'optical-patrol-expanded-claim',
-            selector: '[data-optical-patrol-expanded-claim]',
+            name: 'incident-split-lens-scene',
+            selector: '[data-incident-lens-root]',
+            attribute: 'data-incident-lens-scene',
+          },
+          {
+            name: 'incident-split-lens-risk',
+            selector: '[data-incident-lens-root]',
+            attribute: 'data-incident-lens-risk',
+          },
+          {
+            name: 'incident-split-lens-selection-history',
+            selector: '[data-incident-lens-expanded-claim]',
+            requireSelectionHistory: true,
           },
           ...(window.innerHeight >= 568 ? [{
-            name: 'optical-patrol-object-action',
-            selector: '[data-optical-patrol-action]',
+            name: 'incident-split-lens-object-action',
+            selector: '[data-incident-lens-action]',
           }] : []),
         ] : [];
         const scaleX = width / Math.max(1, window.innerWidth);
@@ -1732,6 +1745,12 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
           const node = document.querySelector(spec.selector);
           const style = node ? getComputedStyle(node) : null;
           const rect = node ? node.getBoundingClientRect() : null;
+          const attributePresent = !spec.attribute || Boolean(node?.getAttribute(spec.attribute));
+          const selectionHistoryPresent = !spec.requireSelectionHistory || (
+            incidentLensHistory?.version === 1 &&
+            incidentLensHistory.scope === incidentLensRoot?.getAttribute('data-incident-lens-scope') &&
+            incidentLensHistory.selectedId === node?.getAttribute('data-incident-lens-expanded-claim')
+          );
           const present = Boolean(
             node &&
             rect &&
@@ -1744,7 +1763,9 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
             style &&
             style.display !== 'none' &&
             style.visibility !== 'hidden' &&
-            Number(style.opacity || 1) > 0.05
+            Number(style.opacity || 1) > 0.05 &&
+            attributePresent &&
+            selectionHistoryPresent
           );
           return {
             ...spec,

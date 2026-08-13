@@ -6,6 +6,8 @@
 // evidence semantics without misrepresenting that as Windows UI proof.
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const {
   TOOLBAR_200_MATRIX,
   TOOLBAR_200_REQUIRED_CELLS,
@@ -133,5 +135,21 @@ const identity = stableEvidenceIdentity();
 assert.equal(identity.ignoredToolOwnedRuntimeArtifact, "tools/acceptance/browser-lifecycle-v2/.artifacts/latest-report.json");
 assert.equal(typeof identity.fingerprint, "string");
 assert.equal(identity.fingerprint.length, 64, "stable identity must still bind tracked and non-owned untracked worktree content");
+
+const windowsCaptureSource = fs.readFileSync(
+  path.join(__dirname, "acceptance", "accessibility-v2", "windows_browser_zoom.py"),
+  "utf8",
+);
+const captureOwnedEdgeSource = windowsCaptureSource.match(/def capture_owned_edge\([\s\S]*?\n\ndef /)?.[0] || "";
+assert.match(
+  captureOwnedEdgeSource,
+  /focus_owned_window\(handle,[\s\S]*?inspect_edge_visibility\(handle\)/,
+  "the Windows-owned capture must reclaim the exact Edge HWND immediately before inspecting and capturing it",
+);
+assert.match(
+  captureOwnedEdgeSource,
+  /foregroundStabilizationAttempts/,
+  "the Windows-owned capture must expose bounded foreground stabilization diagnostics",
+);
 
 process.stdout.write(`${JSON.stringify({ pass: true, contract: "edge-toolbar-zoom200-offline-v5", cells: TOOLBAR_200_REQUIRED_CELLS.length }, null, 2)}\n`);

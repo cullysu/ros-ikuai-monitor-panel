@@ -373,10 +373,25 @@ def capture_visible_edge_segment(handle: int, window_rect: dict):
     }
 
 
-def capture_owned_edge(handle: int, target: Path) -> tuple[dict, dict]:
+def capture_owned_edge(handle: int, target: Path, focus_timeout_seconds: float) -> tuple[dict, dict]:
     from PIL import ImageGrab  # type: ignore
 
-    state = inspect_edge_visibility(handle)
+    # Edge can lose the foreground token while the caller waits for toolbar and
+    # layout settling. Reclaim only the uniquely owned HWND at the last possible
+    # moment, then fail closed if another process repeatedly takes it back.
+    deadline = time.time() + min(max(focus_timeout_seconds, 0.1), 3.0)
+    foreground_stabilization_attempts = 0
+    while True:
+        foreground_stabilization_attempts += 1
+        focus_owned_window(handle, max(0.1, deadline - time.time()))
+        try:
+            state = inspect_edge_visibility(handle)
+            break
+        except RuntimeError as error:
+            if "not foreground immediately before screen capture" not in str(error) or time.time() >= deadline:
+                raise
+            time.sleep(0.02)
+    state["foregroundStabilizationAttempts"] = foreground_stabilization_attempts
     rect = state["windowRect"]
     width = int(rect["right"] - rect["left"])
     height = int(rect["bottom"] - rect["top"])
@@ -433,7 +448,7 @@ def main() -> None:
             focus_owned_window(handle, args.timeout_seconds)
             time.sleep(args.settle_milliseconds / 1000)
             target = Path(args.capture_path).resolve()
-            capture_state, capture = capture_owned_edge(handle, target)
+            capture_state, capture = capture_owned_edge(handle, target, args.timeout_seconds)
             emit({
                 "pass": True,
                 "contract": "windows-edge-toolbar-zoom-v1",
@@ -545,7 +560,7 @@ def main() -> None:
             # Windows-owned capture records what the focused headed Edge window
             # actually displays and is therefore the visual acceptance proof.
             focus_owned_window(handle, args.timeout_seconds)
-            capture_state, capture_file = capture_owned_edge(handle, target)
+            capture_state, capture_file = capture_owned_edge(handle, target, args.timeout_seconds)
             capture = {
                 **capture_file,
                 "captureState": capture_state,

@@ -1,7 +1,7 @@
 # Architecture Decision Record — Truth and cross-surface continuity
 
-- status: `implemented-local-pending-integration`
-- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- status: `implemented-local-verified-release-pending`
+- validForCommit: Step946 Incident Split Lens local architecture and runtime evidence; clean exact whole-product integration remains pending
 - supersededBy: `null`
 
 ## ADR-001 Atomic traffic samples

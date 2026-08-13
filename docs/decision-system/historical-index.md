@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step943 current decision boundary; historical entries remain immutable
+- validForCommit: Step946 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `943`
-- latestRecordedStep: `943`
+- coveredStepMax: `946`
+- latestRecordedStep: `946`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -63,7 +63,10 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 940 | supplemental connections, DNS and global-health evidence closed focused local Product/Visual/Responsive/Accessibility P1s while whole-product exact acceptance remained open | Step941/current-state.md |
 | 941 | first exact SHA rejected by the unchanged app architecture ceiling; health findings extracted to a dedicated backend module and replacement clean SHA required | Step942/current-state.md |
 | 942 | replacement base gates passed; full release gate exposed and repaired DNS supplemental ownership / forced-colors inventory semantics without reducing pagination accessibility coverage | current-state.md |
-| 943 | current release blocker and package-source reference coverage restored; 320px 200% focus ownership and desktop text-sentinel visibility repaired with independent Accessibility re-signoff still pending | current-state.md |
+| 943 | release blocker/package-source reference coverage restored; 320px 200% focus ownership and desktop text-sentinel visibility repaired; later exact visual review reopened Design | Step944/current-state.md |
+| 944 | exact 4162a99 Product/Visual VETO, Accessibility exact-Edge VETO, bounded last-moment Edge foreground reclaim, dirty 22/22 runner proof and return to three-direction mobile Design | Step945/current-state.md |
+| 945 | three-direction adjudication selects Incident-first Split Lens; rejects equal-weight object dashboard and unproven event timeline; clean isolated replacement boundary approved | current-state.md |
+| 946 | Incident Split Lens physical replacement, 667x375 false-green closure, current full63/responsive/a11y evidence and four-role local P0/P1/P2 closure; release remains closed | current-state.md |
 
 ## Reading rule
 

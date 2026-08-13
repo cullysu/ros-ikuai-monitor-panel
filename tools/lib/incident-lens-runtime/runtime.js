@@ -11,24 +11,24 @@ const {
 } = require("../../acceptance/accessibility-v2/runtime");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
-const CONTRACT = "optical-patrol-v1";
+const CONTRACT = "incident-split-lens-runtime-v1";
 const DEFAULT_VIEWPORT = { id: "phone390", width: 390, height: 844 };
-const ROOT = "[data-optical-patrol-root]";
-const EXPANDED_CLAIM = `${ROOT} [data-optical-patrol-expanded-claim]`;
-const CLAIM_CONTROL = `${ROOT} [data-optical-patrol-claim-control]`;
-const ACTION = `${ROOT} [data-optical-patrol-action]`;
-const ROUTE_TITLE = `${ROOT} [data-optical-patrol-route-title]`;
-const EVIDENCE_BOUNDARY = `${ROOT} [data-optical-patrol-evidence-boundary]`;
-const TRAFFIC_GEOMETRY = `${ROOT} [data-optical-patrol-traffic-geometry]`;
-const RESOURCE_GEOMETRY = `${ROOT} [data-optical-patrol-resource-geometry]`;
-const EVIDENCE_DECK = `${ROOT} [data-optical-patrol-evidence-deck]`;
-const OVERFLOW_CONTROL = `${ROOT} [data-optical-patrol-overflow-control]`;
-const OVERFLOW_CLAIM_CONTROL = `${ROOT} [data-optical-patrol-overflow-claim-control]`;
+const ROOT = "[data-incident-lens-root]";
+const EXPANDED_CLAIM = `${ROOT} [data-incident-lens-expanded-claim]`;
+const CLAIM_CONTROL = `${ROOT} [data-incident-lens-claim-control]`;
+const ACTION = `${ROOT} [data-incident-lens-action]`;
+const ROUTE_TITLE = `${ROOT} [data-incident-lens-route-title]`;
+const EVIDENCE_BOUNDARY = `${ROOT} [data-incident-lens-evidence-boundary]`;
+const TRAFFIC_GEOMETRY = `${ROOT} [data-incident-lens-traffic-geometry]`;
+const RESOURCE_GEOMETRY = `${ROOT} [data-incident-lens-resource-geometry]`;
+const EVIDENCE_DECK = `${ROOT} [data-incident-lens-evidence-deck]`;
+const OVERFLOW_CONTROL = `${ROOT} [data-incident-lens-overflow-control]`;
+const OVERFLOW_CLAIM_CONTROL = `${ROOT} [data-incident-lens-overflow-claim-control]`;
 
 const SCENE_CASES = Object.freeze([
   { id: "single", mockScenario: "", expectedScene: "single", expectedKind: "route", evidenceMode: "current" },
   { id: "fleet", mockScenario: "fleet-coverage", expectedScene: "fleet", expectedKind: "route", evidenceMode: "current" },
-  { id: "interfaces-down", mockScenario: "interfaces-down", expectedScene: "interfaces-down", expectedKind: "interface", evidenceMode: "current" },
+  { id: "interfaces-down", mockScenario: "interfaces-down", expectedScene: "interfaces-down", expectedKind: "interfaces", evidenceMode: "current" },
   { id: "resource-full", mockScenario: "resource-full", expectedScene: "resource-full", expectedKind: "resource", evidenceMode: "current" },
   { id: "collection-down", mockScenario: "collection-down", expectedScene: "collection-down", expectedKind: "collection", withdrawsCurrent: true },
   { id: "all-offline", mockScenario: "all-offline", expectedScene: "all-offline", expectedKind: "wan", evidenceMode: "current" },
@@ -70,13 +70,13 @@ function serialiseError(error) {
 
 function sceneCase(id) {
   const match = SCENE_CASES.find((candidate) => candidate.id === id);
-  assert(match, `Unknown Optical Patrol scene: ${id}`);
+  assert(match, `Unknown Incident Split Lens scene: ${id}`);
   return match;
 }
 
 function viewportProfile(id) {
   const match = GRID_VIEWPORTS.find((candidate) => candidate.id === id);
-  assert(match, `Unknown Optical Patrol viewport: ${id}`);
+  assert(match, `Unknown Incident Split Lens viewport: ${id}`);
   return match;
 }
 
@@ -106,8 +106,8 @@ async function openOverview(runtime, scene, viewport = DEFAULT_VIEWPORT) {
   await page.waitForFunction(
     ({ selector, expectedScenario, expectedScene }) => {
       const root = document.querySelector(selector);
-      return root?.getAttribute("data-optical-patrol-scenario") === expectedScenario
-        && root?.getAttribute("data-optical-patrol-scene") === expectedScene;
+      return root?.getAttribute("data-incident-lens-scenario") === expectedScenario
+        && root?.getAttribute("data-incident-lens-scene") === expectedScene;
     },
     { selector: ROOT, expectedScenario: descriptor.id, expectedScene: descriptor.expectedScene },
     { timeout: ACTION_TIMEOUT_MS },
@@ -115,7 +115,7 @@ async function openOverview(runtime, scene, viewport = DEFAULT_VIEWPORT) {
   return inspectRoot(page);
 }
 
-async function startOpticalPatrolRuntime(options = {}) {
+async function startIncidentLensRuntime(options = {}) {
   const runtime = await launchRuntime({ viewport: DEFAULT_VIEWPORT, ...options });
   try {
     await login(runtime.page, runtime.mock.url);
@@ -180,7 +180,7 @@ async function inspectRoot(page) {
     const control = (node, kind) => ({
       kind,
       id: node.id || "",
-      claimId: node.getAttribute("data-optical-patrol-claim-id") || "",
+      claimId: node.getAttribute("data-incident-lens-claim-id") || "",
       label: label(node),
       content: (node.textContent || "").replace(/\s+/g, " ").trim(),
       rect: rect(node),
@@ -228,13 +228,14 @@ async function inspectRoot(page) {
       return lines.sort((left, right) => left.top - right.top).map((line) => line.text);
     };
     const selected = root?.querySelector(selectors.expandedClaim) || null;
-    const selectedKind = selected?.getAttribute("data-optical-patrol-claim-kind") || "";
+    const selectedKind = selected?.getAttribute("data-incident-lens-claim-kind") || "";
     const selectedTrafficGeometry = selected?.querySelector(selectors.trafficGeometry) || null;
     const selectedDecisiveGeometry = selectedKind === "resource"
       ? selected?.querySelector(selectors.resourceGeometry)
       : selectedKind === "route"
         ? selectedTrafficGeometry || selected?.querySelector(selectors.routeGeometry)
-        : selected?.querySelector(selectors.relationship)
+        : selected?.querySelector("[data-incident-lens-impact]")
+          || selected?.querySelector(selectors.relationship)
           || [...(selected?.querySelectorAll(".op__proof-rail") || [])].at(-1)
           || null;
     const actions = root
@@ -258,33 +259,45 @@ async function inspectRoot(page) {
     const scopeFacts = root
       ? [...root.querySelectorAll(`${selectors.scopeFacts} > div`)].filter(visible)
       : [];
-    const evidenceDeckRows = evidenceDeck
-      ? [...evidenceDeck.querySelectorAll("li")].filter(visible)
+    const runtimeDeviceName = document.querySelector(".panel-runtime-bar-mobile .panel-runtime-device b");
+    const fleetSummary = root?.querySelector("[data-incident-lens-fleet-summary='true']") || null;
+    const evidenceDeckRows = root
+      ? [...root.querySelectorAll("[data-incident-lens-impact] dl > div, [data-incident-lens-evidence] dl > div, .incident-lens__tablet-support dl > div")].filter(visible)
+      : [];
+    const tabletCrosscheckRows = root
+      ? [...root.querySelectorAll("[data-incident-lens-tablet-crosscheck] article")].filter(visible)
+      : [];
+    const tabletAuditRows = root
+      ? [...root.querySelectorAll("[data-incident-lens-tablet-audit] dl > div")].filter(visible)
+      : [];
+    const tabletBasisRows = root
+      ? [...root.querySelectorAll("[data-incident-lens-tablet-basis] dl > div")].filter(visible)
       : [];
     const documentWidth = Math.max(
       document.documentElement.scrollWidth,
       document.body?.scrollWidth || 0,
     );
-    const historySelection = window.history.state?.panelOpticalPatrol;
+    const historySelection = window.history.state?.panelIncidentLens;
     return {
       viewport: { width: innerWidth, height: innerHeight },
       rootPresent: Boolean(root),
       rootRect: rect(root),
-      scenario: root?.getAttribute("data-optical-patrol-scenario") || "",
-      scene: root?.getAttribute("data-optical-patrol-scene") || "",
-      scale: root?.getAttribute("data-optical-patrol-scale") || "",
-      capability: root?.getAttribute("data-optical-patrol-capability") || "",
-      risk: root?.getAttribute("data-optical-patrol-risk") || "",
-      evidenceMode: root?.getAttribute("data-optical-patrol-evidence-mode") || "",
-      forbidsCurrent: root?.getAttribute("data-optical-patrol-forbids-current") || "",
-      runtimeManaged: root?.getAttribute("data-optical-patrol-runtime-managed") || "",
+      scenario: root?.getAttribute("data-incident-lens-scenario") || "",
+      scene: root?.getAttribute("data-incident-lens-scene") || "",
+      scale: root?.getAttribute("data-incident-lens-scale") || "",
+      capability: root?.getAttribute("data-incident-lens-capability") || "",
+      risk: root?.getAttribute("data-incident-lens-risk") || "",
+      evidenceMode: root?.getAttribute("data-incident-lens-evidence-mode") || "",
+      forbidsCurrent: root?.getAttribute("data-incident-lens-forbids-current") || "",
+      runtimeManaged: root?.getAttribute("data-incident-lens-runtime-managed") || "",
       overflowX: Math.max(0, documentWidth - innerWidth),
       selectedClaim: selected ? {
-        id: selected.getAttribute("data-optical-patrol-expanded-claim") || "",
+        id: selected.getAttribute("data-incident-lens-expanded-claim") || "",
         domId: selected.id || "",
-        kind: selected.getAttribute("data-optical-patrol-claim-kind") || "",
+        kind: selected.getAttribute("data-incident-lens-claim-kind") || "",
         text: label(selected),
         rect: rect(selected),
+        visibleRect: visibleRect(selected),
       } : null,
       selectedCriticalMeasurement: selectedTrafficGeometry ? {
         rect: rect(selectedTrafficGeometry),
@@ -297,6 +310,10 @@ async function inspectRoot(page) {
         text: label(selectedDecisiveGeometry),
       } : null,
       followups: followups.map((node) => control(node, "claim-selection")),
+      followupTitleLines: followups.map((node) => ({
+        content: label(node),
+        lines: renderedLines(node.querySelector(".incident-lens__followup-title")),
+      })),
       allFollowups: root
         ? [...root.querySelectorAll(selectors.claimControl)].map((node) => control(node, "claim-selection"))
         : [],
@@ -316,12 +333,19 @@ async function inspectRoot(page) {
         focused: document.activeElement === routeTitle,
         rect: rect(routeTitle),
       } : null,
+      runtimeDeviceName: runtimeDeviceName ? {
+        text: label(runtimeDeviceName),
+        lines: renderedLines(runtimeDeviceName),
+        rect: rect(runtimeDeviceName),
+        clipped: runtimeDeviceName.scrollWidth > runtimeDeviceName.clientWidth + 1,
+      } : null,
       navigation: navigation && visible(navigation) ? { rect: rect(navigation) } : null,
       scopeFacts: scopeFacts.map((node) => ({
         label: label(node.querySelector("dt")),
         value: label(node.querySelector("dd")),
         rect: rect(node),
       })),
+      fleetSummary: fleetSummary && visible(fleetSummary) ? label(fleetSummary) : "",
       trafficGeometryCount: root
         ? [...root.querySelectorAll(selectors.trafficGeometry)].filter(visible).length
         : 0,
@@ -332,10 +356,19 @@ async function inspectRoot(page) {
         visible: visible(evidenceDeck),
         rect: rect(evidenceDeck),
         rows: evidenceDeckRows.map((node) => ({
-          label: label(node.querySelector("small")),
-          value: label(node.querySelector("strong")),
+          label: label(node.querySelector("dt")),
+          value: label(node.querySelector("dd")),
         })),
       } : null,
+      tabletCrosscheckRows: tabletCrosscheckRows.map((node) => label(node)),
+      tabletAuditRows: tabletAuditRows.map((node) => ({
+        label: label(node.querySelector("dt")),
+        value: label(node.querySelector("dd")),
+      })),
+      tabletBasisRows: tabletBasisRows.map((node) => ({
+        label: label(node.querySelector("dt")),
+        value: label(node.querySelector("dd")),
+      })),
       text: label(root),
       historySelection: historySelection && typeof historySelection === "object" ? {
         version: historySelection.version,
@@ -354,32 +387,32 @@ async function inspectRoot(page) {
     };
   }, {
     root: ROOT,
-    expandedClaim: "[data-optical-patrol-expanded-claim]",
-    claimControl: "[data-optical-patrol-claim-control]",
-    action: "[data-optical-patrol-action]",
-    routeTitle: "[data-optical-patrol-route-title]",
-    evidenceBoundary: "[data-optical-patrol-evidence-boundary]",
-    trafficGeometry: "[data-optical-patrol-traffic-geometry]",
-    resourceGeometry: "[data-optical-patrol-resource-geometry]",
-    routeGeometry: "[data-optical-patrol-route-geometry]",
-    relationship: "[data-optical-patrol-relationship]",
-    evidenceDeck: "[data-optical-patrol-evidence-deck]",
+    expandedClaim: "[data-incident-lens-expanded-claim]",
+    claimControl: "[data-incident-lens-claim-control]",
+    action: "[data-incident-lens-action]",
+    routeTitle: "[data-incident-lens-route-title]",
+    evidenceBoundary: "[data-incident-lens-evidence-boundary]",
+    trafficGeometry: "[data-incident-lens-traffic-geometry]",
+    resourceGeometry: "[data-incident-lens-resource-geometry]",
+    routeGeometry: "[data-incident-lens-route-geometry]",
+    relationship: "[data-incident-lens-relationship]",
+    evidenceDeck: "[data-incident-lens-evidence-deck]",
     navigation: ".panel-task-navigation",
-    scopeFacts: "[data-optical-patrol-scope-facts]",
-    overflowControl: "[data-optical-patrol-overflow-control]",
-    overflowClaimControl: "[data-optical-patrol-overflow-claim-control]",
+    scopeFacts: "[data-incident-lens-scope-facts]",
+    overflowControl: "[data-incident-lens-overflow-control]",
+    overflowClaimControl: "[data-incident-lens-overflow-claim-control]",
   });
 }
 
 function claimDomId(claimId) {
-  return `optical-claim-${encodeURIComponent(claimId)}`;
+  return `incident-lens-claim-${encodeURIComponent(claimId)}`;
 }
 
 async function waitForSelectedClaim(page, claimId, { focused = false } = {}) {
   await page.waitForFunction(
     ({ selector, expected, expectedDomId, requireFocus }) => {
       const selected = document.querySelector(selector);
-      if (selected?.getAttribute("data-optical-patrol-expanded-claim") !== expected) return false;
+      if (selected?.getAttribute("data-incident-lens-expanded-claim") !== expected) return false;
       return !requireFocus || document.activeElement?.id === expectedDomId;
     },
     {
@@ -395,19 +428,19 @@ async function waitForSelectedClaim(page, claimId, { focused = false } = {}) {
 async function waitForSelectedClaimChange(page, previousId) {
   await page.waitForFunction(
     ({ selector, previous }) => {
-      const current = document.querySelector(selector)?.getAttribute("data-optical-patrol-expanded-claim");
+      const current = document.querySelector(selector)?.getAttribute("data-incident-lens-expanded-claim");
       return Boolean(current && current !== previous);
     },
     { selector: EXPANDED_CLAIM, previous: previousId },
     { timeout: ACTION_TIMEOUT_MS },
   );
-  const claimId = await page.locator(EXPANDED_CLAIM).getAttribute("data-optical-patrol-expanded-claim");
-  assert(claimId, "Optical Patrol did not expose the newly selected claim id");
+  const claimId = await page.locator(EXPANDED_CLAIM).getAttribute("data-incident-lens-expanded-claim");
+  assert(claimId, "Incident Split Lens did not expose the newly selected claim id");
   await waitForSelectedClaim(page, claimId, { focused: true });
   return claimId;
 }
 
-function acceptanceDirectory(name = "optical-patrol-runtime") {
+function acceptanceDirectory(name = "incident-lens-runtime") {
   const directory = path.join(REPO_ROOT, "_acceptance", name);
   fs.mkdirSync(directory, { recursive: true });
   return directory;
@@ -418,7 +451,7 @@ function screenshotFilename(scene, viewport) {
 }
 
 async function captureOriginal(page, scene, viewport) {
-  const directory = acceptanceDirectory(path.join("optical-patrol-runtime", "originals"));
+  const directory = acceptanceDirectory(path.join("incident-lens-runtime", "originals"));
   const screenshotPath = path.join(directory, screenshotFilename(scene, viewport));
   await page.screenshot({ path: screenshotPath, fullPage: false, animations: "disabled" });
   return screenshotPath;
@@ -464,7 +497,7 @@ module.exports = {
   runBounded,
   sceneCase,
   serialiseError,
-  startOpticalPatrolRuntime,
+  startIncidentLensRuntime,
   viewportProfile,
   waitForSelectedClaim,
   waitForSelectedClaimChange,

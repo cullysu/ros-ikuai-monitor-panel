@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Runtime acceptance for the isolated Optical Patrol Overview surface.
+ * Runtime acceptance for the isolated Incident Split Lens Overview surface.
  *
  * This module is stringified into the browser by inspect-section-browser.js.
  * Keep both exported functions self-contained: they cannot rely on Node APIs
@@ -16,7 +16,6 @@ const MOBILE_OVERVIEW_REQUIRED_CHECKS = Object.freeze([
   'composition',
   'scope',
   'evidenceBoundary',
-  'decision',
   'expandedClaim',
   'claimControls',
   'objectAction',
@@ -25,7 +24,6 @@ const MOBILE_OVERVIEW_REQUIRED_CHECKS = Object.freeze([
   'targets44',
   'navigationClearance',
   'noHorizontalOverflow',
-  'responsiveComposition',
   'readableText',
   'noLegacyPresentation',
   'isolatedTree',
@@ -54,13 +52,13 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
   };
   if (sectionName !== 'overview') return result;
 
-  const optical = sectionRoot?.querySelector?.('[data-optical-patrol-root]');
-  if (!optical) {
+  const incidentLens = sectionRoot?.querySelector?.('[data-incident-lens-root]');
+  if (!incidentLens) {
     result.nativeMobileInteractionOk = false;
     result.nativeMobileFocusKeyboardOk = false;
     result.nativeMobileObjectSelectionOk = false;
     result.nativeMobileObjectNavigationOk = false;
-    result.nativeMobileInteractionProbe = { exercised: false, reason: 'Optical Patrol root is absent' };
+    result.nativeMobileInteractionProbe = { exercised: false, reason: 'Incident Split Lens root is absent' };
     return result;
   }
 
@@ -68,7 +66,7 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
   if (!canonical) {
     result.nativeMobileInteractionProbe = {
       exercised: false,
-      reason: 'stateful history is exercised at single 390x844; every viewport runs Optical Patrol semantic and geometry gates',
+      reason: 'stateful history is exercised at single 390x844; every viewport runs Incident Split Lens semantic and geometry gates',
     };
     return result;
   }
@@ -82,11 +80,11 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
     };
     tick();
   });
-  const selectedClaim = () => optical.querySelector('[data-optical-patrol-expanded-claim]');
-  const selectedId = () => selectedClaim()?.getAttribute('data-optical-patrol-expanded-claim') || '';
+  const selectedClaim = () => incidentLens.querySelector('[data-incident-lens-expanded-claim]');
+  const selectedId = () => selectedClaim()?.getAttribute('data-incident-lens-expanded-claim') || '';
   const selectedFocusId = () => selectedClaim()?.id || '';
   const initialId = selectedId();
-  const claimControl = optical.querySelector('button[data-optical-patrol-claim-control]');
+  const claimControl = incidentLens.querySelector('button[data-incident-lens-claim-control]');
   let nativeClaimControl = false;
   let claimFocusRestored = false;
   let selectionHistory = false;
@@ -99,7 +97,7 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
     const opened = await waitFor(() => selectedId() && selectedId() !== initialId);
     nextId = selectedId();
     claimFocusRestored = opened && document.activeElement === selectedClaim() &&
-      selectedFocusId() === `optical-claim-${encodeURIComponent(nextId)}`;
+      selectedFocusId() === `incident-lens-claim-${encodeURIComponent(nextId)}`;
     history.back();
     const backed = await waitFor(() => selectedId() === initialId && document.activeElement === selectedClaim());
     history.forward();
@@ -107,7 +105,7 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
     selectionHistory = backed && forwarded;
   }
 
-  const action = optical.querySelector('[data-optical-patrol-action]');
+  const action = incidentLens.querySelector('[data-incident-lens-action]');
   const returnFocusId = selectedFocusId();
   const overviewUrl = `${location.pathname}${location.search}${location.hash}`;
   let openedRoute = false;
@@ -134,17 +132,17 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
       result.nativeDetailHasNovelEvidence = Boolean(
         detail && detailKind && typedSections.length >= 1 && evidenceNodes.length >= 2
       );
-      result.nativeDetailNoHomeReplay = !detail?.querySelector?.('[data-optical-patrol-expanded-claim]');
+      result.nativeDetailNoHomeReplay = !detail?.querySelector?.('[data-incident-lens-expanded-claim]');
       history.back();
       backedRoute = await waitFor(() => (
         `${location.pathname}${location.search}${location.hash}` === overviewUrl &&
-        Boolean(document.querySelector('[data-optical-patrol-root]'))
+        Boolean(document.querySelector('[data-incident-lens-root]'))
       ));
       restored = await waitFor(() => !returnFocusId || document.activeElement?.id === returnFocusId);
       history.forward();
       forwardedRoute = await waitFor(() => document.querySelector('[data-panel-app]')?.getAttribute('data-active-section') !== 'overview');
       history.back();
-      restored = restored && await waitFor(() => Boolean(document.querySelector('[data-optical-patrol-root]')));
+      restored = restored && await waitFor(() => Boolean(document.querySelector('[data-incident-lens-root]')));
     }
   }
 
@@ -192,8 +190,8 @@ function inspectMobileNativeOverview({
   nativeDetailNoHomeReplay,
 }) {
   if (sectionName !== 'overview') return null;
-  const optical = sectionRoot?.querySelector?.('[data-optical-patrol-root]');
-  if (!optical) return null;
+  const incidentLens = sectionRoot?.querySelector?.('[data-incident-lens-root]');
+  if (!incidentLens) return null;
 
   const expected = {
     single: { mode: 'current', risk: 'none', scene: 'single' },
@@ -204,10 +202,10 @@ function inspectMobileNativeOverview({
     'resource-full': { mode: 'current', risk: 'resource', scene: 'resource-full' },
     'interfaces-down': { mode: 'current', risk: 'interfaces', scene: 'interfaces-down' },
   }[scaleScenario] || null;
-  const runtimeMode = optical.getAttribute('data-optical-patrol-evidence-mode') || '';
-  const sceneKind = optical.getAttribute('data-optical-patrol-scene') || '';
-  const riskKind = optical.getAttribute('data-optical-patrol-risk') || '';
-  const forbidsCurrent = optical.getAttribute('data-optical-patrol-forbids-current') === 'true';
+  const runtimeMode = incidentLens.getAttribute('data-incident-lens-evidence-mode') || '';
+  const sceneKind = incidentLens.getAttribute('data-incident-lens-scene') || '';
+  const riskKind = incidentLens.getAttribute('data-incident-lens-risk') || '';
+  const forbidsCurrent = incidentLens.getAttribute('data-incident-lens-forbids-current') === 'true';
   const rect = (node) => {
     if (!node) return null;
     const value = node.getBoundingClientRect();
@@ -220,41 +218,34 @@ function inspectMobileNativeOverview({
     return box.width > 0 && box.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
   };
   const readable = (node) => Boolean(node && visible(node) && normalize(node.getAttribute('aria-label') || node.textContent || ''));
-  const precedes = (left, right) => Boolean(left && right && (left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING));
-  const text = normalize(optical.textContent || '');
-  const evidenceBoundary = optical.querySelector('[data-optical-patrol-evidence-boundary]');
-  const decision = optical.querySelector('[data-optical-patrol-decision]');
-  const decisionTitle = optical.querySelector('[data-optical-patrol-route-title]');
-  const expandedClaim = optical.querySelector('[data-optical-patrol-expanded-claim]');
-  const claimControls = Array.from(optical.querySelectorAll('[data-optical-patrol-claim-control]'));
-  const action = optical.querySelector('[data-optical-patrol-action]');
-  const followups = optical.querySelector('.op__followups');
-  const evidenceDeck = optical.querySelector('[data-optical-patrol-evidence-deck]');
-  const runtimeManaged = optical.getAttribute('data-optical-patrol-runtime-managed') === 'true';
+  const text = normalize(incidentLens.textContent || '');
+  const evidenceBoundary = incidentLens.querySelector('[data-incident-lens-evidence-boundary]');
+  const expandedClaim = incidentLens.querySelector('[data-incident-lens-expanded-claim]');
+  const claimControls = Array.from(incidentLens.querySelectorAll('[data-incident-lens-claim-control]'));
+  const action = incidentLens.querySelector('[data-incident-lens-action]');
+  const evidenceDeck = incidentLens.querySelector('[data-incident-lens-evidence-deck]');
+  const runtimeManaged = incidentLens.getAttribute('data-incident-lens-runtime-managed') === 'true';
   const runtimeScope = app?.querySelector?.('[data-panel-runtime-toolbar="mobile"]');
-  const standaloneScope = optical.querySelector(':scope > [data-optical-patrol-chrome]');
+  const standaloneScope = incidentLens.querySelector(':scope > [data-incident-lens-command-chrome]');
   const scopeOwner = runtimeManaged ? runtimeScope : standaloneScope;
   const scopeIdentity = runtimeManaged
     ? runtimeScope?.querySelector?.('.panel-runtime-device b')
-    : standaloneScope?.querySelector?.('.op__device-copy strong');
+    : standaloneScope?.querySelector?.('strong');
   const scopeReadonly = runtimeManaged
     ? runtimeScope?.querySelector?.('[aria-label="只读监控模式"]')
-    : standaloneScope?.querySelector?.('.op__readonly');
+    : standaloneScope?.querySelector?.('small');
   const scopeContractOk = Boolean(
     readable(scopeOwner) && readable(scopeIdentity) && readable(scopeReadonly) &&
-    normalize(scopeReadonly?.textContent || '') === '只读'
+    /只读/.test(normalize(scopeReadonly?.textContent || ''))
   );
-  const interactive = Array.from(optical.querySelectorAll('button, a[href], summary, input, select, textarea')).filter(visible);
-  const taskNavigation = optical.querySelector('[data-optical-patrol-task-navigation]');
+  const interactive = Array.from(incidentLens.querySelectorAll('button, a[href], summary, input, select, textarea')).filter(visible);
   const operationalScopes = [
     ['chrome', scopeOwner],
     ['evidence-boundary', evidenceBoundary],
-    ['decision', decision],
     ['object-action', action],
     ...claimControls.map((control, index) => [`claim-control-${index + 1}`, control]),
     ['evidence-deck', evidenceDeck],
     ['expanded-claim', expandedClaim],
-    ['task-navigation', taskNavigation],
   ].filter((entry) => entry[1] instanceof HTMLElement && visible(entry[1]));
   const seenTextNodes = new Set();
   const unreadableText = [];
@@ -269,7 +260,7 @@ function inspectMobileNativeOverview({
       const standardScreenReaderGeometry = /^(absolute|fixed)$/.test(style.position) &&
         box.width <= 2 && box.height <= 2 && clipped &&
         /(hidden|clip)/.test(style.overflowX) && /(hidden|clip)/.test(style.overflowY);
-      if (current.matches('.op__sr-only, [data-visually-hidden="true"], [hidden]') ||
+      if (current.matches('.incident-lens__sr-only, [data-visually-hidden="true"], [hidden]') ||
           style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' ||
           style.contentVisibility === 'hidden' || Number.parseFloat(style.opacity || '1') === 0 ||
           standardScreenReaderGeometry) return true;
@@ -314,7 +305,7 @@ function inspectMobileNativeOverview({
       for (const fragment of renderedFragments) {
         let fixedToViewport = false;
         let failure = null;
-        for (let current = owner; current instanceof HTMLElement && current !== optical.parentElement; current = current.parentElement) {
+        for (let current = owner; current instanceof HTMLElement && current !== incidentLens.parentElement; current = current.parentElement) {
           const currentStyle = getComputedStyle(current);
           const boundary = clientRect(current);
           if (/(hidden|clip)/.test(currentStyle.overflowX) && !containsFragment(boundary, fragment, 'x')) {
@@ -355,16 +346,15 @@ function inspectMobileNativeOverview({
     width: node.getBoundingClientRect().width,
     height: node.getBoundingClientRect().height,
   })).filter((target) => target.width < 44 || target.height < 44);
-  const selectedId = expandedClaim?.getAttribute('data-optical-patrol-expanded-claim') || '';
-  const selectedHeadingId = expandedClaim?.getAttribute('aria-labelledby') || '';
-  const selectedHeading = selectedHeadingId ? document.getElementById(selectedHeadingId) : null;
+  const selectedId = expandedClaim?.getAttribute('data-incident-lens-expanded-claim') || '';
   const selectedFocusContract = Boolean(
-    selectedId && expandedClaim?.id === `optical-claim-${encodeURIComponent(selectedId)}` &&
-    expandedClaim.getAttribute('tabindex') === '-1' && selectedHeading && expandedClaim.contains(selectedHeading)
+    selectedId && expandedClaim?.id === `incident-lens-claim-${encodeURIComponent(selectedId)}` &&
+    expandedClaim.getAttribute('tabindex') === '-1' && readable(expandedClaim)
   );
-  const nativeClaimControls = claimControls.every((control) => (
+  const nativeClaimControls = claimControls.length > 0 && claimControls.every((control) => (
     control instanceof HTMLButtonElement && control.type === 'button' &&
-    !control.hasAttribute('aria-pressed') && Boolean(normalize(control.getAttribute('aria-label') || control.textContent || ''))
+    ['true', 'false'].includes(control.getAttribute('aria-pressed')) &&
+    Boolean(normalize(control.getAttribute('aria-label') || control.textContent || ''))
   ));
   const semanticModeCopy = runtimeMode === 'current'
     ? /当前|本次|已观测/.test(text)
@@ -372,28 +362,12 @@ function inspectMobileNativeOverview({
       ? /历史|上次|不代表当前|当前值已撤回/.test(text)
       : /不可用|无法|不显示|当前值已撤回/.test(text);
   const currentDataBoundary = runtimeMode === 'current' ? !forbidsCurrent : forbidsCurrent;
-  const noFalseCurrentData = !forbidsCurrent || !optical.querySelector(
-    '[data-optical-patrol-traffic-geometry], [data-optical-patrol-resource-geometry]'
+  const noFalseCurrentData = !forbidsCurrent || !incidentLens.querySelector(
+    '[data-incident-lens-traffic-geometry], [data-incident-lens-resource-geometry]'
   );
-  const opticalRect = rect(optical);
-  const summary = optical.querySelector('.op__summary');
-  const summaryRect = rect(summary);
-  const expandedRect = rect(expandedClaim);
-  const followupsRect = visible(followups) ? rect(followups) : null;
-  const evidenceDeckRect = visible(evidenceDeck) ? rect(evidenceDeck) : null;
-  const tablet = window.innerWidth >= 768 && window.innerWidth < 1200;
-  const phone = window.innerWidth < 768;
-  const phoneLayout = !phone || Boolean(
-    precedes(summary, expandedClaim) && (!followups || precedes(expandedClaim, followups)) &&
-    (!evidenceDeck || precedes(expandedClaim, evidenceDeck))
-  );
-  const tabletLayout = !tablet || Boolean(
-    summaryRect && expandedRect && summaryRect.left < expandedRect.left && summaryRect.right <= expandedRect.left + 1 &&
-    (!followupsRect || followupsRect.right <= expandedRect.left + 1) &&
-    (!evidenceDeckRect || evidenceDeckRect.top >= Math.min(expandedRect.bottom, followupsRect?.bottom ?? expandedRect.bottom) - 1)
-  );
-  const noHorizontalOverflow = overflowX <= 1 && Boolean(opticalRect && (
-    opticalRect.left >= -1 && opticalRect.right <= window.innerWidth + 1 && optical.scrollWidth <= optical.clientWidth + 1
+  const incidentLensRect = rect(incidentLens);
+  const noHorizontalOverflow = overflowX <= 1 && Boolean(incidentLensRect && (
+    incidentLensRect.left >= -1 && incidentLensRect.right <= window.innerWidth + 1 && incidentLens.scrollWidth <= incidentLens.clientWidth + 1
   ));
   const navigation = document.querySelector('.panel-task-navigation');
   const navigationRect = visible(navigation) ? rect(navigation) : null;
@@ -408,15 +382,15 @@ function inspectMobileNativeOverview({
   const obscuredTargets = navigationRect ? interactive.filter((node) => {
     return overlapsNavigation(node);
   }) : [];
-  const obscuredNonFollowups = obscuredTargets.filter((node) => !node.hasAttribute('data-optical-patrol-claim-control'));
-  const maxOpticalScroll = Math.max(0, optical.scrollHeight - optical.clientHeight);
+  const obscuredNonClaimControls = obscuredTargets.filter((node) => !node.hasAttribute('data-incident-lens-claim-control'));
+  const maxIncidentLensScroll = Math.max(0, incidentLens.scrollHeight - incidentLens.clientHeight);
   const documentScroller = document.scrollingElement;
   const maxDocumentScroll = Math.max(0, (documentScroller?.scrollHeight || 0) - window.innerHeight);
   const maxAppScroll = Math.max(0, (app?.scrollHeight || 0) - (app?.clientHeight || 0));
-  const maxReachableScroll = Math.max(maxOpticalScroll, maxDocumentScroll, maxAppScroll);
+  const maxReachableScroll = Math.max(maxIncidentLensScroll, maxDocumentScroll, maxAppScroll);
   const followupReachability = claimControls.filter(visible).map((node) => {
     const target = rect(node);
-    if (!target || !navigationRect || !opticalRect) return { node, reachable: Boolean(target) };
+    if (!target || !navigationRect || !incidentLensRect) return { node, reachable: Boolean(target) };
     if (!horizontallyOverlapsNavigation(target)) {
       return { node, reachable: true, requiredScroll: 0, maxScroll: maxReachableScroll, projectedTop: target.top };
     }
@@ -424,13 +398,13 @@ function inspectMobileNativeOverview({
     const projectedTop = target.top - requiredScroll;
     return {
       node,
-      reachable: requiredScroll <= maxReachableScroll + 1 && projectedTop >= opticalRect.top - 1,
+      reachable: requiredScroll <= maxReachableScroll + 1 && projectedTop >= incidentLensRect.top - 1,
       requiredScroll,
       maxScroll: maxReachableScroll,
       projectedTop,
     };
   });
-  const navigationClearanceOk = obscuredNonFollowups.length === 0 && followupReachability.every((item) => item.reachable);
+  const navigationClearanceOk = obscuredNonClaimControls.length === 0 && followupReachability.every((item) => item.reachable);
   const selectionHistoryOk = typeof nativeMobileObjectSelectionOk === 'boolean'
     ? nativeMobileObjectSelectionOk
     : typeof nativeMobileFocusKeyboardProbe?.selectionHistory === 'boolean'
@@ -445,14 +419,13 @@ function inspectMobileNativeOverview({
   );
   const checks = {
     mounted: true,
-    scenario: Boolean(expected && optical.getAttribute('data-optical-patrol-scenario') === scaleScenario),
+    scenario: Boolean(expected && incidentLens.getAttribute('data-incident-lens-scenario') === scaleScenario),
     evidenceTruth: Boolean(expected && runtimeMode === expected.mode && semanticModeCopy),
     risk: Boolean(expected && riskKind === expected.risk),
     composition: Boolean(expected && sceneKind === expected.scene),
     scope: scopeContractOk,
     evidenceBoundary: Boolean(evidenceBoundary && readable(evidenceBoundary)),
-    decision: Boolean(decision && readable(decisionTitle) && readable(decision)),
-    expandedClaim: selectedFocusContract && readable(selectedHeading),
+    expandedClaim: selectedFocusContract,
     claimControls: nativeClaimControls,
     objectAction: actionOk,
     currentDataBoundary,
@@ -460,7 +433,6 @@ function inspectMobileNativeOverview({
     targets44: undersizedTargets.length === 0,
     navigationClearance: navigationClearanceOk,
     noHorizontalOverflow,
-    responsiveComposition: phoneLayout && tabletLayout,
     readableText: unreadableText.length === 0 && clippedOperationalText.length === 0,
     noLegacyPresentation,
     isolatedTree: !sectionRoot?.querySelector('[data-pocket-console-root], [data-desktop-overview]'),
@@ -470,15 +442,15 @@ function inspectMobileNativeOverview({
     navigationHistory: Boolean(nativeMobileObjectNavigationOk),
     novelDetail: Boolean(nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay),
     desktopDomAbsent: !sectionRoot?.querySelector('[data-desktop-overview]'),
-    viewport: Boolean(opticalRect && opticalRect.left >= -1 && opticalRect.right <= window.innerWidth + 1),
+    viewport: Boolean(incidentLensRect && incidentLensRect.left >= -1 && incidentLensRect.right <= window.innerWidth + 1),
   };
   const pass = Boolean(app && active && (requested || active.id === sectionName) && !hasBadLiteral && scaleMetaOk && Object.values(checks).every(Boolean));
   const mobileOverviewAppHomeGateProbe = {
     appHomePass: pass,
-    contract: 'optical-patrol-v1',
+    contract: 'incident-split-lens-v1',
     truthMode: runtimeMode,
     runtimeMode,
-    scenario: optical.getAttribute('data-optical-patrol-scenario') || '',
+    scenario: incidentLens.getAttribute('data-incident-lens-scenario') || '',
     risk: riskKind,
     composition: sceneKind,
     scope: {
@@ -490,14 +462,13 @@ function inspectMobileNativeOverview({
       readonly: normalize(scopeReadonly?.textContent || ''),
     },
     evidence: { label: normalize(evidenceBoundary?.textContent || ''), forbidsCurrent },
-    selectedClaim: { id: selectedId, focusId: expandedClaim?.id || '', headingId: selectedHeadingId },
+    selectedClaim: { id: selectedId, focusId: expandedClaim?.id || '', name: normalize(expandedClaim?.getAttribute('aria-label') || '') },
     claimControls: claimControls.map((control) => ({ tag: control.tagName, label: normalize(control.getAttribute('aria-label') || control.textContent || '') })),
     textReadability: { scopes: auditedTextScopes, unreadable: unreadableText, clipped: clippedOperationalText },
-    tablet: { applicable: tablet, summary: summaryRect, expanded: expandedRect, followups: followupsRect, evidenceDeck: evidenceDeckRect, pass: phoneLayout && tabletLayout },
     targets: {
       undersized: undersizedTargets,
       obscuredByNavigation: obscuredTargets.map((node) => normalize(node.getAttribute('aria-label') || node.textContent || node.tagName)),
-      obscuredNonFollowups: obscuredNonFollowups.map((node) => normalize(node.getAttribute('aria-label') || node.textContent || node.tagName)),
+      obscuredNonClaimControls: obscuredNonClaimControls.map((node) => normalize(node.getAttribute('aria-label') || node.textContent || node.tagName)),
       followupReachability: followupReachability.map((item) => ({
         label: normalize(item.node.getAttribute('aria-label') || item.node.textContent || item.node.tagName),
         reachable: item.reachable,

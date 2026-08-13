@@ -20,10 +20,10 @@ const runtimeSource = source('src/panel-framework/runtime/usePanelRuntime.ts');
 const chromeSource = source('src/panel-framework/runtime/PanelRuntimeChrome.tsx');
 const indexSource = source('public/index.html');
 const sectionChartSource = source('src/panel-framework/sections/SectionTimeSeriesChart.tsx');
-const opticalPatrolSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrol.tsx');
-const opticalPatrolModelSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/buildOpticalPatrolModel.ts');
-const opticalPatrolClaimSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolClaim.tsx');
-const opticalPatrolEvidenceDeckSource = source('src/panel-framework/overview/mobile-overview/optical-patrol/OpticalPatrolEvidenceDeck.tsx');
+const incidentLensSource = source('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx');
+const incidentLensModelSource = source('src/panel-framework/overview/mobile-overview/incident-lens/buildIncidentLensModel.ts');
+const patrolLensSource = source('src/panel-framework/overview/mobile-overview/incident-lens/PatrolLens.tsx');
+const incidentWorkspaceSource = source('src/panel-framework/overview/mobile-overview/incident-lens/IncidentWorkspace.tsx');
 const sectionModelSource = source('src/panel-framework/sections/sectionModels.ts');
 const resourceHistorySource = source('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts');
 const resourceTimeSeriesSource = source('src/panel-framework/sections/resourceTimeSeries.ts');
@@ -32,8 +32,8 @@ const apiSchemaSource = source('panel_backend/api_schema.py');
 const browserGateSource = source('tools/check-panel-runtime-browser.js');
 const browserLifecycleSource = source('tools/check-runtime-browser-lifecycle.js');
 const browserLifecycleV2Source = source('tools/acceptance/browser-lifecycle-v2/browser-lifecycle.js');
-const opticalPatrolRuntimeSource = source('tools/check-optical-patrol-runtime.js');
-const opticalPatrolRuntimeOwnerSource = source('tools/lib/optical-patrol-runtime/runtime.js');
+const incidentLensRuntimeSource = source('tools/check-incident-lens-runtime.js');
+const incidentLensRuntimeOwnerSource = source('tools/lib/incident-lens-runtime/runtime.js');
 const tabletRiskFocusSource = source('tools/check-tablet-risk-focus.js');
 const desktopBrowserGateSource = source('tools/check-resource-trend-balance.js');
 const desktopRuntimeWrapperSource = [
@@ -104,22 +104,22 @@ check(
   'shared section chart evidence must preserve aspect ratio, retain time/unit labels, and expose summaries'
 );
 check(
-  'Optical Patrol is the only current mobile overview owner and withdraws non-current data',
-  opticalPatrolSource.includes('data-optical-patrol-root') &&
-    opticalPatrolSource.includes('data-optical-patrol-evidence-mode') &&
-    opticalPatrolSource.includes('data-optical-patrol-forbids-current') &&
-    opticalPatrolClaimSource.includes('data-optical-patrol-expanded-claim') &&
-    opticalPatrolClaimSource.includes('data-optical-patrol-action') &&
-    opticalPatrolEvidenceDeckSource.includes('data-optical-patrol-evidence-deck') &&
-    opticalPatrolModelSource.includes('buildOpticalPatrolModel') &&
-    /forbidsCurrentData:\s*evidence\.evidenceMode\s*!==\s*"current"/.test(opticalPatrolModelSource) &&
+  'Incident Split Lens is the only current mobile overview owner and withdraws non-current data',
+  incidentLensSource.includes('data-incident-lens-root') &&
+    incidentLensSource.includes('data-incident-lens-evidence-mode') &&
+    incidentLensSource.includes('data-incident-lens-forbids-current') &&
+    patrolLensSource.includes('data-incident-lens-patrol') &&
+    incidentWorkspaceSource.includes('data-incident-lens-impact') &&
+    incidentWorkspaceSource.includes('data-incident-lens-evidence') &&
+    incidentLensModelSource.includes('buildIncidentLensModel') &&
+    /currentNumbersAllowed:\s*evidence\.evidenceMode\s*===\s*"current"/.test(incidentLensModelSource) &&
     !/PocketConsole|pocketConsole|data-pocket|MobileLinkboard|NativeOperationsCanvas/.test([
-      opticalPatrolSource,
-      opticalPatrolClaimSource,
-      opticalPatrolEvidenceDeckSource,
-      opticalPatrolModelSource,
+      incidentLensSource,
+      patrolLensSource,
+      incidentWorkspaceSource,
+      incidentLensModelSource,
     ].join('\n')),
-  'Optical Patrol must expose claim/evidence current-data boundaries without retaining Pocket, Linkboard, or Native Operations Canvas ownership'
+  'Incident Split Lens must expose patrol/impact/evidence current-data boundaries without retaining rejected presentation ownership'
 );
 check(
   'resource visualization requires timestamped samples',
@@ -179,17 +179,17 @@ check(
   'the runtime gate must verify process completion separately from report contents'
 );
 check(
-  'Optical Patrol incident priority and short-phone visibility are independently gated',
-  opticalPatrolRuntimeSource.includes('SHORT_PHONE_INCIDENT_SCENES') &&
-    opticalPatrolRuntimeSource.includes('incident object action') &&
-    opticalPatrolRuntimeSource.includes('Scale facts must not decorate single or incident scenes') &&
-    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "interfaces-down"') &&
-    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "resource-full"') &&
-    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "collection-down"') &&
-    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "all-offline"') &&
-    opticalPatrolRuntimeOwnerSource.includes('expectedScene: "no-snapshot"') &&
-    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-runtime.js'),
-  'the current mobile owner must prove incident-first semantics and unobscured short-phone actions'
+  'Incident Split Lens incident priority and short-phone visibility are independently gated',
+  incidentLensRuntimeSource.includes('SHORT_PHONE_INCIDENT_SCENES') &&
+    incidentWorkspaceSource.includes('data-incident-lens-impact') &&
+    incidentWorkspaceSource.includes('data-incident-lens-evidence') &&
+    incidentLensRuntimeOwnerSource.includes('expectedScene: "interfaces-down"') &&
+    incidentLensRuntimeOwnerSource.includes('expectedScene: "resource-full"') &&
+    incidentLensRuntimeOwnerSource.includes('expectedScene: "collection-down"') &&
+    incidentLensRuntimeOwnerSource.includes('expectedScene: "all-offline"') &&
+    incidentLensRuntimeOwnerSource.includes('expectedScene: "no-snapshot"') &&
+    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-runtime.js'),
+  'the current mobile owner must prove incident split semantics and unobscured short-phone investigation'
 );
 check(
   'the public release aggregate executes the release blocker and its file-reference regression',
@@ -205,26 +205,30 @@ check(
   'the tablet risk-object focus must remain an explicit regression contract'
 );
 check(
-  'runtime browser invokes the current Optical Patrol aggregate exactly once',
+  'runtime browser invokes the current Incident Split Lens aggregate exactly once',
   packageJson.scripts['check:mobile-linkboard'] === undefined &&
     packageJson.scripts['check:mobile-pocket-console'] === undefined &&
-    typeof packageJson.scripts['check:mobile-optical-patrol'] === 'string' &&
-    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-model.js') &&
-    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-architecture.js') &&
-    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-accessibility-static.js') &&
-    packageJson.scripts['check:mobile-optical-patrol'].includes('tools/check-optical-patrol-runtime.js') &&
-    (packageJson.scripts['check:runtime-browser'].match(/check:mobile-optical-patrol/g) || []).length === 1,
-  'the current Optical Patrol aggregate must include model, semantic architecture, accessibility-static, and runtime checks exactly once without retaining Pocket/Linkboard command aliases'
+    packageJson.scripts['check:mobile-optical-patrol'] === undefined &&
+    typeof packageJson.scripts['check:mobile-incident-lens'] === 'string' &&
+    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-contract.js') &&
+    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-model.js') &&
+    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-architecture.js') &&
+    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-accessibility-static.js') &&
+    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-runtime.js') &&
+    (packageJson.scripts['check:runtime-browser'].match(/check:mobile-incident-lens/g) || []).length === 1,
+  'the current Incident Split Lens aggregate must include static contract, model, architecture, accessibility, and runtime checks exactly once'
 );
 check(
-  'the current Optical Patrol runtime owns its report namespace and the retired Pocket runtime is absent',
-  fs.existsSync(path.join(root, 'tools', 'check-optical-patrol-runtime.js')) &&
-    fs.existsSync(path.join(root, 'tools', 'lib', 'optical-patrol-runtime', 'runtime.js')) &&
-    source('tools/check-optical-patrol-runtime.js').includes('source: "optical-patrol-runtime"') &&
-    source('tools/lib/optical-patrol-runtime/runtime.js').includes('acceptanceDirectory(name = "optical-patrol-runtime")') &&
+  'the current Incident Split Lens runtime owns its report namespace and retired mobile runtimes are absent',
+  fs.existsSync(path.join(root, 'tools', 'check-incident-lens-runtime.js')) &&
+    fs.existsSync(path.join(root, 'tools', 'lib', 'incident-lens-runtime', 'runtime.js')) &&
+    source('tools/check-incident-lens-runtime.js').includes('source: "incident-lens-runtime"') &&
+    source('tools/lib/incident-lens-runtime/runtime.js').includes('acceptanceDirectory(name = "incident-lens-runtime")') &&
+    !fs.existsSync(path.join(root, 'tools', 'check-optical-patrol-runtime.js')) &&
+    !fs.existsSync(path.join(root, 'tools', 'lib', 'optical-patrol-runtime', 'runtime.js')) &&
     !fs.existsSync(path.join(root, 'tools', 'check-pocket-console-runtime.js')) &&
     !fs.existsSync(path.join(root, 'tools', 'lib', 'pocket-console-runtime', 'runtime.js')),
-  'the release runtime must use only the Optical Patrol report namespace; Pocket runtime files are historical artifacts, not executable gates'
+  'the release runtime must use only the Incident Split Lens report namespace; rejected runtime owners must not remain executable'
 );
 check(
   'focused desktop browser gates use one bounded Playwright lifecycle',

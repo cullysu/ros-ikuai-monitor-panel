@@ -1,84 +1,59 @@
 - status: `current`
-- currentConclusionForStep: `943`
-- latestRecordedStep: `943`
-- latestStepOutcome: `943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed`
-- currentBoundaryForStep: `943`
-- validForCommit: Step943 clean candidate source boundary for release-blocker and large-text remediation; exact evidence and independent Accessibility re-signoff remain pending
+- currentConclusionForStep: `946`
+- latestRecordedStep: `946`
+- latestStepOutcome: `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
+- currentBoundaryForStep: `946`
+- validForCommit: Step946 is an uncommitted current-worktree local acceptance boundary, not a clean candidate or release approval
 - supersededBy: `null`
-- updatedAt: 2026-08-12T14:04:11+08:00
+- updatedAt: 2026-08-14T00:30:00+08:00
 - authority: This is the only human-readable current-state source.
 
 ## Current conclusion
 
-**FAIL overall / release-blocker and 200% large-text P1 remediation are locally green / independent Accessibility re-signoff and whole-product exact acceptance are pending / release CLOSED.** Historical candidate `b836adc…` passed broad local engineering evidence, but review found an unwired release blocker and a 320px 200% focus/navigation defect. Both roots and the follow-up desktop sentinel defect are repaired and covered by runtime gates; tracked changes require a replacement clean SHA and complete replay. The independent Accessibility agent could not return a verdict because the platform usage limit was reached, so that gate remains pending rather than self-signed. Task remains active with `blocked=false`; GitHub has not been uploaded.
+**FAIL overall / Incident Split Lens local Product, Design/Visual, Accessibility and Engineering acceptance PASS / public release CLOSED.** The rejected Optical presentation has been physically removed and replaced by an isolated mobile render/style owner. The current dirty worktree is not release evidence. No real RouterOS soak, clean exact-SHA candidate, authorized GitHub publication, or exact remote Linux/Windows/GHCR CL exists.
 
-## Current decision record: Step 943
+## Current decision record: Step 946
 
-- `check:release-blockers` is now wired into the aggregate release gate and follows current Optical Patrol ownership. Package-script reference validation recognizes `source(...)` and includes a fail-closed regression for missing targets.
-- The large-text detector follows the actual sentinel node through a callback ref, so late mounting after the connection phase no longer leaves the runtime permanently undetected.
-- At 320×568 and 200% text, the focused route title is fully inside the viewport, retains a visible focus indicator, does not intersect the fixed task navigation and keeps page scroll at zero. The nearest real scroll owner, not the entire document, owns correction.
-- The text-scale sentinel is globally invisible but measurable. A 1366×768 runtime assertion proves `aria-hidden`, fixed positioning, opacity zero, clipping, no pointer events and an undisturbed desktop toolbar.
-- Build passes with 1906 modules; rendered-scale and native page-scale accessibility reports pass; Overview's 18 current contracts pass. Independent Engineering incremental review is P0/P1/P2 zero. Independent Accessibility re-signoff remains pending because the requested reviewer could not run under the platform usage limit.
-- Historical `b836adc…` exact reports are stale after tracked source/tool/asset changes. A replacement clean SHA must regenerate all bound evidence.
+- Normal evidence uses Patrol Lens: current evidence boundary, selected operational object, trustworthy measurement, four scan targets and one object-bound next step.
+- Risk scenes use Incident Split Lens: risk identity, impact, evidence boundary and next action. `fleet` is only scope when no higher risk exists.
+- `current | historical | unavailable` remains explicit. Missing values never become zero; zero remains valid when observed; active routes require explicit route/WAN linkage; resource continuity uses trailing consecutive samples.
+- Mobile Overview and desktop Overview remain separate render/style owners. Shared truth and route semantics do not authorize hidden duplicate DOM or cross-surface CSS.
+- Phone, 667/844 short landscape and 768–1199 tablet are distinct capabilities. Desktop ownership starts at 1200px.
 
-- Replacement candidate `42d1d1d…` includes the Step941 health-finding extraction and passes Python compilation, backend security, 22 collector checks, 18 public backend tests, seven supplemental tests, dependency lock, types, decision system, deterministic build and static assets.
-- Full release gates then exposed a real inventory race: accepted DNS supplemental evidence replaces generic snapshot rows, but the forced-colors test classified the transient idle DOM as generic object-detail capability. The inventory now waits for automatic requests to settle, records accepted DNS ownership explicitly, verifies named pagination and a 2px non-color focus indicator, and keeps generic detail coverage for fallback states. Focused native page-scale replay passes; a new clean SHA and complete replay remain mandatory.
+## Current exact local evidence
 
-- Connections, DNS and global health findings use one shared request/evidence state while mobile and desktop keep separate presentation trees. Accepted DNS/connection results own exactly one visible collection; the snapshot list is fallback-only.
-- The common evidence boundary exposes current/historical mode, a visible localized time backed by raw RFC3339, source and coverage. Missing rates remain unavailable; observed zero remains zero.
-- Mobile 390 prioritizes route/query context and object rows; 844 short landscape is a height-bounded list/detail task; 768 tablet uses connection comparison and a real security object master/detail workspace. DNS paging is reachable in the initial result heading.
-- One stable live status announces successful and failed supplemental operations; 44px controls, `aria-busy`, phone detail/Back/Forward focus, clear-without-refetch and no duplicate collection are blocking production-bundle checks.
-- `_acceptance/supplemental-route-visual/signed/` contains 16 SHA-bound originals and a 12/12 report. Fresh independent phone Product/Visual, Responsive/Tablet and Engineering/Accessibility reviews end at P0=0/P1=0 after the desktop evidence-time P1 was fixed.
-
-- Mobile Overview remains owned only by `overview/mobile-overview/optical-patrol`; desktop remains a separate 1200+ presentation owner.
-- The implementation matrix now owns seven scenarios across nine viewports (`63` cells), including the previously missing `667×375` and `1199×900` contract cells.
-- Phone boundary evidence now resets and records window, document, panel-app and active `.op` scroll owners before geometry inspection and PNG capture. Reachability restores every owner; a non-origin screenshot fails.
-- 320–430 validates the complete primary-action rectangle, 44px target and zero fixed-navigation intersection; lower-priority follow-ups remain separately classified and must scroll clear and hit.
-- `667×375` and `844×390` preserve DOM and visual order as decisive scene geometry → one object action → lower-priority source evidence. The 667 evidence-mode label remains a non-compressing single line.
-- Responsive evidence binds complete worktree identity separately from framework asset identity. Every boundary PNG carries dimensions, SHA-256, bytes, capture time and the exact zeroed scroll state.
-- One polite atomic Optical Patrol status announces evidence mode, decision and selected object state without announcing every traffic tick. Back/Forward persists and restores selected claim, Optical Patrol/window scroll and focus; stale entries without coordinates fall back safely.
-- Resource continuity remains discrete trailing samples, not a fabricated trend. Missing/current/historical evidence semantics and verified-route-only rules are unchanged.
-- Automated browser evidence remains scoped: Chromium rendered-scale layout pressure, injected 200% computed text reflow, page-scale visual zoom, focus, forced colors and reduced motion. It does not claim physical iOS Dynamic Type, Android system text size or browser-toolbar UI zoom.
-- Whole-product release-gate execution is active. Its first real RED exposed a bounded Windows Edge cleanup defect: graceful server close consumed the force-cleanup budget and left an owned PID. The lifecycle now reserves a separate bounded process-tree budget, emits actionable fatal detail, and passes all seven success/error/timeout/deferred-close cases with zero residual owned PID.
-- The route-title gate now follows the Optical owner instead of deleted Linkboard paths. Optical Overview participates in the shared route-focus target, while both mobile and desktop show a focus ring only through `:focus-visible`; programmatic route focus remains semantic without leaving a decorative rectangle.
-- Public time/workspace gates now follow current owners. Optical uses native qualified-time semantics without reintroducing a home chart; desktop WAN and Section charts position irregular samples by elapsed timestamp, not array index. Optical muted text now meets 4.5:1 on both owned light canvases.
-- Route/recovery tool evidence is locally green: 18 routes remain explicitly bounded-readonly with external acceptance pending, RouterOS soak/candidate/bounded-file fixtures pass, and recovery visual runtime captures all 153 required cells. This is tool/runtime coverage only; it does not replace a real-device soak or external route acceptance.
-- Historical dirty-worktree engineering evidence on artifact `worktree-f8a12846eebd-07d8b2b8daa7` passed Overview `28/28`, route responsive `76/76 boundedPass`, route-state `266/266`, engineering readiness and actual Microsoft Edge toolbar 200% v5 `22/22`. Subsequent recovery-gate, Docker ingress, CI, package and rebuilt-asset changes invalidate that fingerprint for current signoff; all bound reports must be regenerated once the candidate is frozen.
-- The complete aggregate `check:release-gates`, backend/security/collector, installer, Compose, desktop runtime, static release and asset-identity checks are locally green. A real Linux/amd64 container archive/image also passes host-loopback ingress, session/CSRF, non-loopback Host and forged-loopback sibling rejection under a bounded reusable smoke gate now wired into Linux CI.
-- Docker / Compose now uses an explicit `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1` exception that accepts only the discovered default-gateway peer with a loopback Host. The image and non-Docker defaults stay off; proxy-header and token-forward trust cannot overlap this mode.
-- Docker gateway discovery now requires exactly one valid default gateway; ambiguous, absent or malformed route tables fail closed. Runtime configuration and large RouterOS JSON responses are bounded at the input layer, including a streamed DNS body default of 4 MiB and hard maximum of 16 MiB.
-- Compose limits memory, CPU and PID usage; ordinary source installs no longer use deletion semantics. Both Docker stages are digest-pinned, Python dependencies are hash-locked and verified for amd64/arm64, and GHCR exact-SHA evidence must bind the OCI index and both platform descriptor digests.
-- Stale package/test ownership has been audited: live product contracts were migrated, 72 obsolete validators and 47 obsolete package entries were retired, and a package/file-reference gate now prevents deleted owners from producing false green checks.
-- `trafficLoad` and `loadAudit` expose evidence-backed resource filters and ordering rather than All + one sort. The supplemental backend and presentation P1s are closed locally: versioned evidence envelopes, strict connection bounds, DNS single-flight/revision/shrink-page recovery, redacted health findings, isolated mobile/desktop owners, Back/Forward race protection, 429 semantics, 44px controls and production-bundle runtime all pass focused review.
-- Repository workflow code cannot prove that an administrator did not bypass main protection. Final promotion therefore still requires an externally controlled release identity/ruleset boundary; no current remote configuration is claimed because it has not been verified.
-- Step938's four reviews are now historical by artifact identity. Current Product, Design/Visual, Accessibility and Engineering gates remain pending until the intended clean candidate regenerates all bound originals and receives four fresh independent reviews.
+- Artifact: `worktree-4162a99b38d5-be3181b1a21f`; commit `4162a99b38d5aed13da6008229cae6cfcc1f0b2d`; fingerprint `be3181b1a21f1b26dd14f209bd325e4aa46f30356f0e8ba55d5a767e956f7d8a`.
+- Incident runtime: 63/63 cells, seven scenarios × nine viewports, screenshot hashes/dimensions/bytes bound to the report.
+- Responsive boundary: 10/10 captures, framework and worktree identity bound.
+- Rendered-scale Accessibility: pass for tested Chromium reflow, focus, history, reduced motion and forced colors. It does not claim physical iOS Dynamic Type, Android system text or browser-toolbar zoom.
+- Four independent read-only reviewers inspected 28 critical originals. Product, Visual, Accessibility and Engineering each report P0=0, P1=0 and P2=0.
+- The former 667×375 false green is closed: the runtime gate now requires the complete primary action rectangle; all seven actions are fully visible and retain at least 44px height. Provenance is a complete visible title-side status, not a clipped top-edge remnant.
 
 ## Gate status
 
 | Gate | Status | Boundary |
 |---|---|---|
-| R07 Product | focused supplemental PASS; whole-product pending | Phone supplemental review is P0/P1=0; a clean exact-candidate whole-product review is still required. |
-| R09 Design / Visual | focused supplemental PASS; whole-product pending | Signed supplemental originals and Emil review pass; the clean candidate still needs current bound Overview/route originals and full visual review. |
-| R10 Accessibility / Interaction | local runtime remediation PASS; independent/exact/physical pending | Rendered and native 200% gates plus desktop sentinel checks pass; independent Accessibility re-signoff, full clean-candidate replay and physical-device text/AT remain open. |
-| Engineering / bounded matrix | base gates green; replacement exact-candidate evidence pending | Backend 7/7, public 18/18, collector 22/22, build/static and focused native accessibility pass. Prior Edge/28/63/76/266 reports remain stale. |
-| State / route / security matrices | local automated coverage passed; independent/external acceptance open | Historical route/state matrices and current security/container regressions pass; real RouterOS soak, minimum privilege and external route acceptance remain open. |
-| R14 Release | closed | No clean candidate, real RouterOS soak, promotion authorization, GitHub upload or exact-SHA Linux/Windows/GHCR CL. |
+| R07 Product | local pass | Current exact dirty artifact has independent Product P0/P1/P2=0; this is not public product release approval. |
+| R09 Design / Visual | local pass | Current exact dirty artifact has independent Visual P0/P1/P2=0 across 28 critical originals. |
+| R10 Accessibility / Interaction | local pass / release evidence open | Current rendered-scale, focus/history and geometry evidence passes; physical-device and final clean-SHA evidence remain open. |
+| Engineering / bounded matrix | local pass | Types/build, static model/architecture/a11y, full-63 and responsive10 pass on the current worktree. |
+| State / route / security matrices | pending final replay | Whole-product public matrix, route/state/security/recovery and real RouterOS soak must be rebound after a clean candidate exists. |
+| R14 Release | closed | No clean candidate, promotion authorization, GitHub upload or exact-SHA Linux/Windows/GHCR CL. |
 
-## Authority and evidence
+## Explicit non-claims
 
-- Full reasoning: `docs/panel-redesign-decision-log.md` Step943.
-- Historical navigation: `docs/decision-system/historical-index.md`; this page remains the sole current-state authority rather than duplicating chronology.
-- Product originals/report target: `_acceptance/optical-patrol-runtime/` (`63` viewport cells after regeneration).
-- Focused supplemental signed originals/report: `_acceptance/supplemental-route-visual/signed/` (`16` originals, `12/12` production-bundle checks).
-- Automated accessibility targets: `_acceptance/mobile-accessibility-runtime-v2/rendered-scale-reflow-fixture/` and `_acceptance/mobile-accessibility-runtime-v2/browser-page-scale/`.
-- Responsive evidence target: `_acceptance/responsive-boundary-current/report.json` with exact identity and screenshot provenance.
-- Historical pre-container-remediation matrix evidence: `_acceptance/release-matrix-worktree-f8a12846eebd-07d8b2b8daa7/report.json`, `_acceptance/route-matrix-worktree-f8a12846eebd-07d8b2b8daa7/report.json`, and `_acceptance/route-state-matrix-worktree-f8a12846eebd-07d8b2b8daa7/report.json`; none is current signoff evidence.
-- Historical pre-container-remediation Edge toolbar evidence: `_acceptance/edge-toolbar-zoom200/report.json` (`edge-toolbar-zoom200-windows-v5`, 22/22); it must be regenerated on the clean candidate.
-- Current container contract: `tools/check-container-host-ingress-smoke.py`, wired after the Linux archive build in `.github/workflows/ci.yml`.
-- Selected design contract: `docs/mobile-optical-patrol-design-contract.md`.
-- Historical structured records in `docs/decision-system/independent-reviews/step938-*.json` sign only exact local artifact `188e…`; they explicitly remain release-ineligible and are not current acceptance.
-- D drive byte-identical mirror target: `D:\想法\面板`; it is an owner-review copy, not a runtime authority or independent trust root.
+- Local independent review is not an external signature or real-user acceptance.
+- A 63-cell mobile matrix is not whole-product release evidence.
+- Historical Linux/Windows/GHCR success for another SHA cannot authorize this worktree.
+- GitHub remains untouched for Step946. Every future upload must be followed by exact-SHA Linux, Windows and GHCR CL verification; a failed or missing CL reopens implementation.
 
 ## One next action
 
-- nextAction: Commit Step943 as a replacement clean SHA, regenerate exact-candidate base and full release evidence on that identity only, then obtain fresh independent whole-product reviews and real RouterOS soak before any authorized publication.
+Create the four Step946 structured review records, synchronize the byte-identical `D:\想法\面板` mirror, then freeze a clean candidate and replay all whole-product release, security, route/state and accessibility gates before any publication decision.
+
+## Authority links
+
+- Full history: `../panel-redesign-decision-log.md`
+- Historical map: `historical-index.md`
+- Current handoff: `../product-loop-current.md`
+- Release chronology: `release-journal.md`

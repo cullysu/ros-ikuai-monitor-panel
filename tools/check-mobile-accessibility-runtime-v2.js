@@ -248,7 +248,7 @@ async function inspectReducedMotionWithRuntime(runtime) {
       });
       const selector = activeRoute === "interfaces"
         ? '[data-mobile-domain-workspace="interfaces"], [data-mobile-domain-workspace="interfaces"] [data-mobile-row-id], [data-section="interfaces"]'
-        : '[data-optical-patrol-root], [data-mobile-overview]';
+        : '[data-incident-lens-root], [data-mobile-overview]';
       const surfaces = Array.from(document.querySelectorAll(selector)).slice(0, 3).map((node) => {
         const style = getComputedStyle(node);
         return {
@@ -357,7 +357,7 @@ async function captureTextBaseline(page, rootSelector) {
     const isIntentionalAssistiveOnlyText = (node) => {
       const style = getComputedStyle(node);
       const rect = node.getBoundingClientRect();
-      const hasAssistiveSemantics = node.matches('[aria-live], [role="status"], [role="alert"], [role="log"], [role="timer"], .op__sr-only, [data-visually-hidden="true"]');
+      const hasAssistiveSemantics = node.matches('[aria-live], [role="status"], [role="alert"], [role="log"], [role="timer"], .incident-lens__sr-only, [data-visually-hidden="true"]');
       const isTinyPositionedBox = (style.position === "absolute" || style.position === "fixed") && rect.width <= 2 && rect.height <= 2;
       const clipsEntireBox = (style.clip && style.clip !== "auto") || (style.clipPath && style.clipPath !== "none");
       const clipsOverflow = style.overflowX !== "visible" && style.overflowY !== "visible";
@@ -394,7 +394,7 @@ async function inspectTextResizeSurface(page, { label, rootSelector, expectedVie
     const isIntentionalAssistiveOnlyText = (node) => {
       const style = getComputedStyle(node);
       const rect = node.getBoundingClientRect();
-      const hasAssistiveSemantics = node.matches('[aria-live], [role="status"], [role="alert"], [role="log"], [role="timer"], .op__sr-only, [data-visually-hidden="true"]');
+      const hasAssistiveSemantics = node.matches('[aria-live], [role="status"], [role="alert"], [role="log"], [role="timer"], .incident-lens__sr-only, [data-visually-hidden="true"]');
       const isTinyPositionedBox = (style.position === "absolute" || style.position === "fixed") && rect.width <= 2 && rect.height <= 2;
       const clipsEntireBox = (style.clip && style.clip !== "auto") || (style.clipPath && style.clipPath !== "none");
       const clipsOverflow = style.overflowX !== "visible" && style.overflowY !== "visible";
@@ -612,14 +612,22 @@ async function inspectTextResizeSurface(page, { label, rootSelector, expectedVie
       textVisibilityClassifierProbe,
     };
   }, { labelValue: label, selector: rootSelector, viewport: [expectedViewport.width, expectedViewport.height], resizeMode: mode, scale: nativeScale, nativeBaseline });
-  assert(evidence.cssViewport[0] === expectedViewport.width && evidence.cssViewport[1] === expectedViewport.height, "text-resize changed the CSS layout viewport", evidence);
+  if (mode === "css-text-resize-fixture") {
+    assert(evidence.visualViewport?.width === expectedViewport.width && evidence.visualViewport?.height === expectedViewport.height,
+      "text-resize changed the physical visual viewport", evidence);
+    assert(evidence.cssViewport[0] >= expectedViewport.width && evidence.cssViewport[1] >= expectedViewport.height,
+      "text-resize unexpectedly reduced the CSS layout viewport", evidence);
+  } else {
+    assert(evidence.cssViewport[0] === expectedViewport.width && evidence.cssViewport[1] === expectedViewport.height,
+      "text-resize changed the CSS layout viewport", evidence);
+  }
   assert(evidence.layoutOverflow <= 1, "text-resize introduced horizontal layout overflow", evidence);
   assert(evidence.textVisibilityClassifierProbe.assistiveOnlyDetected && evidence.textVisibilityClassifierProbe.assistiveOnlyExcludedFromVisualInspection, "assistive-only live-region fixture was misclassified as visible text", evidence);
   assert(evidence.textVisibilityClassifierProbe.visibleTextRemainsInspectable && evidence.textVisibilityClassifierProbe.visibleClippingDetected, "visible clipping fixture no longer exercises the blocking path", evidence);
   assert(evidence.textVisibilityClassifierProbe.ancestorClippingDetected, "ancestor clipping fixture no longer exercises the blocking path", evidence);
   assert(evidence.textVisibilityClassifierProbe.viewportClippingDetected, "viewport clipping fixture no longer exercises the blocking path", evidence);
   assert(evidence.clippedText.length === 0, "text-resize clipped visible text within itself, an ancestor, or the viewport", evidence);
-  if (mode === "css-text-resize-fixture" && label === "optical-patrol-phone-320") {
+  if (mode === "css-text-resize-fixture" && label === "incident-split-lens-phone-320") {
     assert(evidence.focusedRouteTitle?.focused === true, "320px 200% text resize lost programmatic route-title focus", evidence);
     assert(evidence.focusedRouteTitle?.focusVisible === true, "320px 200% text resize hid the route-title focus indicator", evidence);
     assert(evidence.focusedRouteTitle?.fullyInsideViewport === true, "320px 200% text resize left the focused route title outside the viewport", evidence);
@@ -871,14 +879,14 @@ async function inspectTextResize(modeRequested = requestedMode, afterInspection 
       desktopTextScaleSentinel,
     );
 
-    async function openOpticalScenario(expectedScene, { expanded = false } = {}) {
+    async function openIncidentLensScenario(expectedScene, { expanded = false } = {}) {
       const target = new URL(runtime.mock.url);
       target.searchParams.set("section", "overview");
       target.hash = "";
       await page.goto(target.toString(), { waitUntil: "domcontentloaded" });
-      const scene = page.locator(`[data-optical-patrol-scene="${expectedScene}"]`);
+      const scene = page.locator(`[data-incident-lens-scene="${expectedScene}"]`);
       await scene.waitFor();
-      if (expanded) await scene.locator("[data-optical-patrol-expanded-claim]").waitFor();
+      if (expanded) await scene.locator("[data-incident-lens-expanded-claim]").waitFor();
     }
 
     async function inspectCase({ label, viewport, scenario, open, rootSelector }) {
@@ -892,7 +900,7 @@ async function inspectTextResize(modeRequested = requestedMode, afterInspection 
         await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       } else {
         fixture = await applyAuditableTextResize(page, rootSelector);
-        if (label === "optical-patrol-phone-320") {
+        if (label === "incident-split-lens-phone-320") {
           await page.waitForFunction(() => (
             document.querySelector("[data-panel-runtime-phase]")?.getAttribute("data-panel-large-text") === "true"
           ));
@@ -925,74 +933,74 @@ async function inspectTextResize(modeRequested = requestedMode, afterInspection 
     }
 
     await inspectCase({
-      label: "optical-patrol-phone-320",
+      label: "incident-split-lens-phone-320",
       viewport: phone320Viewport,
       scenario: "",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("single"),
+      open: () => openIncidentLensScenario("single"),
     });
     await inspectCase({
-      label: "optical-patrol-phone-390",
+      label: "incident-split-lens-phone-390",
       viewport: phoneViewport,
       scenario: "",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("single"),
+      open: () => openIncidentLensScenario("single"),
     });
     await inspectCase({
-      label: "resource-optical-patrol-phone-430",
+      label: "resource-incident-split-lens-phone-430",
       viewport: phone430Viewport,
       scenario: "resource-full",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("resource-full", { expanded: true }),
+      open: () => openIncidentLensScenario("resource-full", { expanded: true }),
     });
     await inspectCase({
-      label: "resource-optical-patrol-phone-320",
+      label: "resource-incident-split-lens-phone-320",
       viewport: phone320Viewport,
       scenario: "resource-full",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("resource-full", { expanded: true }),
+      open: () => openIncidentLensScenario("resource-full", { expanded: true }),
     });
     await inspectCase({
-      label: "fleet-optical-patrol-phone-320",
+      label: "fleet-incident-split-lens-phone-320",
       viewport: phone320Viewport,
       scenario: "fleet-coverage",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("fleet"),
+      open: () => openIncidentLensScenario("fleet"),
     });
     await inspectCase({
-      label: "no-snapshot-optical-patrol-phone-390",
+      label: "no-snapshot-incident-split-lens-phone-390",
       viewport: phoneViewport,
       scenario: "no-snapshot",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("no-snapshot"),
+      open: () => openIncidentLensScenario("no-snapshot"),
     });
     await inspectCase({
-      label: "collection-down-optical-patrol-phone-320",
+      label: "collection-down-incident-split-lens-phone-320",
       viewport: phone320Viewport,
       scenario: "collection-down",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("collection-down"),
+      open: () => openIncidentLensScenario("collection-down"),
     });
     await inspectCase({
-      label: "interfaces-down-optical-patrol-phone-390",
+      label: "interfaces-down-incident-split-lens-phone-390",
       viewport: phoneViewport,
       scenario: "interfaces-down",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("interfaces-down"),
+      open: () => openIncidentLensScenario("interfaces-down"),
     });
     await inspectCase({
-      label: "offline-optical-patrol-short-landscape-667",
+      label: "offline-incident-split-lens-short-landscape-667",
       viewport: shortLandscapeViewport,
       scenario: "all-offline",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("all-offline"),
+      open: () => openIncidentLensScenario("all-offline"),
     });
     await inspectCase({
-      label: "optical-patrol-tablet-768",
+      label: "incident-split-lens-tablet-768",
       viewport: tabletViewport,
       scenario: "",
       rootSelector: "[data-panel-runtime-phase]",
-      open: () => openOpticalScenario("single"),
+      open: () => openIncidentLensScenario("single"),
     });
     runtime.mock.state.scenario = "";
     const afterInspectionEvidence = typeof afterInspection === "function"
@@ -1161,31 +1169,31 @@ async function inspectRenderedScaleReflowFixture() {
     }
 
     await inspectCase({
-      label: "optical-patrol-browser-844",
+      label: "incident-split-lens-browser-844",
       viewport: zoomViewport,
       output: outputViewport,
        scenario: "",
-       rootSelector: "[data-optical-patrol-root]",
-       primaryTargetSelector: "[data-optical-patrol-claim-control]",
-       open: async (page, baseUrl) => { await visitRoute(page, baseUrl, "overview", { requireWorkspace: false }); await page.locator('[data-optical-patrol-scene="single"]').waitFor(); },
+       rootSelector: "[data-incident-lens-root]",
+       primaryTargetSelector: "[data-incident-lens-claim-control]",
+       open: async (page, baseUrl) => { await visitRoute(page, baseUrl, "overview", { requireWorkspace: false }); await page.locator('[data-incident-lens-scene="single"]').waitFor(); },
      });
      await inspectCase({
-       label: "offline-optical-patrol-browser-844",
+       label: "offline-incident-split-lens-browser-844",
        viewport: zoomViewport,
        output: outputViewport,
        scenario: "all-offline",
-       rootSelector: "[data-optical-patrol-root]",
-       primaryTargetSelector: "[data-optical-patrol-claim-control]",
-       open: async (page, baseUrl) => { await visitRoute(page, baseUrl, "overview", { requireWorkspace: false }); await page.locator('[data-optical-patrol-scene="all-offline"]').waitFor(); },
+       rootSelector: "[data-incident-lens-root]",
+       primaryTargetSelector: "[data-incident-lens-claim-control]",
+       open: async (page, baseUrl) => { await visitRoute(page, baseUrl, "overview", { requireWorkspace: false }); await page.locator('[data-incident-lens-scene="all-offline"]').waitFor(); },
     });
     await inspectCase({
-       label: "resource-optical-patrol-browser-844",
+       label: "resource-incident-split-lens-browser-844",
       viewport: zoomViewport,
       output: outputViewport,
        scenario: "resource-full",
-       rootSelector: "[data-optical-patrol-root]",
-       primaryTargetSelector: "[data-optical-patrol-action]",
-       open: async (page, baseUrl) => { await visitRoute(page, baseUrl, "overview", { requireWorkspace: false }); await page.locator('[data-optical-patrol-scene="resource-full"] [data-optical-patrol-expanded-claim]').waitFor(); },
+       rootSelector: "[data-incident-lens-root]",
+       primaryTargetSelector: "[data-incident-lens-action]",
+       open: async (page, baseUrl) => { await visitRoute(page, baseUrl, "overview", { requireWorkspace: false }); await page.locator('[data-incident-lens-scene="resource-full"] [data-incident-lens-expanded-claim]').waitFor(); },
     });
     await inspectCase({
       label: "interfaces-workspace-browser-768",
@@ -1217,13 +1225,13 @@ async function inspectRenderedScaleReflowFixture() {
   }
 }
 
-async function inspectOfflineOpticalPatrolAccessibilityWithRuntime(runtime) {
+async function inspectOfflineIncidentLensAccessibilityWithRuntime(runtime) {
   runtime.mock.state.scenario = "all-offline";
   await visitRoute(runtime.page, runtime.mock.url, "overview", { requireWorkspace: false });
-  await runtime.page.locator('[data-optical-patrol-scene="all-offline"]').waitFor();
+  await runtime.page.locator('[data-incident-lens-scene="all-offline"]').waitFor();
 
   const initial = await runtime.page.evaluate(() => {
-    const root = document.querySelector("[data-optical-patrol-root]");
+    const root = document.querySelector("[data-incident-lens-root]");
     const targets = Array.from(root?.querySelectorAll("button:not([disabled]), a[href]") || [])
       .filter((node) => node instanceof HTMLElement && !node.closest("[hidden]") && node.getClientRects().length > 0)
       .map((node) => {
@@ -1257,29 +1265,27 @@ async function inspectOfflineOpticalPatrolAccessibilityWithRuntime(runtime) {
     });
     return {
       url: location.href,
-      evidenceMode: root?.getAttribute("data-optical-patrol-evidence-mode") || "",
-      scene: root?.getAttribute("data-optical-patrol-scene") || "",
-      forbidsCurrentData: root?.getAttribute("data-optical-patrol-forbids-current") === "true",
-      selectedClaimId: root?.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") || "",
-      selectedFocusId: root?.querySelector("[data-optical-patrol-expanded-claim]")?.id || "",
-      history: window.history.state?.panelOpticalPatrol || null,
-      semanticStatus: (() => {
-        const status = root?.querySelector("[data-optical-patrol-semantic-status]");
+      evidenceMode: root?.getAttribute("data-incident-lens-evidence-mode") || "",
+      scene: root?.getAttribute("data-incident-lens-scene") || "",
+      forbidsCurrentData: root?.getAttribute("data-incident-lens-forbids-current") === "true",
+      selectedClaimId: root?.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") || "",
+      selectedFocusId: root?.querySelector("[data-incident-lens-expanded-claim]")?.id || "",
+      history: window.history.state?.panelIncidentLens || null,
+      evidenceBoundary: (() => {
+        const status = root?.querySelector("[data-incident-lens-evidence-boundary]");
         return {
-          count: root?.querySelectorAll("[data-optical-patrol-semantic-status]").length || 0,
+          count: root?.querySelectorAll("[data-incident-lens-evidence-boundary]").length || 0,
           role: status?.getAttribute("role") || "",
           live: status?.getAttribute("aria-live") || "",
           atomic: status?.getAttribute("aria-atomic") || "",
           text: status?.textContent?.replace(/\s+/g, " ").trim() || "",
         };
       })(),
-      selectedClaimTitle: root?.querySelector("[data-optical-patrol-expanded-claim] .op__claim-name h2")?.textContent?.replace(/\s+/g, " ").trim() || "",
-      selectedClaimState: root?.querySelector("[data-optical-patrol-expanded-claim] .op__claim-state")?.textContent?.replace(/\s+/g, " ").trim() || "",
-      evidenceLabel: root?.querySelector("[data-optical-patrol-evidence-boundary] strong")?.textContent?.replace(/\s+/g, " ").trim() || "",
-      decisionLabel: root?.querySelector("[data-optical-patrol-decision] > span")?.textContent?.replace(/\s+/g, " ").trim() || "",
-      nextClaimAvailable: Boolean(root?.querySelector("button[data-optical-patrol-claim-control]")),
-      expandedClaimLabelled: Boolean(root?.querySelector("[data-optical-patrol-expanded-claim][aria-labelledby]")),
-      currentMeasurementsPresent: Boolean(root?.querySelector("[data-optical-patrol-traffic-geometry], [data-optical-patrol-resource-geometry]")),
+      selectedClaimName: root?.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("aria-label") || "",
+      evidenceLabel: root?.querySelector("[data-incident-lens-evidence-boundary] strong")?.textContent?.replace(/\s+/g, " ").trim() || "",
+      nextClaimAvailable: Boolean(root?.querySelector("button[data-incident-lens-claim-control]")),
+      expandedClaimNamed: Boolean(root?.querySelector("[data-incident-lens-expanded-claim][aria-label]")),
+      currentMeasurementsPresent: Boolean(root?.querySelector("[data-incident-lens-traffic-geometry], [data-incident-lens-resource-geometry]")),
       targets,
       labelledSections,
       times,
@@ -1289,99 +1295,106 @@ async function inspectOfflineOpticalPatrolAccessibilityWithRuntime(runtime) {
       overflow: document.documentElement.scrollWidth - window.innerWidth,
     };
   });
-  assert([null, "overview"].includes(new URL(initial.url).searchParams.get("section")), "offline Optical Patrol did not remain on the canonical overview URL", initial);
-  assert(initial.scene === "all-offline", "offline Optical Patrol did not select its expected scene", initial);
-  assert(["current", "historical", "unavailable"].includes(initial.evidenceMode) && initial.forbidsCurrentData === (initial.evidenceMode !== "current"), "Optical Patrol current-data boundary contradicted its evidence mode", initial);
-  assert(initial.selectedClaimId && initial.selectedFocusId === `optical-claim-${encodeURIComponent(initial.selectedClaimId)}` && initial.expandedClaimLabelled,
-    "offline Optical Patrol did not expose a labelled selected claim with its stable focus id", initial);
+  assert([null, "overview"].includes(new URL(initial.url).searchParams.get("section")), "offline Incident Split Lens did not remain on the canonical overview URL", initial);
+  assert(initial.scene === "all-offline", "offline Incident Split Lens did not select its expected scene", initial);
+  assert(["current", "historical", "unavailable"].includes(initial.evidenceMode) && initial.forbidsCurrentData === (initial.evidenceMode !== "current"), "Incident Split Lens current-data boundary contradicted its evidence mode", initial);
+  assert(initial.selectedClaimId && initial.selectedFocusId === `incident-lens-claim-${encodeURIComponent(initial.selectedClaimId)}` && initial.expandedClaimNamed,
+    "offline Incident Split Lens did not expose a named selected claim with its stable focus id", initial);
   assert(
     initial.history?.version === 1 && typeof initial.history?.scope === "string" && initial.history.scope.length > 0 &&
       initial.history.selectedId === initial.selectedClaimId,
-    "offline Optical Patrol initial claim is not represented by its scoped history state",
+    "offline Incident Split Lens initial claim is not represented by its scoped history state",
     initial,
   );
   assert(
-    initial.semanticStatus.count === 1 && initial.semanticStatus.role === "status" && initial.semanticStatus.live === "polite" && initial.semanticStatus.atomic === "true" &&
-      initial.semanticStatus.text.includes(initial.evidenceLabel) && initial.semanticStatus.text.includes(initial.decisionLabel) &&
-      initial.semanticStatus.text.includes(initial.selectedClaimTitle) && initial.semanticStatus.text.includes(initial.selectedClaimState),
-    "Optical Patrol did not expose one atomic polite semantic status for evidence, decision, and selected object state",
+    initial.evidenceBoundary.count === 1 && initial.evidenceBoundary.role === "status" && initial.evidenceBoundary.live === "polite" && initial.evidenceBoundary.atomic === "true" &&
+      initial.evidenceBoundary.text.includes(initial.evidenceLabel),
+    "Incident Split Lens did not expose one atomic polite evidence boundary",
     initial,
   );
-  assert(initial.nextClaimAvailable, "offline Optical Patrol did not expose a native follow-up claim for history verification", initial);
-  assert(!initial.forbidsCurrentData || !initial.currentMeasurementsPresent, "offline Optical Patrol leaked current measurements across its evidence boundary", initial);
-  assert(initial.targets.every((target) => target.width >= 44 && target.height >= 44), "offline Optical Patrol has a touch target below 44x44px", initial);
-  assert(initial.labelledSections.every((section) => section.targetExists), "offline Optical Patrol has a dangling aria-labelledby relationship", initial);
-  assert(initial.times.every((value) => value === null || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value)), "offline Optical Patrol rendered a non-RFC3339 datetime", initial);
-  assert(initial.meaningfulRunningAnimations === 0, "offline Optical Patrol leaves motion longer than 20ms running under reduced-motion", initial);
-  assert(initial.overflow <= 1, "offline Optical Patrol introduced horizontal overflow", initial);
+  assert(initial.nextClaimAvailable, "offline Incident Split Lens did not expose a native follow-up claim for history verification", initial);
+  assert(!initial.forbidsCurrentData || !initial.currentMeasurementsPresent, "offline Incident Split Lens leaked current measurements across its evidence boundary", initial);
+  assert(initial.targets.every((target) => target.width >= 44 && target.height >= 44), "offline Incident Split Lens has a touch target below 44x44px", initial);
+  assert(initial.labelledSections.every((section) => section.targetExists), "offline Incident Split Lens has a dangling aria-labelledby relationship", initial);
+  assert(initial.times.every((value) => value === null || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value)), "offline Incident Split Lens rendered a non-RFC3339 datetime", initial);
+  assert(initial.meaningfulRunningAnimations === 0, "offline Incident Split Lens leaves motion longer than 20ms running under reduced-motion", initial);
+  assert(initial.overflow <= 1, "offline Incident Split Lens introduced horizontal overflow", initial);
 
-  const savedInitialScroll = await runtime.page.evaluate(() => {
-    const root = document.querySelector("[data-optical-patrol-root]");
+  const savedInitialScroll = await runtime.page.evaluate(async () => {
+    const root = document.querySelector("[data-incident-lens-root]");
     if (!(root instanceof HTMLElement)) return null;
     const target = Math.min(180, Math.max(0, root.scrollHeight - root.clientHeight));
     root.scrollTo({ top: target, left: 0, behavior: "instant" });
-    return { target, rootTop: root.scrollTop, windowTop: window.scrollY };
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return { target, rootTop: root.scrollTop, windowTop: window.scrollY, history: window.history.state?.panelIncidentLens || null };
   });
-  assert(savedInitialScroll && savedInitialScroll.rootTop >= 40, "offline Optical Patrol did not provide enough owner scroll range for history restoration verification", savedInitialScroll);
-  await runtime.page.locator("button[data-optical-patrol-claim-control]").first().click();
+  assert(savedInitialScroll && savedInitialScroll.rootTop >= 40, "offline Incident Split Lens did not provide enough owner scroll range for history restoration verification", savedInitialScroll);
+  assert(Math.abs((savedInitialScroll.history?.scrollTop ?? -1) - savedInitialScroll.rootTop) <= 1,
+    "real owner scrolling did not update the current Incident Split Lens history entry", savedInitialScroll);
+  await runtime.page.locator("button[data-incident-lens-claim-control]").first().click();
   await runtime.page.waitForFunction((previousId) => {
-    const selected = document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") || "";
-    return Boolean(selected && selected !== previousId && document.activeElement === document.querySelector("[data-optical-patrol-expanded-claim]"));
+    const selected = document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") || "";
+    return Boolean(selected && selected !== previousId && document.activeElement === document.querySelector("[data-incident-lens-expanded-claim]"));
   }, initial.selectedClaimId);
+  await runtime.page.evaluate(async () => {
+    const root = document.querySelector("[data-incident-lens-root]");
+    if (!(root instanceof HTMLElement)) return;
+    root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
   const opened = await runtime.page.evaluate(() => ({
-    selectedClaimId: document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") || "",
+    selectedClaimId: document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") || "",
     focusId: document.activeElement?.id || "",
-    history: window.history.state?.panelOpticalPatrol || null,
+    history: window.history.state?.panelIncidentLens || null,
     scroll: (() => {
-      const root = document.querySelector("[data-optical-patrol-root]");
+      const root = document.querySelector("[data-incident-lens-root]");
       return root instanceof HTMLElement ? { rootTop: root.scrollTop, windowTop: window.scrollY } : null;
     })(),
   }));
   await runtime.page.goBack({ waitUntil: "domcontentloaded" });
-  await runtime.page.waitForFunction((id) => document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") === id && document.activeElement === document.querySelector("[data-optical-patrol-expanded-claim]"), initial.selectedClaimId);
+  await runtime.page.waitForFunction((id) => document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") === id && document.activeElement === document.querySelector("[data-incident-lens-expanded-claim]"), initial.selectedClaimId);
   const back = await runtime.page.evaluate(() => ({
-    selectedClaimId: document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") || "",
+    selectedClaimId: document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") || "",
     focusId: document.activeElement?.id || "",
-    history: window.history.state?.panelOpticalPatrol || null,
+    history: window.history.state?.panelIncidentLens || null,
     scroll: (() => {
-      const root = document.querySelector("[data-optical-patrol-root]");
+      const root = document.querySelector("[data-incident-lens-root]");
       return root instanceof HTMLElement ? { rootTop: root.scrollTop, windowTop: window.scrollY } : null;
     })(),
   }));
   await runtime.page.goForward({ waitUntil: "domcontentloaded" });
-  await runtime.page.waitForFunction((id) => document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") === id && document.activeElement === document.querySelector("[data-optical-patrol-expanded-claim]"), opened.selectedClaimId);
+  await runtime.page.waitForFunction((id) => document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") === id && document.activeElement === document.querySelector("[data-incident-lens-expanded-claim]"), opened.selectedClaimId);
   const forward = await runtime.page.evaluate(() => ({
-    selectedClaimId: document.querySelector("[data-optical-patrol-expanded-claim]")?.getAttribute("data-optical-patrol-expanded-claim") || "",
+    selectedClaimId: document.querySelector("[data-incident-lens-expanded-claim]")?.getAttribute("data-incident-lens-expanded-claim") || "",
     focusId: document.activeElement?.id || "",
-    history: window.history.state?.panelOpticalPatrol || null,
+    history: window.history.state?.panelIncidentLens || null,
     scroll: (() => {
-      const root = document.querySelector("[data-optical-patrol-root]");
+      const root = document.querySelector("[data-incident-lens-root]");
       return root instanceof HTMLElement ? { rootTop: root.scrollTop, windowTop: window.scrollY } : null;
     })(),
   }));
   const evidence = { initial, savedInitialScroll, opened, back, forward };
-  assert(opened.selectedClaimId && opened.selectedClaimId !== initial.selectedClaimId && opened.focusId === `optical-claim-${encodeURIComponent(opened.selectedClaimId)}`, "Optical Patrol selection did not open and focus its expanded claim", evidence);
+  assert(opened.selectedClaimId && opened.selectedClaimId !== initial.selectedClaimId && opened.focusId === `incident-lens-claim-${encodeURIComponent(opened.selectedClaimId)}`, "Incident Split Lens selection did not open and focus its expanded claim", evidence);
   assert(opened.history?.version === 1 && opened.history?.scope === initial.history?.scope && opened.history?.selectedId === opened.selectedClaimId,
-    "opening an Optical Patrol claim did not create the matching scoped history entry", evidence);
+    "opening an Incident Split Lens claim did not create the matching scoped history entry", evidence);
   assert(
-    opened.history?.scroll && back.history?.scroll && opened.scroll &&
-      Math.abs(back.history.scroll.rootTop - savedInitialScroll.rootTop) <= 1 &&
-      Math.abs(opened.history.scroll.rootTop - opened.scroll.rootTop) <= 1 &&
-      Number.isFinite(back.history.scroll.windowTop) && Number.isFinite(opened.history.scroll.windowTop) &&
-      Math.abs(back.history.scroll.rootTop - opened.history.scroll.rootTop) >= 24,
-    "Optical Patrol did not persist materially different owner and window-fallback scroll positions for history entries",
+    Number.isFinite(back.history?.scrollTop) && Number.isFinite(opened.history?.scrollTop) && opened.scroll &&
+      Math.abs(back.history.scrollTop - savedInitialScroll.rootTop) <= 1 &&
+      Math.abs(opened.history.scrollTop - opened.scroll.rootTop) <= 1 &&
+      Math.abs(back.history.scrollTop - opened.history.scrollTop) >= 24,
+    "Incident Split Lens did not persist materially different owner scroll positions for history entries",
     evidence,
   );
-  assert(back.selectedClaimId === initial.selectedClaimId && back.focusId === initial.selectedFocusId, "Back did not restore the Optical Patrol selection and focus", evidence);
+  assert(back.selectedClaimId === initial.selectedClaimId && back.focusId === initial.selectedFocusId, "Back did not restore the Incident Split Lens selection and focus", evidence);
   assert(back.history?.version === 1 && back.history?.scope === initial.history?.scope && back.history?.selectedId === initial.selectedClaimId,
-    "Back did not restore the scoped Optical Patrol history entry", evidence);
-  assert(Math.abs(back.scroll.rootTop - back.history.scroll.rootTop) <= 1 && Math.abs(back.scroll.windowTop - back.history.scroll.windowTop) <= 1,
-    "Back did not restore the saved Optical Patrol owner and window scroll positions", evidence);
-  assert(forward.selectedClaimId === opened.selectedClaimId && forward.focusId === opened.focusId, "Forward did not restore the Optical Patrol selection and focus", evidence);
+    "Back did not restore the scoped Incident Split Lens history entry", evidence);
+  assert(Math.abs(back.scroll.rootTop - back.history.scrollTop) <= 1,
+    "Back did not restore the saved Incident Split Lens owner scroll position", evidence);
+  assert(forward.selectedClaimId === opened.selectedClaimId && forward.focusId === opened.focusId, "Forward did not restore the Incident Split Lens selection and focus", evidence);
   assert(forward.history?.version === 1 && forward.history?.scope === initial.history?.scope && forward.history?.selectedId === opened.selectedClaimId,
-    "Forward did not restore the scoped Optical Patrol history entry", evidence);
-  assert(Math.abs(forward.scroll.rootTop - opened.history.scroll.rootTop) <= 1 && Math.abs(forward.scroll.windowTop - opened.history.scroll.windowTop) <= 1,
-    "Forward did not restore the saved Optical Patrol owner and window scroll positions", evidence);
+    "Forward did not restore the scoped Incident Split Lens history entry", evidence);
+  assert(Math.abs(forward.scroll.rootTop - opened.history.scrollTop) <= 1,
+    "Forward did not restore the saved Incident Split Lens owner scroll position", evidence);
   return evidence;
 }
 
@@ -1389,10 +1402,10 @@ async function inspectReducedMotionAndOffline() {
   const runtime = await launchRuntime({ reducedMotion: "reduce" });
   try {
     await login(runtime.page, runtime.mock.url);
-    const offlineOpticalPatrol = await inspectOfflineOpticalPatrolAccessibilityWithRuntime(runtime);
+    const offlineIncidentLens = await inspectOfflineIncidentLensAccessibilityWithRuntime(runtime);
     runtime.mock.state.scenario = "";
     const reducedMotion = await inspectReducedMotionWithRuntime(runtime);
-    return { offlineOpticalPatrol, reducedMotion };
+    return { offlineIncidentLens, reducedMotion };
   } finally {
     await closeRuntime(runtime);
   }
@@ -1426,7 +1439,7 @@ async function tabTo(page, label, predicate) {
         tag: active?.tagName || "",
         section: active?.getAttribute("data-section") || "",
         rowId: active?.getAttribute("data-mobile-row-id") || "",
-        opticalClaimId: active?.getAttribute("data-optical-patrol-claim-control") || "",
+        incidentLensClaimId: active?.getAttribute("data-incident-lens-claim-control") || "",
         focusVisible: active instanceof Element && active.matches(":focus-visible"),
         outline: { width: Number.parseFloat(style?.outlineWidth || "0"), style: style?.outlineStyle || "none" },
         rect: rect ? { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height } : null,
@@ -1442,51 +1455,52 @@ async function tabTo(page, label, predicate) {
 
 async function inspectKeyboardFocusVisibleWithRuntime(runtime) {
   await visitRoute(runtime.page, runtime.mock.url, "overview", { requireWorkspace: false });
-  await runtime.page.locator("[data-optical-patrol-root]").waitFor();
-  const claimCount = await runtime.page.locator("[data-optical-patrol-claim-control]").count();
-  assert(claimCount >= 1, "Optical Patrol keyboard test requires a follow-up claim control", { claimCount });
-  const claimFocus = await tabTo(runtime.page, "Optical Patrol follow-up claim control", (item) => Boolean(item.opticalClaimId));
+  await runtime.page.locator("[data-incident-lens-root]").waitFor();
+  const claimCount = await runtime.page.locator("[data-incident-lens-claim-control]").count();
+  assert(claimCount >= 1, "Incident Split Lens keyboard test requires a follow-up claim control", { claimCount });
+  const claimFocus = await tabTo(runtime.page, "Incident Split Lens follow-up claim control", (item) => Boolean(item.incidentLensClaimId));
   assert(
     claimFocus.focusVisible && claimFocus.outline.width >= 2 && claimFocus.outline.style !== "none" &&
       claimFocus.rect?.width >= 44 && claimFocus.rect?.height >= 44 && claimFocus.viewportVisible && !claimFocus.clippedByAncestor,
-    "keyboard-focused Optical Patrol claim control lacks a visible, unclipped 44px :focus-visible target",
+    "keyboard-focused Incident Split Lens claim control lacks a visible, unclipped 44px :focus-visible target",
     claimFocus,
   );
-  const initialSelection = await runtime.page.locator("[data-optical-patrol-expanded-claim]").getAttribute("data-optical-patrol-expanded-claim");
+  const initialSelection = await runtime.page.locator("[data-incident-lens-expanded-claim]").getAttribute("data-incident-lens-expanded-claim");
   await runtime.page.keyboard.press("Enter");
   await runtime.page.waitForFunction((id) => {
-    const expanded = document.querySelector("[data-optical-patrol-expanded-claim]");
-    const selectedId = expanded?.getAttribute("data-optical-patrol-expanded-claim") || "";
+    const expanded = document.querySelector("[data-incident-lens-expanded-claim]");
+    const selectedId = expanded?.getAttribute("data-incident-lens-expanded-claim") || "";
     return Boolean(selectedId && selectedId !== id && document.activeElement === expanded);
   }, initialSelection);
   const selection = await runtime.page.evaluate(() => {
-    const root = document.querySelector("[data-optical-patrol-root]");
-    const expanded = root?.querySelector("[data-optical-patrol-expanded-claim]");
-    const selectedId = expanded?.getAttribute("data-optical-patrol-expanded-claim") || "";
+    const root = document.querySelector("[data-incident-lens-root]");
+    const expanded = root?.querySelector("[data-incident-lens-expanded-claim]");
+    const selectedId = expanded?.getAttribute("data-incident-lens-expanded-claim") || "";
     const active = document.activeElement;
     const style = active instanceof Element ? getComputedStyle(active) : null;
-    const history = window.history.state?.panelOpticalPatrol || null;
+    const history = window.history.state?.panelIncidentLens || null;
     return {
       selectedClaimId: selectedId,
       expandedClaimId: expanded?.id || "",
-      expectedFocusId: selectedId ? `optical-claim-${encodeURIComponent(selectedId)}` : "",
+      expectedFocusId: selectedId ? `incident-lens-claim-${encodeURIComponent(selectedId)}` : "",
       focusedId: active?.id || "",
       focusVisible: active instanceof Element && active.matches(":focus-visible"),
       outline: { width: Number.parseFloat(style?.outlineWidth || "0"), style: style?.outlineStyle || "none" },
+      boxShadow: style?.boxShadow || "none",
       history,
     };
   });
   assert(
     selection.selectedClaimId && selection.expandedClaimId === selection.expectedFocusId &&
       selection.focusedId === selection.expectedFocusId && selection.focusVisible &&
-      selection.outline.width >= 2 && selection.outline.style !== "none",
-    "keyboard claim selection did not focus its matching Optical Patrol expanded claim",
+      ((selection.outline.width >= 2 && selection.outline.style !== "none") || /3px\s+0px\s+0px\s+0px\s+inset/.test(selection.boxShadow)),
+    "keyboard claim selection did not focus its matching Incident Split Lens expanded claim",
     { claimFocus, initialSelection, selection },
   );
   assert(
     selection.history?.version === 1 && typeof selection.history?.scope === "string" && selection.history.scope.length > 0 &&
       selection.history.selectedId === selection.selectedClaimId,
-    "keyboard claim selection did not write the Optical Patrol scoped history state",
+    "keyboard claim selection did not write the Incident Split Lens scoped history state",
     { claimFocus, initialSelection, selection },
   );
   return { claimFocus, initialSelection, selection };
@@ -1688,24 +1702,23 @@ async function inspectForcedColorsRouteDetails() {
   }
 }
 
-async function inspectExpandedOpticalClaimAccessibleNameWithRuntime(runtime) {
+async function inspectExpandedIncidentLensClaimAccessibleNameWithRuntime(runtime) {
   await visitRoute(runtime.page, runtime.mock.url, "overview", { requireWorkspace: false });
-  const selector = "[data-optical-patrol-expanded-claim]";
+  const selector = "[data-incident-lens-expanded-claim]";
   const claim = runtime.page.locator(selector);
   await claim.waitFor();
   const dom = await claim.evaluate((node) => ({
-    claimId: node.getAttribute("data-optical-patrol-expanded-claim") || "",
+    claimId: node.getAttribute("data-incident-lens-expanded-claim") || "",
     domId: node.id || "",
     visibleName: (node.textContent || "").replace(/\s+/g, " ").trim(),
-    labelledBy: node.getAttribute("aria-labelledby") || "",
-    heading: document.getElementById(node.getAttribute("aria-labelledby") || "")?.textContent?.replace(/\s+/g, " ").trim() || "",
-    history: window.history.state?.panelOpticalPatrol || null,
+    accessibleLabel: node.getAttribute("aria-label") || "",
+    history: window.history.state?.panelIncidentLens || null,
   }));
   const cdp = await runtime.page.context().newCDPSession(runtime.page);
   await cdp.send("Accessibility.enable");
   const documentNode = await cdp.send("DOM.getDocument", { depth: 0, pierce: true });
   const queried = await cdp.send("DOM.querySelector", { nodeId: documentNode.root.nodeId, selector });
-  assert(queried.nodeId > 0, "expanded Optical Patrol claim was not addressable in the accessibility tree", { dom });
+  assert(queried.nodeId > 0, "expanded Incident Split Lens claim was not addressable in the accessibility tree", { dom });
   const partialTree = await cdp.send("Accessibility.getPartialAXTree", { nodeId: queried.nodeId, fetchRelatives: false });
   const claimNode = partialTree.nodes.find((node) => !node.ignored && ["region", "generic", "group"].includes(String(node.role?.value || "")));
   const accessibleName = String(claimNode?.name?.value || "").replace(/\s+/g, " ").trim();
@@ -1721,18 +1734,18 @@ async function inspectExpandedOpticalClaimAccessibleNameWithRuntime(runtime) {
     normalizedAccessibleName: accessibleName.replace(/\s+/g, ""),
   };
   assert(
-    dom.claimId && dom.domId === `optical-claim-${encodeURIComponent(dom.claimId)}` && dom.labelledBy && dom.heading,
-    "expanded Optical Patrol claim lacks its stable id or labelled heading",
+    dom.claimId && dom.domId === `incident-lens-claim-${encodeURIComponent(dom.claimId)}` && dom.accessibleLabel,
+    "expanded Incident Split Lens claim lacks its stable id or accessible name",
     evidence,
   );
   assert(
-    headings.includes(dom.heading) && (accessibleName.includes(dom.heading) || evidence.normalizedVisibleName.includes(dom.heading.replace(/\s+/g, ""))),
-    "accessibility tree omitted the expanded Optical Patrol claim heading",
+    accessibleName.includes(dom.accessibleLabel) || evidence.normalizedVisibleName.includes(dom.accessibleLabel.replace(/\s+/g, "")),
+    "accessibility tree omitted the expanded Incident Split Lens claim name",
     evidence,
   );
   assert(
     dom.history?.version === 1 && typeof dom.history?.scope === "string" && dom.history.scope.length > 0 && dom.history.selectedId === dom.claimId,
-    "expanded Optical Patrol claim is not reflected by its scoped history state",
+    "expanded Incident Split Lens claim is not reflected by its scoped history state",
     evidence,
   );
   return evidence;
@@ -1750,9 +1763,9 @@ async function inspectStandardInteractionAccessibility() {
 }
 
 async function inspectStandardInteractionAccessibilityWithRuntime(runtime) {
-  const expandedOpticalClaimAccessibleName = await inspectExpandedOpticalClaimAccessibleNameWithRuntime(runtime);
+  const expandedIncidentLensClaimAccessibleName = await inspectExpandedIncidentLensClaimAccessibleNameWithRuntime(runtime);
   const keyboardFocusVisible = await inspectKeyboardFocusVisibleWithRuntime(runtime);
-  return { expandedOpticalClaimAccessibleName, keyboardFocusVisible };
+  return { expandedIncidentLensClaimAccessibleName, keyboardFocusVisible };
 }
 
 async function main() {
@@ -1796,11 +1809,11 @@ async function main() {
       ? textResize
       : null;
   const reducedMotionAndOffline = await runStage("reduced-motion-and-offline", inspectReducedMotionAndOffline);
-  const offlineOpticalPatrol = reducedMotionAndOffline.offlineOpticalPatrol;
+  const offlineIncidentLens = reducedMotionAndOffline.offlineIncidentLens;
   const reducedMotion = reducedMotionAndOffline.reducedMotion;
   const standardInteractions = browserTextResizeReflow?.afterInspectionEvidence || textResize?.afterInspectionEvidence ||
     await runStage("standard-interactions", inspectStandardInteractionAccessibility);
-  const expandedOpticalClaimAccessibleName = standardInteractions.expandedOpticalClaimAccessibleName;
+  const expandedIncidentLensClaimAccessibleName = standardInteractions.expandedIncidentLensClaimAccessibleName;
   const keyboardFocusVisible = standardInteractions.keyboardFocusVisible;
   const forcedColors = await runStage("forced-colors-route-details", inspectForcedColorsRouteDetails);
   const report = {
@@ -1856,8 +1869,8 @@ async function main() {
         boundary: "Physical iOS Dynamic Type and Android system font-size require a device-level manual acceptance record; this automated Chromium gate does not claim either.",
       },
     },
-    offlineOpticalPatrol,
-    expandedOpticalClaimAccessibleName,
+    offlineIncidentLens,
+    expandedIncidentLensClaimAccessibleName,
     keyboardFocusVisible,
     reducedMotion,
     forcedColors: forcedColors.evidence,

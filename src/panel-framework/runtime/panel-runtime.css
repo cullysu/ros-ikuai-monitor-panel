@@ -89,6 +89,12 @@
 .panel-runtime-empty button:first-child { border-color: #0b6488; color: #fff; background: #0d6a8e; }
 @media (max-width: 359px) {
   .panel-runtime-device > span { white-space: normal; }
+  .panel-runtime-bar-mobile .panel-runtime-device b {
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 @media (max-width: 399px) {
   .panel-runtime-bar-mobile {
@@ -218,5 +224,22 @@
 @media (min-width: 600px) and (max-width: 1199px) {
   .panel-runtime-notice {
     margin-inline-start: 70px;
+  }
+}
+
+@media (max-width: 359px) {
+  .panel-runtime-bar-mobile .panel-runtime-mode { width: 34px; min-width: 34px; padding-inline: 0; justify-content: center; }
+  .panel-runtime-bar-mobile .panel-runtime-mode > span { display: none; }
+  .panel-runtime-bar-mobile .panel-runtime-device b {
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .panel-runtime-live[data-panel-large-text="true"] .panel-runtime-bar-mobile .panel-runtime-device b {
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
   }
 }

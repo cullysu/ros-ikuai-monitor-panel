@@ -5,9 +5,10 @@ const root = path.resolve(__dirname, "..");
 const gates = [
   "check-overview-architecture.js",
   "check-overview-ikuai-static.js",
-  "check-optical-patrol-model.js",
-  "check-optical-patrol-architecture.js",
-  "check-optical-patrol-accessibility-static.js",
+  "check-incident-lens-contract.js",
+  "check-incident-lens-model.js",
+  "check-incident-lens-architecture.js",
+  "check-incident-lens-accessibility-static.js",
   "check-normal-verdict-contract.js",
   "check-verdict-truth-contract.js",
   "check-atomic-traffic-history.js",
@@ -46,5 +47,5 @@ for (const gate of gates) {
 }
 
 console.log(`\noverview current contract: PASS (${gates.length} gates)`);
-console.log("Optical Patrol model, semantic ownership, accessibility structure, truth, desktop continuity, and source-built WAN geometry are all required.");
-console.log("LIMITATION: Optical Patrol runtime, original-image Product/Visual sign-off, and full release matrices remain separate release gates.");
+console.log("Incident Split Lens model, isolated semantic ownership, accessibility structure, truth, desktop continuity, and source-built WAN geometry are all required.");
+console.log("LIMITATION: Incident Split Lens runtime, original-image Product/Visual sign-off, and full release matrices remain separate release gates.");

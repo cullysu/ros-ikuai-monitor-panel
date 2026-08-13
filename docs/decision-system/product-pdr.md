@@ -1,12 +1,12 @@
 # Product Decision Record — Operations console acceptance
 
-- status: `current-draft`
-- validForCommit: Step938 exact local-independent Product/Design/Visual/Accessibility/Engineering P0/P1 closure; current release truth is delegated to `docs/decision-system/current-state.md`
-- currentPointer: Step938 `938:fourth-exact-review-p0p1-zero-local-signoff-closed-release-closed`
-- currentBoundary: Step938 local four-role review is P0/P1=0 for artifact 188e; full route/state/security, tablet/physical-device P2, RouterOS soak, clean exact SHA, authorization and external CL remain open; public release closed
+- status: `current-local-acceptance`
+- validForCommit: Step946 Incident Split Lens exact dirty-worktree Product/Design/Visual/Accessibility/Engineering P0/P1/P2 closure; current release truth is delegated to `docs/decision-system/current-state.md`
+- currentPointer: Step946 `946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed`
+- currentBoundary: Step946 local four-role review is P0/P1/P2=0 for artifact `worktree-4162a99b38d5-be3181b1a21f`; full route/state/security, physical-device evidence, RouterOS soak, clean exact SHA, authorization and external CL remain open; public release closed
 - supersededBy: `null`
 - decisionOwner: independent product acceptance remains external to the implementation loop
-- authorityNote: step sections below are historical or focused evidence; Step938 structured reviews close only local exact-artifact Product/Design/Visual/Accessibility/Engineering P0/P1 and explicitly do not grant promotion or public-release acceptance.
+- authorityNote: step sections below are historical or focused evidence; Step946 structured reviews close only local exact-artifact Product/Design/Visual/Accessibility/Engineering P0/P1/P2 and explicitly do not grant promotion or public-release acceptance.
 
 ## Operator decision
 

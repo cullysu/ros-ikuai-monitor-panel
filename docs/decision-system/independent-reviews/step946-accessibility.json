@@ -1,0 +1,44 @@
+{
+  "schema": "independent-review/v1",
+  "step": 946,
+  "role": "accessibility-interaction",
+  "scope": "local-independent-scope",
+  "releaseEligible": false,
+  "reviewerAgentId": "019ffbc6-56fc-7062-b8d2-fee3a9be2063",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/incident-lens-runtime/report.json",
+    "_acceptance/responsive-boundary-current/report.json",
+    "_acceptance/mobile-accessibility-runtime-v2/rendered-scale-reflow-fixture/report.json",
+    "src/panel-framework/overview/mobile-overview/incident-lens/useIncidentLensSelectionHistory.ts",
+    "tools/check-mobile-accessibility-runtime-v2.js",
+    "tools/check-incident-lens-accessibility-static.js"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-4162a99b38d5-be3181b1a21f",
+    "worktreeFingerprint": "be3181b1a21f1b26dd14f209bd325e4aa46f30356f0e8ba55d5a767e956f7d8a",
+    "generatedAt": "2026-08-13T16:23:14.524Z",
+    "commit": "4162a99b38d5aed13da6008229cae6cfcc1f0b2d",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "touch-focus-and-semantics",
+      "result": "pass",
+      "summary": "44px targets, visible focus, native button semantics, pressed state and one polite atomic status pass."
+    },
+    {
+      "id": "real-history-restoration",
+      "result": "pass",
+      "summary": "Real Back/Forward restores selection, owner scroll and focus; the test does not inject application history state."
+    },
+    {
+      "id": "rendered-scale-and-motion-boundary",
+      "result": "pass",
+      "summary": "Declared Chromium rendered-scale reflow, reduced motion and forced colors pass without claiming physical-device settings."
+    }
+  ]
+}

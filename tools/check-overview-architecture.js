@@ -36,18 +36,15 @@ const required = [
   "desktop-overview/DesktopOverviewScreen.tsx",
   "desktop-overview/DesktopIncidentDocket.tsx",
   "mobile-overview/MobileOverviewEntry.tsx",
-  "mobile-overview/optical-patrol/OpticalPatrol.tsx",
-  "mobile-overview/optical-patrol/OpticalPatrolClaim.tsx",
-  "mobile-overview/optical-patrol/OpticalPatrolEvidenceDeck.tsx",
-  "mobile-overview/optical-patrol/buildOpticalPatrolModel.ts",
-  "mobile-overview/optical-patrol/opticalPatrolTypes.ts",
-  "mobile-overview/optical-patrol/useOpticalPatrolSelectionHistory.ts",
-  "mobile-overview/optical-patrol/styles/tokens.css",
-  "mobile-overview/optical-patrol/styles/shell.css",
-  "mobile-overview/optical-patrol/styles/claims.css",
-  "mobile-overview/optical-patrol/styles/workbench.css",
-  "mobile-overview/optical-patrol/styles/responsive.css",
-  "mobile-overview/optical-patrol/styles/motion.css",
+  "mobile-overview/incident-lens/IncidentLens.tsx",
+  "mobile-overview/incident-lens/PatrolLens.tsx",
+  "mobile-overview/incident-lens/IncidentWorkspace.tsx",
+  "mobile-overview/incident-lens/buildIncidentLensModel.ts",
+  "mobile-overview/incident-lens/types.ts",
+  "mobile-overview/incident-lens/useIncidentLensSelectionHistory.ts",
+  "mobile-overview/incident-lens/styles/tokens.css",
+  "mobile-overview/incident-lens/styles/layout.css",
+  "mobile-overview/incident-lens/styles/motion.css",
 ];
 
 for (const file of required) {
@@ -86,8 +83,32 @@ if (fs.existsSync(overviewPanel)) {
   if (!/import\s+\{\s*DesktopOverviewScreen\s*\}/.test(source) || !/<DesktopOverviewScreen\b/.test(source)) {
     failures.push("OverviewPanel does not preserve the independent desktop overview entry");
   }
-  if (/MobilePatrol|mobile-patrol|MobileLinkboard|NativeOperationsCanvas|operationsPrimitives|LinkboardScene/.test(source)) failures.push("OverviewPanel references a retired mobile presentation");
+  if (/MobilePatrol|mobile-patrol|MobileLinkboard|NativeOperationsCanvas|operationsPrimitives|LinkboardScene|OpticalPatrol|opticalPatrol|optical-patrol/.test(source)) failures.push("OverviewPanel references a retired mobile presentation");
   if (lines(overviewPanel) > 260) failures.push(`OverviewPanel exceeds 260-line ownership budget: ${lines(overviewPanel)}`);
+}
+
+const mobileEntry = path.join(mobileRoot, "MobileOverviewEntry.tsx");
+const incidentLensRoot = path.join(mobileRoot, "incident-lens");
+const incidentLensEntry = path.join(incidentLensRoot, "IncidentLens.tsx");
+const incidentLensHistory = path.join(incidentLensRoot, "useIncidentLensSelectionHistory.ts");
+const incidentLensModel = path.join(incidentLensRoot, "buildIncidentLensModel.ts");
+if (fs.existsSync(mobileEntry)) {
+  const source = read(mobileEntry);
+  if (!/incident-lens/.test(source) || !/<IncidentLens\b/.test(source)) failures.push("MobileOverviewEntry does not mount the Incident Split Lens owner");
+  if (/OpticalPatrol|opticalPatrol|optical-patrol/.test(source)) failures.push("MobileOverviewEntry references retired Optical Patrol ownership");
+}
+if (fs.existsSync(incidentLensEntry)) {
+  const source = read(incidentLensEntry);
+  if (!/data-incident-lens-root/.test(source) || !/data-incident-lens-evidence-mode/.test(source)) failures.push("Incident Split Lens owner does not expose its root and evidence boundaries");
+}
+if (fs.existsSync(incidentLensModel) && !/export\s+function\s+buildIncidentLensModel\b/.test(read(incidentLensModel))) {
+  failures.push("Incident Split Lens does not export its typed model owner");
+}
+if (fs.existsSync(incidentLensHistory)) {
+  const source = read(incidentLensHistory);
+  if (!/panelIncidentLens/.test(source) || !/pushState/.test(source) || !/popstate/.test(source) || !/scrollTop/.test(source)) {
+    failures.push("Incident Split Lens does not retain scoped selection history ownership");
+  }
 }
 
 const mobileSources = walk(mobileRoot, [".ts", ".tsx"]);
@@ -95,7 +116,7 @@ const desktopSources = walk(desktopRoot, [".ts", ".tsx"]);
 for (const file of mobileSources) {
   const source = read(file);
   if (/desktop-overview|DesktopOverview/.test(source)) failures.push(`mobile tree imports desktop ownership: ${relative(file)}`);
-  if (/MobilePatrol|mobile-patrol|lbs__|MobileLinkboard|NativeOperationsCanvas|operationsPrimitives|LinkboardTimeEvidence|linkboardModel|PocketConsole|pocketConsole|data-pocket|\.pc__/.test(source)) failures.push(`mobile tree references retired presentation grammar: ${relative(file)}`);
+  if (/MobilePatrol|mobile-patrol|lbs__|MobileLinkboard|NativeOperationsCanvas|operationsPrimitives|LinkboardTimeEvidence|linkboardModel|PocketConsole|pocketConsole|data-pocket|\.pc__|OpticalPatrol|opticalPatrol|optical-patrol/.test(source)) failures.push(`mobile tree references retired presentation grammar: ${relative(file)}`);
   const budget = file.endsWith(".tsx") ? 330 : 500;
   if (lines(file) > budget) failures.push(`mobile module exceeds ${budget}-line budget: ${relative(file)} (${lines(file)})`);
 }
@@ -105,7 +126,7 @@ for (const file of desktopSources) {
   }
 }
 
-const mobileCss = walk(path.join(mobileRoot, "optical-patrol", "styles"), [".css"]);
+const mobileCss = walk(path.join(mobileRoot, "incident-lens", "styles"), [".css"]);
 let mobileCssLines = 0;
 for (const file of mobileCss) {
   const source = read(file);
@@ -113,8 +134,8 @@ for (const file of mobileCss) {
   if (/!important/.test(source)) failures.push(`mobile overview CSS uses !important: ${relative(file)}`);
   for (const match of source.matchAll(/([^{}]+)\{([^{}]*(?:linear|radial|conic)-gradient\s*\([^{}]*)\}/gi)) {
     const selector = match[1].trim();
-    const functionalGradient = /\.op__(?:chrome|task-nav)(?::|\b)/.test(selector)
-      || /\.op__threshold::before/.test(selector);
+    const functionalGradient = /\.incident-lens__(?:chrome|nav)(?::|\b)/.test(selector)
+      || /\.incident-lens__meter::before/.test(selector);
     if (!functionalGradient) {
       failures.push(`mobile overview CSS uses a decorative content gradient: ${relative(file)} (${selector})`);
     }

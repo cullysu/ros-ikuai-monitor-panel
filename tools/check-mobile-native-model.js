@@ -29,8 +29,8 @@ const { buildOverviewEvidenceModel } = require(
 const { OVERVIEW_RISK_PRIORITY } = require(
   path.join(root, "src", "panel-framework", "overview", "evidence-model", "buildOverviewRiskQueue.ts")
 );
-const { buildOpticalPatrolModel } = require(
-  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "buildOpticalPatrolModel.ts")
+const { buildIncidentLensModel } = require(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "incident-lens", "buildIncidentLensModel.ts")
 );
 const { buildOverviewComparisonObjects } = require(
   path.join(root, "src", "panel-framework", "overview", "evidence-model", "buildOverviewComparisonObjects.ts")
@@ -83,16 +83,31 @@ function rowsFromModel(route, model) {
   });
   return rowsFromSectionModel(route, { ...model, tables });
 }
-const opticalPatrolSource = fs.readFileSync(
-  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "OpticalPatrol.tsx"),
+const incidentLensSource = fs.readFileSync(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "incident-lens", "IncidentLens.tsx"),
   "utf8",
 );
-const opticalGeometrySource = fs.readFileSync(
-  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "optical-patrol", "OpticalPatrolClaimGeometry.tsx"),
+const incidentHistorySource = fs.readFileSync(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "incident-lens", "useIncidentLensSelectionHistory.ts"),
   "utf8",
 );
-assert.match(opticalPatrolSource, /OpticalPatrolEvidenceDeck/, "tablet Optical Patrol must mount its evidence workbench");
-assert.match(opticalGeometrySource, /data-optical-patrol-relationship/, "Optical Patrol must expose object relationships as semantic evidence");
+const incidentPatrolSource = fs.readFileSync(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "incident-lens", "PatrolLens.tsx"),
+  "utf8",
+);
+const incidentWorkspaceSource = fs.readFileSync(
+  path.join(root, "src", "panel-framework", "overview", "mobile-overview", "incident-lens", "IncidentWorkspace.tsx"),
+  "utf8",
+);
+assert.match(incidentLensSource, /data-incident-lens-root/, "Incident Split Lens must expose its isolated owner boundary");
+assert.match(incidentLensSource, /data-incident-lens-evidence-mode/, "Incident Split Lens must expose its evidence mode boundary");
+assert.match(incidentPatrolSource, /data-incident-lens-evidence-deck/, "Incident Split Lens patrol owner must mount its evidence workbench");
+assert.match(incidentWorkspaceSource, /data-incident-lens-impact/, "Incident Split Lens incident owner must expose impact evidence");
+assert.match(incidentWorkspaceSource, /data-incident-lens-evidence/, "Incident Split Lens incident owner must expose investigation evidence");
+assert.match(incidentHistorySource, /panelIncidentLens/, "Incident Split Lens selection history must remain scoped to its owner");
+assert.match(incidentHistorySource, /pushState/, "Incident Split Lens selection must create a browser history entry");
+assert.match(incidentHistorySource, /popstate/, "Incident Split Lens must restore selection from browser history");
+assert.match(incidentHistorySource, /scrollTop/, "Incident Split Lens history must preserve owner scroll state");
 
 const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot));
@@ -1050,9 +1065,12 @@ assert.match(fleetModel.verdictTitle, /^\d+ 个出口依赖接口未运行$/);
 assert.equal(fleetModel.verdictSummary, "先核对出口冗余；不据此声明互联网中断。");
 assert.deepEqual(fleetModel.facts.map((row) => row.key), ["route", "wan", "collection"]);
 assert.equal(fleetModel.priorityObjects[0].route, "interfaces", "the first fleet risk object must route to interfaces");
-const fleetOpticalModel = buildOpticalPatrolModel(fleetModel, fleetState);
-assert.equal(fleetOpticalModel.claims[0].kind, "interface", "the default fleet claim must follow the highest verified risk");
-assert.equal(fleetOpticalModel.claims[0].action.route, "interfaces", "the default fleet action must inspect the highest-risk object");
+const fleetIncidentLensModel = buildIncidentLensModel(fleetModel, fleetState);
+assert.equal(fleetIncidentLensModel.surface, "incident", "the highest verified fleet risk must select the Incident Lens workspace");
+assert.equal(fleetIncidentLensModel.incident?.kind, "interfaces", "the Incident Lens must preserve the highest-risk interface object");
+assert.equal(fleetIncidentLensModel.incident?.action?.route, "interfaces", "the Incident Lens action must inspect the highest-risk object");
+assert.equal(fleetIncidentLensModel.defaultSelectedId, fleetIncidentLensModel.incident?.id, "the Incident Lens must select its primary incident object by default");
+assert.equal(fleetIncidentLensModel.secondaryObjects.some((object) => object.kind === fleetIncidentLensModel.incident?.kind), false, "secondary Incident Lens objects must not replay the primary incident kind");
 assert.ok(fleetModel.coverageObjects.some((row) => row.category === "WAN"));
 assert.ok(fleetModel.coverageObjects.some((row) => row.category === "接口"));
 
@@ -1067,12 +1085,13 @@ assert.equal(singleModel.scenarioFocus, null);
 assert.equal(singleModel.focusObject.category, "活动默认路由");
 assert.equal(singleModel.focusObject.route, "routes");
 assert.deepEqual(singleModel.facts.map((row) => row.key), ["route", "wan", "collection"], "shared/desktop facts retain route verification");
-const singleOpticalModel = buildOpticalPatrolModel(singleModel, singleState);
-assert.equal(singleOpticalModel.evidence.mode, "current", "Optical Patrol must preserve the shared current evidence boundary");
-assert.equal(singleOpticalModel.evidence.observedAt, singleModel.evidenceAt, "Optical Patrol must preserve the qualified observation timestamp");
-assert.equal(singleOpticalModel.claims[0].kind, "route", "normal Optical Patrol must lead with the verified route object");
-assert.ok(singleOpticalModel.claims.some((claim) => claim.kind === "collection"), "collection evidence remains a distinct follow-up claim");
-assert.equal(singleOpticalModel.defaultSelectedId, singleOpticalModel.claims[0].id, "the default inspection object must follow evidence priority");
+const singleIncidentLensModel = buildIncidentLensModel(singleModel, singleState);
+assert.equal(singleIncidentLensModel.surface, "patrol", "risk-free current evidence must select the Incident Lens patrol owner");
+assert.equal(singleIncidentLensModel.command.mode, "current", "Incident Lens must preserve the shared current evidence boundary");
+assert.equal(singleIncidentLensModel.command.observedAt, singleModel.evidenceAt, "Incident Lens must preserve the qualified observation timestamp");
+assert.equal(singleIncidentLensModel.secondaryObjects[0].kind, "route", "normal Incident Lens patrol must lead with the verified route object");
+assert.ok(singleIncidentLensModel.patrolObjects.some((object) => object.kind === "collection"), "collection evidence remains a distinct Incident Lens object");
+assert.equal(singleIncidentLensModel.defaultSelectedId, singleIncidentLensModel.secondaryObjects[0].id, "the default Incident Lens inspection object must follow evidence priority");
 assert.deepEqual(
   singleModel.focusObject.attributes,
   [
