@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step964 mobile readability repair PASS / release CLOSED**.
+RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step965 local veto remediation PASS / release CLOSED**.
 
-这是当前面板工作的本地决策仓库镜像。Step964 修复首轮 exact matrix 揭露的手机 11.11px 小字回归，active shell 恢复 12px floor，wide/narrow smoke 与固定资产预算通过。CSS cascade 已变化，旧视觉复核和红色矩阵均历史化；提交后必须重建 clean exact-SHA 全量证据。任务 active、`blocked=false`，GitHub 未上传。
+这是当前面板工作的本地决策仓库镜像。Step965 修复 db5 独立评审揭露的本地产品根因：桌面基础组件契约断层、667×375 两列压缩、错误的持久化点击目标、通用异常文案与 reduced-preference 缺口。Focused runtime、桌面套件和固定资产预算通过；新的 clean exact-SHA 全量证据尚未生成。任务 active、`blocked=false`，GitHub 未上传。
 
 - status: `current-mirror-entry`
-- currentStep: `964`
-- currentOutcome: `964:mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required`
-- currentBoundary: `964`
+- currentStep: `965`
+- currentOutcome: `965:db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required`
+- currentBoundary: `965`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -24,7 +24,7 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step964 mobi
 
 ## 当前边界
 
-当前产品结论：**FAIL overall / Step964 mobile readability repair PASS / release CLOSED**。12px text floor、固定资产预算和 focused runtime 已通过，但新的 clean exact candidate、Product/Design/Visual、Accessibility/Security 与完整矩阵必须重放；真实 reviewer/AT、RouterOS 300s soak、五角色签名、可信 promotion 与 exact remote SHA Linux/Windows/GHCR CL 尚未完成。
+当前产品结论：**FAIL overall / Step965 local remediation PASS / release CLOSED**。当前工作树仍需提交为 clean candidate，并重建 Overview 28、完整 route-responsive 532、route-state 266、真实 Edge 200%、Accessibility/Security、完整 release gates 与四路新签收；真实 reviewer/AT、RouterOS 300s soak、五角色签名、可信 promotion 与 exact remote SHA Linux/Windows/GHCR CL 尚未完成。
 
 ## 过程怎么记录
 
@@ -34,4 +34,4 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step964 mobi
 
 每个材料性切片结束后更新仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Historical Step858–963 remains in `decision-system\historical-index.md` and the full decision log. Step964 is the current truth boundary. Historical green reports and local review never satisfy whole-product release qualification by themselves.
+Historical Step858–964 remains in `decision-system\historical-index.md` and the full decision log. Step965 is the current truth boundary. Historical green reports and local review never satisfy whole-product release qualification by themselves.

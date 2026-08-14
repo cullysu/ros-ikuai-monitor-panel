@@ -30,6 +30,16 @@ function activeScene(model: IncidentLensModel): IncidentLensModel["scenario"] {
   return model.scenario;
 }
 
+function sceneLabel(model: IncidentLensModel): string {
+  if (model.surface !== "incident") return "只读巡检";
+  if (model.risk === "interfaces" || model.risk === "interface-review") return "接口核验";
+  if (model.risk === "resource") return "资源核验";
+  if (model.risk === "collection") return "采集核验";
+  if (model.risk === "evidence") return "快照核验";
+  if (model.risk === "wan") return "出口核验";
+  return "异常核验";
+}
+
 export interface IncidentLensProps {
   model: IncidentLensModel;
   scope?: string;
@@ -53,7 +63,7 @@ export function IncidentLens({ model, scope = "overview", runtimeManaged = false
   const routeTitle = model.surface === "incident"
     ? selectedObject?.title || model.incident?.title || "当前风险"
     : selectedObject?.title || "默认路径";
-  const sceneLabel = model.surface === "incident" ? "事故检查" : "巡检";
+  const currentSceneLabel = sceneLabel(model);
   const allOfflineSummary = model.surface === "incident" && model.scenario === "all-offline"
     ? `${model.incident?.state || "0 / 0"} 可用 · 无活动默认路径`
     : null;
@@ -66,7 +76,7 @@ export function IncidentLens({ model, scope = "overview", runtimeManaged = false
     <section className="incident-lens__status-spine" data-incident-lens-command data-incident-lens-evidence-boundary data-incident-lens-tone={model.command.tone} role="status" aria-live="polite" aria-atomic="true" aria-label="当前证据与检查对象">
       <span className="incident-lens__proof"><span><i aria-hidden="true" />{model.command.label}</span><time dateTime={model.command.observedAt || undefined}>{model.command.time}</time></span>
       <h1 id={titleId} data-panel-route-title data-incident-lens-route-title tabIndex={-1} className="incident-lens__route-title">
-        <small>{sceneLabel}</small>
+        <small>{currentSceneLabel}</small>
         {allOfflineSummary ? "全部 WAN 未运行" : routeTitle}
         {allOfflineSummary ? <span className="incident-lens__route-subtitle">{allOfflineSummary}</span> : null}
       </h1>

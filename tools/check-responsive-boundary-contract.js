@@ -431,7 +431,7 @@ async function inspectSelectionPersistence(runtime) {
   const start = await openOverview(runtime, tablet768, "single");
   assertIncidentLensCell(start, tablet768, "single");
   const previousId = start.selectedClaim;
-  const nextControl = page.locator("[data-incident-lens-claim-control]").first();
+  const nextControl = page.locator('[data-incident-lens-claim-control][aria-pressed="false"]').first();
   await nextControl.waitFor({ timeout: ACTION_TIMEOUT_MS });
   await nextControl.click();
   await page.waitForFunction(

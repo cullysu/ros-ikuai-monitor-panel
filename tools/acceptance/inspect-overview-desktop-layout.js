@@ -67,6 +67,11 @@ function inspectOverviewDesktopLayout({
   };
 
   const statusBus = desktopRoot.querySelector('[data-desktop-status-bus]');
+  const desktopStyleLink = document.querySelector('link[data-overview-framework-asset="desktop-style"]');
+  const desktopStyleHref = desktopStyleLink?.href || '';
+  const desktopStyleSheetPresent = Array.from(document.styleSheets).some((sheet) => sheet.href === desktopStyleHref);
+  const desktopStyleMediaMatches = desktopStyleLink ? matchMedia(desktopStyleLink.media || 'all').matches : false;
+  const desktopComputed = getComputedStyle(desktopRoot);
   const verdict = statusBus?.querySelector('.do-verdict');
   const verdictTitle = verdict?.querySelector('h1');
   const statusItems = Array.from(statusBus?.querySelectorAll('[data-desktop-status-item]') || []);
@@ -350,6 +355,7 @@ function inspectOverviewDesktopLayout({
     noHorizontalOverflow: overflowX <= 1,
     viewport: Boolean(rootRect && sectionRect && Math.abs(rootRect.left - sectionRect.left) <= 1 && rootRect.width >= sectionRect.width - 2),
     readonly: /只读/.test(desktopText),
+    desktopStyleAsset: Boolean(desktopStyleLink && desktopStyleSheetPresent && desktopStyleMediaMatches && desktopComputed.fontSize === '14px' && rect(statusBus)?.height <= 120),
   };
   const pass = Boolean(app && active && (requested || active.id === sectionName) && !hasBadLiteral && scaleMetaOk && Object.values(checks).every(Boolean));
   const desktopOverviewLedgerProbe = {
@@ -403,6 +409,15 @@ function inspectOverviewDesktopLayout({
     lowerChildren: lowerChildren.map(rect),
     mainStacks: stackEvidence,
     checks,
+    desktopStyleAsset: {
+      href: desktopStyleHref,
+      linkPresent: Boolean(desktopStyleLink),
+      sheetPresent: desktopStyleSheetPresent,
+      media: desktopStyleLink?.media || '',
+      mediaMatches: desktopStyleMediaMatches,
+      rootFontSize: desktopComputed.fontSize,
+      statusBusHeight: rect(statusBus)?.height || 0,
+    },
   };
 
   return {

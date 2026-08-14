@@ -34,6 +34,8 @@ const required = [
   "evidence-model/buildOverviewRiskQueue.ts",
   "evidence-model/overviewEvidenceTypes.ts",
   "desktop-overview/DesktopOverviewScreen.tsx",
+  "desktop-overview/styles/desktop-overview-entry.css",
+  "desktop-overview/styles/desktop-overview-base.css",
   "desktop-overview/DesktopIncidentDocket.tsx",
   "mobile-overview/MobileOverviewEntry.tsx",
   "mobile-overview/incident-lens/IncidentLens.tsx",
@@ -87,6 +89,14 @@ if (fs.existsSync(overviewPanel)) {
   }
   if (/MobilePatrol|mobile-patrol|MobileLinkboard|NativeOperationsCanvas|operationsPrimitives|LinkboardScene|OpticalPatrol|opticalPatrol|optical-patrol/.test(source)) failures.push("OverviewPanel references a retired mobile presentation");
   if (lines(overviewPanel) > 260) failures.push(`OverviewPanel exceeds 260-line ownership budget: ${lines(overviewPanel)}`);
+}
+
+const desktopStyleEntry = path.join(desktopRoot, "styles", "desktop-overview-entry.css");
+if (fs.existsSync(desktopStyleEntry)) {
+  const source = read(desktopStyleEntry);
+  for (const owner of ["desktop-overview-tokens.css", "desktop-overview-base.css", "desktop-overview.css", "desktop-overview-responsive.css", "desktop-next.css"]) {
+    if (!source.includes(owner)) failures.push(`desktop style entry does not import active owner: ${owner}`);
+  }
 }
 
 const mobileEntry = path.join(mobileRoot, "MobileOverviewEntry.tsx");

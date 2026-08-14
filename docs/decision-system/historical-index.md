@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step964 current decision boundary; historical entries remain immutable
+- validForCommit: Step965 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `964`
-- latestRecordedStep: `964`
+- coveredStepMax: `965`
+- latestRecordedStep: `965`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.

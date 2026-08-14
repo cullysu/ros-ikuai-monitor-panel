@@ -467,6 +467,10 @@
     overflow: visible;
   }
 
+  .do-incident-triad > :only-child {
+    grid-column: 1 / -1;
+  }
+
   .do-incident-risk-column,
   .do-incident-docket-column {
     border-block: 1px solid var(--do-line);

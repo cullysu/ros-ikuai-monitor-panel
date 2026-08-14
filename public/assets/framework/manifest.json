@@ -3,30 +3,30 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "d9bf8003eaabb68a7682e393015f8b6603e75ed9a0320a5ec01bfcb00cdd005b",
-    "files": 148
+    "digest": "8d0bcacb0997e8519bfd65540d83df5758710747cc858e26c1ddf2ec1a6c536c",
+    "files": 149
   },
   "assets": {
     "script": {
-      "file": "panel-framework.6efd53950435.js",
-      "sha256": "6efd53950435985fc50c7f4adf7e71a90ae71e8cd219b901fecfef07cb25e435",
-      "bytes": 552071,
-      "gzipBytes": 159183,
-      "brotliBytes": 127960
+      "file": "panel-framework.1628513261c1.js",
+      "sha256": "1628513261c11a1ab5186a97c985d01dedb48fc0d84bc0912e134282e5c44059",
+      "bytes": 552530,
+      "gzipBytes": 159268,
+      "brotliBytes": 128007
     },
     "style": {
-      "file": "style.35d93ba7641d.css",
-      "sha256": "35d93ba7641d726e34af02f1a7a1250ce05d05569b536940d56416f59f29aca2",
-      "bytes": 117629,
-      "gzipBytes": 19074,
-      "brotliBytes": 16352
+      "file": "style.02784d8027d7.css",
+      "sha256": "02784d8027d7af2b636cf78ccdf0af8d145ebc5096e629f3df97d05ceef138fa",
+      "bytes": 118767,
+      "gzipBytes": 19168,
+      "brotliBytes": 16439
     },
     "desktopStyle": {
-      "file": "desktop-overview.254cc53c46e8.css",
-      "sha256": "254cc53c46e85601aff4ac2290553015e07781f3709fac69a507eabc6ed011ac",
-      "bytes": 24268,
-      "gzipBytes": 3943,
-      "brotliBytes": 3456
+      "file": "desktop-overview.de4fa8c07933.css",
+      "sha256": "de4fa8c07933dacd0f1f25dfc347ac5e572f1d27eed8ca15e5efbf673f6872b0",
+      "bytes": 38371,
+      "gzipBytes": 5832,
+      "brotliBytes": 5156
     }
   }
 }

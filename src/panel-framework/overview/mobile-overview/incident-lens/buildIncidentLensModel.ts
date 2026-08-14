@@ -95,9 +95,9 @@ function collectionObject(evidence: OverviewEvidenceModel, state: OverviewDerive
     id: unavailable ? "incident-lens:evidence-boundary" : failed ? `incident-lens:collection:${failed.name.toLowerCase()}` : "incident-lens:collection",
     kind: unavailable ? "evidence" : "collection",
     category: unavailable ? "证据边界" : "采集通道",
-    title: unavailable ? "业务快照" : failed?.name || "采集通道",
+    title: unavailable ? "设备快照" : failed?.name || "采集通道",
     state: unavailable ? "当前不可用" : failed?.channel.label || "当前记录",
-    summary: unavailable ? "没有当前业务快照；业务数字已撤回。" : "REST 与 SSH 的状态分别记录，不互相代偿。",
+    summary: unavailable ? "当前设备数据不可用；流量、接口与资源当前值已隐藏。" : "REST 与 SSH 的状态分别记录，不互相代偿。",
     tone: unavailable ? "danger" : failed ? "warn" : "trust",
     source: failed?.name === "REST" ? "meta.realtime + meta.slowRest" : "meta.static",
     facts: [
@@ -176,7 +176,7 @@ function interfaceObject(evidence: OverviewEvidenceModel, state: OverviewDerived
     category: priority?.category || "接口",
     title,
     state: currentAllowed ? priority?.state || `${state.facts.interfaces.online} / ${state.facts.interfaces.total}` : "当前不可判断",
-    summary: currentAllowed ? priority?.reason || "接口运行记录来自当前对象采样。" : "没有当前业务快照；接口运行值不作为当前状态显示。",
+    summary: currentAllowed ? priority?.reason || "接口运行记录来自当前对象采样。" : "当前设备快照不可用；接口运行值不作为当前状态显示。",
     tone: currentAllowed ? priority?.tone || (state.facts.interfaces.down ? "warn" : "trust") : "missing",
     source: priority?.sourcePath || "interfaces",
     facts: !currentAllowed ? [fact("当前接口", "已撤回", "missing", evidence.evidenceLabel)] : priority?.attributes.map((attribute) => fact(attribute.label, attribute.value, priority.tone)) || [
@@ -209,7 +209,7 @@ function wanObject(evidence: OverviewEvidenceModel, state: OverviewDerivedState)
     category: "WAN",
     title: "出口范围",
     state: currentAllowed ? `${state.facts.wan.online} / ${state.facts.wan.total}` : "当前不可判断",
-    summary: !currentAllowed ? "没有当前业务快照；WAN 运行值不作为当前状态显示。" : state.facts.wan.allOffline ? "所有已观测 WAN 均未运行；不伪造活动路径。" : "WAN 运行记录与默认路径独立核实。",
+    summary: !currentAllowed ? "当前设备快照不可用；WAN 运行值不作为当前状态显示。" : state.facts.wan.allOffline ? "所有已观测 WAN 均未运行；不伪造活动路径。" : "WAN 运行记录与默认路径独立核实。",
     tone: !currentAllowed ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.unknown ? "warn" : "trust",
     source: "wan",
     facts: !currentAllowed ? [fact("当前 WAN", "已撤回", "missing", evidence.evidenceLabel)] : [

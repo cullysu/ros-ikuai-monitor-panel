@@ -150,13 +150,13 @@ function TabletIncidentRelations({ model }: { model: IncidentLensModel }) {
       ? [
         { label: "出口恢复", value: "至少一个 WAN 重新运行", note: "以新的接口运行记录确认" },
         { label: "路径恢复", value: "出现可核验活动默认路径", note: "必须由 route 与 WAN 明确关联" },
-        { label: "数值恢复", value: "新业务快照到达后再显示", note: "历史速率不冒充当前速率" },
+        { label: "数值恢复", value: "新设备快照到达后再显示", note: "历史速率不冒充当前速率" },
       ]
       : model.risk === "collection" || model.risk === "evidence"
         ? [
           { label: "管理通道", value: "REST 与 SSH 分别恢复", note: "任一通道结果不替代另一通道" },
           { label: "转发边界", value: "不由管理连通性推断", note: "WAN 与默认路径需独立记录" },
-          { label: "数值恢复", value: "新业务快照到达后再显示", note: "缺失观测保持不可用" },
+          { label: "数值恢复", value: "新设备快照到达后再显示", note: "缺失观测保持不可用" },
         ]
         : [
           { label: "接口恢复", value: "运行标记回到预期状态", note: "以新的接口快照确认" },
@@ -195,7 +195,7 @@ export function IncidentWorkspace({ model, selectedId, onSelect, onOpen }: { mod
           ? <OfflineScene {...props} />
           : <SnapshotScene {...props} />;
 
-  return <section className="incident-lens__incident incident-lens__incident--next" data-incident-lens-incident data-incident-lens-risk={model.risk} data-incident-lens-scene-next={model.risk} aria-label="事故检查工作区">
+  return <section className="incident-lens__incident incident-lens__incident--next" data-incident-lens-incident data-incident-lens-risk={model.risk} data-incident-lens-scene-next={model.risk} aria-label="异常核验工作区">
     {scene}
     <TabletIncidentRelations model={model} />
   </section>;

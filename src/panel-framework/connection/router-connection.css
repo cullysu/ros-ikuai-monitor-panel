@@ -423,4 +423,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .is-spinning { animation: none; }
+  .router-advanced-settings summary > svg { transition: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .router-mobile-connection-bar {
+    background: #f6fafb;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }

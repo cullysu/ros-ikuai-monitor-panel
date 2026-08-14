@@ -127,6 +127,7 @@ async function inspectViewport(page, viewport, screenshotPath) {
     const box = (node) => node ? Object.fromEntries(["left", "top", "right", "bottom", "width", "height"].map((key) => [key, node.getBoundingClientRect()[key]])) : null;
     const incident = document.querySelector(".do-incident");
     const workspace = incident?.querySelector('[data-overview-task-landmark="risk-objects"]');
+    const resourceEvidence = incident?.querySelector('[data-overview-task-landmark="signal"]');
     const firstObject = workspace?.querySelector("[data-overview-task-risk-object]");
     const inspectAction = workspace?.querySelector("[data-desktop-inspector-action-route]");
     const incidentChildren = incident ? [...incident.children].map((node) => ({
@@ -136,7 +137,10 @@ async function inspectViewport(page, viewport, screenshotPath) {
     const gaps = incidentChildren.slice(1).map((item, index) => Math.max(0, item.rect.top - incidentChildren[index].rect.bottom));
     return {
       viewport: { width: innerWidth, height: innerHeight },
-      incident: box(incident), workspace: box(workspace), firstObject: box(firstObject), inspectAction: box(inspectAction),
+      incident: box(incident), workspace: box(workspace), resourceEvidence: box(resourceEvidence), firstObject: box(firstObject), inspectAction: box(inspectAction),
+      workspaceBeforeResourceInDom: Boolean(
+        workspace && resourceEvidence && (workspace.compareDocumentPosition(resourceEvidence) & Node.DOCUMENT_POSITION_FOLLOWING)
+      ),
       incidentChildren, gaps,
       scroll: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
     };
@@ -149,8 +153,8 @@ async function inspectViewport(page, viewport, screenshotPath) {
     firstObjectInFixedFirstViewport: Boolean(geometry.firstObject && geometry.firstObject.top >= 0 && geometry.firstObject.bottom <= viewportBottom),
     inspectActionInFixedFirstViewport: Boolean(geometry.inspectAction && geometry.inspectAction.top >= 0 && geometry.inspectAction.bottom <= viewportBottom),
     workspacePrecedesResourceEvidence: Boolean(
-      geometry.workspace && geometry.incidentChildren.find((item) => item.landmark === "signal") &&
-      geometry.workspace.top < geometry.incidentChildren.find((item) => item.landmark === "signal").rect.top,
+      geometry.workspace && geometry.resourceEvidence && geometry.workspaceBeforeResourceInDom &&
+      geometry.workspace.top <= geometry.resourceEvidence.top + 1,
     ),
     noReorderHole: geometry.gaps.every((gap) => gap <= 16),
     noHorizontalOverflow: geometry.scroll.width <= viewport.width + 1,

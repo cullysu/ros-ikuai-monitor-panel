@@ -1,57 +1,59 @@
 - status: `current`
-- validForCommit: Step964 uncommitted mobile text-floor repair passes focused runtime; exact clean-SHA replay remains required
+- validForCommit: Step965 uncommitted local P0/P1 remediation passes; a new clean exact-SHA replay remains required
 - supersededBy: `null`
-- currentConclusionForStep: `964`
-- latestRecordedStep: `964`
-- latestStepOutcome: `964:mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required`
+- currentConclusionForStep: `965`
+- latestRecordedStep: `965`
+- latestStepOutcome: `965:db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
 
 ## Current conclusion
 
-**FAIL overall / focused engineering repair PASS / Product/Design/Visual replay pending / public release CLOSED.** Step964 closes the first exact-matrix regression exposed after retired CSS deletion: generic mobile `small` text had fallen to 11.11px. The active shell now enforces the existing 12px floor; the full exact matrix still requires replay.
+**FAIL overall / local P0-P1 remediation PASS / fresh exact Product-Design-Visual-Accessibility-Engineering review pending / public release CLOSED.** The clean `db5a9ba…` evidence exposed real defects after the previous focused repair: desktop base component styling had been deleted, 667×375 incident layout compressed the selected object, the persistence gate selected an already-selected claim, connection chrome lacked reduced-preference fallbacks, and the bounded 76-cell route report was incorrectly discussed as release evidence despite `matrix.complete=false`.
 
-## Current decision record: Step 964
+## Current decision record: Step 965
 
-- `check-public-release-readiness --require-matrix` first failed honestly: main style was `141663` bytes and desktop style was `45123` bytes, both above fixed ceilings.
-- Mobile no longer imports the rejected `layout.css`; desktop no longer imports `desktop-overview-recovered.css`. Both retired files are deleted rather than kept as unshipped acceptance decoys.
-- Active static gates now read `patrol-next.css`, `incidents-next.css`, `shell-next.css`, `motion.css` and `desktop-next.css`; route-focus, tablet ownership, touch targets and fleet shrinkability are checked where the runtime styles actually live.
-- The only runtime behavior recovered from the removed layers is explicit and minimal: 44px mobile focus ownership, 12px desktop small text and 28px desktop pointer targets.
-- Final shipped assets are within the unchanged ceilings: main style `117629 / 19074 / 16352` raw/gzip/Brotli and desktop style `24268 / 3943 / 3456`.
-- The first `1206979` exact Overview matrix failed 14 mobile cells solely on 11.11px `small` labels; desktop cells passed. `shell-next.css` now owns a global 12px floor and the wide/narrow two-cell smoke passes.
+- `db5a9ba…` remains historical evidence: Overview `28/28` and route-state `266/266` passed; the route-responsive `76/76` report is bounded, top-level `pass=false`, `releasePass=false`, `matrix.complete=false`, and cannot qualify release.
+- Four independent reviews vetoed db5. Their local product defects were accepted: unstyled desktop overview, oversized stacked mobile chrome, generic incident vocabulary, short-landscape two-column compression, missing reduced-transparency/motion handling, and false-green persistence selection. External promotion/soak findings remain separate release inputs.
+- Mobile now owns horizontal 56px chrome, scene-specific verification labels, device-snapshot wording, one-column short-landscape patrol/incident flow, initially visible selected action, pointer-gated hover and reduced-motion-safe press feedback.
+- Connection chrome now has explicit reduced-motion and reduced-transparency fallbacks.
+- Desktop now has an isolated `desktop-overview-base.css` component contract imported before composition. It restores status, ledger, WAN SVG, incident, resource and task-workspace primitives without reviving the deleted recovered stylesheet. `desktop-next.css` remains the composition owner.
+- Runtime acceptance now blocks when the desktop stylesheet is missing/inactive, when the status bus exceeds 120px, or when resource workbench DOM order and first-viewport geometry are wrong.
+- Current built assets remain inside fixed ceilings: main `118767 / 19168 / 16439` raw/gzip/Brotli; desktop `38371 / 5832 / 5156`.
 
 ## Focused verified evidence
 
-- Build, TypeScript, asset budget and `check:overview` pass with the 2 GB Node limit.
-- `check:mobile-incident-lens` passes static/model/architecture/accessibility/runtime after the old layout owner is removed.
-- `check:desktop-v1030`, `check:desktop-no-snapshot` and `check:desktop-incident-hierarchy` pass without the recovered desktop stylesheet.
-- `check-mobile-workspace-contract`, `check-route-title-focus-visible`, `check-fleet-bounded-priority-overflow` and `check-overview-architecture` pass against active style owners.
-- Static public readiness passes. Earlier e2cc matrices are stale because Step963 changes tracked source and generated assets; they must be rebuilt on the next clean SHA.
+- TypeScript, production build, `check:overview` (19 gates), framework asset budget and syntax checks pass under the 2GB Node limit.
+- Responsive boundary runtime passes after the 667×375 single-column repair and unselected-claim persistence selection.
+- Focused public browser smoke passes `9/9` across 1366×768, 1440×900 and 667×375 for `single`, `resource-full` and `interfaces-down`.
+- `check:desktop-v1030`, `check:desktop-no-snapshot`, `check:desktop-incident-hierarchy` and corrected `check:desktop-resource-density-v2` pass. Desktop style evidence reports 14px root text and a 73px status bus.
+- Original screenshots were inspected after the fix: normal desktop is a dense evidence console; single-child incident workspaces fill the available width; the harsh default H1 focus rectangle is replaced with a bounded underline.
 
 ## Gate status
 
 | Gate | Status | Boundary |
 |---|---|---|
-| R07 Product / R09 Design / Visual | pending replay | Step962 focused P0/P1=0 is historical after the CSS cascade changed; Step964 exact screenshots are pending. |
-| Implementation / Architecture | focused pass | Active owners, build, budgets and focused mobile/desktop runtime pass; clean exact-SHA replay is pending. |
-| State matrix | pending replay | All prior exact matrices are stale after tracked Step963 changes. |
-| R10 Accessibility / Security | pending final evidence | Focused static/runtime checks are green; 200%/manual AT, final security replay and external attestations remain open. |
-| Route maturity / RouterOS | pending | `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; real 300-second read-only RouterOS soak is absent. |
-| External authority | pending | Reviewer keys and five real signed attestations are not provisioned; repository code cannot self-authorize. |
-| Current product release | fail | Focused engineering closure is not public-release qualification. |
-| R14 Release | closed | GitHub is untouched; no exact remote Linux, Windows or GHCR CL exists for a final SHA. |
+| R07 Product / R09 Design / Visual | pending exact replay | Historical db5 veto roots are locally remediated; only fresh review of the next clean exact artifact may close them. |
+| Implementation / Architecture | focused pass | Mobile/desktop ownership, active desktop base contract, build, budget and focused runtime are green. |
+| State matrix | pending exact replay | Dirty-worktree readiness correctly rejects stale db5 identities. Required next evidence is Overview 28, complete route-responsive 532, route-state 266 and real Edge toolbar 200%. |
+| R10 Accessibility / Security | pending final replay | Reduced motion/transparency and focus contracts are repaired; full exact accessibility/security and manual AT remain open. |
+| Route maturity / RouterOS | pending | Real 300-second read-only RouterOS soak remains absent. |
+| External authority | pending | Five real signed external roles and trusted promotion are not provisioned. |
+| Current product release | fail | Focused repair is not whole-product release qualification. |
+| R14 Release | closed | GitHub is untouched; no final exact remote Linux, Windows or GHCR CL exists. |
 
 ## Explicit non-claims
 
-- Passing asset budgets does not prove visual quality.
-- Static gates cannot read retired CSS and claim the shipped surface is covered.
+- Focused `9/9` smoke is not a complete public matrix.
+- Bounded route coverage with `matrix.complete=false` is not release evidence.
+- A loaded stylesheet link is not proof that the active component contract is visually complete; computed style and original screenshots are required.
 - Local subagents are not external reviewer signatures or manual AT evidence.
-- No GitHub upload occurred. Every future upload must be followed by exact-SHA Linux, Windows and GHCR CL verification; failed, missing, cancelled or stale CL reopens the release loop.
+- No GitHub upload occurred. Every future upload must be followed by exact-SHA Linux, Windows and GHCR CL verification.
 
 ## One next action
 
-Commit Step964, then rebuild all exact-SHA local gates, complete public matrices, accessibility/security checks and independent reviews against that clean SHA before any external acceptance or publication decision.
+Commit Step965 as a clean candidate, then rebuild Overview 28, complete route-responsive 532, route-state 266, real Edge toolbar 200%, readiness/full release gates and four fresh exact-artifact reviews before any external acceptance or publication decision.
 
 ## Authority links
 

@@ -31,12 +31,16 @@
   position: sticky;
   z-index: 20;
   inset-block-start: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-block-size: 56px;
   padding: 6px 8px 6px 14px;
   border: 1px solid color-mix(in srgb, var(--il-line) 88%, white);
   border-radius: 10px;
   background: var(--il-glass);
-  box-shadow: 0 10px 24px rgb(31 54 65 / 10%);
+  box-shadow: 0 4px 8px rgb(31 54 65 / 8%);
   -webkit-backdrop-filter: blur(18px) saturate(115%);
   backdrop-filter: blur(18px) saturate(115%);
 }
@@ -68,10 +72,15 @@
   min-inline-size: 44px;
   block-size: 44px;
   min-block-size: 44px;
+  border: 0;
   border-radius: 7px;
+  color: var(--il-ink);
+  background: transparent;
   cursor: pointer;
   touch-action: manipulation;
 }
+
+.incident-lens__chrome button:active { transform: scale(.97); }
 
 .incident-lens__status-spine {
   display: grid;
@@ -327,6 +336,33 @@
   .incident-lens__route-fact {
     padding-block-start: 10px;
   }
+
+  /* A short landscape phone keeps one continuous patrol flow. Splitting a
+     375px-tall viewport into two work panes hides the selected action. */
+  .incident-lens .incident-lens__patrol.patrol-next,
+  .incident-lens .incident-lens__incident.incident-lens__incident--next {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .incident-lens .patrol-next__detail,
+  .incident-lens .patrol-next__master,
+  .incident-lens .patrol-next__related,
+  .incident-lens .incident-lens__incident--next > .incident-lens__next-case,
+  .incident-lens .incident-lens__incident--next > .incident-lens__next-objects,
+  .incident-lens .incident-lens__incident--next > .incident-lens__next-interface-evidence,
+  .incident-lens .incident-lens__incident--next > .incident-lens__next-tablet-relations {
+    grid-column: 1;
+    grid-row: auto;
+    inline-size: 100%;
+    margin-inline: 0;
+    border-inline-start: 0;
+  }
+
+  .incident-lens .patrol-next__detail { order: 1; }
+  .incident-lens .patrol-next__master { order: 2; }
+  .incident-lens .patrol-next__related { display: none; }
 }
 
 @media (max-width: 399px) {

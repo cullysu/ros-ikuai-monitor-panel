@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（公众发布）/ Step964 手机 12px text floor 修复已通过 wide/narrow smoke；clean exact-SHA 全量矩阵及 Product/Design/Visual、Accessibility/Security 重放、外部 reviewer/AT authority、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
+> 当前产品结论：**FAIL（公众发布）/ Step965 已关闭 db5 独立评审揭露的本地 P0/P1 根因；clean exact-SHA 28/532/266、Edge 200%、Accessibility/Security、四路新签收、RouterOS soak、外部授权及远端 Linux/Windows/GHCR CL 尚未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26826,3 +26826,43 @@ ocused-green-engineering
 - latestStepOutcome: `964:mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Commit Step964, then replay complete local gates, matrices and independent reviews on the resulting clean exact SHA before any external acceptance or publication decision.
+
+
+## 第 965 步：db5 独立评审否决根因完成本地修复；新 clean candidate 全量重放待执行
+
+### 触发 / 观察
+
+- clean `db5a9ba791773c997afa6248cc7e19f528383038` 的 Overview `28/28`、route-state `266/266` 是有效历史工程证据；route-responsive `76/76` 是 bounded single-scenario 结果，顶层 `pass=false / releasePass=false / matrix.complete=false`，不能写成发布矩阵通过。
+- 四路独立评审接受为真实本地缺陷：桌面公开截图丢失基础组件样式；667×375 把 incident master/detail 压成窄列；持久化测试点击已经选中的 claim；手机顶部 chrome 纵向堆叠且使用通用“事故检查/业务快照”措辞；连接 chrome 缺少 reduced-transparency 与 disclosure reduced-motion 合同。
+- 浏览器证明桌面样式资源本身已加载且 media 匹配；真正根因是删除退役 `desktop-overview-recovered.css` 后，活跃 owner 没有承接 status、ledger、WAN SVG、resource 和 task workspace 的基础契约。恢复整份旧文件会重新制造双 owner，并突破固定预算。
+
+### 决策 / 实现
+
+- 不恢复退役样式、不提高预算、不缩小文字。新增 isolated `desktop-overview-base.css`，只拥有桌面组件原语；`desktop-next.css` 继续独占组合和密度。architecture gate 强制 entry 导入 tokens/base/layout/responsive/composition 五层。
+- 桌面运行时 gate 新增真实 stylesheet/link/media/computed-style 证据，要求 root 14px 且 status bus 不高于 120px；单子节点 incident 自动占满两列，H1 程序焦点改为克制下划线。
+- 资源密度 gate 从错误的“signal 必须是 incident 直接子节点且垂直位于 workspace 下方”改为验证真实嵌套 resource evidence、DOM 顺序及同一首屏起始线；两栏不是失败，语义和操作次序倒置才是失败。
+- 手机 chrome 改为 56px 横向层，短横屏强制单列且 detail 优先；持久化选择器只点击 `aria-pressed=false` 的 claim；场景标签改为接口/资源/采集/快照/出口核验，业务快照改为设备快照；hover 仅 fine pointer，press 反馈受 reduced motion 约束。
+- connection chrome 增加 reduced-motion disclosure fallback 和 reduced-transparency 实色背景。
+
+### Emil / Product Loop 心得
+
+| Before | After | Why |
+| --- | --- | --- |
+| 桌面只验证 CSS 链接存在 | 同时验证 stylesheet、media、14px root 与 120px status bus | 资源加载不等于组件契约生效，必须测可见结果。 |
+| 667×375 维持平板式双列 | 短横屏使用连续单列、当前 evidence/action 先出现 | 横向空间增加不代表纵向任务容量增加；运维动作不能被压成窄栏。 |
+| 默认浏览器 H1 黑框 | 稳定 2px 主题色下划线 | 保留可见焦点，同时避免首屏结论被粗黑矩形误当告警。 |
+| 旧 recovered CSS 整层恢复 | 仅恢复 active component primitives | 删除沉积层后应重建明确 owner，而不是把历史补丁改名复活。 |
+
+### 验证
+
+- TypeScript、production build、`check:overview` 19 gates、framework asset budget、responsive-boundary 与相关脚本 syntax PASS。
+- focused public browser smoke `9/9`：`single/resource-full/interfaces-down × 1366×768/1440×900/667×375`。
+- `check:desktop-v1030`、`check:desktop-no-snapshot`、`check:desktop-incident-hierarchy`、修正后的 `check:desktop-resource-density-v2` PASS；style probe 为 14px root、73px status bus。
+- 构建资产：main `118767 / 19168 / 16439` raw/gzip/Brotli；desktop `38371 / 5832 / 5156`，固定 ceiling 未修改。
+- 当前 dirty-worktree readiness 因 db5 matrix/Edge identity 陈旧而 FAIL，属于正确 fail-closed 结果；不得用 focused smoke 替代新 clean-SHA 全量证据。
+
+### 边界 / 下一步
+
+- latestStepOutcome: `965:db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Commit Step965, then rebuild Overview 28, complete route-responsive 532, route-state 266, real Edge toolbar 200%, full release gates and four fresh exact-artifact reviews before any external acceptance or publication decision.

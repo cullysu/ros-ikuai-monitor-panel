@@ -109,7 +109,10 @@
   background: transparent;
 }
 
-.incident-lens .patrol-next__action:hover { background: #edf4f6; }
+@media (hover: hover) and (pointer: fine) {
+  .incident-lens .patrol-next__action:hover { background: #edf4f6; }
+}
+.incident-lens .patrol-next__action:active { transform: scale(.98); }
 .incident-lens .patrol-next__action:focus-visible,
 .incident-lens .patrol-next__object-control:focus-visible { outline: 2px solid var(--il-blue); outline-offset: -2px; }
 

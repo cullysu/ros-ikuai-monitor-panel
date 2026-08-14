@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step964 mobile 12px text-floor repair passes focused runtime; exact clean candidate replay remains open
+- validForCommit: Step965 local veto remediation passes focused runtime; clean exact candidate replay remains open
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `964`
-- latestRecordedStep: `964`
-- latestStepOutcome: `964:mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required`
+- currentBoundaryForStep: `965`
+- latestRecordedStep: `965`
+- latestStepOutcome: `965:db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 `current-state.md` 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -15,6 +15,5 @@
 - 当前发布边界：`release-journal.md`
 - 完整历史：`../panel-redesign-decision-log.md`
 - 历史索引：`historical-index.md`
-- Step947 独立记录：`independent-reviews/step947-{product,visual,accessibility,engineering}.json`（历史本地证据，不是外部授权）
 
-任务 active、`blocked=false`。Step964 修复首轮 exact matrix 揭露的手机 `small` 文本 11.11px 回归，active shell 恢复 12px floor，wide/narrow smoke 通过；固定预算仍通过。Step962 视觉签收历史化，Step963 的 1206979 matrix 为红色历史证据；提交后必须在新 clean SHA 重建完整矩阵、readiness、Accessibility/Security 与独立评审。真实手工 AT、真实 RouterOS 300s soak、外部五角色签名、可信授权和远端 Linux/Windows/GHCR CL 未完成；发布保持 FAIL/CLOSED，GitHub 未上传。
+任务 active、`blocked=false`。Step965 已修复 db5 独立评审揭露的本地产品根因：桌面基础样式断层、667×375 两列压缩、错误的持久化点击目标、通用事故文案与 reduced-preference 缺口。Focused runtime 与固定预算通过，但当前工作树不是发布候选；提交后必须在新 clean SHA 重建完整 28/532/266 矩阵、真实 Edge 200%、Accessibility/Security、完整 release gates 与四路独立评审。真实手工 AT、RouterOS 300s soak、外部五角色签名、可信 promotion 和远端 Linux/Windows/GHCR CL 未完成；发布保持 FAIL/CLOSED，GitHub 未上传。
