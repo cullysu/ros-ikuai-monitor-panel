@@ -8,6 +8,8 @@
   overflow-wrap: anywhere;
 }
 
+.incident-lens small { font-size: 12px; }
+
 .incident-lens *,
 .incident-lens *::before,
 .incident-lens *::after {

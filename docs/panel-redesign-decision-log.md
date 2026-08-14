@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（公众发布）/ Step963 active CSS owner 与固定资产预算修复已通过 focused runtime；clean exact-SHA 全量矩阵及 Product/Design/Visual、Accessibility/Security 重放、外部 reviewer/AT authority、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
+> 当前产品结论：**FAIL（公众发布）/ Step964 手机 12px text floor 修复已通过 wide/narrow smoke；clean exact-SHA 全量矩阵及 Product/Design/Visual、Accessibility/Security 重放、外部 reviewer/AT authority、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26805,3 +26805,24 @@ ocused-green-engineering
 - latestStepOutcome: `963:retired-css-owners-deleted-asset-budgets-and-focused-runtime-green-exact-replay-required`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Commit Step963, then replay complete local gates, matrices and independent reviews on the resulting clean exact SHA before any external acceptance or publication decision.
+
+## 第 964 步：首轮 exact matrix 揭露手机 11.11px 回归；active shell 恢复 12px 文字下限
+
+### 触发 / 观察
+
+- clean `1206979` 的 28 格 Overview matrix 没有假绿：14 个桌面格通过，14 个手机 wide/narrow 格失败。
+- 所有失败收敛到同一根因：移除旧 layout 后，object action 与 claim control 的 `small` 继承浏览器 `smaller`，计算字号为 `11.1111px`，违反手机可读性合同。
+
+### 决策 / 实现
+
+- 不降低 `readableText` 门禁、不豁免横屏、不恢复旧 layout。由 active `shell-next.css` 明确拥有 `.incident-lens small { font-size: 12px; }`。
+- 先以 single 场景的 `844×390` 与 `390×844` 两格 bounded smoke 验证根因，再提交新 SHA 重跑全量，避免把 28 格长跑当调试循环。
+
+### 验证与边界
+
+- production build PASS；wide/narrow 两格 readability smoke PASS。
+- main style `117629 / 19074 / 16352`、desktop style `24268 / 3943 / 3456`，固定预算继续 PASS。
+- 1206979 的红矩阵保留，不改报告、不删失败；新 clean SHA 的 28/76/266 与 fresh review 仍必须重建。
+- latestStepOutcome: `964:mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Commit Step964, then replay complete local gates, matrices and independent reviews on the resulting clean exact SHA before any external acceptance or publication decision.
