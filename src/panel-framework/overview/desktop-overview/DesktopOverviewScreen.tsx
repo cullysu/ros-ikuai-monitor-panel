@@ -55,6 +55,7 @@ export function DesktopOverviewScreen({ snapshot, state, onNavigate, runtimeMana
   const incident = model.risk !== "none";
   const showTraffic = !incident && state.scale !== "fleet" && Boolean(model.traffic);
   const provenance = sourceRows(model);
+  const operationsLedger = [...view.decisionRows, ...provenance];
   const fleetPreviewRows = state.scale === "fleet" && !fleetExpanded
     ? view.objectRows.slice(0, FLEET_PREVIEW_LIMIT)
     : view.objectRows;
@@ -108,105 +109,90 @@ export function DesktopOverviewScreen({ snapshot, state, onNavigate, runtimeMana
           />
           <div className="do-lower-grid">
             <DesktopLedger
-              title="判断边界"
-              subtitle="管理面、转发面与业务面分别陈述，不互相冒充"
-              rows={view.decisionRows}
+              title="巡检台账"
+              subtitle="判断、来源与只读边界在同一证据表中对照"
+              rows={operationsLedger}
               onNavigate={onNavigate}
-              module="plane-boundary"
+              module="decisions"
+              taskLandmark="evidence-boundary"
             />
-            <div className="do-main-stack">
-              <DesktopLedger
-                title="来源与操作边界"
-                subtitle="成功时间、失败记录和只读约束"
-                rows={provenance}
-                onNavigate={onNavigate}
-                module="provenance"
-                taskLandmark="evidence-boundary"
-              />
-            </div>
           </div>
         </>
       ) : (
         <div className={`do-normal-workspace ${state.scale === "fleet" ? "is-fleet" : ""}`} data-desktop-normal-workspace data-desktop-normal-density="compact">
-          <div className={`do-normal-top-band ${model.focusObject && state.scale !== "fleet" ? "has-focus-task" : ""}`} data-desktop-normal-top-band>
-            {model.focusObject ? (
-              <div className="do-normal-focus-column">
-                <DesktopFocusObject object={model.focusObject} evidenceAt={model.evidenceAt} onNavigate={onNavigate} />
-                <DesktopInvestigationActions model={model} onNavigate={onNavigate} placement="normal-primary-first" />
-              </div>
-            ) : null}
-            <div className="do-normal-signal">
-              {showTraffic && model.traffic ? (
-                <DesktopWanEvidence traffic={model.traffic} onOpen={() => onNavigate("trafficAudit")} />
-              ) : state.scale === "fleet" ? (
-                <div className="do-fleet-preview" data-desktop-fleet-preview data-desktop-fleet-preview-limit={FLEET_PREVIEW_LIMIT}>
-                  <div className="do-fleet-preview-content" id={fleetPreviewId}>
-                    <DesktopLedger
-                      title="当前对象覆盖"
-                      subtitle={`按严重程度优先；已显示 ${fleetPreviewRows.length} / ${view.objectRows.length} 项；已隐藏 ${fleetHiddenCount} 项`}
-                      rows={fleetPreviewRows}
-                      onNavigate={onNavigate}
-                      module="fleet-coverage"
-                      taskLandmark="object-details"
-                      evidenceAt={model.evidenceAt}
-                    />
-                  </div>
-                  {view.objectRows.length > FLEET_PREVIEW_LIMIT ? (
-                    <div className="do-fleet-preview-disclosure">
-                      <span>{`当前范围共 ${view.objectRows.length} 项；已隐藏 ${fleetHiddenCount} 项`}</span>
-                      <button
-                        type="button"
-                        aria-expanded={fleetExpanded}
-                        aria-controls={fleetPreviewId}
-                        onClick={() => setFleetExpanded((current) => !current)}
-                      >
-                        {fleetExpanded ? <ChevronUp aria-hidden="true" size={15} /> : <ChevronDown aria-hidden="true" size={15} />}
-                        {fleetExpanded ? "收起对象" : `显示全部 ${view.objectRows.length} 项`}
-                      </button>
-                    </div>
-                  ) : null}
+          <section className="do-normal-mainline" data-desktop-normal-mainline>
+            <div className={`do-normal-top-band ${model.focusObject && state.scale !== "fleet" ? "has-focus-task" : ""}`} data-desktop-normal-top-band>
+              {model.focusObject ? (
+                <div className="do-normal-focus-column">
+                  <DesktopFocusObject object={model.focusObject} evidenceAt={model.evidenceAt} onNavigate={onNavigate} />
+                  <DesktopInvestigationActions model={model} onNavigate={onNavigate} placement="normal-primary-first" />
                 </div>
-              ) : (
-                <section className="do-wan-empty" data-desktop-wan-unavailable aria-labelledby="do-wan-empty-title">
-                  <Activity aria-hidden="true" size={22} />
-                  <div><h2 id="do-wan-empty-title">WAN 趋势证据未形成</h2><p>当前值、历史尾点或采样时间窗不一致，因此不绘制看似实时的曲线。</p></div>
-                  <button type="button" onClick={() => onNavigate("trafficAudit")}>查看流量证据</button>
-                </section>
-              )}
+              ) : null}
+              <div className="do-normal-signal">
+                {showTraffic && model.traffic ? (
+                  <DesktopWanEvidence traffic={model.traffic} onOpen={() => onNavigate("trafficAudit")} />
+                ) : state.scale === "fleet" ? (
+                  <div className="do-fleet-preview" data-desktop-fleet-preview data-desktop-fleet-preview-limit={FLEET_PREVIEW_LIMIT}>
+                    <div className="do-fleet-preview-content" id={fleetPreviewId}>
+                      <DesktopLedger
+                        title="当前对象覆盖"
+                        subtitle={`按严重程度优先；已显示 ${fleetPreviewRows.length} / ${view.objectRows.length} 项；已隐藏 ${fleetHiddenCount} 项`}
+                        rows={fleetPreviewRows}
+                        onNavigate={onNavigate}
+                        module="fleet-coverage"
+                        taskLandmark="object-details"
+                        evidenceAt={model.evidenceAt}
+                      />
+                    </div>
+                    {view.objectRows.length > FLEET_PREVIEW_LIMIT ? (
+                      <div className="do-fleet-preview-disclosure">
+                        <span>{`当前范围共 ${view.objectRows.length} 项；已隐藏 ${fleetHiddenCount} 项`}</span>
+                        <button
+                          type="button"
+                          aria-expanded={fleetExpanded}
+                          aria-controls={fleetPreviewId}
+                          onClick={() => setFleetExpanded((current) => !current)}
+                        >
+                          {fleetExpanded ? <ChevronUp aria-hidden="true" size={15} /> : <ChevronDown aria-hidden="true" size={15} />}
+                          {fleetExpanded ? "收起对象" : `显示全部 ${view.objectRows.length} 项`}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <section className="do-wan-empty" data-desktop-wan-unavailable aria-labelledby="do-wan-empty-title">
+                    <Activity aria-hidden="true" size={22} />
+                    <div><h2 id="do-wan-empty-title">WAN 趋势证据未形成</h2><p>当前值、历史尾点或采样时间窗不一致，因此不绘制看似实时的曲线。</p></div>
+                    <button type="button" onClick={() => onNavigate("trafficAudit")}>查看流量证据</button>
+                  </section>
+                )}
+              </div>
             </div>
-
-          </div>
-          {state.scale !== "fleet" && view.objectRows.length > 0 ? (
+            {state.scale !== "fleet" && view.objectRows.length > 0 ? (
+              <DesktopLedger
+                title="对象比较"
+                subtitle="WAN 与接口按状态、关系和速率对照"
+                rows={view.objectRows}
+                onNavigate={onNavigate}
+                module="objects"
+                taskLandmark="comparison"
+                evidenceAt={model.evidenceAt}
+              />
+            ) : null}
+            {!model.focusObject || state.scale === "fleet" ? (
+              <DesktopInvestigationActions model={model} onNavigate={onNavigate} placement="normal-primary-first" />
+            ) : null}
+          </section>
+          <section className="do-normal-ledger-band" aria-label="巡检台账" data-desktop-normal-ledger-band data-desktop-normal-decision-band>
             <DesktopLedger
-              title="对象比较"
-              subtitle="WAN 与接口按状态、关系和速率对照"
-              rows={view.objectRows}
-              onNavigate={onNavigate}
-              module="objects"
-              taskLandmark="comparison"
-              evidenceAt={model.evidenceAt}
-            />
-          ) : null}
-          {!model.focusObject || state.scale === "fleet" ? (
-            <DesktopInvestigationActions model={model} onNavigate={onNavigate} placement="normal-primary-first" />
-          ) : null}
-          <div className="do-normal-decision-band" data-desktop-normal-decision-band data-overview-visual-level="support">
-            <DesktopLedger
-              title="运行判断"
-              subtitle="接口、资源与连接分别回答一个运维问题"
-              rows={view.decisionRows}
+              title="巡检台账"
+              subtitle="对象判断、证据来源与只读边界按行对照"
+              rows={operationsLedger}
               onNavigate={onNavigate}
               module="decisions"
+              taskLandmark="evidence-boundary"
             />
-          </div>
-          <DesktopLedger
-            title="来源与操作边界"
-            subtitle="成功时间、失败记录和只读约束"
-            rows={provenance}
-            onNavigate={onNavigate}
-            module="provenance"
-            taskLandmark="evidence-boundary"
-          />
+          </section>
         </div>
       )}
     </main>

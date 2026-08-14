@@ -1,12 +1,13 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step949 d13ac20 short-landscape remediation focused green; not a public release approval
+- validForCommit: Step962 focused Product and Visual P1=0; not a public release approval
 - supersededBy: null
-- currentStep: `949`
-- currentOutcome: `949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required`
-- latestStepOutcome: `949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required`
+- currentStep: `962`
+- currentOutcome: `962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required`
+- latestStepOutcome: `962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
+- Step962: The rebuilt focused artifact closes the current Product/Visual P1 findings: explicit all-offline verdict, complete short-landscape task sequence, tablet recovery/decision workspace without implementation paths, and a continuous desktop object/inspector/signal workbench with operator-facing source labels. Build/types, mobile Incident Lens runtime, desktop incident hierarchy and 16/16 focused cells pass. Independent Visual and Product reviews report P0/P1=0 after the source-copy follow-up. This is dirty-artifact local evidence only; exact clean-SHA matrices, final accessibility/security, real RouterOS soak, external signed authority, publication and remote CL remain absent. Release FAIL/CLOSED.
 - Step949: c075 exact declared gates, Overview `28/28`, bounded route `76/76`, route-state `266/266`, and real Edge `22/22` passed; external authority pin audit is PASS `P0/P1/P2=0`. Product exact review is PASS `P0=0 / P1=0 / P2=1`, with only standalone `844×390` Chrome branding obscured by navigation. d13ac202f2d9648e8f9631a6756149adbdd56ac6 changes short-landscape nav left `140→220`, preserves the RouterOS / 只读巡检 two-line label, and passes focused types, mobile visual, incident runtime, production build, 844×390 fleet bounded smoke and screenshot review with no crop. c075 evidence is historical, and final governance commit requires a new exact-SHA rebuild. Real manual AT, real RouterOS 300s soak, external five-role signatures, promotion, upload and Linux/Windows/GHCR exact-SHA CL remain absent; release FAIL/CLOSED.
 - Step948: Candidate source now keeps both complete and bounded routes at `independentAcceptance=pending`; local refs cannot grant acceptance. The repository gate reports only `candidateEvidenceShapePass`, keeps candidate/public/release authority false, requires five roles, exact Route Owner coverage, and reproducible versioned manual-AT session structure with unique route evidence. Focused tests and final independent Accessibility audit pass P0/P1/P2=0. External reviewer authenticity/manual-AT attestation, RouterOS soak, clean exact-SHA replay, promotion, upload and remote CL remain open; release FAIL/CLOSED.
 - Step947: Exact clean runtime candidate `d45b428…` passes Incident 63/63, responsive 10/10, rendered/page scale, real Edge toolbar 200% 22/22, Overview 28/28, bounded route 76/76, route-state 266/266 and public engineering readiness. Four distinct reviewers inspect all 63 originals and return Product/Visual/Accessibility/Engineering P0/P1/P2=0. The 600px glyph-stacking P1 is closed by a 600–719 one-column flow and a required identity-readability gate that still permits legitimate abbreviations such as WAN. Local acceptance only: route maturity remains 0/18/0/1; real RouterOS soak, trusted promotion, GitHub upload and exact remote Linux/Windows/GHCR CL remain absent; release FAIL/CLOSED.
@@ -103,7 +104,6 @@
 ## Release rule
 
 Only a clean, independently accepted candidate with complete current-identity matrices, real RouterOS soak evidence and exact-SHA Linux/Windows/GHCR CL may open the release boundary. Engineering green and scoped Design/Visual PASS are not Product or public-release approval.
-
 
 - Step805 current identity refresh: missing-rate pseudo-zero regression and 320px proof layout slice are fixed; scoped Visual P1 is closed.
 - Step805 boundary: formal signoff, route maturity, RouterOS soak, clean candidate and external CL remain open.

@@ -265,7 +265,7 @@ async function inspectRoot(page) {
     const runtimeDeviceName = document.querySelector(".panel-runtime-bar-mobile .panel-runtime-device b");
     const fleetSummary = root?.querySelector("[data-incident-lens-fleet-summary='true']") || null;
     const evidenceDeckRows = root
-      ? [...root.querySelectorAll("[data-incident-lens-impact] dl > div, [data-incident-lens-evidence] dl > div, .incident-lens__tablet-support dl > div")].filter(visible)
+      ? [...root.querySelectorAll("[data-incident-lens-impact] dl > div, [data-incident-lens-evidence] dl > div, [data-incident-lens-proof] dl > div, [data-incident-lens-resource-geometry] article, .incident-lens__tablet-support dl > div")].filter(visible)
       : [];
     const tabletCrosscheckRows = root
       ? [...root.querySelectorAll("[data-incident-lens-tablet-crosscheck] article")].filter(visible)
@@ -275,6 +275,12 @@ async function inspectRoot(page) {
       : [];
     const tabletBasisRows = root
       ? [...root.querySelectorAll("[data-incident-lens-tablet-basis] dl > div")].filter(visible)
+      : [];
+    const tabletRelationRows = root
+      ? [...root.querySelectorAll("[data-incident-lens-tablet-relations] article")].filter(visible)
+      : [];
+    const recoveryItems = root
+      ? [...root.querySelectorAll("[data-incident-lens-recovery-sequence] > li")].filter(visible)
       : [];
     const documentWidth = Math.max(
       document.documentElement.scrollWidth,
@@ -378,6 +384,16 @@ async function inspectRoot(page) {
       tabletBasisRows: tabletBasisRows.map((node) => ({
         label: label(node.querySelector("dt")),
         value: label(node.querySelector("dd")),
+      })),
+      tabletRelationRows: tabletRelationRows.map((node) => ({
+        text: label(node),
+        rect: rect(node),
+        visibleRect: visibleRect(node),
+      })),
+      recoveryItems: recoveryItems.map((node) => ({
+        text: label(node),
+        rect: rect(node),
+        visibleRect: visibleRect(node),
       })),
       text: label(root),
       historySelection: historySelection && typeof historySelection === "object" ? {

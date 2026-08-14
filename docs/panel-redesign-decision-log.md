@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（公众发布）/ Step948 已关闭候选自验收歧义并通过 focused tests 与独立复审；外部 reviewer/AT authority、真实 RouterOS soak、clean exact-SHA 全量重放、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
+> 当前产品结论：**FAIL（公众发布）/ Step962 focused Product 与 Visual P0/P1 已清零；clean exact-SHA 全量重放、外部 reviewer/AT authority、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26731,3 +26731,43 @@ ocused-green-engineering
 - latestStepOutcome: `949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Commit Step949 governance, then rebuild all exact-SHA gates and reviews on the resulting final clean SHA; do not upload before real manual AT, RouterOS 300s soak, five-role signatures, promotion and remote CL.
+
+## 第 962 步：重建方向完成 focused 产品与视觉 P1 闭环；精确 clean 候选重放仍是下一步
+
+### 触发 / 问题
+
+- Step959/960 独立评审仍复现桌面字段框年代感、短横屏事故步骤不完整、平板下半区重复并暴露实现路径、全离线标题过于泛化。
+- 这些问题不能通过矩阵绿灯或降低严重性关闭；分别回到视觉结构、响应式任务流与公共语言层修根因。
+
+### 决策与实现
+
+- 手机/平板/桌面继续使用隔离 render/style owner；不恢复被否决的 topology、bottom sheet、卡片堆或桌面缩放版手机界面。
+- 全离线标题改为 `全部 WAN 未运行`，并直接显示 `0 / 8 可用 · 无活动默认路径`。
+- 短横屏把恢复序列组织为三列决策，普通态补充所选对象的三个新证据；44px 触控目标不缩小。
+- 平板第二工作区只回答恢复条件、样本一致性和业务判断边界，不重复左侧对象，也不展示 `meta.*` / `overview.history.*` 路径。
+- 桌面将动作并入所选对象工作区，以连续内容面、低对比分隔和单一全宽台账取代同质字段框；公开采样来源改为运维可读标签，原始字段路径只留在明确的 raw-evidence disclosure。
+- 新门禁直接检查短横屏三个恢复步骤、普通态三个对象证据、平板三条恢复/边界记录以及公共 source label 不含实现路径。
+
+### Emil Before / After / Why
+
+| Before | After | Why |
+| --- | --- | --- |
+| 横屏事故只露出第一步 | 三个恢复决定在初始视口并列完整可见 | 高频巡检需要即时获得完整下一步，不能靠滚动猜剩余流程 |
+| 平板用对象复读和源码路径填空 | 用恢复条件、证据边界和重新显示数字的条件填充 | 新空间必须增加判断价值，而不是增加 DOM 或调试信息 |
+| 桌面每个事实都被线框包围 | 结构框只定义工作区，内部主要靠间距、字重和行规则 | iKuai 密度来自比较效率，iOS 精度来自克制层级，不来自更多方框 |
+| `meta.realtime + meta.slowRest` 公开显示 | `实时与慢速 REST 采集记录` | 公共界面描述证据来源，不泄露实现命名 |
+
+### 验证
+
+- build/types PASS；`check:mobile-incident-lens` 的 static/model/architecture/accessibility/runtime 全部 PASS。
+- `check:desktop-incident-hierarchy` 的 all-offline/resource-full PASS，并新增 `operatorSourceLanguage=true`。
+- `_acceptance/step961-focused-visual` 为 4 场景 × 4 视口 `16/16`；Step962 source-copy 桌面 smoke PASS。
+- 独立 Visual 最终 PASS，P0=0/P1=0；独立 Product 最终关闭 raw-source P1，PASS。
+
+### 边界 / 心得
+
+- focused dirty-artifact 签收只关闭当前可见 P1，不是 clean exact-SHA 产品发布签收；治理提交会改变 SHA，必须完整重绑。
+- 设计门禁必须检查用户真正看到的完整任务和公共语言，不能用“元素存在”“字符够多”代替产品质量。
+- latestStepOutcome: `962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Commit Step962, then replay complete local gates, matrices and independent reviews on the resulting clean exact SHA before any external acceptance or publication decision.

@@ -87,6 +87,17 @@ function IncidentObjectButton({ object, selected, onSelect }: {
   );
 }
 
+function operatorSourceLabel(sourcePath: string): string {
+  if (/meta\.realtime|meta\.slowRest/.test(sourcePath)) return "实时与慢速 REST 采集记录";
+  if (/meta\.static/.test(sourcePath)) return "SSH 静态采集记录";
+  if (/clientEvidenceBoundary/.test(sourcePath)) return "业务快照边界记录";
+  if (/overview\.history|resource/i.test(sourcePath)) return "资源当前值与历史采样";
+  if (/routes\.defaultRoutes/.test(sourcePath)) return "默认路由记录";
+  if (/interfaces/.test(sourcePath)) return "接口状态快照";
+  if (/wan/.test(sourcePath)) return "WAN 运行记录";
+  return "当前只读快照";
+}
+
 export function DesktopIncidentWorkspace({ model, onNavigate }: { model: OverviewEvidenceModel; onNavigate: PanelNavigate }) {
   const defaultObjectId = model.priorityObjectsAll[0]?.id || "";
   const objects = model.priorityObjectsAll;
@@ -148,7 +159,7 @@ export function DesktopIncidentWorkspace({ model, onNavigate }: { model: Overvie
               </span>
               <ChevronRight aria-hidden="true" size={16} />
             </button>
-            <div className="do-task-source"><span>采样来源</span><code>{selected.sourcePath}</code></div>
+            <div className="do-task-source" data-desktop-operator-source><span>采样来源</span><b>{operatorSourceLabel(selected.sourcePath)}</b></div>
           </section> : <p className="do-task-empty">选择对象查看证据</p>}
         </div>
       ) : <p className="do-task-empty">当前没有可安全列出的事故对象。</p>}

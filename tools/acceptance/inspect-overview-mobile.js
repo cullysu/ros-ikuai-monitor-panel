@@ -85,7 +85,14 @@ async function inspectOverviewMobileInteraction({ sectionName, sectionRoot, scal
   const selectedId = () => selectedClaim()?.getAttribute('data-incident-lens-expanded-claim') || '';
   const selectedFocusId = () => selectedClaim()?.id || '';
   const initialId = selectedId();
-  const claimControl = incidentLens.querySelector('button[data-incident-lens-claim-control]');
+  const isVisible = (node) => {
+    if (!(node instanceof HTMLElement)) return false;
+    const style = getComputedStyle(node);
+    const bounds = node.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden' && bounds.width > 0 && bounds.height > 0;
+  };
+  const claimControl = [...incidentLens.querySelectorAll('button[data-incident-lens-claim-control]')]
+    .find((node) => isVisible(node) && node.getAttribute('aria-pressed') !== 'true') || null;
   let nativeClaimControl = false;
   let claimFocusRestored = false;
   let selectionHistory = false;

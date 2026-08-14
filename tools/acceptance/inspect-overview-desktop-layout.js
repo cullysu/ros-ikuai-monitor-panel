@@ -127,6 +127,8 @@ function inspectOverviewDesktopLayout({
   const taskRiskObjectIds = taskRiskObjects.map((node) => node.getAttribute('data-overview-task-risk-object') || '').filter(Boolean);
   const taskInspector = desktopRoot.querySelector('[data-overview-task-inspector]');
   const taskInspectorId = taskInspector?.getAttribute('data-overview-task-inspector') || '';
+  const operatorSource = desktopRoot.querySelector('[data-desktop-operator-source]');
+  const operatorSourceText = normalize(operatorSource?.textContent || '');
   const taskActions = Array.from(desktopRoot.querySelectorAll('.do-task-actions button[id]')).filter(visible);
   const taskActionRoutes = taskActions.map((node) => node.id).filter(Boolean);
   const mainGrid = desktopRoot.querySelector('.do-main-grid');
@@ -134,6 +136,8 @@ function inspectOverviewDesktopLayout({
   const normalWorkspace = desktopRoot.querySelector('[data-desktop-normal-workspace]');
   const normalTopBand = desktopRoot.querySelector('[data-desktop-normal-top-band]');
   const normalDecisionBand = desktopRoot.querySelector('[data-desktop-normal-decision-band]');
+  const normalMainline = desktopRoot.querySelector('[data-desktop-normal-mainline]');
+  const normalLedgerBand = desktopRoot.querySelector('[data-desktop-normal-ledger-band]');
   const mainChildren = Array.from(mainGrid?.children || []).filter(visible);
   const lowerChildren = Array.from(lowerGrid?.children || []).filter(visible);
   const mainStacks = Array.from(mainGrid?.querySelectorAll('[data-desktop-main-stack]') || []).filter(visible);
@@ -304,8 +308,11 @@ function inspectOverviewDesktopLayout({
   const normalWorkspaceUse = Boolean(
     normalWorkspace && normalTopBand && normalDecisionBand &&
     normalTopBand.children.length >= 2 &&
+    normalMainline && normalLedgerBand &&
+    normalMainline.getBoundingClientRect().width >= normalWorkspace.getBoundingClientRect().width * 0.95 &&
+    normalLedgerBand.getBoundingClientRect().width >= normalWorkspace.getBoundingClientRect().width * 0.95 &&
     normalWorkspace.querySelector('[data-overview-task-landmark="investigation"]') &&
-    normalWorkspace.querySelector('[data-desktop-ledger="provenance"]')
+    normalLedgerBand.querySelector('[data-overview-task-landmark="evidence-boundary"]')
   );
   const firstViewport = Boolean(
     statusRect && firstWorkRect &&
@@ -315,6 +322,7 @@ function inspectOverviewDesktopLayout({
   );
   const sourceCoverage = ledgerRows.length > 0 && ledgerSources.length === ledgerRows.length && ledgerSources.every((node) => normalize(node.textContent || ''));
   const routeCoverage = ledgerButtons.length > 0 && ledgerButtons.every((node) => Boolean(node.getAttribute('data-desktop-ledger-route')) && Boolean(node.getAttribute('aria-label')));
+  const operatorSourceLanguage = !operatorSource || !/(?:meta\.|overview\.history|defaultRoutes\[|interfaces\[)/.test(operatorSourceText);
 
   const checks = {
     mounted: Boolean(desktopRoot),
@@ -327,11 +335,12 @@ function inspectOverviewDesktopLayout({
       statusItems.length === 3
     ),
     taskContract: taskLandmarkContract,
+    operatorSourceLanguage,
     incidentSubstitution: incidentContract,
     chartTruth: wanContract,
     resourceEvidence: resourceEvidenceContract,
     evidenceBoundary,
-    semanticLedgers: ledgers.length >= 2 && sourceCoverage && routeCoverage,
+    semanticLedgers: ledgers.length >= 1 && sourceCoverage && routeCoverage,
     accessibleLedger: ledgerRows.every((row) => row.getAttribute('role') === 'row') && !desktopRoot.querySelector('[role="tab"], [role="tablist"], canvas'),
     readableType: smallText.length === 0,
     unclippedText: clippedText.length === 0,
@@ -384,6 +393,7 @@ function inspectOverviewDesktopLayout({
       riskObjects: taskRiskObjectIds,
       inspector: taskInspectorId,
       actions: taskActionRoutes,
+      operatorSource: operatorSourceText,
     },
     firstViewport,
     smallText,

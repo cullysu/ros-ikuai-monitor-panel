@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step949 current decision boundary; historical entries remain immutable
+- validForCommit: Step962 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `949`
-- latestRecordedStep: `949`
+- coveredStepMax: `962`
+- latestRecordedStep: `962`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -70,6 +70,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 947 | exact clean d45b428 local four-role P0/P1/P2 closure, 600px identity repair, 63/10/22 and 28/76/266 evidence, engineering readiness pass, route maturity/soak/promotion/remote CL still open | current-state.md |
 | 948 | candidate evidence reduced to structural proof, bounded/complete source acceptance forced pending, strict Route Owner and reproducible AT session schemas, external authority and exact replay still open | current-state.md |
 | 949 | c075 exact evidence historical after standalone 844×390 navigation overlap remediation; d13ac20 focused green and final clean-SHA replay still required | current-state.md |
+| 950 - 962 | owner rejection of the previous mobile visual direction, three-direction adjudication, isolated incident/patrol reconstruction, continuous desktop workbench, responsive source-language repair, focused runtime evidence and independent Product/Visual P0/P1 closure; clean exact-SHA replay and formal release authority remain open | current-state.md |
 
 ## Reading rule
 

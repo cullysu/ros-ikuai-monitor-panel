@@ -92,10 +92,10 @@ async function inspectIncidentSplitLensCoreContract(runtime) {
       patrol: "[data-incident-lens-patrol]",
       incident: "[data-incident-lens-incident]",
       risk: "[data-incident-lens-risk-identity]",
-      impact: '[data-incident-lens-lens="impact"]',
-      evidence: '[data-incident-lens-lens="evidence"]',
-      workspace: "[data-incident-lens-workspace]",
-      inspector: "[data-incident-lens-investigation]",
+      impact: '[data-incident-lens-lens="impact"], [data-incident-lens-resource-geometry], [data-incident-lens-dependency-chain], [data-incident-lens-recovery-sequence], [data-incident-lens-known-unknown]',
+      evidence: '[data-incident-lens-lens="evidence"], [data-incident-lens-proof], [data-incident-lens-recovery-sequence], [data-incident-lens-known-unknown]',
+      workspace: "[data-incident-lens-object-worklist]",
+      inspector: "[data-incident-lens-evidence-deck]",
     });
     assert(!evidence.legacyOwnerPresent, "Rejected mobile owner remains mounted", { context });
     assert(evidence.overflowX <= 1, "Incident Split Lens has horizontal viewport overflow", { context, evidence });
@@ -114,8 +114,8 @@ async function inspectIncidentSplitLensCoreContract(runtime) {
           && evidence.impact.top >= 0 && evidence.impact.top < evidence.viewport.height
           && evidence.evidence.top >= 0 && evidence.evidence.top < evidence.viewport.height,
         "Phone incident anchors must begin in the initial viewport", { context, evidence });
-        assert(evidence.risk.top < evidence.impact.top && evidence.impact.top < evidence.evidence.top,
-          "Phone incident order must be risk, impact, then evidence", { context, evidence });
+        assert(evidence.risk.top <= evidence.impact.top && evidence.risk.top <= evidence.evidence.top,
+          "Phone incident must lead with risk before its scene-specific evidence", { context, evidence });
       }
       if (probe.viewport.id === "tablet768" || probe.viewport.id === "landscape844") {
         assert(evidence.workspace && evidence.inspector,
@@ -302,6 +302,23 @@ function assertShortLandscapePhone(evidence, context) {
       action: evidence.action,
       navigation: evidence.navigation,
     });
+  if (evidence.scenario === "all-offline") {
+    assert(evidence.recoveryItems?.length === 3,
+      "Short-landscape all-offline scene must expose all three recovery decisions", {
+        context,
+        recoveryItems: evidence.recoveryItems,
+      });
+    for (const [index, item] of evidence.recoveryItems.entries()) {
+      assertFullyVisibleInInitialViewport(item.rect, item.visibleRect, context, `all-offline recovery decision ${index + 1}`);
+    }
+  }
+  if (evidence.scenario === "single") {
+    assert((evidence.tabletEvidenceDeck?.rows || []).length >= 3,
+      "Short-landscape patrol must use its detail plane for three selected-object evidence facts", {
+        context,
+        rows: evidence.tabletEvidenceDeck?.rows,
+      });
+  }
 }
 
 function assertPhoneNavigationClearance(evidence, context) {
@@ -347,6 +364,19 @@ function assertTabletNovelEvidence(evidence, context) {
   assert(rows.length >= 4, "Tablet evidence workspace must expose at least four impact/evidence rows", { context, rows });
   const labels = rows.map((row) => row.label).filter(Boolean);
   assert(new Set(labels).size >= 4, "Tablet evidence workspace must not fill its second column with repeated labels", { context, rows });
+  if (evidence.scenario !== "single" && evidence.scenario !== "fleet") {
+    assert(evidence.tabletRelationRows?.length === 3,
+      "Tablet incident support workspace must expose three recovery or decision-boundary records", {
+        context,
+        tabletRelationRows: evidence.tabletRelationRows,
+      });
+    const implementationPath = /(?:meta\.|overview\.history|defaultRoutes\[|interfaces\[)/;
+    assert(!evidence.tabletRelationRows.some((row) => implementationPath.test(row.text)),
+      "Tablet incident support workspace must not expose implementation paths as operator evidence", {
+        context,
+        tabletRelationRows: evidence.tabletRelationRows,
+      });
+  }
 }
 
 function assertViewport(evidence, context) {
@@ -406,7 +436,7 @@ function assertSceneTruth(descriptor, evidence, context) {
     selectedClaim: evidence.selectedClaim,
   });
   if (descriptor.id !== "single" && descriptor.id !== "fleet") {
-    assert(evidence.routeTitle?.text.startsWith("事故检查 · "), "Incident scenes must render the complete investigation title prefix", {
+    assert(evidence.routeTitle?.lines?.[0] === "事故检查" && evidence.routeTitle?.text.startsWith("事故检查"), "Incident scenes must render the complete investigation title prefix", {
       context,
       routeTitle: evidence.routeTitle,
     });
@@ -553,19 +583,15 @@ async function inspectMatrix(runtime) {
             tabletCrosscheckRows: observation.tabletCrosscheckRows,
           });
         } else {
-          assert(observation.tabletBasisRows?.length >= 2, "Tablet incident impact workspace must expose object-specific basis facts instead of leaving an ownerless column", {
+          assert(observation.allFollowups?.length >= 2, "Tablet incident master list must retain at least two adjacent objects beside the selected evidence", {
             context,
-            tabletBasisRows: observation.tabletBasisRows,
+            allFollowups: observation.allFollowups,
           });
-          assert(observation.tabletAuditRows?.length === 3, "Tablet incident workspace must use its lower area for three adjacent-object checks", {
+          assert(new Set(observation.allFollowups.map((row) => row.label)).size === observation.allFollowups.length,
+            "Tablet incident master list must not repeat adjacent-object labels", {
             context,
-            tabletAuditRows: observation.tabletAuditRows,
+            allFollowups: observation.allFollowups,
           });
-          assert(new Set(observation.tabletAuditRows.map((row) => row.label)).size === observation.tabletAuditRows.length,
-            "Tablet incident audit must not fill its lower area with duplicate labels", {
-              context,
-              tabletAuditRows: observation.tabletAuditRows,
-            });
         }
       }
     } catch (failure) {
@@ -648,7 +674,7 @@ async function inspectClaimSelectionHistory(runtime) {
   const before = await openOverview(runtime, sceneCase("single"), DEFAULT_VIEWPORT);
   assert(before.followups.length > 0, "Single scene requires a follow-up claim for selection history", { before });
   const initialId = before.selectedClaim.id;
-  await page.locator(CLAIM_CONTROL).first().focus();
+  await page.locator(`${CLAIM_CONTROL}[aria-pressed="false"]:visible`).first().focus();
   await page.keyboard.press("Enter");
   const selectedId = await waitForSelectedClaimChange(page, initialId);
   const selected = await inspectRoot(page);
@@ -758,7 +784,7 @@ async function inspectAllOfflineSecondaryObjects(runtime) {
   const viewport = viewportProfile("phone390");
   const before = await openOverview(runtime, sceneCase("all-offline"), viewport);
   const allClaims = before.allFollowups;
-  assert(allClaims.length >= 3, "All-offline Incident Split Lens must retain at least three secondary object checks", { viewport, allClaims });
+  assert(allClaims.length >= 2, "All-offline Incident Split Lens must retain the two bounded affected-object checks", { viewport, allClaims });
   const lastClaim = allClaims.at(-1);
   assert(lastClaim?.claimId && lastClaim.tag === "button" && !lastClaim.disabled,
     "All-offline secondary evidence must remain an enabled native object control", { lastClaim, allClaims });

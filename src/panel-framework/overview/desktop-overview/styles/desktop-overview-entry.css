@@ -2,6 +2,7 @@
 @import "./desktop-overview.css";
 @import "./desktop-overview-responsive.css";
 @import "./desktop-overview-recovered.css";
+@import "./desktop-next.css";
 
 /*
  * Desktop ledgers show a human-readable source role first. The raw field path

@@ -1,4 +1,5 @@
 import type { OverviewDerivedState } from "../../types";
+import { shortTimestamp } from "../../deriveOverviewState";
 import type { OverviewEvidenceModel, OverviewEvidenceRisk } from "../../evidence-model/overviewEvidenceTypes";
 import type { IncidentLensFact, IncidentLensModel, IncidentLensObject, IncidentLensScenario } from "./types";
 
@@ -23,7 +24,8 @@ function fact(label: string, value: string, tone: IncidentLensFact["tone"], note
 }
 
 function targetObjectIdFor(evidence: OverviewEvidenceModel, route: NonNullable<IncidentLensObject["action"]>["route"]): string | undefined {
-  return evidence.priorityObjectsAll.find((object) => object.route === route && object.targetObjectId)?.targetObjectId
+  return (evidence.focusObject?.route === route ? evidence.focusObject.targetObjectId : undefined)
+    || evidence.priorityObjectsAll.find((object) => object.route === route && object.targetObjectId)?.targetObjectId
     || evidence.coverageObjects.find((object) => object.route === route && object.targetObjectId)?.targetObjectId
     || evidence.investigationActions.find((action) => action.route === route && action.navigation?.objectId)?.navigation?.objectId
     || undefined;
@@ -75,7 +77,12 @@ function routeObject(evidence: OverviewEvidenceModel, state: OverviewDerivedStat
       secondaryValue: currentTrafficFacts(evidence)[1].value,
       note: evidence.traffic?.windowLabel || "当前采样",
     } : null,
-    action: { label: "查看路由证据", note: "目标、网关与路由表", route: "routes" },
+    action: {
+      label: "查看路由证据",
+      note: "目标、网关与路由表",
+      route: "routes",
+      targetObjectId: targetObjectIdFor(evidence, "routes"),
+    },
   };
 }
 
@@ -94,15 +101,15 @@ function collectionObject(evidence: OverviewEvidenceModel, state: OverviewDerive
     tone: unavailable ? "danger" : failed ? "warn" : "trust",
     source: failed?.name === "REST" ? "meta.realtime + meta.slowRest" : "meta.static",
     facts: [
-      fact("REST", rest.label, rest.status === "current" ? "trust" : "warn", rest.successAt || "最近成功未记录"),
-      fact("SSH", ssh.label, ssh.status === "current" ? "trust" : "warn", ssh.successAt || "最近成功未记录"),
+      fact("REST", rest.label, rest.status === "current" ? "trust" : "warn", rest.successAt ? shortTimestamp(rest.successAt) : "最近成功未记录"),
+      fact("SSH", ssh.label, ssh.status === "current" ? "trust" : "warn", ssh.successAt ? shortTimestamp(ssh.successAt) : "最近成功未记录"),
     ],
     impact: [
       fact("当前业务数值", evidence.evidenceMode === "current" ? "可显示" : "已撤回", evidence.evidenceMode === "current" ? "trust" : "danger"),
       fact("失败端点", state.facts.failures.count ? `已记录 ${state.facts.failures.count}` : "未记录", state.facts.failures.count ? "warn" : "missing", "未记录不等于没有故障"),
     ],
     evidence: [
-      fact("最近成功", evidence.evidenceTime, evidence.evidenceMode === "current" ? "trust" : "warn", evidence.evidenceAt || "未记录 RFC3339 时间"),
+      fact("最近成功", evidence.evidenceTime, evidence.evidenceMode === "current" ? "trust" : "warn", evidence.evidenceAt ? shortTimestamp(evidence.evidenceAt) : "未记录时间"),
       fact("证据边界", evidence.evidenceNote, evidence.evidenceTone),
     ],
     signal: null,
@@ -139,7 +146,7 @@ function resourceObject(evidence: OverviewEvidenceModel, state: OverviewDerivedS
       metric.value !== null && metric.value >= metric.threshold ? "danger" : "trust",
       `阈值 ${Math.round(metric.threshold)}%`,
     )),
-    evidence: !currentAllowed ? [fact("最近证据", evidence.evidenceTime, "warn", evidence.evidenceAt || "未记录 RFC3339 时间")] : lead ? [
+    evidence: !currentAllowed ? [fact("最近证据", evidence.evidenceTime, "warn", evidence.evidenceAt ? shortTimestamp(evidence.evidenceAt) : "未记录时间")] : lead ? [
       fact("证据窗口", evidence.resource?.windowLabel || "当前采样", lead.points.length >= 2 ? "trust" : "warn"),
       fact("当前样本", lead.points.length ? "与历史窗口对齐" : "仅当前样本", lead.points.length ? "trust" : "warn"),
     ] : [fact("数据边界", "缺少可对齐资源样本", "missing")],
@@ -212,7 +219,7 @@ function wanObject(evidence: OverviewEvidenceModel, state: OverviewDerivedState)
     impact: routeFacts(evidence),
     evidence: [
       fact("证据模式", evidence.evidenceLabel, evidence.evidenceTone),
-      fact("观测时间", evidence.evidenceTime, evidence.evidenceTone, evidence.evidenceAt || "未记录 RFC3339 时间"),
+      fact("观测时间", evidence.evidenceTime, evidence.evidenceTone, evidence.evidenceAt ? shortTimestamp(evidence.evidenceAt) : "未记录时间"),
       fact("来源", "WAN 运行记录", currentAllowed ? "trust" : "missing", "wan"),
     ],
     signal: currentTrafficFacts(evidence).length === 2 ? {

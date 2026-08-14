@@ -44,43 +44,27 @@ export function DesktopIncidentDocket({
       </div>
     </section>
   ) : null;
-  const usesIncidentPriorityOrder = Boolean(secondaryRisks && !model.scenarioFocus && model.risk !== "resource");
-  const actionsBeforeObject = model.risk === "collection";
-
   return (
     <section
-      className={`do-incident is-${model.verdictTone}`}
+      className={`do-incident do-incident-triad is-${model.verdictTone}`}
       aria-label="事故任务"
       data-desktop-primary-risk={model.risk}
       data-desktop-risk-priority={model.riskQueue[0]?.priorityScore}
       data-desktop-risk-priority-reason={model.riskQueue[0]?.priorityReason}
-      data-desktop-incident-order={usesIncidentPriorityOrder ? "facts-primary-object-secondary-queue" : undefined}
+      data-desktop-incident-order="risk-object-actions-docket"
     >
-      {resourceIncident ? (
-        <>
-          <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
-          {primarySummary}
-          {secondaryRisks}
+      <div className="do-incident-risk-column" data-desktop-incident-column="risk-object">
+        <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
+        <div className="do-incident-command-line" data-desktop-incident-column="actions">
           {investigationActions}
-        </>
-      ) : usesIncidentPriorityOrder ? (
-        <>
+        </div>
+      </div>
+      {primarySummary || secondaryRisks ? (
+        <div className="do-incident-docket-column" data-desktop-incident-column="docket">
           {primarySummary}
-          {actionsBeforeObject ? investigationActions : null}
-          <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
           {secondaryRisks}
-          {!actionsBeforeObject ? investigationActions : null}
-        </>
-      ) : (
-        <>
-          {primarySummary}
-          {actionsBeforeObject ? investigationActions : null}
-          {actionsBeforeObject ? null : secondaryRisks}
-          <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
-          {actionsBeforeObject ? secondaryRisks : null}
-          {!actionsBeforeObject ? investigationActions : null}
-        </>
-      )}
+        </div>
+      ) : null}
     </section>
   );
 }

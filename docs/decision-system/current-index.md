@@ -1,20 +1,20 @@
 - status: `reference`
-- validForCommit: Step949 d13ac20 short-landscape remediation focused green; final exact candidate replay remains open
+- validForCommit: Step962 focused Product and Visual P1=0; exact clean candidate replay remains open
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `949`
-- currentOutcome: `949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required`
-- currentBoundary: `949`
-- latestRecordedStep: `949`
-- latestStepOutcome: `949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required`
+- currentStep: `962`
+- currentOutcome: `962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required`
+- currentBoundary: `962`
+- latestRecordedStep: `962`
+- latestStepOutcome: `962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required`
 
 ## Current pointer
 
 The authority is `current-state.md`; this page is discovery only.
 
-- Current implementation: isolated Incident Split Lens owns mobile Overview; rejected Optical presentation is physically deleted; desktop remains independent at 1200+.
-- Current local evidence: c075 exact `28/76/266` and real Edge `22/22` are historical after d13ac20; d13ac20 focused types, mobile visual, incident runtime, production build and 844×390 fleet smoke pass with no remaining crop.
-- Current release boundary: final governance commit must regenerate an exact-SHA evidence set. External real manual AT, RouterOS 300s soak, five-role signatures, trusted promotion, GitHub upload and exact remote Linux/Windows/GHCR CL remain open.
+- Current implementation: isolated mobile and desktop owners; short-landscape complete task flow; tablet recovery criteria; desktop continuous workbench and operator-facing source language.
+- Current local evidence: build/types, mobile Incident Lens runtime and desktop incident hierarchy pass; Step961 16/16 focused visual cells; independent Product and Visual reviews have P0/P1=0 after the Step962 source-copy closure.
+- Current release boundary: focused dirty-artifact signoff is not an exact clean candidate. Complete matrices, final accessibility/security, real RouterOS soak, real external attestations, trusted promotion and remote CL remain open.
 - Full process: `docs/panel-redesign-decision-log.md`.
 - Product handoff: `docs/product-loop-current.md`.
 - Release chronology: `docs/decision-system/release-journal.md`.

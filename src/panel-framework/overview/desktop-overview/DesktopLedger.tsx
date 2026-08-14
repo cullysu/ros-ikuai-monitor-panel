@@ -11,6 +11,7 @@ export function DesktopLedger({
   emptyLabel = "当前没有可列出的对象",
   taskLandmark,
   evidenceAt = null,
+  presentation = "table",
 }: {
   title: string;
   subtitle: string;
@@ -20,9 +21,10 @@ export function DesktopLedger({
   emptyLabel?: string;
   taskLandmark?: string;
   evidenceAt?: string | null;
+  presentation?: "table" | "ledger";
 }) {
   return (
-    <section className="do-ledger" aria-labelledby={`do-ledger-${module}`} data-desktop-ledger={module} data-overview-task-landmark={taskLandmark}>
+    <section className={`do-ledger is-${presentation}`} aria-labelledby={`do-ledger-${module}`} data-desktop-ledger={module} data-desktop-ledger-presentation={presentation} data-overview-task-landmark={taskLandmark}>
       <header className="do-module-heading">
         <div><h2 id={`do-ledger-${module}`}>{title}</h2><p>{subtitle}</p></div>
         <span>{rows.length} 项</span>
