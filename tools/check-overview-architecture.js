@@ -43,7 +43,9 @@ const required = [
   "mobile-overview/incident-lens/types.ts",
   "mobile-overview/incident-lens/useIncidentLensSelectionHistory.ts",
   "mobile-overview/incident-lens/styles/tokens.css",
-  "mobile-overview/incident-lens/styles/layout.css",
+  "mobile-overview/incident-lens/styles/patrol-next.css",
+  "mobile-overview/incident-lens/styles/incidents-next.css",
+  "mobile-overview/incident-lens/styles/shell-next.css",
   "mobile-overview/incident-lens/styles/motion.css",
 ];
 

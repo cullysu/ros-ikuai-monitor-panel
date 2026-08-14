@@ -22,14 +22,14 @@ const layoutCss = fs.readFileSync(path.join(
   "styles",
   "desktop-overview.css",
 ), "utf8");
-const recoveredCss = fs.readFileSync(path.join(
+const currentDesktopCss = fs.readFileSync(path.join(
   root,
   "src",
   "panel-framework",
   "overview",
   "desktop-overview",
   "styles",
-  "desktop-overview-recovered.css",
+  "desktop-next.css",
 ), "utf8");
 const runtimeCheck = fs.readFileSync(path.join(root, "tools", "check-panel-runtime-browser.js"), "utf8");
 
@@ -45,7 +45,7 @@ const shrinkRule = layoutCss.match(
 assert(shrinkRule, "Fleet preview and its Ledger wrapper must share one shrink rule");
 assert.match(shrinkRule[1], /min-width:\s*0\s*;/, "the nested grid item must be allowed to shrink inside its 1200px track");
 assert.doesNotMatch(shrinkRule[1], /overflow/, "the fix must constrain intrinsic width rather than hide overflow");
-assert.match(recoveredCss, /\.do-normal-signal\{min-width:0\}/, "the parent desktop grid item must remain shrinkable");
+assert.match(currentDesktopCss, /\.do-normal-focus-column,\s*\.do-normal-signal\s*\{[^}]*min-width:\s*0\s*;/s, "the parent desktop grid item must remain shrinkable");
 assert.match(runtimeCheck, /fleetCoverage1200\.overflow <= 1/, "the runtime overflow gate must remain strict");
 
 process.stdout.write(`${JSON.stringify({

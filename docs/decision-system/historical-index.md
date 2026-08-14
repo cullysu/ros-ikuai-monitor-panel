@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step962 current decision boundary; historical entries remain immutable
+- validForCommit: Step963 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `962`
-- latestRecordedStep: `962`
+- coveredStepMax: `963`
+- latestRecordedStep: `963`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -71,6 +71,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 948 | candidate evidence reduced to structural proof, bounded/complete source acceptance forced pending, strict Route Owner and reproducible AT session schemas, external authority and exact replay still open | current-state.md |
 | 949 | c075 exact evidence historical after standalone 844×390 navigation overlap remediation; d13ac20 focused green and final clean-SHA replay still required | current-state.md |
 | 950 - 962 | owner rejection of the previous mobile visual direction, three-direction adjudication, isolated incident/patrol reconstruction, continuous desktop workbench, responsive source-language repair, focused runtime evidence and independent Product/Visual P0/P1 closure; clean exact-SHA replay and formal release authority remain open | current-state.md |
+| 963 | fixed asset-budget red gate, deletion of retired mobile/desktop CSS owners, active-owner static-gate repair and focused runtime rebound; exact clean-SHA matrices and fresh Product/Design/Visual review remain open | current-state.md |
 
 ## Reading rule
 

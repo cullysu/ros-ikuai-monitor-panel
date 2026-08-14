@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step962 focused product and visual review PASS / release CLOSED**.
+RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step963 focused engineering repair PASS / release CLOSED**.
 
-这是当前面板工作的本地决策仓库镜像。Step962 记录新手机事故/巡检架构、连续桌面工作台、公开来源文案修正，以及 focused runtime、截图、独立产品和视觉复核均达到 P0/P1=0；这些仍是未提交工作树证据，提交后必须重建 clean exact-SHA 全量证据。任务 active、`blocked=false`，GitHub 未上传。
+这是当前面板工作的本地决策仓库镜像。Step963 删除未出现在生产包中的旧手机和桌面 CSS owner，修正静态门禁的真实读取路径，并在不抬预算阈值下恢复 focused runtime 与资产预算。CSS cascade 已变化，Step962 视觉复核历史化；提交后必须重建 clean exact-SHA 全量证据。任务 active、`blocked=false`，GitHub 未上传。
 
 - status: `current-mirror-entry`
-- currentStep: `962`
-- currentOutcome: `962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required`
-- currentBoundary: `962`
+- currentStep: `963`
+- currentOutcome: `963:retired-css-owners-deleted-asset-budgets-and-focused-runtime-green-exact-replay-required`
+- currentBoundary: `963`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -24,7 +24,7 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step962 focu
 
 ## 当前边界
 
-当前产品结论：**FAIL overall / Step962 focused product and visual review PASS / release CLOSED**。focused runtime、截图与独立复核确认当前设计方向的 P0/P1 已清零，但提交后仍须重建 clean exact candidate evidence；真实 reviewer/AT、RouterOS 300s soak、五角色签名、可信 promotion 与 exact remote SHA Linux/Windows/GHCR CL 尚未完成。
+当前产品结论：**FAIL overall / Step963 focused engineering repair PASS / release CLOSED**。active owner、固定资产预算和 focused runtime 已通过，但新的 clean exact candidate、Product/Design/Visual、Accessibility/Security 与完整矩阵必须重放；真实 reviewer/AT、RouterOS 300s soak、五角色签名、可信 promotion 与 exact remote SHA Linux/Windows/GHCR CL 尚未完成。
 
 ## 过程怎么记录
 
@@ -34,4 +34,4 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall / Step962 focu
 
 每个材料性切片结束后更新仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Historical Step858–961 remains in `decision-system\historical-index.md` and the full decision log. Step962 is the current truth boundary. Historical green reports and local review never satisfy whole-product release qualification by themselves.
+Historical Step858–962 remains in `decision-system\historical-index.md` and the full decision log. Step963 is the current truth boundary. Historical green reports and local review never satisfy whole-product release qualification by themselves.

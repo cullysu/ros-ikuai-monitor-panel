@@ -7,7 +7,12 @@
   .do-shell {
     padding: 12px 14px 28px;
     background: var(--do-canvas);
+    font-size: 14px;
+    line-height: 1.42;
   }
+
+  .do-shell small { font-size: 12px; }
+  .do-shell button { min-height: 28px; }
 
   .do-status-bus {
     grid-template-columns: minmax(360px, 1.25fr) minmax(0, 2.75fr);

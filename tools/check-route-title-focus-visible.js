@@ -6,7 +6,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const desktopCss = fs.readFileSync(path.join(root, 'src/panel-framework/sections/section-console.css'), 'utf8');
-const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/incident-lens/styles/layout.css'), 'utf8');
+const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/incident-lens/styles/shell-next.css'), 'utf8');
 const mobileSource = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx'), 'utf8');
 const routeSource = fs.readFileSync(path.join(root, 'src/panel-framework/routes/usePanelRoute.ts'), 'utf8');
 

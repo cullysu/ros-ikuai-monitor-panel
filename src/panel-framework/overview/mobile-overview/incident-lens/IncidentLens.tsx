@@ -5,7 +5,6 @@ import { PatrolLens } from "./PatrolLens";
 import { IncidentWorkspace } from "./IncidentWorkspace";
 import { useIncidentLensSelectionHistory } from "./useIncidentLensSelectionHistory";
 import "./styles/tokens.css";
-import "./styles/layout.css";
 import "./styles/patrol-next.css";
 import "./styles/incidents-next.css";
 import "./styles/shell-next.css";

@@ -5,7 +5,7 @@
 > validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（公众发布）/ Step962 focused Product 与 Visual P0/P1 已清零；clean exact-SHA 全量重放、外部 reviewer/AT authority、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
+> 当前产品结论：**FAIL（公众发布）/ Step963 active CSS owner 与固定资产预算修复已通过 focused runtime；clean exact-SHA 全量矩阵及 Product/Design/Visual、Accessibility/Security 重放、外部 reviewer/AT authority、真实 RouterOS soak、可信授权及当前远端 SHA 三端 CL 尚未完成，release CLOSED**
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26771,3 +26771,37 @@ ocused-green-engineering
 - latestStepOutcome: `962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Commit Step962, then replay complete local gates, matrices and independent reviews on the resulting clean exact SHA before any external acceptance or publication decision.
+
+## 第 963 步：发布预算红灯揭露旧样式 owner；删除退役 CSS 并把门禁绑定到真实生产样式
+
+### 触发 / 问题
+
+- 首次在干净 `e2cc50b` 候选上执行 `check-public-release-readiness --require-matrix`，门禁真实失败：主样式 `141663` bytes、gzip `21874`、Brotli `18639`，桌面样式 `45123` bytes，超过固定 `120000/20000/18000` 与桌面 `40000` 上限。
+- 审计发现新手机和桌面视觉 owner 已投入生产，但旧 `layout.css` 与 `desktop-overview-recovered.css` 仍被导入；更严重的是部分静态门禁仍直接读取旧文件，即使生产不再需要它们也会产生假覆盖。
+
+### 决策与实现
+
+- 不提高预算、不拆额外资产绕过预算、不缩小文字、不删除证据。手机停止导入并删除 `layout.css`，桌面停止导入并删除 `desktop-overview-recovered.css`。
+- 仅把仍然有效且运行时实测需要的合同迁移到 active owner：手机 selected object 可见焦点；桌面 14px 基准、12px small 和 28px pointer target。
+- `check-overview-architecture`、`check-mobile-workspace-contract`、`check-route-title-focus-visible`、`check-fleet-bounded-priority-overflow` 与 public readiness 改为读取 `patrol-next.css`、`incidents-next.css`、`shell-next.css`、`motion.css` 和 `desktop-next.css`。静态门禁不再由死文件自证。
+
+### Emil / Product Loop 心得
+
+- 删除沉积层不是“为了过预算”，而是恢复一条可解释的样式所有权链：组件看到的样式、浏览器执行的样式、静态门禁读取的样式必须是同一组文件。
+- 视觉质量不能靠 CSS 体积证明，但超预算会揭露重复 owner；正确修法是删除被替代的责任，不是压缩到另一个看不见的补丁层。
+- 任何 active cascade 变化都会使旧截图签收失效。Step962 Product/Visual P0/P1=0 保留为历史事实，不能直接批准 Step963。
+
+### 验证
+
+- production build、TypeScript、`check:overview`、asset budget 与 static public readiness PASS。
+- `check:mobile-incident-lens` 全部 static/model/architecture/accessibility/runtime PASS。
+- `check:desktop-v1030`、`check:desktop-no-snapshot`、`check:desktop-incident-hierarchy` PASS。
+- 新资产：main style `117593 / 19068 / 16339` raw/gzip/Brotli；desktop style `24268 / 3943 / 3456`，均在未修改的 ceiling 内。
+
+### 边界 / 心得
+
+- Step963 当前仍是未提交工作树证据；此前针对 `e2cc50b` 生成的 28/76/266 矩阵因 source/artifact identity 改变而陈旧，必须在新 clean SHA 重跑。
+- Product/Design/Visual、200%/manual AT、Security、真实 RouterOS 300s soak、五角色外部签名、promotion、GitHub 发布和 remote Linux/Windows/GHCR CL 全部仍开放。
+- latestStepOutcome: `963:retired-css-owners-deleted-asset-budgets-and-focused-runtime-green-exact-replay-required`
+- GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
+- nextAction: Commit Step963, then replay complete local gates, matrices and independent reviews on the resulting clean exact SHA before any external acceptance or publication decision.

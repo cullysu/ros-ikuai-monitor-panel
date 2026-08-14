@@ -113,6 +113,12 @@
 .incident-lens .patrol-next__action:focus-visible,
 .incident-lens .patrol-next__object-control:focus-visible { outline: 2px solid var(--il-blue); outline-offset: -2px; }
 
+.incident-lens .incident-lens__inspector:focus-visible,
+.incident-lens .incident-lens__active-object:focus-visible {
+  outline: 2px solid var(--il-blue);
+  outline-offset: -2px;
+}
+
 .incident-lens .patrol-next__distribution {
   min-inline-size: 0;
   padding: 11px 16px 10px;

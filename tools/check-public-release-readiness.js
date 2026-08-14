@@ -1065,7 +1065,7 @@ function main(argv = process.argv.slice(2)) {
     'mobile filter disclosure must expose a valid expanded-state aria-controls target',
   );
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'role="group"');
-  for (const style of ['tokens.css', 'layout.css', 'motion.css']) {
+  for (const style of ['tokens.css', 'patrol-next.css', 'incidents-next.css', 'shell-next.css', 'motion.css']) {
     assertNotContains(`src/panel-framework/overview/mobile-overview/incident-lens/styles/${style}`, '!important');
   }
   assertNotContains('src/panel-framework/mobile/mobile-domain.css', '!important');

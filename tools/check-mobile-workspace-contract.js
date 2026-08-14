@@ -12,7 +12,7 @@ const domainCss = [
   "mobile-domain-large-text.css",
 ].map((file) => read("src", "panel-framework", "mobile", file)).join("\n");
 const incidentRoot = ["src", "panel-framework", "overview", "mobile-overview", "incident-lens"];
-const incidentCss = ["tokens.css", "layout.css", "motion.css"]
+const incidentCss = ["tokens.css", "patrol-next.css", "incidents-next.css", "shell-next.css", "motion.css"]
   .map((file) => read(...incidentRoot, "styles", file)).join("\n");
 const incidentTokens = read(...incidentRoot, "styles", "tokens.css");
 const incidentSource = read(...incidentRoot, "IncidentLens.tsx");
@@ -98,10 +98,10 @@ assert.match(incidentWorkspace, /data-incident-lens-evidence/);
 
 assert.match(incidentCss, /@media\s*\(min-width:\s*600px\)/, "Incident Split Lens needs a tablet workspace breakpoint");
 assert.match(incidentCss,
-  /\.incident-lens__incident\s*\{[^}]*grid-template-columns:\s*minmax\(0,1\.05fr\)\s+minmax\(300px,\.95fr\)/s,
-  "tablet incident workspace must allocate independent impact and evidence columns");
-blockHas(incidentCss, ".incident-lens__impact-workspace", "grid-column:\\s*1");
-blockHas(incidentCss, ".incident-lens__evidence-workspace", "grid-column:\\s*2");
+  /\.incident-lens__incident--next\s*\{[^}]*grid-template-columns:\s*minmax\(230px,\s*\.72fr\)\s+minmax\(0,\s*1\.28fr\)/s,
+  "tablet incident workspace must allocate independent object and decision columns");
+blockHas(incidentCss, ".incident-lens__incident--next > .incident-lens__next-objects", "grid-column:\\s*1");
+blockHas(incidentCss, ".incident-lens__incident--next > .incident-lens__next-case", "grid-column:\\s*2");
 assert.match(incidentCss, /@media\s*\(min-width:\s*600px\)\s*and\s*\(max-height:\s*500px\)/,
   "Incident Split Lens needs a short-landscape workspace mode");
 
@@ -122,10 +122,10 @@ blockHas(domainCss, ".mdi-domain-body", "margin:\\s*0");
 blockHas(domainCss, ".mdi-domain-body", "border:\\s*0");
 blockHas(domainCss, ".mdi-domain-body", "border-radius:\\s*0");
 blockHas(domainCss, ".mdi-section", "border:\\s*0");
-blockHas(incidentCss, ".incident-lens__chrome button", "width:\\s*44px");
-blockHas(incidentCss, ".incident-lens__chrome button", "height:\\s*44px");
-blockHas(incidentCss, ".incident-lens__nav button", "min-height:\\s*44px");
-blockHas(incidentCss, ".incident-lens__object-action", "min-height:\\s*(?:52px|44px)");
+blockHas(incidentCss, ".incident-lens__chrome button", "inline-size:\\s*44px");
+blockHas(incidentCss, ".incident-lens__chrome button", "block-size:\\s*44px");
+blockHas(incidentCss, ".incident-lens .patrol-next__object-control", "min-block-size:\\s*52px");
+blockHas(incidentCss, ".incident-lens .patrol-next__action", "min-block-size:\\s*52px");
 blockHas(connectionCss, ".router-field input", "min-height:\\s*44px");
 blockHas(connectionCss, ".router-segmented-control button", "min-height:\\s*44px");
 blockHas(connectionCss, ".router-saved-select select", "min-height:\\s*44px");
