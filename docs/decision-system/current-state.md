@@ -1,9 +1,9 @@
 - status: `current`
 - validForCommit: false; deterministic clean candidate 6aae922 exists, but full exact-SHA release replay and Product release signoff remain open
 - supersededBy: `null`
-- currentConclusionForStep: `1058`
-- latestRecordedStep: `1058`
-- latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
+- currentConclusionForStep: `1059`
+- latestRecordedStep: `1059`
+- latestStepOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -12,7 +12,7 @@
 
 **FAIL overall / Mobile Flow phone acceptance green / deterministic clean candidate `6aae922` created / complete exact-SHA release replay and release signoff active / GitHub untouched / release CLOSED.**
 
-## Current decision record: Step 1058
+## Current decision record: Step 1059
 
 - `src/panel-framework/mobile-flow-ui/` is now the only phone presentation owner; rejected presentation trees are absent.
 - The current exact worktree fingerprint has 56/56 runtime cells, four interaction workflows, accessibility-v2 10/10 and overview 12/12.
@@ -20,6 +20,8 @@
 - Review remediation removed collection, Fleet and resource signal/object repetition and fixed tablet navigation/workspace overlap.
 - Candidate `48e731c` passed exact 56/56 and accessibility 10/10, then correctly failed before public matrices because Windows CRLF checkout changed the framework input digest.
 - `.gitattributes` now normalizes repository text to LF while preserving Windows scripts as CRLF. LF clean candidate `6aae922` passes asset identity and a complete production rebuild leaves public framework assets and index byte-identical.
+- Public browser inspectors and screenshot anchors now bind to the sole Mobile Flow owner instead of retired Mobile Pulse selectors. The real 390 route/history smoke passes.
+- The only first 28-cell runtime defect was a 40px landscape resource control; production CSS now preserves 44px and rebuilt immutable assets are based on `1219427`.
 - Stale validators that referenced deleted Mobile Pulse/iKuai owners now bind to Mobile Flow without weakening route, rate, time or matrix truth.
 - Build, overview 12/12, package-reference, release-blocker, RFC3339/backend security and dual-surface asset gates pass before the exact-SHA browser replay.
 
@@ -39,7 +41,7 @@
 
 ## One next action
 
-Regenerate exact-SHA 56/10/28/76/266 evidence for `6aae922`, obtain fresh release-eligible Product signoff, then run every release gate before any GitHub upload.
+Regenerate final exact-SHA 56/10/28/76/266 evidence after Step1059, obtain fresh release-eligible Product signoff, then run every release gate before any GitHub upload.
 
 ## Authority links
 

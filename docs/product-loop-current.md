@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: false; deterministic candidate 6aae922 exists but complete exact-SHA release evidence is open
-- currentHandoffForStep: `1058`
+- currentHandoffForStep: `1059`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
 - updated: 2026-08-16
-- latestRecordedStep: `1058`
-- latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
+- latestRecordedStep: `1059`
+- latestStepOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
 - releaseCandidate: `6aae922` deterministic local clean candidate; not published
 - currentConclusion: **FAIL overall / Mobile Flow phone acceptance green / deterministic candidate 6aae922 created / complete exact-SHA replay and full release gates open / GitHub publication closed / release CLOSED.**
 
@@ -18,6 +18,7 @@
 - Fleet scale cannot outrank risk. All-offline collection reachability cannot be promoted into forwarding or business health.
 - Mobile Native and other rejected phone owners are physically absent; architecture gates prevent their return.
 - Candidate `48e731c` proved exact 56/56 and accessibility 10/10, but failed public replay before browser launch because clean Windows checkout changed source bytes. Candidate `6aae922` fixes that repository contract and proves deterministic rebuild.
+- Public browser inspectors now measure Mobile Flow rather than retired Mobile Pulse selectors; canonical mobile route/history smoke passes and landscape resource controls preserve 44px after asset rebuild.
 - Pre-commit matrices prove engineering behavior only. Fresh non-worktree exact-SHA Product release review is required for candidate `6aae922`.
 - Never use normal `git push`; no publication before exact-SHA Linux, Windows and GHCR verification.
 
@@ -35,4 +36,4 @@
 
 ## One next action
 
-Regenerate exact-SHA 56/10/28/76/266 evidence for `6aae922`, obtain release-eligible Product review, then run every release gate before publication.
+Regenerate final exact-SHA 56/10/28/76/266 evidence after Step1059, obtain release-eligible Product review, then run every release gate before publication.

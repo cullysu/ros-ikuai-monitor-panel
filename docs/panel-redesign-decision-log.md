@@ -29425,3 +29425,14 @@ Product、Design、Visual 继续保持 failed；工程矩阵和 Accessibility �
 - 当前仍是 FAIL overall：候选字节确定性已关闭，但 6aae922 的完整 56/10/28/76/266 证据、release readiness、独立 release signoff 和 Linux/Windows/GHCR CL 尚未全部闭环；GitHub 未上传，任务 active，blocked=false。
 
 - latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
+
+## 第 1059 步：把公开浏览器门禁迁到 Mobile Flow 真实结构（2026-08-16）
+
+- outcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
+- 公开矩阵首次越过资产身份后，诚实暴露出验收器仍查询已物理删除的 `data-mobile-pulse-*` owner；手机产品本身的 56/56 不能替代发布矩阵，旧 selector 也不能作为恢复旧 UI 的理由。
+- 浏览器 overview、route、Back/Forward、截图锚点和非 Overview 工作区检查现已绑定 `data-mobile-flow-*`、场景专属 instrument、四个真实导航根、真实对象行和 44px 触控目标；保留 fail-closed matrix 完整性，不用 DOM 字数或自报 flag 冒充产品证据。
+- 新门禁在 390×844 normal smoke 中证明 Mobile Flow 根、证据轨、状态结论、四栏导航、截图像素锚点、路由切换、Back/Forward、未知 URL 归一化全部真实通过。
+- 28 格预跑仅剩 `resource-full@844×390` 的资源行 40px 触控高度失败；产品 CSS 已提升为 44px，并在 LF clean checkout 中重建 immutable mobile asset、loader、manifest 与 gzip/brotli sidecar。实现候选基线为 `12194272a2e3604b48638e4df5e16c42965376c9`。
+- 当前仍是 FAIL overall：最终 exact-SHA 56/10/28/76/266、release readiness、独立 release signoff 和远端 Linux/Windows/GHCR CL 尚未闭环；GitHub 未上传，任务 active，blocked=false。
+
+- latestStepOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`

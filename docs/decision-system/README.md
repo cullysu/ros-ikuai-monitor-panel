@@ -3,9 +3,9 @@
 - validForCommit: false; deterministic candidate 6aae922 exists, complete exact-SHA release evidence is still open
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `1058`
-- latestRecordedStep: `1058`
-- latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
+- currentBoundaryForStep: `1059`
+- latestRecordedStep: `1059`
+- latestStepOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.
@@ -18,4 +18,4 @@ The current conclusion is owned only by `current-state.md`; this page is navigat
 - Full historical journal: `../panel-redesign-decision-log.md`
 - Historical index: `historical-index.md`
 
-Task is active and `blocked=false`. Step1058 records deterministic clean candidate `6aae922` after identifying and fixing Windows/Linux checkout-byte drift without weakening asset identity. Full exact-SHA matrices and release gates remain open. GitHub is untouched; release is CLOSED.
+Task is active and `blocked=false`. Step1059 binds public browser evidence to Mobile Flow, preserves 44px landscape resource controls and rebuilds deterministic assets. Final exact-SHA matrices and release gates remain open. GitHub is untouched; release is CLOSED.

@@ -2,9 +2,9 @@
 - status: `historical-journal`
 - validForCommit: false; Step1058 deterministic candidate 6aae922 exists, complete exact-SHA release evidence open
 - supersededBy: null
-- currentStep: `1058`
-- currentOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
-- latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
+- currentStep: `1059`
+- currentOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
+- latestStepOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 
@@ -24,6 +24,7 @@
 - Step1056 records the isolated Mobile Flow owner, rejected-owner deletion, 56/56 runtime cells, accessibility-v2 10/10, overview 12/12, independent Visual P0/P1/P2=0 and Product experience with no P1/P2. The Product reviewer correctly refuses release signoff because the exact artifact is still `worktree-*` with release eligibility false; clean committed exact-SHA replay remains mandatory.
 - Step1057 creates clean local candidate `62a8358`, migrates stale validators from physically deleted owners to Mobile Flow without weakening truth boundaries, and passes build, overview, package-reference, release-blocker, backend/security/time and dual-surface asset gates. Exact-SHA browser matrices and Product release signoff are now active; GitHub remains untouched.
 - Step1058 rejects `48e731c` as a public-release candidate after clean Windows checkout exposed CRLF/LF input-identity drift, normalizes repository text checkouts, regenerates the framework input identity, and proves candidate `6aae922` rebuilds committed public assets with zero diff. Full matrices and Product release signoff remain active; GitHub remains untouched.
+- Step1059 migrates public browser/runtime/screenshot probes from physically deleted Mobile Pulse selectors to Mobile Flow, proves canonical mobile route/history behavior, and raises the sole failing landscape resource control from 40px to 44px with rebuilt deterministic assets. Final exact-SHA replay remains active; GitHub remains untouched.
 
 - Step1004 proved the now-rejected Origin implementation could pass its engineering and accessibility matrices.
 - Step1005 records the product owner's explicit veto of Origin Control as a desktop operations report compressed into a phone. Step1004 product and visual claims are historical.
