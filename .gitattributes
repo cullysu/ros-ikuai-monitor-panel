@@ -1,6 +1,9 @@
+* text=auto eol=lf
 .gitattributes text eol=lf
 *.sh text eol=lf
 *.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
 Dockerfile text eol=lf
 LICENSE text eol=lf
 .dockerignore text eol=lf
