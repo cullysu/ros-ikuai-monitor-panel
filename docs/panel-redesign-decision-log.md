@@ -29400,3 +29400,17 @@ Product、Design、Visual 继续保持 failed；工程矩阵和 Accessibility �
 - GitHub 未上传；Linux、Windows、GHCR exact-SHA CL 均未开始，发布保持 CLOSED。
 
 - latestStepOutcome: `1056:mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open`
+
+
+## 第 1057 步：建立干净 Mobile Flow 候选并修正退役 owner 门禁（2026-08-16）
+
+- outcome: `1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active`
+- 手机产品方向不变：`src/panel-framework/mobile-flow-ui/` 继续是唯一手机呈现 owner，旧 Mobile Pulse、Mobile Native、iKuai4 呈现树保持物理删除。
+- 为什么这样做：Step1056 的 56/56 与独立视觉签收来自 dirty worktree，只能证明实现方向；发布证据必须绑定一个可复现提交，不能把工作树指纹包装成精确 SHA。
+- 本轮将 264 个相关路径原子提交为本地候选 `62a8358`，并在独立 detached worktree 中准备重放；`_design`、`_research`、本地 capture 脚本和 skill 展示元数据没有进入提交。
+- 旧验证器仍读取已删除的 `mobile-pulse` / `mobile-ikuai4` owner，属于验收架构漂移，不是恢复旧 UI 的理由。门禁已迁到 Mobile Flow 的 overview、workspace、routes、connection owner，同时保留缺失值不可变零、活动路由不可兜底、RFC3339、矩阵 fail-closed 和传输风险显式确认。
+- 聚焦证据：production build、overview 12/12、package script file references、release blockers、connection/backend contracts、backend security、static assets 与 dual-surface asset identity 全部通过。
+- 心得：视觉签收与发布资格必须分层。视觉 P0/P1/P2=0 不会自动让 dirty artifact 变成 release evidence；反过来，旧 gate 读不到已删除文件也不能迫使产品恢复旧架构。正确做法是把 gate 迁到当前 owner，再由干净 SHA 重放。
+- 当前结论仍是 FAIL overall：候选存在，但 exact-SHA 56 格、可访问性、完整公开矩阵、Product release signoff 和 Linux/Windows/GHCR CL 尚未闭环；GitHub 未上传，任务 active，blocked=false。
+
+- latestStepOutcome: `1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active`

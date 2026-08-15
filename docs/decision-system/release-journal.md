@@ -1,10 +1,10 @@
 # Release Journal
 - status: `historical-journal`
-- validForCommit: false; Step1056 Mobile Flow phone acceptance green, clean candidate and release evidence open
+- validForCommit: false; Step1057 clean candidate 62a8358 exists, exact-SHA release evidence open
 - supersededBy: null
-- currentStep: `1056`
-- currentOutcome: `1056:mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open`
-- latestStepOutcome: `1056:mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open`
+- currentStep: `1057`
+- currentOutcome: `1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active`
+- latestStepOutcome: `1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 
@@ -22,6 +22,7 @@
 - Step1048 rejects Mobile Ops as continued desktop-narrow grammar, mounts full Mobile Native ownership, physically deletes Mobile Ops, and records current runtime 56/56; accessibility migration and independent Product/Visual resignoff remain open.
 - Step1049 records the product owner's explicit veto of Mobile Native as another card-stacked narrow console. Mobile Flow is selected as a clean replacement with an edge-to-edge status rail, one scene-specific instrument, compact object rows and true tablet master/detail. All prior Mobile Native visual/matrix claims are historical for product acceptance.
 - Step1056 records the isolated Mobile Flow owner, rejected-owner deletion, 56/56 runtime cells, accessibility-v2 10/10, overview 12/12, independent Visual P0/P1/P2=0 and Product experience with no P1/P2. The Product reviewer correctly refuses release signoff because the exact artifact is still `worktree-*` with release eligibility false; clean committed exact-SHA replay remains mandatory.
+- Step1057 creates clean local candidate `62a8358`, migrates stale validators from physically deleted owners to Mobile Flow without weakening truth boundaries, and passes build, overview, package-reference, release-blocker, backend/security/time and dual-surface asset gates. Exact-SHA browser matrices and Product release signoff are now active; GitHub remains untouched.
 
 - Step1004 proved the now-rejected Origin implementation could pass its engineering and accessibility matrices.
 - Step1005 records the product owner's explicit veto of Origin Control as a desktop operations report compressed into a phone. Step1004 product and visual claims are historical.

@@ -6,7 +6,11 @@ const ROOT = path.resolve(__dirname, "..");
 const targetPath = path.join(ROOT, "src", "panel-framework", "runtime", "usePanelRuntime.ts");
 const source = fs.readFileSync(targetPath, "utf8");
 const refreshStart = source.indexOf("  const refresh = useCallback");
-const refreshEnd = source.indexOf("\n  useEffect(() => {\n    void retryConnectionStatus();", refreshStart);
+const refreshTail = refreshStart >= 0 ? source.slice(refreshStart) : "";
+const refreshBoundary = /\r?\n  useEffect\(\(\) => \{\r?\n    void retryConnectionStatus\(\);/.exec(refreshTail);
+const refreshEnd = refreshBoundary && typeof refreshBoundary.index === "number"
+  ? refreshStart + refreshBoundary.index
+  : -1;
 const refreshSource = refreshStart >= 0 && refreshEnd > refreshStart ? source.slice(refreshStart, refreshEnd) : "";
 const failureStart = refreshSource.indexOf("    } catch (error) {");
 const failureEnd = refreshSource.indexOf("    } finally {", failureStart);
