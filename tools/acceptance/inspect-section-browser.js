@@ -75,9 +75,10 @@ async function inspectSectionBrowser(
     };
   };
   const app = document.querySelector('#app');
-  const active = document.querySelector('#app .section, #app [data-mobile-pulse-workspace], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const active = document.querySelector('#app .section, #app [data-mobile-flow-overview], #app [data-mobile-flow-workspace], #app [data-mobile-flow-connection], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
   const requested = document.querySelector(
-    '#' + CSS.escape(sectionName) +
+    (sectionName === 'overview' ? '[data-mobile-flow-overview]' : '[data-mobile-flow-workspace="' + CSS.escape(sectionName) + '"]') +
+    ', #' + CSS.escape(sectionName) +
     ', [data-mobile-pulse-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
@@ -120,9 +121,10 @@ async function inspectSectionBrowser(
     viewport,
     strictResponsive,
   });
-  const refreshedActive = document.querySelector('#app .section, #app [data-mobile-pulse-workspace], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const refreshedActive = document.querySelector('#app .section, #app [data-mobile-flow-overview], #app [data-mobile-flow-workspace], #app [data-mobile-flow-connection], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
   const refreshedRequested = document.querySelector(
-    '#' + CSS.escape(sectionName) +
+    (sectionName === 'overview' ? '[data-mobile-flow-overview]' : '[data-mobile-flow-workspace="' + CSS.escape(sectionName) + '"]') +
+    ', #' + CSS.escape(sectionName) +
     ', [data-mobile-pulse-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
@@ -149,6 +151,44 @@ async function inspectSectionBrowser(
     mobilePulseObjectSelectionProbe,
   });
   if (mobileNativeResult) return mobileNativeResult;
+  const mobileFlowRouteRoot = window.innerWidth < 900 && sectionName !== 'overview' &&
+    sectionRoot?.matches('[data-mobile-flow-workspace]') ? sectionRoot : null;
+  if (mobileFlowRouteRoot) {
+    const visible = (node) => {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    };
+    const title = mobileFlowRouteRoot.querySelector('[data-panel-route-title]');
+    const rows = Array.from(mobileFlowRouteRoot.querySelectorAll('.mflow-workspace__rows button')).filter(visible);
+    const empty = mobileFlowRouteRoot.querySelector('.mflow-workspace__empty');
+    const directoryRows = Array.from(mobileFlowRouteRoot.querySelectorAll('.mflow-directory__group > button')).filter(visible);
+    const controls = Array.from(mobileFlowRouteRoot.querySelectorAll('button, input, select')).filter(visible);
+    const targetSizes = controls.map((node) => {
+      const target = node instanceof HTMLInputElement || node instanceof HTMLSelectElement ? node.closest('label') || node : node;
+      const rect = target.getBoundingClientRect();
+      return { width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    const more = sectionName === 'more';
+    const checks = {
+      mounted: mobileFlowRouteRoot.getAttribute('data-mobile-flow-workspace') === sectionName,
+      title: Boolean(title && title.getAttribute('tabindex') === '-1'),
+      workspace: more ? directoryRows.length >= 10 : Boolean(rows.length > 0 || empty),
+      pointerTargets: targetSizes.every((item) => item.width >= 44 && item.height >= 44),
+      noHorizontalOverflow: overflowX <= 1,
+      noBadLiteral: !hasBadLiteral,
+      scaleMeta: scaleMetaOk,
+      isolatedTree: document.querySelectorAll('[data-mobile-flow-workspace]').length === 1,
+    };
+    return {
+      pass: Boolean(app && active && Object.values(checks).every(Boolean)),
+      surface: 'mobile-flow-route', contract: 'mobile-flow-route-v1', profile, viewport, scaleScenario,
+      requestedSection: sectionName, activeSection: sectionName, requestedFound: true,
+      title: normalize(title?.textContent || ''), checks, rows: rows.length, directoryRows: directoryRows.length,
+      targetSizes, overflowX: Math.round(overflowX), url: location.href,
+    };
+  }
   if (sectionName === 'overview' && window.innerWidth >= 900) {
     const desktopOverviewResult = inspectOverviewDesktopLayout({
       sectionName,

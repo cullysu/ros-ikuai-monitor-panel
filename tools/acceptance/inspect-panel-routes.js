@@ -8,11 +8,11 @@ async function inspectPanelRouteRuntime() {
   const current = () => {
     const route = app.getAttribute('data-active-section') || document.body.dataset.panelRoute || '';
     const section = route === 'overview'
-      ? document.querySelector('[data-ikuai-mobile-home], #overview')
-      : document.querySelector(`[data-mobile-domain-workspace="${CSS.escape(route)}"], [data-panel-route-content="${CSS.escape(route)}"]`);
+      ? document.querySelector('[data-mobile-flow-overview], #overview')
+      : document.querySelector(`[data-mobile-flow-workspace="${CSS.escape(route)}"], [data-panel-route-content="${CSS.escape(route)}"]`);
     const title = section?.querySelector('[data-panel-route-title], h1');
-    const sectionName = (section?.matches('[data-ikuai-mobile-home]') ? 'overview' : '') || section?.id ||
-      section?.getAttribute('data-mobile-domain-workspace') ||
+    const sectionName = (section?.matches('[data-mobile-flow-overview]') ? 'overview' : '') || section?.id ||
+      section?.getAttribute('data-mobile-flow-workspace') ||
       section?.getAttribute('data-panel-route-content') || '';
     const appMount = document.getElementById('app');
     const mainLandmarks = Array.from(document.querySelectorAll('main'));
@@ -25,7 +25,7 @@ async function inspectPanelRouteRuntime() {
       route,
       section: sectionName,
       content: section?.getAttribute('data-panel-route-content') || sectionName,
-      mobileOverview: Boolean(section?.matches('[data-ikuai-mobile-home]') || section?.querySelector('[data-ikuai-mobile-home]')),
+      mobileOverview: Boolean(section?.matches('[data-mobile-flow-overview]') || section?.querySelector('[data-mobile-flow-overview]')),
       title: String(title?.textContent || '').replace(/\s+/g, ' ').trim(),
       titleIsRouteTarget: Boolean(title?.hasAttribute('data-panel-route-title')),
       titleFocusable: title?.getAttribute('tabindex') === '-1',
@@ -53,9 +53,7 @@ async function inspectPanelRouteRuntime() {
     return current();
   };
   const clickRoute = async (route) => {
-    const candidates = Array.from(document.querySelectorAll(
-      '[data-section="' + CSS.escape(route) + '"], [data-ikuai4-mobile-nav="' + CSS.escape(route) + '"]'
-    ));
+    const candidates = Array.from(document.querySelectorAll('[data-section="' + CSS.escape(route) + '"]'));
     const visible = candidates.find((node) => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
@@ -63,7 +61,16 @@ async function inspectPanelRouteRuntime() {
     });
     const target = visible || candidates[0];
     if (target) target.click();
-    else location.hash = '#' + route;
+    else {
+      const url = new URL(location.href);
+      url.searchParams.set('section', route);
+      url.searchParams.delete('object');
+      url.searchParams.delete('from');
+      url.searchParams.delete('evidenceAt');
+      url.hash = '';
+      history.pushState({ panelRoute: route }, '', url);
+      window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+    }
     return waitForRoute(route, 1800, route !== 'overview');
   };
 

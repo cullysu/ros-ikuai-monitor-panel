@@ -1578,31 +1578,31 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
   if (viewport.width < 900) {
     const pulseProbeResult = await cdp.send('Runtime.evaluate', {
       expression: `(() => {
-        const root = document.querySelector('[data-mobile-pulse-overview]');
-        const nav = document.querySelector('[data-mobile-pulse-navigation]');
-        const navDestinations = [...(nav?.querySelectorAll('[data-mobile-pulse-tab]') || [])]
-          .map((node) => node.getAttribute('data-mobile-pulse-tab') || '');
+        const root = document.querySelector('[data-mobile-flow-overview]');
+        const nav = document.querySelector('[data-mobile-flow-navigation]');
+        const navLabels = [...(nav?.querySelectorAll('button') || [])]
+          .map((node) => String(node.textContent || '').replace(/\s+/g, ' ').trim());
         const evidenceMode = root?.getAttribute('data-evidence-mode') || '';
-        const scene = root?.getAttribute('data-mobile-pulse-scene') || '';
+        const scene = root?.getAttribute('data-mobile-flow-scene') || '';
         const normal = scene === 'normal';
-        const traffic = root?.querySelector('[data-mobile-pulse-traffic]');
-        const takeover = root?.querySelector('[data-mobile-pulse-takeover]');
-        const evidenceObjects = root?.querySelectorAll('[data-mobile-pulse-takeover] [data-mobile-pulse-object], [data-mobile-pulse-takeover] [data-mobile-pulse-resource]').length || 0;
+        const sceneSelectors = { normal: '.mflow-route', fleet: '.mflow-fleet', wan: '.mflow-wan', unavailable: '.mflow-withdrawn', collection: '.mflow-channels', resource: '.mflow-resource', interfaces: '.mflow-chain' };
+        const expectedInstrument = sceneSelectors[scene];
         const checks = {
-          pulseRoot: Boolean(root?.querySelector('.mpu-pulse')),
+          flowRoot: Boolean(root?.matches('main.mflow')),
           evidenceMode: /^(current|historical|unavailable)$/.test(evidenceMode),
-          scene: ['normal', 'wan', 'evidence', 'collection', 'resource', 'interfaces'].includes(scene),
-          normalTraffic: normal ? evidenceMode === 'current' && Boolean(traffic) && !takeover : !traffic,
-          incidentTakeover: normal ? !takeover : Boolean(takeover && evidenceObjects > 0),
-          fourNavigationRoots: navDestinations.length === 4 && ['overview', 'interfaces', 'terminals', 'logs'].every((item) => navDestinations.includes(item)),
+          scene: Boolean(expectedInstrument),
+          decisiveInstrument: Boolean(expectedInstrument && root?.querySelector(expectedInstrument) && root?.querySelectorAll('.mflow-instrument').length === 1),
+          sceneContract: normal ? evidenceMode === 'current' && Boolean(root?.querySelector('.mflow-route__traffic')) : !root?.querySelector('.mflow-route__traffic'),
+          fourNavigationRoots: navLabels.length === 4 && ['概览', '网络', '终端', '日志'].every((item) => navLabels.includes(item)),
           moreDirectory: Boolean(root?.querySelector('button[aria-label="更多模块"]')),
-          objectEvidence: normal ? Boolean(root?.querySelector('[data-mobile-pulse-patrol] [data-mobile-pulse-object]')) : evidenceObjects > 0,
+          statusVerdict: Boolean(root?.querySelector('.mflow-status[aria-label="当前结论"]')),
+          evidenceAction: Boolean(root?.querySelector('.mflow-instrument button, .mflow-stream button')),
         };
         return {
-          contract: 'mobile-pulse-runtime-v1',
+          contract: 'mobile-flow-runtime-v1',
           appHomePass: Object.values(checks).every(Boolean),
           truthMode: evidenceMode,
-          risk: scene === 'evidence' ? 'evidence' : scene === 'collection' ? 'collection' : scene === 'resource' ? 'resource' : scene === 'interfaces' ? 'interfaces' : scene === 'wan' ? 'wan' : 'none',
+          risk: scene === 'unavailable' ? 'evidence' : scene === 'normal' ? 'none' : scene,
           requiredChecks: Object.keys(checks),
           checks,
         };
@@ -1771,10 +1771,10 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
           { name: 'task-navigation', selector: '.panel-task-navigation' },
           { name: 'status-bus', selector: '[data-desktop-status-bus]' },
         ] : requireMobileOverviewAnchors ? [
-          { name: 'mobile-pulse-root', selector: '[data-mobile-pulse-overview]' },
-          { name: 'mobile-pulse-evidence', selector: '[data-mobile-pulse-overview][data-evidence-mode]' },
-          { name: 'mobile-pulse-status', selector: '[data-mobile-pulse-overview] .mpu-pulse' },
-          { name: 'mobile-pulse-navigation', selector: '[data-mobile-pulse-navigation]' },
+          { name: 'mobile-flow-root', selector: '[data-mobile-flow-overview]' },
+          { name: 'mobile-flow-evidence', selector: '[data-mobile-flow-overview] .mflow-evidence' },
+          { name: 'mobile-flow-status', selector: '[data-mobile-flow-overview] .mflow-status' },
+          { name: 'mobile-flow-navigation', selector: '[data-mobile-flow-navigation]' },
         ] : [];
         const scaleX = width / Math.max(1, window.innerWidth);
         const scaleY = height / Math.max(1, window.innerHeight);
