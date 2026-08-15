@@ -80,6 +80,22 @@ const checks = {
     /windows-packaging:[\s\S]*Set up Node\.js[\s\S]*npm ci[\s\S]*Packaging preflight/.test(ci),
   'Windows packaging enforces the 2GB Node ceiling':
     /windows-packaging:[\s\S]*CODEX_MEMORY_LIMIT_MB:\s*"2048"[\s\S]*NODE_OPTIONS:\s*--max-old-space-size=2048/.test(ci),
+  'Windows packaging validates manifest-v3 dual-surface assets instead of a retired single bundle':
+    ci.includes('node --check public/assets/framework/panel-surface-loader.js') &&
+    ci.includes('node --check public/assets/framework/panel-mobile.js') &&
+    ci.includes('node --check public/assets/framework/panel-desktop.js') &&
+    /\$manifest\.version -ne 3/.test(ci) &&
+    /\$manifest\.assets\.loader/.test(ci) &&
+    /\$manifest\.assets\.mobile\.script/.test(ci) &&
+    /\$manifest\.assets\.mobile\.style/.test(ci) &&
+    /\$manifest\.assets\.desktop\.script/.test(ci) &&
+    /\$manifest\.assets\.desktop\.style/.test(ci) &&
+    /foreach \(\$asset in \$requiredFrameworkAssets\)[\s\S]*node --check[\s\S]*\$LASTEXITCODE -ne 0/.test(ci) &&
+    /data-overview-framework-asset="surface-loader"/.test(ci) &&
+    !/data-overview-framework-asset="style"/.test(ci) &&
+    !/data-overview-framework-asset="script"/.test(ci) &&
+    !/Join-Path \$publicRoot "assets\\framework\\style\.css"/.test(ci) &&
+    !/Join-Path \$publicRoot "assets\\framework\\panel-framework\.js"/.test(ci),
   'Linux release gates run only portable Edge-toolbar fixtures, while Windows packaging runs and uploads real Edge toolbar evidence':
     !/check:release-gates[^\n]*check:browser-toolbar-zoom200/.test(read('package.json')) &&
     /windows-packaging:[\s\S]*npm ci[\s\S]*pip install pywinauto==0\.6\.9 Pillow==10\.4\.0[\s\S]*Real Edge toolbar 200 percent matrix[\s\S]*npm run check:browser-toolbar-zoom200[\s\S]*Get-ChildItem -LiteralPath \$source -Force \| ForEach-Object[\s\S]*Copy-Item -LiteralPath \$_.FullName[\s\S]*ci-windows-edge-toolbar-zoom200-\$\{\{ github\.sha \}\}/.test(ci) &&

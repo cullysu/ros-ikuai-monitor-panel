@@ -4,7 +4,7 @@ const now = new Date().toISOString();
 const nowMilliseconds = Date.parse(now);
 const rateTimestamps = () => Array.from(
   { length: 6 },
-  (_, index) => new Date(nowMilliseconds - (5 - index) * 5_000).toISOString(),
+  (_, index) => new Date(nowMilliseconds - (5 - index) * 180_000).toISOString(),
 );
 const trafficSamples = (downlink: number[], uplink: number[]) => rateTimestamps().map((timestamp, index) => ({
   timestamp,

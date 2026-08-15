@@ -1,0 +1,72 @@
+{
+  "step": 1045,
+  "role": "Independent Emil Visual/Interaction reviewer",
+  "artifactKey": "worktree-ed9195a9a9cd-b923840e1c19",
+  "worktreeFingerprint": "b923840e1c1922b78abe31248acf03ea796e4db37d8c6a26ff67dbafef1803d7",
+  "verdict": "VETO",
+  "p0": [],
+  "p1": [
+    "Landscape does not provide the contract's single landscape task: it remains a narrow vertical phone column, with the fixed navigation covering the next task content.",
+    "The normal first screen repeats the verified-default-route conclusion in the pulse strip and again in the route instrument."
+  ],
+  "p2": [
+    "Tablet incident views use two short panels at the top of a large blank canvas instead of a fuller tablet work area.",
+    "Overview still relies more heavily on rounded, bordered section containers than the edge-to-edge grouped-list language used by workspace and detail."
+  ],
+  "findings": [
+    {
+      "severity": "P1",
+      "title": "Landscape is a constrained portrait stack, not a landscape task",
+      "evidence": "All seven 667x375 and 844x390 originals center a max-width ~590px single column. The bottom four-root bar overlays the lower part of the next content on the first screen; e.g. normal shows only the route/trend, fleet only the scope block, and incident scenes only the first one or two objects. `styles/responsive.css` explicitly preserves a single vertically scrolling flow at landscape rather than allocating the required left evidence and right risk/trend task areas.",
+      "recommendation": "At the short-landscape breakpoint compose one horizontal mobile task: device/evidence and the primary object list or rates on the left, with the scene's risk, trend, or action evidence on the right. Keep the four-root control compact but reserve content inset so it cannot mask the task's first-screen continuation."
+    },
+    {
+      "severity": "P1",
+      "title": "Normal first screen still duplicates the default-route verdict",
+      "evidence": "In every normal `single-*` original, the pulse reads `当前无高优先级对象` followed by `默认路由已核验`, and the immediately following primary instrument again labels `当前默认出口`, identifies `pppoe-wan1`, and marks it `已核验`. This spends the scarce 320/390 first screen on the same conclusion twice rather than using the pulse solely for whether action is required.",
+      "recommendation": "Make the normal pulse a short evidence/freshness and action-needed statement only. Leave route verification, identity, destination, current rates, and trend exclusively to the line instrument."
+    },
+    {
+      "severity": "P2",
+      "title": "Tablet incident compositions underuse the available working surface",
+      "evidence": "The 768px all-offline, no-snapshot, collection-down, resource-full, and interfaces-down originals place two compact top-aligned columns in the upper third to half of the screen, then leave a large unstructured canvas. The normal and fleet master-detail overview as well as the interfaces detail prove the product has a more credible tablet language, but it is not carried into incident handling.",
+      "recommendation": "Use the tablet's second area as a persistent selected-object/evidence or task-action pane for incidents, and let the object list or evidence sequence establish a clear working depth rather than stopping after two short cards."
+    },
+    {
+      "severity": "P2",
+      "title": "Overview has not fully converged with the grouped-list language of workspace, detail, and connection",
+      "evidence": "`interfaces-phone390-workspace.png` and both detail captures use direct rows, separators, and decisive typographic hierarchy; `connection-phone390-device.png` uses the same discipline. Overview instead wraps most sections (`pulse`, fleet, line, patrol/takeover, context) in separate 13–14px rounded white panels with independent shadows. It is much improved from a generic dashboard, but the change of grammar is still perceptible when moving between surfaces.",
+      "recommendation": "Keep the pulse and the persistent navigation as distinct material layers, but reduce secondary overview containers into continuous grouped rows and separators; carry object headers, inset, and selected-state treatment from the workspace into the overview."
+    }
+  ],
+  "confirmedStrengths": [
+    "All seven scenarios are visibly distinct: fleet exposes scope and comparison, all-offline separates last usable evidence from current collection observability, no-snapshot withdraws current numbers, collection keeps REST/SSH independent, resource compares current/threshold/delta/continuity, and interface failure orders dependency-bearing objects first.",
+    "320px remains readable without a desktop table or oversized 'elderly phone' type: the primary route/rates, resource comparison, state rows, and four root controls retain a compact touch-native hierarchy.",
+    "The normal chart preserves download/upload differentiation, a shared vertical scale with zero/mid/peak labels, peak unit, and time labels; it reads as an operational instrument rather than decoration.",
+    "Workspace, phone detail, tablet detail, and connection form have strong object/status language, readable density, meaningful push/back hierarchy, and coherent blue/red/green semantics. The 768 normal/fleet master-detail view is materially more authentic than two phone cards side by side.",
+    "The all-offline treatment is truthful: it does not retain current rates or a reassuring normal tone, and it clearly separates unavailable routing judgment from the reachable collection plane."
+  ],
+  "reviewedFiles": [
+    "_acceptance/mobile-pulse-runtime/report.json",
+    "_acceptance/mobile-pulse-runtime/*.png (56 original matrix captures, individually inspected)",
+    "_acceptance/mobile-pulse-runtime/interfaces-phone390-workspace.png",
+    "_acceptance/mobile-pulse-runtime/interfaces-phone390-detail.png",
+    "_acceptance/mobile-pulse-runtime/interfaces-tablet768-detail.png",
+    "_acceptance/mobile-pulse-runtime/connection-phone390-device.png",
+    "docs/mobile-pulse-reset-contract.md",
+    "docs/ikuai4-ui-study.md",
+    "docs/decision-system/current-state.md",
+    "src/panel-framework/mobile-pulse-ui/overview/MobilePulseOverview.tsx",
+    "src/panel-framework/mobile-pulse-ui/model/mobilePulseOverviewModel.ts",
+    "src/panel-framework/mobile-pulse-ui/workspace/MobilePulseWorkspace.tsx",
+    "src/panel-framework/mobile-pulse-ui/workspace/MobilePulseRoutes.tsx",
+    "src/panel-framework/mobile-pulse-ui/connection/MobilePulseConnection.tsx",
+    "src/panel-framework/mobile-pulse-ui/navigation/MobilePulseNavigation.tsx",
+    "src/panel-framework/mobile-pulse-ui/styles/overview.css",
+    "src/panel-framework/mobile-pulse-ui/styles/responsive.css",
+    "src/panel-framework/mobile-pulse-ui/styles/workspace.css",
+    "src/panel-framework/mobile-pulse-ui/styles/navigation.css",
+    "src/panel-framework/mobile-pulse-ui/styles/connection.css"
+  ],
+  "timestamp": "2026-08-16T00:33:14.460+08:00"
+}

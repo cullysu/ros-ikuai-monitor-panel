@@ -15,8 +15,7 @@ const readOptional = (relativePath) => {
 };
 const routes = read("src/panel-framework/routes/panelRoutes.ts");
 const maturity = read("src/panel-framework/routes/panelRouteMaturity.ts");
-const inspector = readOptional("src/panel-framework/mobile/mobile-inspector/TrafficAuditInspector.tsx");
-const domainInspector = read("src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx");
+const routeSurface = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
 
 const checks = [
   {
@@ -28,16 +27,16 @@ const checks = [
     pass: /trafficAudit:\s*sectionEvidence\("trafficAudit"/.test(maturity),
   },
   {
-    name: "trafficAudit has a dedicated inspector",
-    pass: /function TrafficAuditInspector\s*\(/.test(inspector),
+    name: "trafficAudit remains below complete maturity until it has a dedicated inspector",
+    pass: !/trafficAudit:\s*\{[\s\S]*?maturity:\s*"complete"/.test(routes),
   },
   {
-    name: "trafficAudit routes flow rows to the dedicated inspector",
-    pass: domainInspector.includes('currentRoute === "trafficAudit"'),
+    name: "trafficAudit uses the Mobile Flow object destination",
+    pass: /useObjectHistory\(route\)/.test(routeSurface) && /open\(row\.id\)/.test(routeSurface) && /data-mobile-flow-detail=\{row\.id\}/.test(routeSurface),
   },
   {
-    name: "trafficAudit detail exposes audit-specific evidence",
-    pass: ["流量对象", "审计读数", "审计范围", "对象 ID"].every((label) => inspector.includes(label)),
+    name: "bounded trafficAudit detail exposes Mobile Flow identity and complete raw fields",
+    pass: /mflow-detail__identity/.test(routeSurface) && /const fields = row\.columns\.map/.test(routeSurface) && /row\.evidence\.sourceTable \|\| row\.table/.test(routeSurface) && /对象证据/.test(routeSurface),
   },
 ];
 

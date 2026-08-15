@@ -1,32 +1,50 @@
 {
-  "version": 2,
+  "version": 3,
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "8d0bcacb0997e8519bfd65540d83df5758710747cc858e26c1ddf2ec1a6c536c",
-    "files": 149
+    "digest": "ec0fb4a6c4564b7cbd4bfa89e652e2056aff58832e21c0c73a91cf5b6b9bd625",
+    "files": 125
   },
   "assets": {
-    "script": {
-      "file": "panel-framework.1628513261c1.js",
-      "sha256": "1628513261c11a1ab5186a97c985d01dedb48fc0d84bc0912e134282e5c44059",
-      "bytes": 552530,
-      "gzipBytes": 159268,
-      "brotliBytes": 128007
+    "mobile": {
+      "script": {
+        "file": "panel-mobile.be2c27970ddc.js",
+        "sha256": "be2c27970ddcdb4ea88f0f43d67dc6bdb2e94ae9d451436cde04033972f69ac4",
+        "bytes": 336180,
+        "gzipBytes": 103939,
+        "brotliBytes": 87567
+      },
+      "style": {
+        "file": "mobile.b40f0fa4f591.css",
+        "sha256": "b40f0fa4f5912b4346f2c5074fec05d2fc7faef2a0f3a9502e5c138c9fcb5ba8",
+        "bytes": 39853,
+        "gzipBytes": 7550,
+        "brotliBytes": 6722
+      }
     },
-    "style": {
-      "file": "style.02784d8027d7.css",
-      "sha256": "02784d8027d7af2b636cf78ccdf0af8d145ebc5096e629f3df97d05ceef138fa",
-      "bytes": 118767,
-      "gzipBytes": 19168,
-      "brotliBytes": 16439
+    "desktop": {
+      "script": {
+        "file": "panel-desktop.bfc860319261.js",
+        "sha256": "bfc860319261a96e60df06825a50354f85c2167e8f04c4d776fdf3f7cfdea4d7",
+        "bytes": 437432,
+        "gzipBytes": 130928,
+        "brotliBytes": 108333
+      },
+      "style": {
+        "file": "desktop.a944a2cb17a8.css",
+        "sha256": "a944a2cb17a81fa1d3e8297fdd3d05088f6b9dcf3e37b257641e4adf40fb5562",
+        "bytes": 73811,
+        "gzipBytes": 12819,
+        "brotliBytes": 11206
+      }
     },
-    "desktopStyle": {
-      "file": "desktop-overview.de4fa8c07933.css",
-      "sha256": "de4fa8c07933dacd0f1f25dfc347ac5e572f1d27eed8ca15e5efbf673f6872b0",
-      "bytes": 38371,
-      "gzipBytes": 5832,
-      "brotliBytes": 5156
+    "loader": {
+      "file": "panel-surface-loader.8db2f0760758.js",
+      "sha256": "8db2f07607581e06441263e2f95622b3462d7fb4a332fa2149aed66f83eae706",
+      "bytes": 1683,
+      "gzipBytes": 839,
+      "brotliBytes": 696
     }
   }
 }

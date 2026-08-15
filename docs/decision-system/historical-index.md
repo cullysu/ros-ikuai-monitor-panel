@@ -1,14 +1,28 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step965 current decision boundary; historical entries remain immutable
+- validForCommit: Step1003 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `965`
-- latestRecordedStep: `965`
+- coveredStepMax: `1003`
+- latestRecordedStep: `1003`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
+
+- Step1003: mobile-origin takes production ownership of Overview/Route/Navigation/Connection, mobile-ops is physically deleted, and focused types/build pass; current matrices remain open. Release remains closed.
+- Step1002: Origin Control light edge-to-edge original passes two independent P0/P1-zero re-reviews and becomes the sole production replacement direction. Release remains closed.
+- Step1001: all three first-round 390×844 prototypes are rejected because they preserve dark dashboard/card grammar; Origin Control becomes the only isolated prototype candidate. Release remains closed.
+- Step1000: product owner rejects Mobile Patrol List as desktop monitoring grammar compressed into a phone; official iOS/OriginOS/iQOO/iKuai research is translated into three isolated phone-native prototype directions. Release remains closed.
+- Step999: Mobile Patrol List implementation and matrices are retained only as historical engineering evidence after the Step1000 owner veto.
+- Step998: Telemetry Canvas was rejected and the first zero-baseline mobile rebuild contract was established.
+- Step997: supplemental production runtime passed 12/12 across explicit one-shot mobile/desktop surfaces; exact `9fb5178e4d71` mobile49/accessibility9 evidence was rebound before later visual-direction vetoes.
+- Step996: Step995 short-landscape, mobile route supplement and manifest-v3 CI P1 findings were remediated before the supplemental production runtime rebind.
+- Step995: scenario-owned phone surfaces, task-specific tablet workbench, true route/history behavior and independent mobile/desktop source plus asset closures passed focused local runtime before fresh review.
+- Steps987–994: replaced the independently rejected ledger/grid phone owner, migrated stale validators, split the public build into one-shot mobile/desktop closures, repaired report truth and bound traffic history to atomic counter-observation timestamps.
+- Step974: edge-to-edge telemetry canvas was selected over the list-first native inspection stack and desktop-risking control strip. That decision led to the later scenario-owned implementation and is now historical.
+- Step973: four independent reviewers rejected the Step972 artifact. Visual found a decorative blurred navigation P0 plus 320 truncation, landscape/tablet and More P1s; Product, Accessibility and Engineering found repeated incident semantics, global-tool discontinuity, device-proof gaps, stale online hints, unsafe continuation binding and shallow matrix coverage.
+- Step972: local artifact `worktree-6aa7d327c022-20d9e70199d0` established a diagnostic build/56-cell/accessibility baseline but did not earn product acceptance.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
 The complete chronology remains in `../panel-redesign-decision-log.md`; archived steps retain their original evidence and are not silently rewritten.
 
@@ -73,6 +87,12 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 950 - 962 | owner rejection of the previous mobile visual direction, three-direction adjudication, isolated incident/patrol reconstruction, continuous desktop workbench, responsive source-language repair, focused runtime evidence and independent Product/Visual P0/P1 closure; clean exact-SHA replay and formal release authority remain open | current-state.md |
 | 963 | fixed asset-budget red gate, deletion of retired mobile/desktop CSS owners, active-owner static-gate repair and focused runtime rebound; exact clean-SHA matrices and fresh Product/Design/Visual review remain open | current-state.md |
 | 964 | first exact matrix mobile readability regression, active-shell 12px text floor and focused wide/narrow smoke repair; full exact replay remains open | current-state.md |
+| 965 - 967 | db5 veto remediation, clean 6aa7d32 exact 532/28/266 engineering evidence, failed bounded Edge replay, and owner rejection of the desktop-derived mobile presentation in favor of a from-scratch phone architecture | current-state.md |
+| 968 | three-direction phone-native adjudication, Mobile Attention Queue selection, iOS 27 material boundary, compact typography and physical old-owner deletion approval | current-state.md |
+| 969 | neutral shared ownership, physical deletion of the rejected mobile presentation and the first complete mobile-next Overview/route/detail slice | current-state.md |
+| 970 - 986 | mobile-next and telemetry iterations, repeated four-role vetoes, clean-sheet adjudication and final rejection of ledger/grid plus fake adaptive workspace | current-state.md |
+| 987 - 995 | scenario-owned phone and tablet task surfaces, truthful navigation/report contracts, independent mobile/desktop source and asset closures, regenerated focused runtime evidence | current-state.md |
+| 996 - 1000 | Mobile Patrol List implementation, exact evidence replay, explicit owner veto, and restart into three independent iOS/OriginOS/iKuai phone directions | current-state.md |
 
 ## Reading rule
 

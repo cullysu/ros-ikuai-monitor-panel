@@ -1,0 +1,8 @@
+@import "../runtime/panel-runtime-shared.css";
+.panel-runtime-bar-desktop { display: grid; grid-template-columns: minmax(180px,1fr) auto auto minmax(136px,max-content); align-items: center; gap: 18px; min-height: 58px; padding: 7px 18px; border-bottom: 1px solid #bdced5; }
+.panel-runtime-mode { display: inline-flex; min-height: 32px; align-items: center; gap: 5px; padding: 0 9px; border: 1px solid #a8c3cd; border-radius: 7px; color: #2d6174; background: #eef5f7; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.panel-runtime-phase { display: inline-flex; grid-column: 3; grid-row: 1; justify-self: end; align-items: center; gap: 7px; color: #476773; font-size: 13px; }
+.panel-runtime-phase i { width: 7px; height: 7px; border-radius: 50%; background: #33795d; }
+.panel-runtime-phase.is-stale i,.panel-runtime-phase.is-recovering i { background: #976a32; }
+.panel-runtime-phase.is-error i { background: #95434d; }
+.panel-runtime-bar-desktop .panel-runtime-actions { grid-column: 4; grid-row: 1; justify-self: end; }

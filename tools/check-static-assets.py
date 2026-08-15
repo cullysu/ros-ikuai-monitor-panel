@@ -141,18 +141,29 @@ def assert_built_assets() -> None:
     manifest_path = output / "manifest.json"
     assert manifest_path.is_file(), "framework asset manifest is missing"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["version"] == 2
+    assert manifest["version"] == 3
     assert manifest["inputs"]["algorithm"] == "sha256"
     assert manifest["inputs"]["schema"] == "framework-inputs-v1"
     assert len(manifest["inputs"]["digest"]) == 64
     assert manifest["inputs"]["files"] > 0
     index = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-    for kind in ("script", "style", "desktopStyle"):
-        record = manifest["assets"][kind]
+    records = [
+        manifest["assets"]["mobile"]["script"],
+        manifest["assets"]["mobile"]["style"],
+        manifest["assets"]["desktop"]["script"],
+        manifest["assets"]["desktop"]["style"],
+        manifest["assets"]["loader"],
+    ]
+    loader_source = (output / manifest["assets"]["loader"]["file"]).read_text(encoding="utf-8")
+    for record in records:
         path = output / record["file"]
         body = path.read_bytes()
         assert hashlib.sha256(body).hexdigest() == record["sha256"]
-        assert record["file"] in index
+        if record is manifest["assets"]["loader"]:
+            assert record["file"] in index
+        else:
+            assert record["file"] in loader_source
+            assert record["file"] not in index
         gzip_body = Path(f"{path}.gz").read_bytes()
         assert gzip.decompress(gzip_body) == body
         assert gzip_body[:3] == b"\x1f\x8b\x08"

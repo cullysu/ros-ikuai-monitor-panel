@@ -294,7 +294,7 @@ function snapshot(sequence, options) {
       onlineTerminals: 25,
       history: {
         trafficSamples: [18000000, 31250000, 27500000, 29000000, 26000000, 24000000 + sequence].map((downlink, index) => ({
-          timestamp: new Date(Date.parse(now) - (5 - index) * 5000).toISOString(),
+          timestamp: new Date(Date.parse(now) - (5 - index) * 180000).toISOString(),
           uplink: [6200000, 7100000, 7800000, 8500000, 7500000, 8000000][index],
           downlink,
           source: 'runtime-mock-counter-delta',
@@ -1014,7 +1014,7 @@ async function startMock({ transport = 'tcp' } = {}) {
             diskUsage: 97,
           });
           const resourceSampleAt = Date.parse(payload.updatedAt);
-          const resourceTimestamps = [25000, 20000, 15000, 10000, 5000, 0].map((offset) => (
+          const resourceTimestamps = [900000, 720000, 540000, 360000, 180000, 0].map((offset) => (
             new Date(resourceSampleAt - offset).toISOString()
           ));
           const resourceCpu = [88, 90, 91, 93, 95, 96];
@@ -2704,7 +2704,7 @@ async function main() {
             const detail = document.querySelector('[data-mobile-object-detail]');
             return {
               sourceEvidenceAt: action?.getAttribute('data-mobile-terminal-evidence-at') || '',
-              detailOriginEvidenceAt: detail?.getAttribute('data-mobile-origin-evidence-at') || '',
+              detailOriginEvidenceAt: detail?.getAttribute('data-mobile-pulse-evidence-at') || '',
             };
           });
           await terminalObjectAction.click();
@@ -5058,7 +5058,7 @@ async function main() {
         detailObject: detail?.getAttribute('data-mobile-object-detail') || '',
         detailRisk: detail?.getAttribute('data-investigation-risk') || '',
         returnRoute: detail?.getAttribute('data-mobile-return-route') || '',
-        originEvidenceAt: detail?.getAttribute('data-mobile-origin-evidence-at') || '',
+        originEvidenceAt: detail?.getAttribute('data-mobile-pulse-evidence-at') || '',
         backLabel: back?.textContent?.trim() || '',
         detailText: detail?.textContent || '',
         device: document.querySelector('.panel-runtime-bar-mobile .panel-runtime-device b')?.textContent?.trim() || '',
@@ -5157,7 +5157,7 @@ async function main() {
         evidenceAt: query.get('evidenceAt'),
         detailObject: detail?.getAttribute('data-mobile-object-detail') || '',
         detailRisk: detail?.getAttribute('data-investigation-risk') || '',
-        originEvidenceAt: detail?.getAttribute('data-mobile-origin-evidence-at') || '',
+        originEvidenceAt: detail?.getAttribute('data-mobile-pulse-evidence-at') || '',
         heading: detail?.querySelector('.mdi-object-heading h2')?.textContent?.trim() || '',
         firstSectionText: (detail?.querySelector('.mdi-section')?.textContent || '').replace(/\s+/g, ' ').trim(),
         text: (detail?.textContent || '').replace(/\s+/g, ' ').trim(),

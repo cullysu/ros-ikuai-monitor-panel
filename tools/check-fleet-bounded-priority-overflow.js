@@ -5,52 +5,22 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
-const screen = fs.readFileSync(path.join(
-  root,
-  "src",
-  "panel-framework",
-  "overview",
-  "desktop-overview",
-  "DesktopOverviewScreen.tsx",
-), "utf8");
-const layoutCss = fs.readFileSync(path.join(
-  root,
-  "src",
-  "panel-framework",
-  "overview",
-  "desktop-overview",
-  "styles",
-  "desktop-overview.css",
-), "utf8");
-const currentDesktopCss = fs.readFileSync(path.join(
-  root,
-  "src",
-  "panel-framework",
-  "overview",
-  "desktop-overview",
-  "styles",
-  "desktop-next.css",
-), "utf8");
-const runtimeCheck = fs.readFileSync(path.join(root, "tools", "check-panel-runtime-browser.js"), "utf8");
+const read = (...segments) => fs.readFileSync(path.join(root, ...segments), "utf8");
+const overview = read("src", "panel-framework", "mobile-pulse", "MobilePulseHome.tsx");
+const css = read("src", "panel-framework", "mobile-pulse", "styles", "mobilePulseHome.css");
+const runtime = read("tools", "check-mobile-telemetry-runtime.js");
 
-assert.match(
-  screen,
-  /className="do-fleet-preview-content" id=\{fleetPreviewId\}/,
-  "Fleet Ledger must expose a dedicated shrinkable content wrapper",
-);
-
-const shrinkRule = layoutCss.match(
-  /\.do-fleet-preview,\s*\.do-fleet-preview-content\s*\{([^}]*)\}/,
-);
-assert(shrinkRule, "Fleet preview and its Ledger wrapper must share one shrink rule");
-assert.match(shrinkRule[1], /min-width:\s*0\s*;/, "the nested grid item must be allowed to shrink inside its 1200px track");
-assert.doesNotMatch(shrinkRule[1], /overflow/, "the fix must constrain intrinsic width rather than hide overflow");
-assert.match(currentDesktopCss, /\.do-normal-focus-column,\s*\.do-normal-signal\s*\{[^}]*min-width:\s*0\s*;/s, "the parent desktop grid item must remain shrinkable");
-assert.match(runtimeCheck, /fleetCoverage1200\.overflow <= 1/, "the runtime overflow gate must remain strict");
+assert.match(overview, /model\.priorityObjectsAll\.slice\(0, 3\)/, "priority objects must retain their bounded phone window");
+assert.match(css, /\.oc-object-copy\s*\{[\s\S]*?min-width:\s*0\s*;/, "Mobile Pulse priority rows must remain shrinkable");
+assert.match(css, /\.oc-objects li > button\s*\{[\s\S]*?grid-template-columns:\s*34px\s+minmax\(0,\s*1fr\)\s+auto/s, "Mobile Pulse priority rows must retain a shrinkable content column");
+assert.match(css, /\.oc-objects ol\s*\{[\s\S]*?overflow:\s*hidden\s*;/, "bounded priority groups must contain overflow rather than expanding the mobile surface");
+assert.match(runtime, /const full\s*=\s*args\.has\("--full"\)/, "the current runtime checker must retain a full-report mode");
+assert.match(runtime, /scenarios\.flatMap\(\(scenario\)\s*=>\s*viewports\.map/, "the full telemetry report must remain a seven-by-seven matrix");
 
 process.stdout.write(`${JSON.stringify({
   pass: true,
-  contract: "fleet-1200-intrinsic-width-v1",
-  mechanism: "nested-grid-min-width-zero",
-  overflowGate: "<=1",
+  contract: "fleet-bounded-priority-overflow-v3-mobile-pulse",
+  owner: "src/panel-framework/mobile-pulse",
+  reportMatrix: "49",
+  mechanism: "bounded-evidence-model-and-shrinkable-origin-priority-rows",
 }, null, 2)}\n`);

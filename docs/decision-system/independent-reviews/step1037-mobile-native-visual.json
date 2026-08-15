@@ -1,0 +1,77 @@
+{
+  "role": "independent-visual-interaction-review",
+  "artifact": {
+    "scope": "fresh exact current mobile-native artifact only; retired mobile owners were not considered",
+    "contract": [
+      "docs/mobile-native-ui-contract.md",
+      "docs/ikuai4-ui-study.md"
+    ],
+    "runtimeReport": "_acceptance/mobile-native-runtime/report.json",
+    "accessibilityReport": "_acceptance/mobile-accessibility-runtime-v2/telemetry/report.json",
+    "artifactKey": "worktree-ed9195a9a9cd-29250856d3d6",
+    "worktreeFingerprint": "29250856d3d66d687fb9fed2438cb7753e72f9906a21f68b43d63342bfd64a5c",
+    "matrix": "56/56 complete and fresh",
+    "accessibility": "10/10 stages passed and fresh under the same artifact key",
+    "screenshots": [
+      "_acceptance/mobile-native-runtime/single-phone320-overview.png",
+      "_acceptance/mobile-native-runtime/single-phone390-overview.png",
+      "_acceptance/mobile-native-runtime/single-landscape667-overview.png",
+      "_acceptance/mobile-native-runtime/single-tablet768-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-phone320-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-phone390-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-landscape667-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-tablet768-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-phone320-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-phone390-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-landscape667-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-tablet768-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-phone390-workspace.png",
+      "_acceptance/mobile-native-runtime/interfaces-phone390-detail.png",
+      "_acceptance/mobile-native-runtime/connection-phone390-device.png"
+    ]
+  },
+  "verdict": "pass",
+  "score": 96,
+  "p0": [],
+  "p1": [],
+  "p2": [],
+  "passes": [
+    {
+      "id": "prior-blockers-remain-closed",
+      "finding": "P0 与 P1 仍为零。320px 的 CPU、磁盘、内存与 ether9、vlan30、sfp-lan 三个主事故对象完整位于浮动导航之前；667×375 继续使用左侧结论/出口与右侧信号/队列的横向任务构图；768px 继续使用对象列表—选中对象证据工作区，而不是压缩桌面或并排手机卡。"
+    },
+    {
+      "id": "chart-metadata-p2-closed",
+      "finding": "single-phone320-overview.png 的 WAN 图现在同时显示 31、16、0 三个可读纵轴刻度以及 Mbps、21:53、22:08，新增中点标签消除了此前只靠端点估读的弱刻度；当前值、下载/上传图例和时间窗仍保持同一视觉组。"
+    },
+    {
+      "id": "incident-route-clearance-p2-closed",
+      "finding": "resource-full-phone320-overview.png 将详细说明仅保留在首要 CPU 行，磁盘与内存保持同线当前值/阈值/差值；interfaces-down-phone320-overview.png 同样使用紧凑对象行。两屏均在底部导航前显示完整三对象判断，默认出口的名称、范围和进入箭头清楚可见，不再需要从导航后方辨认主事故证据。"
+    },
+    {
+      "id": "press-feedback-p2-closed",
+      "finding": "当前 mobile-native CSS 在概览、四根导航、对象工作区、目录和连接流程统一使用 transform: scale(.98)，时长保持 140–160ms，并继续为 prefers-reduced-motion 提供无缩放等价状态。交互语言现已跨根一致。"
+    },
+    {
+      "id": "tablet-evidence-boundary-p2-closed",
+      "finding": "三个 768px 场景的选中对象面板均在底部明确标注“已显示本页全部当前证据；未提供连续历史时不补画趋势”，随后才提供“检查对象证据”入口。留白因此被定义为稳定工作区余量，而不再暗示存在未呈现的比较或历史数据。"
+    },
+    {
+      "id": "phone-hierarchy-is-unmistakably-native",
+      "finding": "320/390 首屏维持紧凑设备标题、单一结论脉冲、同线对象信号、直接对象入口和浮动四根导航。白色实心数据层与半透明控制层分离，蓝色只承担激活、核实路径和入口，故障色保持为细边界、状态点与数值，而非桌面式大面积告警面板。"
+    },
+    {
+      "id": "ikuai-object-status-comparison-density-is-present",
+      "finding": "正常态把 pppoe-wan1、上下行、峰值、时间窗、接口运行数和 CPU/内存/磁盘放在可比较同行；资源态把当前值、阈值和差值同线；接口态把对象名、依赖类型、运行结论和路由关系同线。密度来自对象与口径对齐，不依赖桌面表格或小于契约下限的正文。"
+    },
+    {
+      "id": "workspace-detail-and-connection-remain-mobile-flows",
+      "finding": "接口工作区继续提供 44px 搜索/筛选与整行对象入口；ether9 推入详情新增观察时间、来源、字段可用性、未取得读数和默认路由关系；连接页保持 1/3 分步、iOS 式分组字段和安全区粘性主操作。运行报告确认 Back/Forward、路由可访问性、更多目录和连接地址校验均通过。"
+    },
+    {
+      "id": "fresh-accessibility-evidence-matches-the-visual-artifact",
+      "finding": "mobile-native-runtime 与 accessibility-v2 telemetry 共享 artifact key worktree-ed9195a9a9cd-29250856d3d6 和同一工作树指纹。后者 10/10 通过 owner、44px 控件、详情历史焦点、200% 文本、适配媒体、底部导航、键盘搜索和连接控件阶段。"
+    }
+  ],
+  "requiredActions": []
+}

@@ -3,20 +3,33 @@
 ## Status
 
 - status: `current-contract / acceptance-failed`
-- validForCommit: current Step947 exact clean Incident Split Lens local acceptance and engineering readiness; public release remains closed
+- validForCommit: Step974 telemetry-canvas direction selected; implementation and fresh acceptance required
 - supersededBy: `null`
 - Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
-- Current local review boundary: Step947 binds exact clean artifact `d45b428535d9beadd5abbe980d6485c77338d483` to Incident 63/63, responsive 10/10, Edge 22/22, Overview 28/28, route 76/76, route-state 266/266 and four independent records; review records remain `releaseEligible=false`
-- Product/design/visual gate: **FAIL because the Step947 local review is historical after tracked source changes; final external product/visual acceptance is not closed**
-- Current loop stage: **Route maturity, real RouterOS duration evidence and release authorization**
-- Matrix evidence: exact clean Incident 63/63, responsive 10/10, Edge 22/22 and public 28/76/266; engineering readiness pass
+- Current local review boundary: Step973 independently vetoes the Step972 artifact; its 56-cell evidence is diagnostic only and cannot qualify the product
+- Product/design/visual gate: **FAIL-closed after exact-artifact VETO**; final external product/visual acceptance is not closed.
+- Current loop stage: **Step974 new isolated telemetry-canvas owner implementation**
+- Matrix evidence: current local `mobile-next-runtime-v1` passes seven scenes × eight viewports = 56/56 plus route/detail/connection interactions; final clean-SHA public matrices remain open
 - Surface: a read-only RouterOS/iKuai operational console, not a health dashboard or shrunken desktop table
 
 Previous green matrices are regression evidence only. They missed local refresh failure, timezone ambiguity, dead visible controls, an invalid DNS route, and missing mobile workflows.
 
-Step947 keeps the task active with `blocked=false` and GitHub not uploaded. Incident Split Lens is the isolated production mobile Overview owner; rejected Optical and Pocket presentation ownership is physically deleted. Exact local matrices and reviews pass; real RouterOS read-only soak, route maturity/owner acceptance, trusted promotion and Linux/Windows/GHCR CL remain pending.
+Step974 keeps the task active with `blocked=false` and GitHub not uploaded. All prior mobile presentation directions, including Mobile Attention Queue, are rejected implementation history.
 
-The current presentation contract is `docs/mobile-incident-split-lens-design-contract.md`. Pocket/Optical-specific navigation and composition below remain only as rejected-baseline requirements for diffing and test cleanup; they do not authorize reuse of rejected visual hierarchy.
+The current presentation direction is **Edge-to-edge Telemetry Canvas**. It may reuse evidence truth and route contracts, but must use a new isolated render/style owner and cannot retain the rejected grid, three-column rows, More tiles or phone vertical rail.
+
+## Step974 Edge-to-edge Telemetry Canvas
+
+- Five stable top-level destinations: `概览 / 接口 / 终端 / 日志 / 更多`; the fifth destination is a real task list, not a generic tile launcher.
+- Normal Overview has one spatial instrument: a verified default-route anchor, current WAN range and current aligned traffic pulse. It is data-backed, not an ornamental topology or generic chart.
+- Below the instrument, four compact fact windows expose collection, interfaces, resources and one route/WAN transition. They are subordinate evidence, not equal-weight list rows.
+- Incident scenes replace the normal instrument wholesale with the affected plane: evidence boundary, collection, WAN outage, resource pressure or interface dependency. Each answers where, proof, boundary and next real destination.
+- 320px uses a 176–188px instrument and never truncates a critical state; 667/844 landscape keeps horizontal bottom navigation and uses width for canvas/evidence juxtaposition, never a vertical phone rail.
+- 600–1199px has continuous tablet capability. Portrait preserves a single task sequence with bounded comparison; wide landscape may add one selected-object inspector only when backed by a real relation.
+- Liquid Glass/material is restricted to true navigation and transient controls. Content is opaque; navigation cannot cover task content. Reduce Transparency produces an opaque control layer.
+- Type is compact for normal vision: 17–20px key values, 14–15px body, 11–13px metadata, 12px absolute normal-scale floor. A 44px hit target is independent of visual bulk.
+- More is a single grouped task list with purpose/current availability; object detail is evidence-first with raw fields disclosed; connection remains a real safe setup/verification flow.
+- No traffic curve renders unless current aligned points exist. No-snapshot removes every business number rather than displaying zero or history as current.
 
 ## User job
 
@@ -72,41 +85,32 @@ Every backend timestamp crossing the API is RFC 3339 with an explicit offset; UT
 
 ## Information architecture
 
-### Four stable phone destinations
+### Five stable phone destinations
 
-1. `概览` — verdict, evidence, WAN/default route, incidents
-2. `网络` — interfaces, WAN, routes, DNS, connection tracking
+1. `概览` — evidence canvas, verified default route, WAN/current rate, incident plane
+2. `接口` — interface/WAN objects and route relationships
 3. `终端` — clients, DHCP, ARP
 4. `日志` — system, service, collection, security events
+5. `更多` — routes, DNS, connections, resource/load and read-only diagnostics
 
-Less frequent tools live in a top More menu. Tabs remain visible when empty and preserve history state.
+Tabs remain stable across routes and preserve navigation state. Global tools do not disappear outside Overview.
 
 ### Overview composition
 
-1. **48–52px runtime chrome** — identity, evidence age, Refresh, More.
-2. **28–34px evidence boundary** — current/history/unavailable and absolute time.
-3. **58–76px verdict row** — icon, one factual conclusion, one consequence; not a hero.
-4. **Three independent facts** — default route, WAN carrier, collection channel.
-5. **One primary module** — normal binds honest current WAN readings to the verified active-route object; incidents use the highest-priority affected objects.
-6. **One focus object** — the normal primary module owns route identity plus current readings; incident focus adds dependency, source, impact, or raw flags not repeated above.
-7. **Evidence disclosure** after the primary workflow.
+1. **Runtime control layer** — device identity, real history, refresh, connection and stable tab navigation; no content-covering ornament.
+2. **Evidence strip** — current/history/unavailable, absolute time and collection coverage.
+3. **Normal telemetry canvas or incident plane canvas** — mutually exclusive; no normal grid remains behind an incident.
+4. **Fact windows and investigation transitions** — compact, source-backed and non-repeating.
+5. **Full-screen object detail** — relationships, samples, identity or raw fields not already stated on Overview.
 
-Identity, freshness, verdict, metrics, and object values cannot repeat across layers.
-
-### Incident center
-
-`查看全部` opens a real aggregate incident route and never the first object's route.
-
-- Group by domain and order by risk, then identity.
-- Rows show severity wording, object, concise evidence, observation time, and real destination.
-- Empty means no incident records are present; it does not claim health.
+Identity, freshness, verdict and object evidence cannot be repeated merely to fill space. The current product has no fake aggregate incident destination: the queue is the incident index and each actionable row opens its actual domain/object.
 
 ### Scenario substitution
 
 | Scenario | Primary module | Facts and focus |
 |---|---|---|
-| `single` | current WAN instrument when complete | route, running WAN, collection cycle |
-| `fleet` | highest real risk; scale is metadata | affected count and selected object |
+| `single` | verified default path, then complete current WAN sample | collection, interfaces and resource summaries |
+| `fleet` | highest real risk; otherwise WAN/interface scope | scale remains secondary to any affected object |
 | `all-offline` | named offline WANs | scope, active-route count, last success |
 | `no-snapshot` | collection/evidence boundary | exactly which business values cannot be judged |
 | `collection-down` | independent REST/SSH rows | management, collection, forwarding, business planes stay separate |
@@ -146,6 +150,8 @@ Low-frequency routes may share primitives but cannot use “hide the table heade
 
 ## Chart contract
 
+Charts are optional route/detail evidence, not a required Overview decoration. A route that renders no chart has no chart obligation. Any rendered chart must satisfy all rules below.
+
 - Responsive SVG preserves intrinsic aspect ratio.
 - Download/upload have stable named encodings.
 - Window, unit, sample count, current values, peak/reference, and accessible summary are explicit.
@@ -159,7 +165,7 @@ Low-frequency routes may share primitives but cannot use “hide the table heade
 - Phone: `320×568`, `360×800`, `375×667`, `390×844`, `430×932`.
 - Landscape: `667×375`, `844×390`.
 - Tablet: `768×1024`, `1024×768`, `1180×820`.
-- Tablet secondary space adds comparison, dependency, history, or detail; never an empty column.
+- Tablet uses a side task rail and may compare real queue objects in two columns. It must not create an empty detail column, duplicate facts or fake charts merely to fill the remaining viewport background.
 - At 200% text, content reflows vertically without horizontal scrolling or clipped actions.
 - Targets are at least `44×44px`; visible controls always work.
 - Every link resolves to an existing route.
@@ -198,7 +204,7 @@ Low-frequency routes may share primitives but cannot use “hide the table heade
 | Timezone protocol | backend contract plus UTC/Asia-Taipei tests; reject offset-free value |
 | No fake controls/routes | E2E activates every visible phone and desktop control |
 | Four tasks | semantic/geometry checks in portrait, landscape, tablet |
-| Incident center | mixed-risk fixture opens grouped list and real destinations |
+| Risk destinations | mixed-risk fixtures keep the highest verified risk first and every actionable row opens its real route/object |
 | Domain workflows | search/filter/sort/page/detail tests for interfaces, terminals, logs, connections |
 | Honest charts | model/screenshots prove aspect ratio, units, samples, scale, evidence mode |
 | Schema depth | malformed nested rows, range failures, oversized collections rejected |

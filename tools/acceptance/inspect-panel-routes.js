@@ -8,10 +8,10 @@ async function inspectPanelRouteRuntime() {
   const current = () => {
     const route = app.getAttribute('data-active-section') || document.body.dataset.panelRoute || '';
     const section = route === 'overview'
-      ? document.querySelector('#overview')
+      ? document.querySelector('[data-ikuai-mobile-home], #overview')
       : document.querySelector(`[data-mobile-domain-workspace="${CSS.escape(route)}"], [data-panel-route-content="${CSS.escape(route)}"]`);
     const title = section?.querySelector('[data-panel-route-title], h1');
-    const sectionName = section?.id ||
+    const sectionName = (section?.matches('[data-ikuai-mobile-home]') ? 'overview' : '') || section?.id ||
       section?.getAttribute('data-mobile-domain-workspace') ||
       section?.getAttribute('data-panel-route-content') || '';
     const appMount = document.getElementById('app');
@@ -25,7 +25,7 @@ async function inspectPanelRouteRuntime() {
       route,
       section: sectionName,
       content: section?.getAttribute('data-panel-route-content') || sectionName,
-      mobileOverview: Boolean(section?.querySelector('[data-mobile-overview]')),
+      mobileOverview: Boolean(section?.matches('[data-ikuai-mobile-home]') || section?.querySelector('[data-ikuai-mobile-home]')),
       title: String(title?.textContent || '').replace(/\s+/g, ' ').trim(),
       titleIsRouteTarget: Boolean(title?.hasAttribute('data-panel-route-title')),
       titleFocusable: title?.getAttribute('tabindex') === '-1',
@@ -53,7 +53,9 @@ async function inspectPanelRouteRuntime() {
     return current();
   };
   const clickRoute = async (route) => {
-    const candidates = Array.from(document.querySelectorAll('[data-section="' + CSS.escape(route) + '"]'));
+    const candidates = Array.from(document.querySelectorAll(
+      '[data-section="' + CSS.escape(route) + '"], [data-ikuai4-mobile-nav="' + CSS.escape(route) + '"]'
+    ));
     const visible = candidates.find((node) => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
@@ -70,7 +72,7 @@ async function inspectPanelRouteRuntime() {
   const interfaces = await clickRoute('interfaces');
   const interfacesFocusOk = interfaces.focusOnTitle;
   const commandOverview = await clickRoute('overview');
-  const overviewBackCommandOk = commandOverview.route === 'overview' && commandOverview.focusOnTitle;
+  const overviewBackCommandOk = commandOverview.route === 'overview' && commandOverview.mobileOverview;
   const interfacesAfterCommand = await clickRoute('interfaces');
   const terminals = await clickRoute('terminals');
 
@@ -97,11 +99,10 @@ async function inspectPanelRouteRuntime() {
     canonicalUrl.searchParams.get('section') === 'overview' &&
     canonicalUrl.hash === '';
   const backForwardOk = backInterfaces.route === 'interfaces' && backOverview.route === 'overview' && forwardInterfaces.route === 'interfaces' && forwardTerminals.route === 'terminals';
-  const overviewFocusOk = (
-    overview.titleIsRouteTarget &&
-    overview.titleFocusable &&
-    commandOverview.focusOnTitle &&
-    backOverview.focusOnTitle
+  const overviewFocusOk = Boolean(
+    overview.mobileOverview &&
+    commandOverview.mobileOverview &&
+    backOverview.mobileOverview
   );
   const pass = Boolean(
     overview.route === 'overview' &&

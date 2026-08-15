@@ -12,9 +12,9 @@ const { readRuntimeReport, runtimeIdentityDetail } = require('./runtime-report-i
 
 const ROOT = path.resolve(__dirname, '..');
 const REVIEW_DIR = 'docs/decision-system/independent-reviews';
-const DEFAULT_RUNTIME_REPORT = '_acceptance/incident-lens-runtime/report.json';
-const DEFAULT_RUNTIME_SOURCE = 'incident-lens-runtime';
-const DEFAULT_RUNTIME_CONTRACT = 'incident-split-lens-runtime-v1';
+const DEFAULT_RUNTIME_REPORT = '_acceptance/mobile-telemetry-runtime/report.json';
+const DEFAULT_RUNTIME_SOURCE = 'mobile-telemetry-runtime';
+const DEFAULT_RUNTIME_CONTRACT = 'mobile-telemetry-runtime-v1';
 const SUPERSEDED_POCKET_REVIEW_STEP = 932;
 const SUPERSEDED_POCKET_RUNTIME_REPORT = '_acceptance/pocket-console-runtime/report.json';
 const REVIEW_SPECS = [
@@ -140,19 +140,20 @@ function inspectIndependentReviewRecords(options = {}) {
   if (historicalRecord && !requestedRuntimeReport) {
     const citedHistoricalRuntime = records
       .flatMap(({ record }) => evidencePaths(record.evidence))
-      .find((item) => typeof item === 'string' && /(?:pocket-console|optical-patrol|incident-lens)-runtime\/report\.json$/.test(item));
+      .find((item) => typeof item === 'string' && /(?:pocket-console|optical-patrol|incident-lens|mobile-telemetry)-runtime\/report\.json$/.test(item));
     if (citedHistoricalRuntime) runtimeReportPath = citedHistoricalRuntime;
   }
   const historicalPocketRuntime = historicalRecord && runtimeReportPath === SUPERSEDED_POCKET_RUNTIME_REPORT;
   const runtimeSource = requestedRuntimeSource || (historicalPocketRuntime ? 'pocket-console-runtime' : DEFAULT_RUNTIME_SOURCE);
   const runtimeBinding = readRuntimeReport(root, runtimeReportPath, { expectedSource: runtimeSource });
   const runtimeReportExists = runtimeBinding.status !== 'missing';
-  if (!historicalRecord && !runtimeReportExists) failures.push(`missing current Incident Split Lens runtime report: ${runtimeReportPath}`);
+  if (!historicalRecord && !runtimeReportExists) failures.push(`missing current mobile telemetry runtime report: ${runtimeReportPath}`);
   let runtimeReportMatchesReviewedArtifact = false;
   if (runtimeReportExists) {
     const runtimeReport = readJson(root, runtimeReportPath, failures);
     if (runtimeReport) {
-      if (runtimeReport.pass !== true) failures.push(`${runtimeReportPath} must be pass`);
+      const reviewedRuntimePass = historicalRecord ? runtimeReport.pass : runtimeReport.runtimePass;
+      if (reviewedRuntimePass !== true) failures.push(`${runtimeReportPath} ${historicalRecord ? 'pass' : 'runtimePass'} must be true`);
       if (!historicalRecord && runtimeReport.contract !== DEFAULT_RUNTIME_CONTRACT) {
         failures.push(`${runtimeReportPath} must use ${DEFAULT_RUNTIME_CONTRACT}`);
       }
@@ -160,7 +161,8 @@ function inspectIndependentReviewRecords(options = {}) {
       const reviewedArtifact = records[0]?.record?.reviewedArtifact || {};
       runtimeReportMatchesReviewedArtifact =
         reviewedArtifact.artifactKey === artifactKeyFor(runtimeReport) &&
-        ['worktreeFingerprint', 'generatedAt', 'commit', 'pass'].every((key) => reviewedArtifact[key] === runtimeReport[key]);
+        ['worktreeFingerprint', 'generatedAt', 'commit'].every((key) => reviewedArtifact[key] === runtimeReport[key]) &&
+        reviewedArtifact.pass === reviewedRuntimePass;
       if (!historicalRecord && records.length === REVIEW_SPECS.length && !runtimeReportMatchesReviewedArtifact) {
         failures.push(`current Step${step} reviewedArtifact must exactly match ${runtimeReportPath}`);
       }
@@ -168,9 +170,10 @@ function inspectIndependentReviewRecords(options = {}) {
         const artifact = record.reviewedArtifact || {};
         if (runtimeReportMatchesReviewedArtifact) {
           if (artifact.artifactKey !== artifactKeyFor(runtimeReport)) failures.push(`${relativePath} reviewedArtifact.artifactKey must match ${runtimeReportPath}`);
-          for (const key of ['worktreeFingerprint', 'generatedAt', 'commit', 'pass']) {
+          for (const key of ['worktreeFingerprint', 'generatedAt', 'commit']) {
             if (artifact[key] !== runtimeReport[key]) failures.push(`${relativePath} reviewedArtifact.${key} must exactly match ${runtimeReportPath}`);
           }
+          if (artifact.pass !== reviewedRuntimePass) failures.push(`${relativePath} reviewedArtifact.pass must match ${runtimeReportPath} ${historicalRecord ? 'pass' : 'runtimePass'}`);
         }
         for (const evidencePath of evidencePaths(record.evidence)) {
           if (isSafeRelativePath(evidencePath) && !fs.existsSync(path.join(root, evidencePath))) {

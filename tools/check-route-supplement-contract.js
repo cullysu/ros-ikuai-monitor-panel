@@ -298,25 +298,28 @@ for (const source of [mobileViewSource, desktopViewSource]) {
     assert.match(source, new RegExp(selector), `${selector} must be stable on both presentation owners`);
   }
 }
-const mobileCss = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile", "mobile-domain.css"), "utf8");
+const mobileCss = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile-pulse", "styles", "mobilePulseRoute.css"), "utf8");
 const desktopCss = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "sections", "desktop-domain.css"), "utf8");
-const mobileOwnerSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile", "MobileDomainWorkspace.tsx"), "utf8");
+const mobileOwnerSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile", "MobilePanelApp.tsx"), "utf8");
+const mobileRouteSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile-pulse", "MobilePulseRouteSurface.tsx"), "utf8");
 const desktopOwnerSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "sections", "DesktopDomainWorkspace.tsx"), "utf8");
-assert.match(mobileOwnerSource, /MobileRouteSupplement/, "mobile workspace must mount its dedicated owner");
-assert.doesNotMatch(mobileOwnerSource, /<RouteSupplementEvidence\b|\/RouteSupplementEvidence["']/, "mobile workspace must not mount a shared supplemental presentation tree");
+assert.match(mobileOwnerSource, /<MobileRouteSupplement\b/, "current mobile app must mount its dedicated supplement owner");
+assert.match(mobileOwnerSource, /useRouteSupplementEvidence/, "current mobile app must own supplemental request state");
+assert.doesNotMatch(mobileOwnerSource, /<RouteSupplementEvidence\b|\/RouteSupplementEvidence["']/, "current mobile app must not mount a shared supplemental presentation tree");
 assert.match(desktopOwnerSource, /DesktopRouteSupplement/, "desktop workspace must mount its dedicated owner");
 assert.doesNotMatch(desktopOwnerSource, /<RouteSupplementEvidence\b|\/RouteSupplementEvidence["']/, "desktop workspace must not mount a shared supplemental presentation tree");
 for (const [surface, source] of [["mobile", mobileOwnerSource], ["desktop", desktopOwnerSource]]) {
   assert.match(source, /supplementOwnsDnsList/, `${surface} accepted DNS supplement must own its one visible collection`);
   assert.match(source, /supplementOwnsConnectionList/, `${surface} accepted connection query must own its one visible collection`);
-  assert.match(source, /!supplementOwnsCollection/, `${surface} snapshot collection must remain fallback-only while an accepted supplement owns the result`);
 }
-assert.match(mobileCss, /\.mrs-shell\b/, "mobile supplement must have an owned visual system");
-assert.match(mobileCss, /min-height:\s*44px/, "mobile supplement controls must preserve a 44px target");
-assert.match(mobileCss, /\.mrs-query \.mrs-clear-query\s*\{[\s\S]*?min-height:\s*44px/, "mobile clear-query control must not regress below the 44px touch target");
-assert.match(mobileCss, /@media[^{}]*min-width:\s*600px[\s\S]*?\.mrs-/, "tablet supplement layout must be capability-specific");
-assert.match(mobileCss, /@media[^{}]*orientation:\s*landscape[\s\S]*?\.mrs-/, "landscape supplement layout must be capability-specific");
-assert.match(mobileCss, /@media \(min-width:\s*600px\) and \(orientation:\s*landscape\) and \(max-height:\s*500px\)/, "short-landscape two-column controls must fall back before 200% text scaling creates a sub-600px viewport");
+assert.match(mobileRouteSource, /data-origin-route/, "current Origin route surface must expose its dedicated owner marker");
+assert.match(mobileRouteSource, /!supplementOwnsCollection/, "current Origin route surface must hide the snapshot collection while an accepted supplement owns it");
+assert.match(desktopOwnerSource, /!supplementOwnsCollection/, "desktop snapshot collection must remain fallback-only while an accepted supplement owns it");
+assert.match(mobileCss, /\.origin-route\b/, "Origin route surface must have an owned visual system");
+assert.doesNotMatch(mobileCss, /mobile-ops|mop-/, "Origin route stylesheet must not retain mobile-ops presentation selectors");
+assert.match(mobileCss, /min-height:\s*44px/, "Origin route controls must preserve a 44px target");
+assert.match(mobileCss, /\.origin-search button\s*\{[^}]*\bheight:\s*44px/, "Origin clear-query control must not regress below the 44px touch target");
+assert.match(mobileCss, /@media[^{}]*min-width:\s*600px[\s\S]*?\.origin-route/, "Origin tablet route layout must be capability-specific");
 assert.match(desktopCss, /\.ddrs-shell\b/, "desktop supplement must have an owned visual system");
 assert.doesNotMatch(desktopCss, /\.mdw-/, "desktop supplement stylesheet must not borrow mobile workspace classes");
 assert.match(desktopCss, /\.ddrs-query input[\s\S]*?min-height:\s*44px/, "desktop target input must keep a 44px effective hit area");

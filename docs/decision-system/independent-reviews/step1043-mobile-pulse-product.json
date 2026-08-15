@@ -1,0 +1,37 @@
+{
+  "review": "independent-mobile-pulse-product-acceptance",
+  "scope": {
+    "artifact": "_acceptance/mobile-pulse-runtime/report.json",
+    "artifactKey": "worktree-ed9195a9a9cd-b07dd0f53b55",
+    "commit": "ed9195a9a9cd393b254e3a5daa2af3850e4991ef",
+    "worktreeFingerprint": "b07dd0f53b55d42cda7cee8554130eaf70ea32752b5ff06d4e9950be92ae9483",
+    "screenshotsReviewed": 56,
+    "additionalSurfacesReviewed": [
+      "interfaces-phone390-workspace.png",
+      "interfaces-phone390-detail.png",
+      "interfaces-tablet768-detail.png",
+      "connection-phone390-device.png"
+    ]
+  },
+  "verdict": "VETO",
+  "p0": [],
+  "p1": [
+    "Tablet is a mechanical two-column layout, not an object-list and selected-evidence workspace.",
+    "Fleet is visually and semantically indistinguishable from single-device normal state.",
+    "All-offline omits last usable evidence and still-reachable collection-plane evidence.",
+    "Production Product signoff remains pending; matrix completion cannot substitute for it."
+  ],
+  "p2": [
+    "Short-phone fixed navigation competes with initial incident content.",
+    "Critical interface dependency evidence is ellipsized on narrow phones.",
+    "Visual grammar remains too close to a regular administrative list.",
+    "Interface detail lightly repeats the header state in current readings."
+  ],
+  "requiredActions": [
+    "Build a true tablet selected-object evidence task architecture.",
+    "Add explicit fleet scope and comparison semantics.",
+    "Add truthful all-offline last-evidence and collection-plane context.",
+    "Return current production originals to independent review."
+  ]
+}
+

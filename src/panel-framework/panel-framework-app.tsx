@@ -7,8 +7,14 @@ import {
   type OverviewScenarioKey,
 } from "./overview";
 import { OverviewPanel } from "./overview/OverviewPanel";
+import { buildOverviewEvidenceModel } from "./overview/evidence-model/buildOverviewEvidenceModel";
 import { RouterConnectionScreen } from "./connection/RouterConnectionScreen";
-import { useMobileLargeTextMode } from "./mobile/useMobileLargeTextMode";
+import { usePanelLargeTextMode } from "./responsive/textScale";
+import { MobileFlowConnection } from "./mobile-flow-ui/connection/MobileFlowConnection";
+import { MobileFlowNavigation } from "./mobile-flow-ui/navigation/MobileFlowNavigation";
+import { MobileFlowOverview } from "./mobile-flow-ui/overview/MobileFlowOverview";
+import { MobileFlowRoutes } from "./mobile-flow-ui/workspace/MobileFlowRoutes";
+import { useMobilePanelSurface } from "./responsive/panelSurface";
 import type { PanelNavigate, PanelRouteId } from "./routes/panelRoutes";
 import { usePanelRoute } from "./routes/usePanelRoute";
 import { PanelRuntimeChrome, PanelRuntimeEmptyState, PanelRuntimeNotice } from "./runtime/PanelRuntimeChrome";
@@ -39,13 +45,18 @@ function SnapshotSurface({
   runtimeManaged = false,
   route,
   navigate,
+  onShowConnection,
+  onRefresh,
 }: {
   snapshot: OverviewRawSnapshot;
   options?: DeriveOverviewOptions;
   runtimeManaged?: boolean;
   route: PanelRouteId;
   navigate: PanelNavigate;
+  onShowConnection?: () => void;
+  onRefresh?: () => void;
 }) {
+  const mobile = useMobilePanelSurface();
   const scenarioHint = scenarioHintFromSnapshot(snapshot, options);
   const state = useMemo(
     () =>
@@ -55,15 +66,19 @@ function SnapshotSurface({
       }),
     [snapshot, options, scenarioHint]
   );
+  const evidence = useMemo(() => buildOverviewEvidenceModel(snapshot, state), [snapshot, state]);
+  const mobileOverview = <section id="overview" className="section is-mobile-surface" data-overview-scene-key={state.scenario}><MobileFlowOverview evidence={evidence} onNavigate={navigate} onRefresh={onRefresh} /></section>;
 
   return (
-    <div className="panel-app" data-panel-app data-active-section={route}>
+    <div className={`panel-app${mobile ? " panel-app-mobile" : ""}`} data-panel-app data-panel-surface={mobile ? "mobile" : "desktop"} data-active-section={route}>
       {route === "overview" ? (
-        <OverviewPanel snapshot={snapshot} state={state} onNavigate={navigate} runtimeManaged={runtimeManaged} />
+        mobile ? mobileOverview : <OverviewPanel snapshot={snapshot} state={state} onNavigate={navigate} runtimeManaged={runtimeManaged} />
       ) : (
-        <OperationalSectionPage route={route} snapshot={snapshot} onNavigate={navigate} />
+        mobile ? <MobileFlowRoutes route={route} snapshot={snapshot} onNavigate={navigate} onShowConnection={onShowConnection} /> : <OperationalSectionPage route={route} snapshot={snapshot} onNavigate={navigate} />
       )}
-      <PanelTaskNavigation route={route} onNavigate={navigate} />
+      {mobile
+        ? <MobileFlowNavigation route={route} onNavigate={navigate} />
+        : <PanelTaskNavigation route={route} onNavigate={navigate} />}
     </div>
   );
 }
@@ -88,7 +103,8 @@ function StaticSnapshotApp({ snapshot, options }: { snapshot: unknown; options?:
 function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
   const runtime = usePanelRuntime();
   const { route, navigate } = usePanelRoute();
-  const { largeText, sentinelRef: textScaleSentinelRef } = useMobileLargeTextMode();
+  const mobile = useMobilePanelSurface();
+  const { largeText, sentinelRef: textScaleSentinelRef } = usePanelLargeTextMode();
   useLayoutEffect(() => {
     if (!largeText) return;
     const frame = window.requestAnimationFrame(() => {
@@ -116,7 +132,13 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
     return () => window.cancelAnimationFrame(frame);
   }, [largeText, route]);
   if (runtime.view === "connection" || runtime.connection.phase !== "ready") {
-    return <RouterConnectionScreen runtime={runtime} />;
+    if (!mobile) return <RouterConnectionScreen runtime={runtime} />;
+    return (
+      <div className="panel-runtime-live" data-panel-runtime-phase={runtime.snapshot.phase} data-panel-large-text={largeText ? "true" : "false"}>
+        <span className="panel-text-scale-sentinel" aria-hidden="true" ref={textScaleSentinelRef}>M</span>
+        <MobileFlowConnection runtime={runtime} />
+      </div>
+    );
   }
 
   const runtimeBoundary = runtime.snapshot.phase === "stale" || runtime.snapshot.phase === "recovering" || runtime.snapshot.phase === "error"
@@ -132,8 +154,22 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
       }
     : runtime.snapshot.data;
 
-  const runtimeAnnouncement = runtime.snapshot.phase === "current"
-    ? "监控快照已更新，当前证据可用"
+  const boundedState = boundedSnapshot
+    ? deriveOverviewState(boundedSnapshot, {
+        ...options,
+        scenarioHint: scenarioHintFromSnapshot(boundedSnapshot, options),
+      })
+    : null;
+  const businessBoundaryAnnouncement = boundedState?.scenario === "no-snapshot"
+    ? "当前业务快照不可用，当前业务数字已撤回；上次可信业务时间未记录"
+    : boundedState?.scenario === "collection-down"
+      ? "采集通道当前异常；管理面采集状态不能代替转发面或业务面判断"
+      : null;
+
+  const runtimeAnnouncement = businessBoundaryAnnouncement
+    ? businessBoundaryAnnouncement
+    : runtime.snapshot.phase === "current"
+    ? "传输已更新，业务证据状态见当前页面"
     : runtime.snapshot.phase === "refreshing"
       ? "正在更新监控快照"
       : runtime.snapshot.phase === "stale"
@@ -147,13 +183,20 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
   return (
     <div className="panel-runtime-live" data-panel-runtime-phase={runtime.snapshot.phase} data-panel-large-text={largeText ? "true" : "false"}>
       <span className="panel-text-scale-sentinel" aria-hidden="true" ref={textScaleSentinelRef}>M</span>
-      <div className="panel-runtime-announcement" role="status" aria-live="polite" aria-atomic="true" style={{ position: "absolute", clip: "rect(0 0 0 0)" }}>
+      <div
+        className="panel-runtime-announcement"
+        role={boundedState?.scenario === "no-snapshot" ? "alert" : "status"}
+        aria-live={boundedState?.scenario === "no-snapshot" ? "assertive" : "polite"}
+        aria-atomic="true"
+        data-panel-business-boundary={boundedState?.scenario || "unknown"}
+        style={{ position: "absolute", clip: "rect(0 0 0 0)" }}
+      >
         {runtimeAnnouncement}
       </div>
-      <PanelRuntimeChrome runtime={runtime} route={route} onNavigate={navigate} />
-      <PanelRuntimeNotice runtime={runtime} />
+      {!mobile ? <PanelRuntimeChrome runtime={runtime} route={route} onNavigate={navigate} /> : null}
+      {!mobile ? <PanelRuntimeNotice runtime={runtime} /> : null}
       {boundedSnapshot ? (
-        <SnapshotSurface snapshot={boundedSnapshot} options={options} runtimeManaged route={route} navigate={navigate} />
+        <SnapshotSurface snapshot={boundedSnapshot} options={options} runtimeManaged route={route} navigate={navigate} onShowConnection={runtime.showConnection} onRefresh={() => void runtime.refresh("manual")} />
       ) : (
         <PanelRuntimeEmptyState runtime={runtime} />
       )}

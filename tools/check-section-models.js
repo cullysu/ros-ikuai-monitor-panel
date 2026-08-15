@@ -41,8 +41,8 @@ const { rowsFromModel } = require(path.join(
   root,
   "src",
   "panel-framework",
-  "mobile",
-  "mobileDomainWorkspaceModel.ts",
+  "domain-workspace",
+  "workspaceRows.ts",
 ));
 const { stablePanelObjectId } = require(path.join(
   root,
@@ -55,8 +55,8 @@ const { selectSemanticWorkspacePreview } = require(path.join(
   root,
   "src",
   "panel-framework",
-  "mobile",
-  "mobileWorkspacePreview.ts",
+  "domain-workspace",
+  "workspacePreview.ts",
 ));
 const { diagnosticChannelSummaries, diagnosticFailureLabel } = require(path.join(
   root,

@@ -1,0 +1,59 @@
+{
+  "schema": "independent-review/v1",
+  "step": 1045,
+  "role": "product-information-architecture",
+  "artifactKey": "worktree-ed9195a9a9cd-b923840e1c19",
+  "worktreeFingerprint": "b923840e1c1922b78abe31248acf03ea796e4db37d8c6a26ff67dbafef1803d7",
+  "verdict": "fail",
+  "p0": 0,
+  "p1": 2,
+  "p2": 1,
+  "findings": [
+    {
+      "severity": "P1",
+      "title": "横屏首屏被固定根导航遮挡，无法形成完整的单一手机任务",
+      "evidence": "在七个场景的 667×375 与 844×390 originals 中，固定四根底部导航直接覆盖内容：single 的趋势图横轴时间标签落在导航下方；fleet、all-offline、no-snapshot、collection-down、resource-full 和 interfaces-down 的首个任务后续行或行动边界同样被遮住。report.json 的 overflowX=0 和 56/56 仅证明几何未横向溢出，不能证明该首屏可完成判断。此结果也未达到 mobile-pulse-reset-contract.md 对横屏“左侧设备/证据、右侧风险或趋势”的可见任务要求。",
+      "recommendation": "为短横屏建立导航安全的首屏编排：在不引入桌面侧栏的前提下，让该场景的主对象和趋势/风险并列或上移至固定导航上方，并保证图表横轴、状态限定词和首个后续行动均不被悬浮导航覆盖。"
+    },
+    {
+      "severity": "P1",
+      "title": "768 平板接口详情截断了选中对象的关键状态语义",
+      "evidence": "interfaces-tablet768-detail.png 的详情标题栏右侧仅显示“未运行 · 配置依…”，关键状态“配置依赖”在视口右缘被裁掉；同一对象在 interfaces-phone390-detail.png 可以完整显示“未运行 · 配置依赖”。这使平板 master-detail 虽然存在，却在被选对象最关键的状态语义处丢失信息。",
+      "recommendation": "让详情头部状态在 768px 可换行、缩入对象元数据区，或在不截断的单独状态行呈现；完整状态必须在无需横向滚动或猜测的情况下可读。"
+    },
+    {
+      "severity": "P2",
+      "title": "320px 事故对象行裁掉了区分性证据",
+      "evidence": "interfaces-down-phone320-overview.png 将每个接口的“运行标志为 false · 有明确默认路由依赖证据”截为“运行标志为 f…”，collection-down-phone320-overview.png 也截断 REST 失败限定语。页首和状态标签仍保留了场景结论，故不是 P1；但对象行本应承担可扫描的依据，当前需要点入或依赖页首拼读。",
+      "recommendation": "在 320px 为事故行优先保留一个完整、可区分的依据短语（例如“默认路由依赖”或“REST 未完成采集”），而不是展示无用的半句。"
+    }
+  ],
+  "confirmedStrengths": [
+    "正常首屏已将已核验默认出口、当前上下行与带时间轴、数值刻度和 Mbps 单位的短趋势合并为一个工具，未再以巡检行重复默认路由。320、390、430 与 768 originals 都保持紧凑而非放大的“老人机”层级。",
+    "Fleet 具有独立的设备组/对象比较投影，并在无高优先级对象时才显示规模；它不再伪装成 single 正常态。",
+    "all-offline 明确展示未运行对象、最近可用证据、当前采集面和“不可由此记录推断”的业务边界，没有显示当前速率或虚构业务健康。",
+    "no-snapshot、collection-down、resource-full、interfaces-down 分别以恢复通道、采集边界、当前/阈值/差值/连续样本和依赖接口排序接管首屏；并非只给同一正常仪表换色。",
+    "390px 接口工作区是可搜索、筛选和按风险排序的连续对象列表；详情为真实 push 页面，新增观察时间、来源、关系/依赖与下沉的更多证据。连接流程也保持三步、单一底部继续动作和本地会话边界，整体连贯且手机原生。",
+    "768 概览和接口详情都已形成可用的对象 master-detail：左侧对象选择与右侧证据有明确关系，不是两张放大的手机卡并排。"
+  ],
+  "reviewedFiles": [
+    "docs/mobile-pulse-reset-contract.md",
+    "docs/ikuai4-ui-study.md",
+    "docs/decision-system/current-state.md",
+    "_acceptance/mobile-pulse-runtime/report.json",
+    "_acceptance/mobile-pulse-runtime/: all 56 original matrix PNGs (single, fleet, all-offline, no-snapshot, collection-down, resource-full, interfaces-down × phone320, phone360, phone375, phone390, phone430, tablet768, landscape667, landscape844)",
+    "_acceptance/mobile-pulse-runtime/interfaces-phone390-workspace.png",
+    "_acceptance/mobile-pulse-runtime/interfaces-phone390-detail.png",
+    "_acceptance/mobile-pulse-runtime/interfaces-tablet768-detail.png",
+    "_acceptance/mobile-pulse-runtime/connection-phone390-device.png",
+    "src/panel-framework/mobile-pulse-ui/overview/MobilePulseOverview.tsx",
+    "src/panel-framework/mobile-pulse-ui/workspace/MobilePulseWorkspace.tsx",
+    "src/panel-framework/mobile-pulse-ui/connection/MobilePulseConnection.tsx",
+    "src/panel-framework/mobile-pulse-ui/styles/overview.css",
+    "src/panel-framework/mobile-pulse-ui/styles/responsive.css",
+    "src/panel-framework/mobile-pulse-ui/styles/workspace.css",
+    "src/panel-framework/mobile-pulse-ui/styles/navigation.css",
+    "src/panel-framework/mobile-pulse-ui/styles/connection.css"
+  ],
+  "timestamp": "2026-08-16T00:34:30+08:00"
+}

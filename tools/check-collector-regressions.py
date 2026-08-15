@@ -827,7 +827,7 @@ def assert_frontend_charts_skip_missing_values():
     instrument_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewInstruments.ts").read_text(encoding="utf-8")
     evidence_source = evidence_model_source + "\n" + instrument_source
     chart_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "DesktopWanEvidence.tsx").read_text(encoding="utf-8")
-    assert 'data-overview-framework-asset="script"' in index_source
+    assert 'data-overview-framework-asset="surface-loader"' in index_source
     assert 'if (value === null || value === undefined || value === "") return null;' in evidence_source
     assert "if (rowDown === null || rowUp === null) return null;" in evidence_source
     assert "const samples = Array.isArray(history.trafficSamples) ? history.trafficSamples : [];" in evidence_source
@@ -941,7 +941,7 @@ def assert_frontend_handles_partial_snapshots():
     assert '<div id="app"' in index_source
     framework_shell = (
         '<div id="app"' in index_source
-        and 'data-overview-framework-asset="script"' in index_source
+        and 'data-overview-framework-asset="surface-loader"' in index_source
     )
     if framework_shell:
         derive_source = (ROOT / "src" / "panel-framework" / "overview" / "deriveOverviewState.ts").read_text(encoding="utf-8")

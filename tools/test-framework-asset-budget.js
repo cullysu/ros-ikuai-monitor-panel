@@ -12,31 +12,46 @@ const {
 } = require('./framework-asset-budget');
 
 assert.deepEqual(FRAMEWORK_ASSET_BUDGETS, {
-  script: { bytes: 600000, gzipBytes: 160000, brotliBytes: 130000 },
-  style: { bytes: 120000, gzipBytes: 20000, brotliBytes: 18000 },
-  desktopStyle: { bytes: 40000, gzipBytes: 10000, brotliBytes: 8000 },
+  'mobile.script': { bytes: 380000, gzipBytes: 120000, brotliBytes: 100000 },
+  'mobile.style': { bytes: 60000, gzipBytes: 12000, brotliBytes: 10000 },
+  'desktop.script': { bytes: 470000, gzipBytes: 145000, brotliBytes: 120000 },
+  'desktop.style': { bytes: 90000, gzipBytes: 17000, brotliBytes: 15000 },
+  loader: { bytes: 4000, gzipBytes: 2000, brotliBytes: 1800 },
 });
 
 const withinBudget = {
   assets: {
-    script: { file: 'panel.js', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
-    style: { file: 'style.css', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
-    desktopStyle: { file: 'desktop-overview.css', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
+    mobile: {
+      script: { file: 'panel-mobile.js', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
+      style: { file: 'mobile.css', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
+    },
+    desktop: {
+      script: { file: 'panel-desktop.js', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
+      style: { file: 'desktop.css', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
+    },
+    loader: { file: 'panel-surface-loader.js', bytes: 10, gzipBytes: 8, brotliBytes: 7 },
   },
 };
 assert.equal(evaluateFrameworkAssetBudget(withinBudget).pass, true);
 
 const compressedOverflow = JSON.parse(JSON.stringify(withinBudget));
-compressedOverflow.assets.style.gzipBytes = 20001;
+compressedOverflow.assets.mobile.style.gzipBytes = 12001;
 const overflow = evaluateFrameworkAssetBudget(compressedOverflow);
 assert.equal(overflow.pass, false);
-assert(overflow.reasons.some((reason) => reason.includes('style.gzipBytes exceeds')));
+assert(overflow.reasons.some((reason) => reason.includes('mobile.style.gzipBytes exceeds')));
 
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'framework-budget-'));
 try {
   const output = path.join(fixture, 'public', 'assets', 'framework');
   fs.mkdirSync(output, { recursive: true });
-  for (const record of Object.values(withinBudget.assets)) {
+  const records = [
+    withinBudget.assets.mobile.script,
+    withinBudget.assets.mobile.style,
+    withinBudget.assets.desktop.script,
+    withinBudget.assets.desktop.style,
+    withinBudget.assets.loader,
+  ];
+  for (const record of records) {
     fs.writeFileSync(path.join(output, record.file), Buffer.alloc(record.bytes));
     fs.writeFileSync(path.join(output, `${record.file}.gz`), Buffer.alloc(record.gzipBytes));
     fs.writeFileSync(path.join(output, `${record.file}.br`), Buffer.alloc(record.brotliBytes));
@@ -44,7 +59,7 @@ try {
   fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify(withinBudget));
   assert.equal(verifyFrameworkAssetBudget(fixture).pass, true);
 
-  fs.appendFileSync(path.join(output, 'style.css.gz'), Buffer.from([0]));
+  fs.appendFileSync(path.join(output, 'mobile.css.gz'), Buffer.from([0]));
   const mismatch = verifyFrameworkAssetBudget(fixture);
   assert.equal(mismatch.pass, false);
   assert(mismatch.reasons.some((reason) => reason.includes('manifest/file mismatch')));

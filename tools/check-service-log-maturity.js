@@ -15,8 +15,8 @@ const maturity = read("src/panel-framework/routes/panelRouteMaturity.ts");
 const model = read("src/panel-framework/sections/sectionModels.ts");
 const evidenceTypes = read("src/panel-framework/sections/serviceLogEvidenceTypes.ts");
 const evidenceBuilder = read("src/panel-framework/sections/serviceLogEvidence.ts");
-const domainInspector = read("src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx");
-const inspector = readIfExists("src/panel-framework/mobile/mobile-inspector/ServiceLogInspector.tsx");
+const mobileRouteSurface = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
+const mobileRouteAssembly = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx");
 
 const checks = [
   {
@@ -40,19 +40,19 @@ const checks = [
     pass: /function serviceLogEvidence\s*\(/.test(evidenceBuilder) && /sourceCollection/.test(evidenceBuilder),
   },
   {
-    name: "serviceLogs routes to its dedicated inspector",
-    pass: /currentRoute === "serviceLogs"/.test(domainInspector) && /function ServiceLogInspector\s*\(/.test(inspector),
+    name: "serviceLogs routes through the current Mobile Flow object workspace",
+    pass: /buildSectionModel\(route, snapshot\)/.test(mobileRouteAssembly) && /useObjectHistory\(route\)/.test(mobileRouteSurface) && /function ObjectDetail\s*\(/.test(mobileRouteSurface),
   },
   {
-    name: "service inspector exposes category and failure boundary",
-    pass: ["服务类别", "来源集合", "没有可用于当前判断的服务日志"].every((token) => inspector.includes(token)),
+    name: "Mobile Flow object detail preserves structured service evidence",
+    pass: /const fields = row\.columns\.map/.test(mobileRouteSurface) && /row\.evidence\.sourceTable \|\| row\.table/.test(mobileRouteSurface) && /对象证据/.test(mobileRouteSurface),
   },
 ];
 
 const failures = checks.filter((check) => !check.pass).map((check) => check.name);
 const report = {
   pass: failures.length === 0,
-  contract: "service-log-maturity-v1",
+  contract: "service-log-maturity-v2",
   implementationState: failures.length === 0 ? "focused-green" : "expected-red-or-incomplete",
   checks: Object.fromEntries(checks.map((check) => [check.name, check.pass])),
   failures,

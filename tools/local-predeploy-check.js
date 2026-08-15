@@ -738,11 +738,17 @@ function reportNestedPassFalsePaths(value, currentPath = '') {
 }
 
 function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
-  const failures = Array.isArray(report.failures) ? report.failures : [];
-  report.failures = failures;
+  const failures = Array.isArray(report.failures) ? [...report.failures] : [];
+  if (!Array.isArray(report.failures)) {
+    failures.push({
+      name: 'report failures shape',
+      pass: false,
+      detail: { reason: 'failures must be an array' },
+    });
+  }
   const nestedPassFalsePaths = reportNestedPassFalsePaths(report);
   if (nestedPassFalsePaths.length > 0) {
-    report.failures.push({
+    failures.push({
       name: 'nested report evidence truth',
       pass: false,
       detail: { paths: nestedPassFalsePaths.slice(0, 32), count: nestedPassFalsePaths.length },
@@ -751,18 +757,39 @@ function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
   const seen = new Set(failures);
   for (const check of reportCheckTruthFailures(report.checks)) {
     if (!seen.has(check)) {
-      report.failures.push(check);
+      failures.push(check);
       seen.add(check);
     }
   }
-  const engineeringPass = report.failures.length === 0;
   const matrixPresent = report.matrix && typeof report.matrix === 'object';
-  const matrixIncomplete = Boolean(matrixPresent && report.matrix.complete !== true);
+  const matrixIncomplete = Boolean(
+    matrixPresent && (
+      report.matrix.complete !== true ||
+      report.matrix.requestedComplete !== true
+    )
+  );
+  if (matrixBlocksTopLevelPass) {
+    failures.push({
+      name: 'required matrix completeness',
+      pass: false,
+      detail: {
+        complete: report.matrix?.complete,
+        requestedComplete: report.matrix?.requestedComplete,
+      },
+    });
+    failures.push({
+      name: 'required matrix gate',
+      pass: false,
+      detail: { reason: 'required matrix gate did not pass' },
+    });
+  }
+  report.failures = failures;
+  const engineeringPass = failures.length === 0;
   report.engineeringPass = engineeringPass;
   report.boundedPass = engineeringPass && Boolean(!matrixPresent || report.matrix.requestedComplete === true);
   report.releasePass = engineeringPass && !matrixBlocksTopLevelPass && !matrixIncomplete;
   report.pass = report.releasePass;
-  report.exitCodeShouldFail = Boolean(report.failures.length || matrixBlocksTopLevelPass);
+  report.exitCodeShouldFail = Boolean(failures.length > 0 || matrixBlocksTopLevelPass || matrixIncomplete);
   return report;
 }
 
@@ -1023,7 +1050,7 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     requiredCells: [...new Set(requiredCells)].sort(),
     complete: requiredCells.length > 0
       ? [...new Set(requiredCells)].every((cell) => passedCells.includes(cell)) && cells.every((cell) => cell.pass)
-      : requiredScenarios.every((scenario) => passedScenarios.includes(scenario)),
+      : requiredScenarios.every((scenario) => passedScenarios.includes(scenario)) && cells.every((cell) => cell.pass),
     total: cells.length,
     passed: cells.filter((cell) => cell.pass).length,
     failed: cells.filter((cell) => !cell.pass).length,
@@ -1455,7 +1482,7 @@ async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scal
   });
   await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: fixtureSource });
   await cdp.send('Page.navigate', {
-    url: `${baseUrl}?section=overview&predeploy=${Date.now()}#overview`,
+    url: `${baseUrl}?section=overview&surface=${viewport.width >= 900 ? 'desktop' : 'mobile'}&predeploy=${Date.now()}#overview`,
   });
   await waitForApp(cdp);
   record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, {
@@ -1472,6 +1499,7 @@ async function setSection(cdp, section) {
       const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim();
       const selector = [
         '[data-section="' + CSS.escape(section) + '"]',
+        '[data-ikuai4-mobile-nav="' + CSS.escape(section) + '"]',
         'a[href="#' + CSS.escape(section) + '"]',
       ].join(',');
       const candidates = Array.from(document.querySelectorAll(selector));
@@ -1547,6 +1575,44 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
   }
   const inspection = result.result && result.result.value;
   if (section !== 'overview' || !inspection) return inspection;
+  if (viewport.width < 900) {
+    const pulseProbeResult = await cdp.send('Runtime.evaluate', {
+      expression: `(() => {
+        const root = document.querySelector('[data-mobile-pulse-overview]');
+        const nav = document.querySelector('[data-mobile-pulse-navigation]');
+        const navDestinations = [...(nav?.querySelectorAll('[data-mobile-pulse-tab]') || [])]
+          .map((node) => node.getAttribute('data-mobile-pulse-tab') || '');
+        const evidenceMode = root?.getAttribute('data-evidence-mode') || '';
+        const scene = root?.getAttribute('data-mobile-pulse-scene') || '';
+        const normal = scene === 'normal';
+        const traffic = root?.querySelector('[data-mobile-pulse-traffic]');
+        const takeover = root?.querySelector('[data-mobile-pulse-takeover]');
+        const evidenceObjects = root?.querySelectorAll('[data-mobile-pulse-takeover] [data-mobile-pulse-object], [data-mobile-pulse-takeover] [data-mobile-pulse-resource]').length || 0;
+        const checks = {
+          pulseRoot: Boolean(root?.querySelector('.mpu-pulse')),
+          evidenceMode: /^(current|historical|unavailable)$/.test(evidenceMode),
+          scene: ['normal', 'wan', 'evidence', 'collection', 'resource', 'interfaces'].includes(scene),
+          normalTraffic: normal ? evidenceMode === 'current' && Boolean(traffic) && !takeover : !traffic,
+          incidentTakeover: normal ? !takeover : Boolean(takeover && evidenceObjects > 0),
+          fourNavigationRoots: navDestinations.length === 4 && ['overview', 'interfaces', 'terminals', 'logs'].every((item) => navDestinations.includes(item)),
+          moreDirectory: Boolean(root?.querySelector('button[aria-label="更多模块"]')),
+          objectEvidence: normal ? Boolean(root?.querySelector('[data-mobile-pulse-patrol] [data-mobile-pulse-object]')) : evidenceObjects > 0,
+        };
+        return {
+          contract: 'mobile-pulse-runtime-v1',
+          appHomePass: Object.values(checks).every(Boolean),
+          truthMode: evidenceMode,
+          risk: scene === 'evidence' ? 'evidence' : scene === 'collection' ? 'collection' : scene === 'resource' ? 'resource' : scene === 'interfaces' ? 'interfaces' : scene === 'wan' ? 'wan' : 'none',
+          requiredChecks: Object.keys(checks),
+          checks,
+        };
+      })()`,
+      returnByValue: true,
+    });
+    const mobilePulseGateProbe = pulseProbeResult.result?.value || null;
+    inspection.mobilePulseGateProbe = mobilePulseGateProbe;
+    inspection.pass = Boolean(inspection.pass && mobilePulseGateProbe?.appHomePass === true);
+  }
   const canonicalRouteProbeCell = scaleScenario === 'single' && viewport.width === 390 && viewport.height === 844;
   if (!canonicalRouteProbeCell) {
     return {
@@ -1697,8 +1763,6 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
         const requireOverviewAnchors = ${JSON.stringify(section === 'overview')};
         const requireDesktopOverviewAnchors = requireOverviewAnchors && window.innerWidth >= 1200;
         const requireMobileOverviewAnchors = requireOverviewAnchors && window.innerWidth < 900;
-        const incidentLensRoot = document.querySelector('[data-incident-lens-root]');
-        const incidentLensHistory = window.history.state?.panelIncidentLens;
         const specs = requireDesktopOverviewAnchors ? [
           {
             name: 'desktop-toolbar',
@@ -1707,37 +1771,10 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
           { name: 'task-navigation', selector: '.panel-task-navigation' },
           { name: 'status-bus', selector: '[data-desktop-status-bus]' },
         ] : requireMobileOverviewAnchors ? [
-          {
-            name: 'incident-split-lens-root',
-            selector: '[data-incident-lens-root]',
-          },
-          {
-            name: 'incident-split-lens-evidence-boundary',
-            selector: '[data-incident-lens-evidence-boundary]',
-          },
-          {
-            name: 'incident-split-lens-expanded-claim',
-            selector: '[data-incident-lens-expanded-claim]',
-          },
-          {
-            name: 'incident-split-lens-scene',
-            selector: '[data-incident-lens-root]',
-            attribute: 'data-incident-lens-scene',
-          },
-          {
-            name: 'incident-split-lens-risk',
-            selector: '[data-incident-lens-root]',
-            attribute: 'data-incident-lens-risk',
-          },
-          {
-            name: 'incident-split-lens-selection-history',
-            selector: '[data-incident-lens-expanded-claim]',
-            requireSelectionHistory: true,
-          },
-          ...(window.innerHeight >= 568 ? [{
-            name: 'incident-split-lens-object-action',
-            selector: '[data-incident-lens-action]',
-          }] : []),
+          { name: 'mobile-pulse-root', selector: '[data-mobile-pulse-overview]' },
+          { name: 'mobile-pulse-evidence', selector: '[data-mobile-pulse-overview][data-evidence-mode]' },
+          { name: 'mobile-pulse-status', selector: '[data-mobile-pulse-overview] .mpu-pulse' },
+          { name: 'mobile-pulse-navigation', selector: '[data-mobile-pulse-navigation]' },
         ] : [];
         const scaleX = width / Math.max(1, window.innerWidth);
         const scaleY = height / Math.max(1, window.innerHeight);
@@ -1746,11 +1783,6 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
           const style = node ? getComputedStyle(node) : null;
           const rect = node ? node.getBoundingClientRect() : null;
           const attributePresent = !spec.attribute || Boolean(node?.getAttribute(spec.attribute));
-          const selectionHistoryPresent = !spec.requireSelectionHistory || (
-            incidentLensHistory?.version === 1 &&
-            incidentLensHistory.scope === incidentLensRoot?.getAttribute('data-incident-lens-scope') &&
-            incidentLensHistory.selectedId === node?.getAttribute('data-incident-lens-expanded-claim')
-          );
           const present = Boolean(
             node &&
             rect &&
@@ -1764,8 +1796,7 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
             style.display !== 'none' &&
             style.visibility !== 'hidden' &&
             Number(style.opacity || 1) > 0.05 &&
-            attributePresent &&
-            selectionHistoryPresent
+            attributePresent
           );
           return {
             ...spec,
@@ -2213,7 +2244,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
   const now = '2026-05-24T12:00:00Z';
   const nowMilliseconds = Date.parse(now);
   const historyTimestamps = Array.from({ length: 6 }, (_, index) =>
-    new Date(nowMilliseconds - (5 - index) * 5_000).toISOString()
+    new Date(nowMilliseconds - (5 - index) * 180_000).toISOString()
   );
   const capabilities = {
     readonlyDiagnostics: !publicProfile,
@@ -2777,7 +2808,7 @@ function setSnapshotFresh(snapshot) {
     const nowMilliseconds = Date.parse(now);
     history.resourceSamples = resourceSamples.map((sample, index) => ({
       ...sample,
-      timestamp: new Date(nowMilliseconds - (resourceSamples.length - 1 - index) * 5_000).toISOString(),
+      timestamp: new Date(nowMilliseconds - (resourceSamples.length - 1 - index) * 180_000).toISOString(),
       source: sample.source || 'scenario-fixture',
       evidenceMode: sample.evidenceMode || 'current',
     }));
@@ -2797,7 +2828,7 @@ function setSnapshotFresh(snapshot) {
     const factors = [0.72, 0.81, 0.76, 0.9, 0.94, 1];
     history.trafficSamples = trafficSamples.map((sample, index) => ({
       ...sample,
-      timestamp: new Date(nowMilliseconds - (trafficSamples.length - 1 - index) * 5_000).toISOString(),
+      timestamp: new Date(nowMilliseconds - (trafficSamples.length - 1 - index) * 180_000).toISOString(),
       uplink: currentUp === null ? null : Math.round(currentUp * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
       downlink: currentDown === null ? null : Math.round(currentDown * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
       source: sample.source || 'scenario-fixture',
@@ -2853,7 +2884,7 @@ function refreshFixtureTrafficHistory(snapshot, evidenceMode = 'current') {
   }
   const factors = [0.55, 0.64, 0.72, 0.83, 0.92, 1];
   const trafficSamples = factors.map((factor, index) => ({
-    timestamp: new Date(updatedAt - (factors.length - 1 - index) * 5_000).toISOString(),
+    timestamp: new Date(updatedAt - (factors.length - 1 - index) * 180_000).toISOString(),
     uplink: Math.round(uplink * factor),
     downlink: Math.round(downlink * factor),
     source: 'scenario-fixture',

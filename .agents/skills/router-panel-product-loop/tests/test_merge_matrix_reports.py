@@ -210,6 +210,19 @@ class MergeMatrixReportsTest(unittest.TestCase):
         self.assertFalse(merged["pass"])
         self.assertTrue(merged["failures"])
 
+    def test_finalizer_cannot_clear_reported_failure_or_incomplete_matrix(self) -> None:
+        merged = self.report()
+        merged["failures"] = [{"name": "required child omitted", "pass": True}]
+        merged["matrix"]["complete"] = False
+        merged["matrix"]["requestedComplete"] = False
+
+        load_merger_module().finalize_merged_truth(merged)
+
+        self.assertFalse(merged["pass"])
+        self.assertTrue(merged["exitCodeShouldFail"])
+        self.assertTrue(any(failure["name"] == "merged reported failures" for failure in merged["failures"]))
+        self.assertTrue(any(failure["name"] == "merged matrix completeness" for failure in merged["failures"]))
+
     def test_rejects_invalid_not_applicable_shape(self) -> None:
         source = self.write_report(
             "invalid-not-applicable.json",

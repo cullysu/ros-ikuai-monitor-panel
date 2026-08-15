@@ -2,10 +2,10 @@
 
 > 建立时间：2026-07-16（Asia/Taipei）
 > status: `historical-journal`
-> validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` 及其后的本地评审记录
+> validForCommit: `false`；本文件是历史流水，不拥有当前产品或发布结论
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：**FAIL（公众发布）/ Step965 已关闭 db5 独立评审揭露的本地 P0/P1 根因；clean exact-SHA 28/532/266、Edge 200%、Accessibility/Security、四路新签收、RouterOS soak、外部授权及远端 Linux/Windows/GHCR CL 尚未完成，release CLOSED**
+> 当前产品结论：不在本历史日志维护；唯一当前结论见 `docs/decision-system/current-state.md`
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -26866,3 +26866,2537 @@ ocused-green-engineering
 - latestStepOutcome: `965:db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required`
 - GitHub：未上传；CL：未触发；任务：active，`blocked=false`；发布：FAIL/CLOSED。
 - nextAction: Commit Step965, then rebuild Overview 28, complete route-responsive 532, route-state 266, real Edge toolbar 200%, full release gates and four fresh exact-artifact reviews before any external acceptance or publication decision.
+
+## 第 967 步：用户否决桌面缩放式手机方向；停止旧候选发布验收并启动全量手机重建
+
+### 触发 / 问题
+
+`2026-08-14` 用户明确指出：当前手机界面仍然把电脑控制台的信息组织、块级布局和视觉重量压缩进手机，字号与控件被做成“老年机式放大”，不属于正常高效的手机 UI。用户要求抛弃此前全部手机呈现想法，整套重新设计，禁止继续微调。
+
+### 观察事实
+
+- Step966 已把 Step965 修复提交为 clean commit `6aa7d327c022a5a58b45540bc81c8de103a85d3c`，并在该 SHA 真实通过完整 route-responsive `532/532`、Overview `28/28` 与 route-state `266/266`；三个报告均 `matrix.complete=true`、`releasePass=true`、worktree clean。
+- 随后的真实 Windows Edge 工具栏 200% 门禁在 phone-375 normal 的 UI Automation `menu-plus` 路径超时。报告正确写入 `pass=false`，没有将部分四格证据合并成通过。
+- 这些工程结果只证明旧呈现满足现有自动合同，不能反驳用户对产品方向、视觉成熟度、手机任务效率和审美的否决。
+- 现有手机树的核心构图仍由 command chrome、Incident Lens、claim/evidence ledger、块级对象工作区和固定导航组成。即使局部字号、横屏列数和状态词经过修复，其基本节奏仍来自控制台式分区，而不是手机上的单手巡检流程。
+
+### 决策
+
+1. 立即停止 `6aa7d32` 的旧方向发布验收；不继续为该视觉候选修 Edge 门禁，不上传 GitHub。上述矩阵全部降为历史工程证据。
+2. 将当前 Incident Lens 呈现、移动 chrome、卡片/账本节奏、旧移动 CSS 和现有首屏层级标记为 `superseded`，禁止作为新方案的正面视觉或布局参考。
+3. 保留且只保留跨端事实合同：`current | historical | unavailable`、RFC3339、明确零值、缺失撤回、活动路由可验证、REST/SSH 独立、原子流量样本、只读安全、canonical route、Back/Forward 数据语义。
+4. 桌面树冻结并继续独立；新手机 UI 不复用桌面布局、信息顺序、表格密度或组件外观，只允许读取共享领域模型。
+5. 先并行提出三套彼此显著不同的手机原生架构，再按单手任务效率、首屏判断速度、信息新增量、短屏/横屏韧性、辅助功能和场景差异进行裁决；裁决完成前不写新视觉实现。
+
+### 理由与拒绝项
+
+- 拒绝“缩小卡片、调字号、减少圆角”式修补，因为它仍保留旧任务架构，只改变表皮。
+- 拒绝用大字、大块、稀疏留白冒充移动端或无障碍；正常字号与 200% 重排必须同时成立。
+- 拒绝把 iOS 理解为毛玻璃、底栏和圆角，也拒绝把 iKuai 理解为蓝灰色和桌面表格。新方向必须体现触控效率、层级清晰、对象比较和证据可信。
+- 拒绝在首屏同时堆结论、三项 proof、信号、优先事项、对象标签和工作区；每一层必须回答不同问题，并通过渐进展开保持高信息效率。
+
+### Product Loop / Emil 心得
+
+| 旧假设 | 新约束 | 原因 |
+| --- | --- | --- |
+| 桌面控制台压缩后可成为手机巡检 | 手机先定义单手任务，再决定呈现结构 | 设备不同意味着操作节奏和注意力预算不同。 |
+| 大字号与大触控目标应同步放大所有 UI | 正常阅读密度与最小 44px 触控热区分离 | 触控区域可以大，视觉元素不必变成巨块。 |
+| 工程矩阵全绿即可继续发布收尾 | 产品/视觉否决会使同一矩阵降为历史 | 自动化只能验证它声明的合同，不能替用户审美和任务效率签字。 |
+| iOS 是若干视觉材质 | iOS 首先是可预测导航、即时反馈、渐进披露和内容优先 | 材质没有任务行为就只是装饰。 |
+
+### 验证 / 当前状态
+
+- 旧候选没有上传 GitHub，远端 CL 未触发。
+- 中央任务保持 active、`blocked=false`；旧 Edge 失败保留为失败诊断，不重复盲跑。
+- 已向四个独立只读评审方向发出任务：手机产品架构、视觉语法、交互/无障碍、代码删除边界。它们不得写代码或把当前 UI 当正面参考。
+
+### 边界 / 下一步
+
+- latestStepOutcome: `967:owner-rejects-desktop-derived-mobile-presentation-full-mobile-rebuild-selected-release-closed`
+- 发布：FAIL/CLOSED；GitHub：未上传；任务：active，`blocked=false`。
+- nextAction: Adjudicate three independent phone-native architectures, record the winner, then delete the rejected mobile presentation ownership and implement the winner in a clean isolated mobile render/style tree.
+
+## 第 968 步：三方向手机原生裁决；Mobile Attention Queue 胜出并批准旧呈现物理删除
+
+### 输入与来源
+
+- Product 方向并行提出：A 巡检队列、B 默认路径证据清单、C 运行态时间线。
+- Visual 方向提出 Field Console 语法：连续内容、紧凑 22/16/13/12 字级、44px 命中区与视觉体量分离、低饱和语义色、材质只服务真实层级。
+- Interaction/Accessibility 方向固定四个一级目的地、全屏 drill-down、Back/Forward/焦点恢复、短横屏单任务流、200% 回退单列与 reduced preferences 合同。
+- Architecture 审计确认 Incident Lens 与 mobile-domain 是应删除的呈现所有权；部分名称带 mobile 的行模型被桌面直接引用，必须先迁移到中性共享目录，不能粗暴整目录删除。
+- 官方 Apple 当前材料规范确认：Liquid Glass 是浮在内容之上的导航/控件功能层，不应铺进内容层；Tab Bar 必须稳定并用于一级导航。Apple 的 44pt 命中区和 Dynamic Type 是交互/重排要求，不等于放大所有视觉元素。
+
+### 三方向裁决
+
+1. **Mobile Attention Queue（选中）**：首屏唯一问题是“现在先检查什么”。最高可信风险占首项；正常态首项为已验证默认路径；其后只放两个次级对象或最近变化。
+2. **Verified Path Ledger（不作为主架构）**：单设备/单 WAN 很强，但资源压力、fleet 和非默认接口事故会被路径叙事压低。保留为网络详情中的证据模块。
+3. **Operational Timeline（不作为主架构）**：适合回看，但首次打开时不如队列直接。保留为日志/事件详情中的次级视图，且只有真实事件流才能启用。
+
+### 选中合同
+
+- 稳定入口：概览 / 网络 / 终端 / 日志；更多低频工具进入真实菜单，不占第五个 tab。
+- 首页连续滚动，不做卡片墙；一行对象回答对象、状态、影响/关键值、证据时间。点击进入全屏详情，详情必须增加采样、依赖、原始字段或历史，不复读首页。
+- 正常、全离线、无快照、采集失败、资源满载、接口 Down、fleet 必须改变首项对象和内容顺序；不能只换色和文案。
+- 字级：对象/页面标题 22px，正文 16px，元数据 13px，绝对下限 12px；吞吐数字可 24–28px，但不能成为所有场景的主视觉。44px 是点击热区，不是每行必须视觉膨胀到巨大卡片。
+- 内容层使用标准不透明/轻分组材料和分隔线；Liquid Glass 只用于真实导航、菜单和临时控件。无假手柄、假按钮、大健康 hero、装饰拓扑、桌面表格或整页蓝灰染色。
+- 手机纵向单列；短横屏仍是单任务手机流；平板仅在列表和详情都有真实内容时启用 master-detail；200% 自动退回单列。
+- 新根建议为 `mobile-next`，全部 CSS 由唯一 `[data-panel-mobile-next]` 根作用域拥有。1199/1200 只挂载一棵树，构建资产中旧 `.incident-lens/.patrol-next/.mdw-` 选择器必须为零。
+
+### Emil / Product Loop Before-After
+
+| Before | After | Why |
+| --- | --- | --- |
+| 打开后先理解一组控制台分区 | 打开后先看到唯一最高优先对象 | 手机注意力预算适合逐项确认，不适合先扫描后台版式。 |
+| 44px 触控要求转化成巨大视觉块 | 用不可见命中区/内边距保证 44px，文字与分隔保持紧凑 | 可达性与老年机式放大不是一回事。 |
+| 玻璃/蓝灰用于整张内容 | Liquid Glass 只用于导航和真实控件 | Apple 当前规范把玻璃定义为功能层，而不是内容主题。 |
+| 路径、时间线、风险同时争夺首页 | 队列为主；路径进网络详情，时间线进日志详情 | 每个视图只承担一个主问题，减少复读和层级竞争。 |
+
+### 边界 / 下一步
+
+- latestStepOutcome: `968:mobile-attention-queue-selected-old-presentation-deletion-approved-release-closed`
+- Product/Design 方向已选，但实现、视觉 QA、Accessibility、完整矩阵和发布门仍 FAIL/PENDING。
+- nextAction: Physically delete the rejected mobile presentation ownership, migrate desktop-used helpers to neutral ownership, and establish the isolated Mobile Attention Queue tree before implementing the first complete vertical slice.
+
+## 第 969 步：旧手机呈现已物理删除；独立 mobile-next 注意队列、对象列表和全屏详情首个完整切片落地
+
+### 触发 / 问题
+
+- Step968 已完成方向裁决，但代码仍保留 Incident Lens、mobile-domain、旧检查器和旧 CSS。只在入口换一个组件会形成双 owner，后续门禁仍会被旧 DOM、旧选择器和旧来源路径污染。
+- 用户要求的是“整套手机 UI 全部重新做”，因此本步不能停在 Overview 样稿；稳定入口、业务列表、对象详情和浏览器历史必须一起证明新架构可运行。
+
+### 决策与实现
+
+1. 先把桌面仍使用的对象行、过滤/排序、语义预览和对象历史迁移到中性 `domain-workspace`；把 viewport 与文本缩放能力迁移到 `responsive`，桌面不再从 mobile 命名目录取共享逻辑。
+2. 新建唯一手机呈现根 `src/panel-framework/mobile-next/`：
+   - `MobileNextOverview` 负责注意队列；
+   - `MobileRouteSurface` 负责网络/终端/日志及低频工具的手机对象列表；
+   - `MobileNextNavigation` 负责四个稳定一级目的地；
+   - `buildMobileAttentionModel` 按风险而不是 fleet 类型决定首项。
+3. 首页改为连续巡检队列：紧凑设备头、66px 状态命令条、对象/状态/关键值/证据时间同一行。正常态列出已核实默认路径、当前吞吐、采集通道、接口和资源；异常态按场景替换首项和后续证据。
+4. 业务路由不再缩放桌面表格。手机使用真实搜索、筛选、排序和连续对象行；点击进入全屏详情，详情新增关系判断、连续样本、身份来源或相邻事件，并显示完整对象字段。
+5. 对象详情采用真实 URL/history。Back 关闭详情并恢复列表触发点；Forward 重新打开同一对象。不存在旧版 tab/tabpanel 引用缺失和假 sheet 手柄。
+6. Liquid Glass 只用于固定 Tab Bar 与详情导航条；内容层保持轻背景、细分隔和低饱和语义色。44px/52px 命中区与 12–22px 视觉字级分离。
+7. 物理删除整个 `src/panel-framework/mobile/` 和 `src/panel-framework/overview/mobile-overview/`；构建输入中 `.incident-lens`、`.patrol-next`、`.mdw-` 旧手机 owner 已退出。
+
+### Emil / Product Loop Before-After
+
+| Before | After | Why |
+| --- | --- | --- |
+| 桌面工作台缩成卡片/账本后塞进手机 | 手机从“现在先看什么”开始，按对象队列连续巡检 | 手机注意力与单手操作不能由桌面分区决定。 |
+| 44px 目标同时放大文字、图标和卡片 | 12–22px 紧凑字级，命中区独立达到 44/52px | 可达性不等于老年机式视觉膨胀。 |
+| Incident Lens、mobile-domain 与新入口并存 | 唯一 `mobile-next` render/style owner，旧树物理删除 | 避免双 DOM、双 CSS 与门禁自证。 |
+| 详情复读列表或依赖假纵深 | 全屏详情增加关系、样本、身份或相邻事件 | 每次额外点击必须换来新的可判断证据。 |
+| 整页蓝灰/毛玻璃 | 中性连续内容；玻璃只放真实导航和临时控制 | iOS 材质是功能层，不是内容皮肤。 |
+| Back 有效、Forward 丢失详情 | URL 对象身份驱动详情，Back/Forward 对称恢复 | 浏览器历史必须可预测且可重放。 |
+
+### 视觉观察
+
+- 新 390×844 原图已覆盖正常、资源满载、接口 Down、无快照，以及接口、终端、日志、更多工具。字号、行高、搜索/筛选和四栏导航已明显脱离旧“大块老年机”方向。
+- 首轮原图同时暴露并修复了三个真实问题：状态条右侧数字与优先项计数语义冲突、吞吐/资源尾值过长、旧全局 `sr-only` 缺失导致搜索标签叠字。
+- 当前原图是内部迭代证据，不是用户视觉签收。资源/无快照场景的空间利用、连接页独立呈现、平板真实 master-detail、200% 文本、横屏和全量异常矩阵仍需继续验证。
+
+### 验证
+
+- neutral ownership 迁移后 `check:types` 与 production build PASS。
+- 新 Overview、四入口导航、手机业务列表和对象详情接入后再次 `check:types` 与 production build PASS。
+- 构建由 `1892`/`1862` 个模块收敛到 `1862`，最终 CSS `57.99 kB`、JS `452.75 kB`；这是删除旧 active owner 后的产物，不是通过压缩门禁伪造。
+- focused 390×844 浏览器截图可生成，横向 overflow 为 `0`，触控目标探针没有发现小目标。旧 local-predeploy 语义仍寻找 Incident Lens/mdw，因此顶层正确 FAIL；本步只改了截图锚点，没有把旧语义假装成新方案通过。
+- `rg` 确认 active src 中旧 `incident-lens` 和 `data-mobile-domain` 引用为零；TypeScript 与构建在物理删除后仍通过。
+
+### 边界 / 下一步
+
+- latestStepOutcome: `969:mobile-next-tree-live-old-presentation-physically-deleted-focused-build-green-release-closed`
+- Product/Design/Visual 仍未独立签收；旧验收脚本必须按新产品合同重写，不能保留字符数、旧 DOM token 或 Incident Lens 选择器。
+- 连接页仍需独立手机 owner；平板、短横屏、320/360/375/390/430/768、200% 文本、reduced preferences、ARIA、Back/Forward 和七场景完整矩阵仍开放。
+- GitHub 未上传；CL 未触发；任务 active、`blocked=false`；发布 FAIL/CLOSED。
+- nextAction: Rebuild the mobile acceptance gates around Mobile Attention Queue semantics, replace the mobile connection surface, then run the complete scenario/viewport/interaction visual matrix and fresh independent Product/Design/Accessibility review.
+
+## 第 970 步：手机连接与验收所有权完成迁移；56 格、200% 与当前原图形成同一条证据链
+
+### 触发 / 问题
+
+- Step969 只有首个手机切片，旧检查器仍可能用退役 DOM 判绿或判红；连接页也仍是桌面/手机共用表单外观。用户要求的是整套手机 UI，而不是只换 Overview。
+- 第一次独立原图评审没有被“新方向”说服而直接放行。它指出旧 route 报告为 `pass=false`、截图与当前源码不一致；正常吞吐、资源阈值和不可用说明被省略号截断；更多工具看似只能深链；筛选/排序只有 34px；终端泄露 `bound`。这些均按发布阻断处理。
+
+### 决策与实现
+
+1. 连接页建立独立 `mobile-next/connection` owner。它复用既有 `PanelRuntimeController`、地址校验、TLS/HTTP 风险确认和 SSH 指纹合同，但不挂载旧 `RouterConnectionScreen` 手机 DOM，不复制 fetch/API，也不保存密码。
+2. Overview 删除运行时工具栏下的重复设备头，把证据状态与绝对时间并入 66px 命令条；页面只保留一条视觉主线：结论 → 按证据排序的对象队列。静态快照仍保留独立设备标题。
+3. 关键值不再用 `text-overflow: ellipsis`。吞吐、阈值、状态、时间和证据边界可以语义换行；对象说明允许自然增高，不以隐藏事实换取“密度”。
+4. 网络子导航、筛选、排序、搜索和连接输入全部使用至少 44px 的真实点击区。新增 2px 明确 `:focus-visible`，不接受浏览器默认 1px outline 冒充键盘可见焦点。
+5. More 继续由 Overview 顶部真实省略号按钮进入，不增加第五个底部 Tab；运行时现在通过真实点击证明 More、终端和日志均可到达。Back/Forward 对称重放对象详情并恢复列表触发点。
+6. `bound / online / offline / running / disabled` 等稳定 RouterOS 展示状态在共享行展示层本地化，原始枚举仍保留在原始字段证据中。
+7. Fleet 无风险且 `scenarioFocus` 为空时不再只剩一个路由行；它显示 WAN 范围、接口范围、可信当前吞吐和默认路径。若有风险，风险队列仍位于规模信息之前。
+8. 600–899px 使用侧边任务栏和双列对象队列，避免把 390px 单列机械放大；没有可验证的新证据时不制造图表或填充卡。
+
+### 红灯如何推动修复
+
+- 新连接 runtime 首次失败：文本输入只有 42px、HTTPS 分段按钮只有 38px。CSS 改为 44px；复测 15 个可见连接控件全部达标。
+- 完整 56 格首次失败：Fleet 八个视口都只有一个队列项。根因是正常 Fleet 没有 `scenarioFocus`，而模型只消费该可选字段；增加事实驱动 fallback 后 56/56 通过。
+- 新 200% runtime 首次失败：重复设备头和 `pppoe-wan1` 被 nowrap/ellipsis 裁切；删除运行时重复头并让对象文本重排。第二次失败于 route 描述和横向子导航；大文本时子导航换行、指标退回单列。第三次暴露默认 1px 焦点；补 2px 焦点后全链通过。
+- `check-section-models` 首次因已删除 `mobile/mobileDomainWorkspaceModel.ts` 失败；测试入口迁到中性 `domain-workspace/workspaceRows.ts` 和 `workspacePreview.ts`，不恢复旧 owner。
+- 发布阻断器在任何源码变化后会因 runtime worktree identity 过期而失败；这被保留为正确行为，最终文档和代码稳定后必须重放当前指纹，不能复用旧报告。
+
+### 当前原图观察
+
+- 390×844 正常态已是紧凑工具栏、单一命令条、连续 72px 对象行和四入口真实 Tab Bar；没有大健康 Hero、拓扑、卡片墙或桌面表格。
+- 资源满载把 CPU 阈值与连续样本置顶，正常流量不会抢事故首项。无快照撤回当前业务数字并明确失败通道、未知路径和失败端点。
+- 接口、终端、日志、More 和连接页均有当前原图。连接页采用手机设置式连续表单、渐进安全选项和分通道结果，不复用桌面双栏布局。
+- 768px 已改为侧边任务栏和双列对象比较；下方仍可能有诚实空白，因为当前快照只有五个可信首页对象。本步拒绝用重复指标或假图表填满屏幕。
+
+### 验证
+
+- `check:types`、production build（1864 modules）、`check:overview` 14 gates、`check:decision-system` 基线均通过。
+- `mobile-next-runtime-v1`：七场景 × 320/360/375/390/430/768/667×375/844×390 = `56/56`；More、四稳定目的地、route search、对象详情 Back/Forward、连接所有权/校验通过。
+- `mobile-accessibility-runtime-v2`：Overview、route、detail、connection 的 200% 文本重排、44px、键盘焦点、Back/Forward、reduced motion/transparency、forced colors、安全区和横向 overflow 通过。
+- responsive boundary：10/10，1199 mobile 与 1200 desktop 互斥挂载，截图/工件与当前 worktree identity 绑定。
+- `check-release-blockers` 与 section model gate 在迁移后通过；任何后续改动都必须重新生成 identity-bound 报告。
+
+### 边界 / 下一步
+
+- latestStepOutcome: `970:mobile-next-56cell-route-connection-accessibility-green-independent-signoff-open-release-closed`
+- 当前只能称“本地工程与当前原图证据完整”，不能称 Product/Visual 已签收。下一步必须让四个独立角色审查这批当前原图和源码，并修完 P0/P1。
+- 之后仍需 clean candidate、完整公开/route/state 矩阵、真实 RouterOS 只读 soak、可信 promotion authority，以及获授权上传后的精确 SHA Linux/Windows/GHCR CL。
+- GitHub 未上传；任务 active、`blocked=false`；发布 FAIL/CLOSED。
+- nextAction: Run fresh Product, Visual, Accessibility and Engineering reviews on the current Step970 artifact, remediate every P0/P1, then rebind clean-candidate release evidence.
+
+## 第 971 步：四路独立原图审查否决 Step970，按共同根因回到设计、交互与验收实现
+
+### 为什么没有把 56/56 当作产品通过
+
+- 精确工件 `worktree-6aa7d327c022-b1bb11274dc9` 的七场景八视口、route/detail/connection 原图和当前源码被四个独立角色逐项审查。所有角色都明确区分“浏览器行为矩阵通过”与“产品视觉签收通过”，并返回 VETO。
+- Product 指出隐藏风险被 `slice(0, 5)` 静默截断、72px 常规行仍是放大的巡检账本、More 缺少产品内返回、关键结论被单行省略、时间缺少年份/时区、平板只是机械两列、异常纵深原图不足。
+- Visual 与另一轮产品复核共同发现短横屏 66px 右侧导航直接覆盖运行时 More 和概览内容；同时指出顶/底 chrome 的玻璃与阴影偏重、route 首个对象被多层标题/指标/筛选推到约 y=488。
+- Accessibility 发现 200% 重排由测试注入 `data-mobile-next-text-resize=200` 驱动，真实产品只设置 `data-panel-large-text`；连接页 reduced-transparency 只覆盖顶部栏；筛选缺少 group 语义。
+- Engineering 确认 evidence truth、隔离 owner 和 56/56 完整性成立，但 no-snapshot 同时显示“当前快照”与“证据不可用”，静态架构门禁仍过度依赖源码字符串。其“dirty worktree 报告不能作为发布证据”结论正确，但这是当前刻意保持的诊断边界，不是 P0 产品缺陷；clean candidate 属于后续发布阶段。
+
+### 裁决与修复顺序
+
+1. 先消除短横屏覆盖：手机横屏继续使用底部四任务流，不再用覆盖内容的右侧桌面式 rail，并增加真实矩形相交门禁。
+2. 把 44px hit area 与视觉行高分开：常规巡检行压缩到约 52–56px，解释进入详情；关键风险仍可自然增高，不以裁切换密度。
+3. 风险队列保留总数与完整集合，首屏只置顶有限项时提供真实展开/收起，不得静默截断。
+4. 删除重复“巡检队列”标签；关键结论允许两行；显示包含年份和 GMT 偏移的绝对证据时间；正常态使用可验证事实而不是泛健康话术。
+5. 平板改为风险列表 + 当前对象证据工作区；对象不足时保持诚实紧凑流，不用假图表或重复指标填空。
+6. More 增加产品内返回并恢复历史/焦点；route 合并冗余 chrome，让搜索、筛选和首个对象更早出现。
+7. 真实 `data-panel-large-text=true` 成为 200% 重排 owner；测试不得靠私有属性制造产品不存在的行为。连接表面在 reduced-transparency 下全部不透明，筛选暴露 group 语义。
+8. 重新生成异常 route/detail/connection 的手机、横屏与平板原图；把架构所有权和重叠风险尽量迁到真实 runtime/AST 证据，不用自命名布尔值或脆弱字符串充当签收。
+
+### 边界 / 下一步
+
+- latestStepOutcome: `971:four-role-exact-artifact-vetoes-adjudicated-remediation-active-release-closed`
+- Step970 的 `56/56` 保留为历史诊断基线，不是当前产品签收或发布输入。
+- 任务 active、`blocked=false`；四组互不重叠的修复已经并行启动。修复后必须重建同一身份工件并重新进行四路独立审查。
+- GitHub 未上传；clean candidate、公开/route/state 矩阵、RouterOS soak、promotion authority 与精确 SHA Linux/Windows/GHCR CL 均未开始；发布 FAIL/CLOSED。
+- nextAction: Integrate the four disjoint Step971 remediation slices, run focused red-to-green checks, regenerate complete originals including anomaly route/detail/connection depth, then rerun four independent reviews.
+
+## 第 972 步：按 Step971 根因重组手机巡检流；当前指纹矩阵与可访问性证据重建完成，独立复签仍开放
+
+### 触发 / 问题
+
+- Step971 四路评审已证明旧候选虽然 `56/56`，但首页仍把事故拆成重复行、无快照复读同一采集失败、短横屏导航压住任务内容、平板伪造“关联”、More 像设置目录、对象详情像字段表，且 reduced-transparency 没有运行时证据。
+- 用户再次明确要求手机 UI 不能沿用电脑 UI 的信息组织，更不能用放大字号和大行高冒充移动设计。因此本步不做颜色/圆角小修，而是调整正常巡检、事故处置、任务启动、对象下钻和横屏导航的结构。
+
+### 观察事实
+
+1. 正常态只有五个可信首页对象；为了填满屏幕重复数字或制造假图表会降低可信度。问题不是“空白必须填满”，而是五个对象不应继续用五条等重桌面列表表达。
+2. 全离线的八个 WAN 属于一个事故范围；首页逐条列 `pppoe-wan1…8` 会把默认出口和采集证据挤到后面。
+3. 无快照可能有“失败端点计数”但日志对象表仍为空。产品必须诚实显示空台账，不能为了验收伪造对象。
+4. 667×375 的右侧导航原本声明宽 56px，但未使用 `border-box`，实际宽 66px，与任务内容发生 2px 相交。新矩形门禁准确抓住了这个真实问题。
+5. Chromium 可通过 CDP `Emulation.setEmulatedMedia` 真实匹配 `prefers-reduced-transparency: reduce`；因此可以读取 Overview、detail、connection computed style，而不是继续只做源码正则。
+6. 之前的 `pass=true` 报告可能与当前源码指纹不一致。报告必须在运行前后绑定同一 worktree identity，并在发现旧报告时先把旧顶层 `pass/complete` 置为 false。
+
+### 决策与实现
+
+1. **正常态与事故态使用不同布局语法。** 正常态改为两列连续巡检仪表矩阵：默认出口、吞吐、采集、接口、资源各回答一个问题；不显示巨型健康卡。事故态保留单列处置流，首项是唯一 featured 事故聚合，后续才是路由、采集、日志或历史证据。
+2. **事故先聚合再下钻。** 全离线首页只显示 `8 / 8 WAN 未运行`，进入 WAN 工作区再查看八个对象。资源、接口和采集异常继续让最高风险决定首项，fleet 规模信息不能盖过事故。
+3. **无快照三层不复读。** Proof 只说业务快照不可用与数字撤回；Signal 只说 REST/SSH 管理面链路失败且不能外推转发面；Object/ledger 层只说失败端点记录和日志入口。若日志没有对象，明确显示诚实空台账。
+4. **短手机与短横屏按能力处理。** 320×568 事故首屏只显示三个优先项，并提供真实“显示全部”控制；展开后仍可滚动到安全区。短横屏使用 56px `border-box` 右侧任务 rail，主内容保留右侧安全间距；运行时逐控件验证零相交。
+5. **平板不再伪造关系。** 删除 `filter(...).slice(0,3)` 产生的“后续检查”。右栏只展示所选对象的队列位置、当前状态、判断依据、影响边界和证据时间；没有真实关系就不显示关联对象。
+6. **More 变成真实任务启动器。** 搜索真实过滤 route label/title/description；任务按两列紧凑分组启动，Back/Forward 和焦点恢复成立，不制造“最近使用”。
+7. **详情改为证据优先、字段按需。** 接口、路由、资源、终端和日志先使用各自 `row.evidence.kind` 的判断摘要；所有原始对象字段保留在可展开 disclosure 中，不再默认铺满首屏。
+8. **连接页收紧为移动流程。** 独立 connection owner 保留已保存设备、地址/用户名/密码、安全折叠、REST/SSH 分通道结果和密码不保存边界；标题与节奏收紧，不复用桌面双栏。
+9. **业务公告精确化。** no-snapshot 的 live region 明确播报“当前业务快照不可用、当前业务数字已撤回”，不再只说“传输已更新”。collection-down 明确管理面不代表转发面/业务面。
+10. **验收必须 fail-closed。** `check-mobile-next-runtime.js` 增加工件身份、任务内容遮挡、聚合事故下钻、无快照四类证据、More 历史、平板五事实和连接三视口检查。`check-mobile-accessibility-runtime-v2.js` 新增 CDP reduced-transparency 运行时证据；环境不能证明时输出 `unproven` 并令顶层失败。
+
+### 被拒绝的替代方案与原因
+
+- 拒绝恢复桌面式“标题 + 指标卡 + 通用列表 + 通用字段表”：这正是用户所说的老年机/旧后台根因。
+- 拒绝为了平板填空重复 CPU/内存/磁盘或制造无来源图表：空白比伪证据更诚实，但工作区本身必须提供新的判断事实。
+- 拒绝让 `navigator.onLine` 或传输 phase 直接定义业务状态：LAN 面板仍必须请求真实快照，并单独表达业务证据边界。
+- 拒绝在无端点对象时伪造“可点击失败对象”：进入真实空日志台账并解释缺失更符合证据优先。
+- 拒绝把 44px 触控目标等同于 44px 视觉内容；字级保持 12–20px，行和按钮的可点击边界独立满足触控要求。
+
+### 红灯如何推动修复
+
+- 首次新 smoke 因无快照仍期待旧“需要核实”文案而失败；门禁改为接受产品明确的 `REST / SSH 均失败`，没有放松 REST/SSH 双通道要求。
+- 第二次 smoke 因无快照日志没有对象而失败；检查改为要求诚实空台账说明和真实 logs 路由，不伪造对象。
+- 第三次 smoke 准确抓到横屏任务内容与导航 2px 相交；`.mnx-tabbar` 增加 `box-sizing:border-box` 后 rail 实宽 56px，任务相交归零。
+- 完整 56 格首次在 320×568 collection-down/interfaces-down 发现固定导航覆盖末尾行；手机能力 hook 将事故初始项收敛为三个并保留展开控制，复测 56/56。
+- Accessibility 首次因把含函数的 surface 对象传入 `page.evaluate` 失败；只传可序列化 name/selectors。第二次证明媒体查询已匹配但 WebKit computed property缺失导致假阴性；检查改为验证浏览器实际暴露的非空 filter 集合，最终 runtime 完整通过。
+- `check:overview` 首次因 `MobileNextOverview.tsx` 369 行超预算失败；平板证据 owner 拆到独立文件，主组件降到 319 行。再次因 locale-sensitive lowercase 失败；搜索改为确定性的 `toLowerCase()`。最终 14/14。
+
+### 验证
+
+- production build PASS：`1865` modules，CSS `78.99 kB`，JS `472.57 kB`。
+- 当前工件：`worktree-6aa7d327c022-20d9e70199d0`，worktree fingerprint 运行前后相同，旧 `f0c1…` 报告被明确失效。
+- `mobile-next-runtime-v1` PASS/complete：七场景 × 八视口 = `56/56`；More/history、risk disclosure、no-snapshot depth、route/detail、tablet、connection 全部通过。
+- `mobile-accessibility-runtime-v2` PASS/complete：产品 own large text、键盘/历史、forced colors、reduced motion、CDP reduced transparency 与截图证据通过。
+- `check:overview` PASS `14/14`；architecture 检查 16 current owners、15 retired owners、7 mobile modules；section model 与模型合同通过。
+- 主 owner 查看当前原图：正常、全离线、无快照、资源满载、320 事故、667 横屏、768 平板、More、连接、对象详情均为本轮新工件。
+
+### 边界 / 心得
+
+- latestStepOutcome: `972:mobile-remediation-current-worktree-evidence-green-independent-resignoff-pending-release-closed`
+- 本步证明“已裁决根因被实现并通过当前运行时证据”，不证明用户或独立角色已经接受视觉方向。Step971 VETO 在四路新复签前仍有效。
+- 当前仍是 dirty-worktree 诊断工件，不是 clean candidate。治理文档本身又会改变 worktree 指纹，因此同步后必须生成新的 exact artifact 给四路复核。
+- iOS 的价值在真实导航层、可预测历史、即时按压反馈、渐进披露和可访问性；iKuai 的价值在对象、状态、影响与证据的紧凑比较。两者都不是靠放大字号或把页面染蓝实现。
+- GitHub 未上传；RouterOS soak、可信 promotion authority、clean candidate 和精确 SHA Linux/Windows/GHCR CL 均未开始。任务 active、`blocked=false`，发布 FAIL/CLOSED。
+- nextAction: Synchronize Step972 to D:\\想法\\面板, regenerate the post-governance current artifact, then run four fresh independent Product, Visual, Accessibility and Engineering reviews and remediate every P0/P1.
+
+## 第 973 步：四路独立复核否决 Step972；拒绝继续修补，回到 clean-sheet 手机设计方向裁决
+
+### 触发 / 问题
+
+- 用户明确指出当前手机界面仍像电脑 UI 缩小、表格化、老年机化，要求抛弃整套旧想法并完整重做。
+- Step972 的工程工件已经满足 build、56-cell 和 Chromium accessibility 报告，但产品公司 loop 规定这些证据不能替代 Product/Visual/Accessibility/Engineering 的独立签收。因此本步先固定同一 worktree 指纹，再交给四个独立角色只读审查。
+- 四路评审全部返回 NO-GO。结论不是“再调一点圆角/颜色”，而是现有布局语法仍是标题、状态条、二维格、三栏行和目录瓷砖；它没有建立新的手机任务模型。
+
+### 独立评审事实
+
+1. Product reviewer `019fff45-6aef-7071-ab0e-42ce59cea1a4`：`P0=0 / P1=3 / P2=1`。P1 为重复事故对象造成伪风险范围、More 离开 Overview 后不可达、900–1199px 平板工作区断档。
+2. Visual reviewer `019fff45-6cf0-73b0-b89b-c2bf3eb6ed03`：`P0=1 / P1=4 / P2=2`。P0 为浮动 blur task bar 既违反 owner 禁令又覆盖/冲淡展开内容；P1 为 320 截断、横屏桌面壳、泛化 More 瓷砖和实际 text-scale 原图缺失。
+3. Accessibility reviewer `019fff45-6f28-7483-80c3-294e53f4330a`：`P0=0 / P1=1 / P2=1`。P1 为物理 iPhone Safari、VoiceOver、Dynamic Type 与系统设置未签收；P2 为对象行可访问名称缺少语义分隔。
+4. Engineering reviewer `019fff45-7184-77d1-8f01-0c73ccf5466e`：`P0=0 / P1=3 / P2=3`。P1 为 `navigator.onLine` 提示成功恢复后不复位、SSH 指纹后的 REST-only 继续未绑定当前 REST 安全输入、56 格只验证 Overview 浅层而不是完整工作流/安全状态机。
+5. 合并阻断数：Visual `P0=1`；四路合计 `P1=11`。自动报告的 `pass=true/complete=true` 仍是诊断事实，但不能覆盖这些 finding。
+
+### 当前原图为什么仍失败
+
+- `single-phone390.png` 的正常态虽然不再是巨型卡片，却仍以规则网格和横线组织五个等重入口；视觉语言更接近旧后台的移动表格，不是原生手机任务流。
+- `all-offline-phone390-expanded.png` 证明浮动玻璃底栏会覆盖/冲淡展开后的最后任务行。玻璃不再是“漂亮不漂亮”的偏好，而是错误的层级和可读性。
+- `single-phone320.png`、`no-snapshot-phone320.png` 证明三栏压缩与 ellipsis 会删掉关键速率、采集和证据语义。紧凑不等于截断。
+- `all-offline-landscape667.png` 证明横屏把手机内容夹在外部留白和右侧竖轨之间；横向空间没有转化成对象—证据并置。
+- `route-more-phone390.png` 证明两列瓷砖只是把后台目录压进手机：描述被截断，入口没有当前状态、证据或任务预判。
+- `resource-full-tablet768.png` 证明 768px 有主从结构，但主列挤、右/下方空；900–1199px 又会退回电话长列，平板能力模型不连续。
+
+### 外部平台标准复核
+
+- 本步只使用 Apple 官方当前材料作为平台原则，不复制视觉稿。`Materials` 明确要求 Liquid Glass 形成导航/控件的独立功能层，不应进入内容层，并且必须节制使用：`https://developer.apple.com/design/human-interface-guidelines/materials`。
+- `Adopting Liquid Glass` 要求清晰分离导航与内容、避免控件拥挤或互相覆盖，并让系统减少透明度/减少动效设置真实改变结果：`https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass`。
+- `Designing for iOS` 要求聚焦主要任务、次要动作最少交互可发现、适应方向与 Dynamic Type，并让主要操作位于拇指更易触达的位置：`https://developer.apple.com/design/human-interface-guidelines/designing-for-ios`。
+- `Tab bars` 要求稳定的顶层目的地、保存各标签的导航状态，并把 tab bar 用于导航而非动作：`https://developer.apple.com/design/human-interface-guidelines/tab-bars`。
+- 因此“iOS 感”被重新定义为：导航/内容分层、硬件曲率和控件和谐、真实历史与焦点、拇指效率、可中断即时反馈及可访问性适配；不是给每个区块加模糊、圆角或放大字号。
+
+### 决策
+
+1. **现有手机呈现整套否决。** 不继续修改 `mnx-command`、`mnx-patrol-grid`、`mnx-attention-row`、两列 More tiles 或右侧 landscape rail 来延长旧方向。验证过的 evidence model、route identity、RFC3339、missing-value withdrawal 和 read-only safety 可保留；呈现 owner 和样式不能作为新设计起点。
+2. **回到 Design，而不是 Build。** 使用 `design-an-interface` 的 Design It Twice 方法，启动三条真正不同的 clean-sheet 方向：edge-to-edge telemetry canvas、native inspection stack、operations control strip。每条都必须覆盖 390/320/landscape/tablet 与六种事故，并说明为何不是 desktop-derived 或 elderly UI。
+3. **新设计禁止五类退路。** 禁止表格/设置页/卡片网格作为正常态主体；禁止大号结论块；禁止装饰性 glass 覆盖内容；禁止用 ellipsis 删除关键判断；禁止为填满屏幕重复事实或伪造图表。
+4. **正常与事故必须拥有不同场景语法。** 正常态要在 3–8 秒完成鲜度、默认出口、WAN、采集、接口/资源和可信速率判断；事故态要由受影响平面决定中心，不允许同一原因拆成三行冒充三项风险。
+5. **响应式按能力而不是宽度标签。** 320 不能截断关键证据；横屏必须把额外宽度用于对象/证据并置；600–1199px 必须有连续的选择—检查架构，不能在 899/900 或 1199/1200 机械换树。
+6. **工程 finding 与视觉重做并行进入下一实现合同。** `navigator.onLine` 只能是可恢复提示；REST-only continuation 必须绑定完整当前输入；完整矩阵必须覆盖场景 × 视口 × route/detail/history/security transition；对象行必须有自然语义的 accessible name；实际 text-scaled 原图和物理 iOS 验收不能继续被浏览器报告冒充。
+
+### 被拒绝的替代方案与原因
+
+- 拒绝“现有结构不错，只移除 blur、修 320 和横屏”：Visual P0 与用户否决指向整个布局语言，不是三处 CSS 缺陷。
+- 拒绝“工程 reviewer 认为字号不老年机，所以保留”：工程角色只能证明代码/真值；用户和 Visual/Product 对产品方向拥有独立否决权。
+- 拒绝“56/56 已足够，后续只补几个测试”：现有 56 格只证明 Overview 浅层存在性，没有覆盖恢复、指纹确认、跨场景 route/detail/history，因此顶层 matrix 保持 pending。
+- 拒绝立刻写第四色彩主题：配色在信息架构之后；爱快感来自对象/状态/证据效率，Apple 感来自控件与内容层级，不来自冷蓝或玻璃本身。
+
+### 验证与边界
+
+- 审查前重建结果：production build PASS `1865` modules；`mobile-next-runtime-v1` `56/56`；browser accessibility PASS/complete；decision system PASS。它们现被标记为 Step972 历史诊断基线。
+- Step973 四路独立结果：全部 NO-GO，`P0=1 / P1=11`。Product/Design/Visual/Accessibility/Implementation/Code Review gates 均保持或回到 failed；Architecture/State Matrix/Security 保持 pending。
+- 三个 design agent 已启动：`019fff4d-2b90-70d2-894d-4c8a99ba7b4c`、`019fff4d-2d84-7e60-9e9e-e34f8e69f7e5`、`019fff4d-2fcd-78f3-94ef-7ff9ed716493`。它们只读、不得参考或保留当前手机视觉。
+- latestStepOutcome: `973:independent-veto-full-mobile-redesign-direction-generation-active-release-closed`
+- 任务 active、`blocked=false`；GitHub 未上传；clean candidate、RouterOS soak、promotion authority、exact-SHA Linux/Windows/GHCR CL 和公众发布全部关闭。
+- nextAction: Adjudicate the three clean-sheet directions, record the winning mobile architecture, then delete the rejected presentation ownership and implement the winner in a new isolated mobile render/style tree.
+
+## 第 974 步：三条 clean-sheet 方向完成裁决；选择 Edge-to-edge Telemetry Canvas 并进入新 owner 实现
+
+### 三条方向的根本差异
+
+- Direction A / Edge-to-edge Telemetry Canvas：以一个真实数据支持的默认出口/当前速率空间仪表作为正常态中心；事故时整个仪表被受影响平面替换。它最能摆脱列表、表格、设置页和桌面卡片。
+- Direction B / Native Inspection Stack：强调一拇指推进、系统返回和证据检查序列。交互正确，但正常态仍以四到六条原生列表行为主，最容易重新滑回“设置页/后台目录”。
+- Direction C / Operations Control Strip：强调硬朗对齐、轨线、对象—状态—来源比较。信息密度好，但多条连续 rail 与横向三段编排存在再次接近桌面控制台的风险。
+
+### 裁决
+
+1. **选择 Direction A 作为产品架构。** 它提供当前候选中唯一不可替换的手机中心：不是大标题、卡片、列表或表格，而是一块只在证据允许时成立的网络运行仪表。用户在一次眼动内核对证据、默认出口、WAN 与当前吞吐。
+2. **吸收 C 的“状态轨”但降为从属。** 采集、接口、资源和受影响对象使用细轨/事实窗，不允许重新成为满屏表格或同权列表。
+3. **吸收 B 的真实导航行为。** Back/Forward、返回焦点、稳定 tab、progressive disclosure 和连接流程沿用真实状态机；不吸收 B 的 list-first 首屏。
+4. **Direction A 原稿也被收紧。** 320 的画布从建议的 216pt 降到约 176–188px；Phone landscape 禁止竖向 rail，仍使用水平底部 tab；无当前且对齐的 traffic points 时不画趋势；More 使用单列任务清单；连接页保留真实、安全的设备接入与验证，而不是被误改为纯状态页。
+
+### 新 owner 组件合同
+
+```text
+MobileTelemetryShell
+├─ MobileControlLayer
+│  ├─ HistoryControls
+│  ├─ DeviceIdentity
+│  └─ GlobalContextMenu
+├─ EvidenceStrip
+├─ MobileOverviewCanvas
+│  ├─ NormalTelemetryCanvas
+│  │  ├─ VerifiedRouteAnchor
+│  │  ├─ TrustedTrafficPulse
+│  │  └─ WanRange
+│  └─ IncidentPlaneCanvas
+│     ├─ EvidenceBoundaryPlane
+│     ├─ CollectionPlane
+│     ├─ WanOutagePlane
+│     ├─ ResourcePressurePlane
+│     └─ InterfaceDependencyPlane
+├─ OperationalFactStrip
+├─ InvestigationTransitions
+├─ MobileTaskDirectory
+├─ MobileEvidenceDetail
+├─ MobileConnectionFlow
+└─ MobilePrimaryTabs
+```
+
+### 实现前不可违反的约束
+
+- 新目录和 class namespace 必须与 `mobile-next` 隔离；旧 `mnx-command`、`mnx-patrol-grid`、`mnx-attention-row`、两列 More tiles、phone vertical rail 和 blur tray 必须删除，不能 alias、import 或隐藏保留。
+- 手机和桌面只共享 evidence/domain/route/safety contracts；不得 import 桌面组件或桌面样式。
+- 正常态 canvas 只在 `evidenceMode=current` 且 active default route 已核实后标“已核实”；traffic pulse 仅在 `traffic` instrument 存在时出现。
+- no-snapshot 画布不显示 WAN、接口、路由、资源、连接或速率数字，包括零；collection-down 不从管理面推断转发或业务中断。
+- all-offline、resource-full 和 interfaces-down 必须使用不同 plane 结构，不只是改标题和色调。
+- 手机正常字号关键值保持约 17–20px，正文 14–15px，metadata 11–13px，正常比例绝对下限 12px；44px 触控是命中区而不是视觉尺寸。
+- 内容全部不透明。Glass 仅用于真实导航/临时控件，必须有 Reduce Transparency 降级，且导航矩形不得与任务内容相交。
+- 320 不得通过 ellipsis 删除关键状态；667/844 phone landscape 必须用额外宽度并置 canvas 与证据；600–1199px 平板能力连续，不允许 899/900 或 1199/1200 断崖。
+
+### 同步纳入的非视觉 P1
+
+- `navigator.onLine` 只作为可恢复提示；online 事件或成功本地请求必须清除旧 hint，任何 hint 不得阻断 `/api/snapshot`。
+- SSH 指纹后的“仅用已验证 HTTPS 继续”必须绑定 host、REST scheme/port/TLS verify、SSH port 与有效期；任何输入变化令 continuation 失效。
+- 新 acceptance matrix 必须从“56 张 Overview 截图”升级为场景 × 视口 × Overview/route/detail/history/More/connection/security transition；required cell 不完整时顶层 `pass/complete=false`。
+- 对象按钮提供自然分隔的 accessible name；真实 text-scaled 原图、实体 iPhone Safari、VoiceOver、Dynamic Type 继续作为独立证据边界。
+
+### 边界 / 心得
+
+- latestStepOutcome: `974:telemetry-canvas-mobile-direction-selected-new-owner-implementation-active-release-closed`
+- 方向选择不等于 Design gate 通过。只有新 owner 的原始截图和独立 Product/Visual 审查才能关闭 Step973 的否决。
+- 一个移动端“中心”必须同时有产品意义和证据门槛。画布若不能由当前路由、当前 WAN 和当前样本驱动，就会退化成旧拓扑概念稿；因此空值时必须换成边界画布，而不是画灰色假图。
+- iOS 新设计语言的关键是控件层与内容层的物理/交互分离；iKuai 的关键是对象和状态的精确比较。选 A 是为了让这两种语言各自承担一个清晰职责，而不是混成蓝色表格。
+- 任务 active、`blocked=false`；GitHub 未上传；clean candidate、RouterOS soak、promotion authority、exact-SHA Linux/Windows/GHCR CL 和公众发布全部关闭。
+- nextAction: Delete the rejected mobile-next presentation ownership, implement the telemetry-canvas winner in a new isolated mobile render/style tree, and concurrently fix the online-recovery, continuation-binding and acceptance-depth P1s before generating new screenshots.
+
+## 第 975 步：浏览器在线状态降级为可恢复提示；真实本地请求继续拥有证据优先级
+
+### 为什么先修这一项
+
+- LAN 监控面板不能把 `navigator.onLine` 当成 RouterOS、WAN 或业务状态。浏览器可能报告互联网离线，但本地面板与路由器仍然可达。
+- 因此在线状态只能改变提示，不能阻断 `/api/snapshot`；同源快照请求成功又是比浏览器 hint 更强的本地证据，必须清除陈旧离线提示。
+
+### 实现决策
+
+1. 新增纯函数 `nextBrowserOnlineHint`，只表达 `offline | online | same-origin-response` 三种浏览器提示信号，不把它映射为路由器或业务健康结论。
+2. `offline` / `online` 事件继续触发恢复请求，但任何分支都不以 `navigator.onLine` 为请求门禁。
+3. 同源快照请求一旦收到响应，立即把陈旧 offline hint 恢复为 true；随后再独立验证响应和业务快照契约。
+4. 快照失败只更新 snapshot 状态，不修改连接真值，也不宣称 WAN、RouterOS 或业务中断。
+5. 监听器保留对称注册/清理，避免长期运行累积事件处理器。
+
+### 验证与心得
+
+- `tools/check-runtime-online-hint-recovery.js` 七项全部通过：离线提示、在线恢复、同源成功恢复、无请求门控、失败不外推、监听器清理。
+- `tsc --noEmit` 通过。
+- 这一修复说明“平台提示”和“产品证据”必须分层：提示可以帮助解释传输环境，但不能覆盖真实请求结果，更不能定义业务平面状态。
+- latestStepOutcome: `975:browser-online-hint-recoverable-local-evidence-priority-green-release-closed`
+- 任务仍 active、`blocked=false`；新手机 owner 尚在实现，GitHub 未上传，公众发布保持关闭。
+- nextAction: Integrate the four isolated telemetry implementation slices, delete mobile-next physically, and migrate the active runtime and acceptance owners to mobile-telemetry.
+
+## 第 976 步：Telemetry Canvas 新 owner 完成接线；旧 mobile-next 物理删除；首轮产品原图与静态门禁转绿
+
+### 本步做了什么
+
+1. 新手机呈现树已经成为唯一移动 owner：`mobile-telemetry` 独立拥有 Overview、遥测画布、五项底部导航、对象路由、证据详情和安全连接流程。桌面仍由独立桌面树负责，两端只共享 evidence/domain/route/safety 合同。
+2. `src/panel-framework/mobile-next` 的组件、模型和四个样式文件全部物理删除，空目录也已核实并移除；应用入口、Overview 与 Operational routes 不再 import 旧 owner。
+3. 正常态采用当前证据、已核实默认路由、WAN 范围和对齐流量 pulse；无快照、采集失败、全 WAN 离线、资源越阈、接口依赖异常分别使用不同 incident plane。
+4. 手机壳层改为真正的上下控制层：顶部只保留设备、传输提示与真实工具；底部五项 tab 独立占位，不再浮在内容上。Phone landscape 仍是水平 tab；内容在自己的滚动区域内，不与导航矩形相交。
+5. 删除运行时顶部与底部重复的 More 入口；运行时管理模式不再在 Overview 重复设备名，只保留“运行概览”任务标题。
+6. 事实层从四张独立小卡改为一个连续分组表面；新增与 proof/facts 不同职责的来源台账和后续核查。平板使用 canvas / facts / evidence / investigation 工作区，不再只机械分两栏。
+7. 流量 SVG 不再使用 `preserveAspectRatio="none"`，曲线保持比例，并明确显示时间窗、峰值和样本数。
+8. 对象路由首行只显示三个最重要字段，完整字段进入真实详情与原始证据 disclosure；Back/Forward 能关闭并重新打开详情。
+9. 连接流程独立实现保存设备资料、密码不持久化、高级 REST/SSH 设置、TLS 风险确认和 SSH 指纹确认。REST-only continuation 绑定 host、SSH port、REST scheme/port/TLS verify、fingerprint、challenge 与 expiry；任何输入变化 fail closed。
+
+### 红灯与修复
+
+- 首次新 runtime smoke 因未执行测试登录而找不到 Overview；门禁改为通过真实连接流程建立只读会话，没有绕过产品状态机。
+- 第二、三次 smoke 暴露 route 等待时序、`body[data-panel-route]` 与页面 root selector 冲突、连接按钮名称部分匹配；改用 `data-panel-route-content` 严格 owner 与 exact role name 后关闭。
+- 首次 full 49 格中 49 个场景/视口 cell 与三条深层 workflow 均通过，但 source fingerprint 在运行中变化。原因是三个并发门禁迁移 Agent 正在写 tools；顶层因此正确保持 `pass=false/complete=false`。这不是产品失败，也不能冒充完整矩阵，新 owner 稳定后必须重跑。
+
+### 当前验证
+
+- TypeScript、production build 通过；最新构建 `1866 modules`，CSS `57.54 kB`，JS `472.61 kB`。
+- `mobile-telemetry-architecture-v1`、连接安全、在线 hint 恢复、section model 全部通过。
+- `check:overview` 14/14 通过；mobile telemetry 模型覆盖七场景、current/historical/unavailable、无任意路由兜底和缺失数字不补零。
+- 新 runtime smoke：4 个代表场景/视口 + route/detail/Back/Forward + More + connection 全部通过。
+- Full runtime 首轮：49/49 cell 和全部 workflow 通过，但 freshness 因并发工具写入而 fail closed；尚未形成可签收 exact artifact。
+
+### 心得与边界
+
+- 手机 UI 不能从“桌面字段怎样塞进窄屏”出发，必须先确定手机上的单一判断中心，再把来源、操作和详情放到各自层级。Telemetry canvas 是中心；facts 只回答从属状态；ledger 回答来源；actions 回答下一步。
+- 44px 是触控命中区，不是把视觉内容做成大号老年机。当前正文仍保持 12–20px 的紧凑层级。
+- 自动几何通过不代表视觉签收。当前原图已经比旧版清晰，但 Design/Visual gate 仍保持开放，必须等稳定工件四路独立审查。
+- latestStepOutcome: `976:telemetry-owner-integrated-old-owner-physically-removed-static-and-smoke-green-full-freshness-rerun-pending-release-closed`
+- 任务 active、`blocked=false`；GitHub 未上传；公众发布保持关闭。
+- nextAction: Finish accessibility/responsive/release-gate migration, rebuild a stable exact artifact, rerun the full workflow matrix, then conduct four fresh independent Product/Visual/Accessibility/Engineering reviews.
+
+
+## 第 977 步：稳定 49 格运行矩阵与 200% 文本重排闭环，但不把工程通过冒充产品通过
+
+### 本步为什么这样做
+
+- Telemetry owner 接线后，先前 full runtime 因并发写入 freshness fail closed；必须在没有并发写入时重跑，才能证明矩阵属于同一工作树。
+- 首次无障碍运行门禁真实发现 200% browser text zoom 下固定双栏把默认路由压成 0px 宽。这里不能放宽门禁，必须让内容重排。
+
+### 修复与验证
+
+1. 大文本状态下，正常出口、WAN、趋势、事实和来源全部退化为单列；固定高度和 hidden overflow 被移除。
+2. 200% 门禁重新通过：14 个关键文本样本不裁切、无水平溢出；详情 Back/Forward 焦点、44px 控件、reduced motion/transparency、forced colors 同时通过。
+3. 稳定 full runtime 通过 49/49：七场景 × 七视口，route/detail/Back/Forward、More、connection 三条深层 workflow 全部通过。
+4. Chromium 不支持 -webkit-backdrop-filter 时会返回空字符串；判定改为同时接受空值或 none，仍严格禁止实际 filter。这是浏览器中性修正，不是视觉放宽。
+
+### 边界
+
+- 这一结果只证明工程矩阵完整和无障碍基础成立，不证明视觉产品合格。
+- latestStepOutcome: 977:stable-49cell-and-accessibility-green-product-visual-review-still-open-release-closed
+- nextAction: 对同一批 53 张原图做独立 Product/Visual 审查，任何 P1 都必须推翻候选而不是继续抛光。
+
+## 第 978 步：独立 Product/Visual 双重否决；停止抛光 Telemetry 卡片树并再次删除展示语法
+
+### 独立审查结果
+
+- Product：VETO，P0=0、P1=7、P2=2。
+- Visual：VETO，P0=0、P1=9、P2=5。
+- 两路共同结论：证据真值进步，但“主卡 + 四宫格 + 台账卡 + 五栏网页式底栏”仍是桌面 dashboard 缩进手机；异常只换颜色；横屏是裁切双栏；平板只是并排模块；路由/详情重新落回表格；连接页像另一款深色产品。
+
+### 因此废止的想法
+
+1. 废止 FactStrip 四宫格，不再把采集、接口、资源、路由做成等权 KPI。
+2. 废止 EvidenceDesk 常驻卡片；证据来源和边界进入按需 disclosure。
+3. 废止五项稳定底栏；稳定任务只保留概览、网络、终端、日志，More 回到顶部真实控制层。
+4. 废止用同一 IncidentPlane 套全部异常；资源、接口、采集、无快照必须拥有不同的首要对象。
+5. 废止平板“手机模块并排”；改为对象 rail + 当前对象 inspector + 展开的证据工作区。
+6. 废止深色 TELEMETRY CANVAS 连接页，连接流程必须回到同一浅色、中性、只读产品语法。
+
+### 心得
+
+- 卡片数量减少不等于手机 IA 完成；关键是每一层只回答一个问题。
+- iOS 的玻璃应属于控制和导航；内容区要用清晰连续的对象列表。iKuai 的专业感来自对象、状态、比较和去向，而不是冷蓝底色。
+- latestStepOutcome: 978:exact-artifact-product-visual-veto-current-presentation-rejected-release-closed
+- nextAction: 保留 evidence truth model，物理替换手机展示组件，建立 Scene / Object Rail / Evidence Drawer / Tablet Inspector 四层架构。
+
+## 第 979 步：Scene / Object Rail / Evidence Drawer / Tablet Inspector 新展示语法首轮落地
+
+### 新的手机架构
+
+1. MobileTelemetryScene 是唯一视觉中心：正常态显示当前证据、核实路由、WAN 和带图例/单位/时间端点的当前趋势；无足够当前样本时不画图。
+2. 异常不再共享一个空壳：资源异常把 CPU/内存/磁盘作为首要对象；接口和全离线把受影响接口作为首要对象；无快照/采集失败明确列出 WAN、路由、流量、资源不可判。
+3. MobileTelemetryObjectRail 用连续对象行替代四宫格；每行只回答对象、状态事实和去向。
+4. MobileTelemetryEvidenceDrawer 默认收起来源/边界，避免正常首屏复读；平板工作区默认展开。
+5. MobileTelemetryTabletWorkspace 拥有可选择对象 rail、当前对象 inspector 与完整对象入口，不再只用 media query 把卡片并排。
+6. 路由页改成 compact status strip + object rows；详情是单一 Back 的 push 层级，不再同时出现返回与关闭，也不再让程序化标题焦点显示黑框。
+7. 底栏改为四个稳定任务：概览 / 网络 / 终端 / 日志；More 由顶部真实按钮进入。
+8. 连接页改为同一中性浅色分组表单，保留所有 TLS/SSH/密码不持久化和 REST-only fail-closed 安全语义。
+
+### 当前证据
+
+- TypeScript、production build 通过，最新构建 1870 modules；check:overview 14/14 通过。
+- 新 smoke 4/4 及 route/detail/history/More/connection workflow 通过。
+- 新平板原图已经显示对象列表 + 选中资源 inspector + 展开的证据层；旧的大块空白与四宫格不再属于当前展示树。
+- 尚未运行新结构的稳定 full 49、200% 回归和四路独立签收，因此 release 继续关闭。
+
+### 边界与下一步
+
+- latestStepOutcome: 979:scene-object-rail-evidence-drawer-tablet-inspector-smoke-green-full-review-pending-release-closed
+- 任务 active、blocked=false；GitHub 未上传。
+- nextAction: 重建最终 public artifact，跑 49 格、响应式、200% 和安全门禁，逐张审图并修 P0/P1，再启动四路独立签收。
+
+## 第 984 步：彻底删除第二套被否决的手机展示树，改为边到边现场巡检控制台
+
+### 为什么必须再次删除，而不是继续修 CSS
+
+- 用户明确指出上一套手机端仍是把桌面对象工作台缩窄：大白框、统一事故模板、对象轨与证据抽屉只是换名，没有形成真正的手机任务流。
+- 四路独立评审也给出相同根因：Scene / ObjectRail / EvidenceDrawer / TabletWorkspace 仍以卡片和桌面 master-detail 为基本语法；资源、接口、全离线、采集异常主要只是替换文字和状态色。
+- 因此本步不保留这些展示组件。证据真值、路由契约和安全边界可以复用，但旧展示思想不能继续作为新页面骨架。
+
+### 方向裁决
+
+采用“边到边现场巡检控制台”：
+
+1. 手机内容是一张连续的巡检清单，不再有总卡片、卡中卡或固定的 Scene → ObjectRail → EvidenceDrawer 流水线。
+2. 正常态第一屏顺序固定为：当前证据与默认出口、WAN 范围、当前上下行和带单位/窗口/样本数的紧凑趋势、采集/接口/资源/路由四个真实对象入口、来源台账。
+3. 资源异常直接切换为 CPU/内存/磁盘三个结构化当前采样；不展示正常流量图。
+4. 接口异常直接展示最多三个受影响接口、运行状态、角色/上级与观测速率；不再重复一条泛化告警。
+5. 全离线直接展示命名 WAN 对象及状态；若没有命名对象，才退化为 RouterOS/默认路由/WAN 的待核实证据链。
+6. 采集降级把 REST 与 SSH 作为两个独立通道；无快照则只展示撤回的 WAN/路由/流量/资源范围，不拿历史值代替当前值。
+7. 横屏和 iPad 使用同一移动对象模型的渐进增强工作区：左侧是带 roving tabindex 的单选对象列表，右侧是持续对象证据；方向键、Home、End 均真实改变选中对象，不跳转 URL。
+
+### 物理删除与新 owner
+
+- 已物理删除：MobileTelemetryCanvas.tsx、MobileTelemetryScene.tsx、MobileTelemetryObjectRail.tsx、MobileTelemetryEvidenceDrawer.tsx、MobileTelemetryLandscapeWorkspace.tsx、MobileTelemetryTabletWorkspace.tsx。
+- 新增：MobileTelemetryBriefing.tsx、MobileTelemetryPhone.tsx、MobileTelemetrySignals.tsx、MobileTelemetryAdaptiveWorkspace.tsx。
+- MobileTelemetryOverview 只挂载新的 Briefing owner；架构门禁同时要求六个被否决组件不存在，防止以后又被接回。
+
+### 模型与证据决策
+
+- 新事故模型不再从 summaryText 反解析界面结构；增加结构化 resourceMetrics、interfaceObjects、collectionChannels 和 incident WAN 对象。
+- 缺失速率仍保持不可用；只有当前证据且上下行均有明确观测才显示速率。显式数值零仍保留为真实观测，不与缺失混淆。
+- REST/SSH 分别使用各自状态；通道摘要只显示“最近成功 / 有错误记录 / 没有更多记录”，长错误内容留在证据详情，避免手机首屏复读。
+
+### 视觉与交互决策
+
+- 手机正文改为全宽连续白色内容面，仅用细分隔线组织对象；移除总圆角卡、阴影和“运行概览”重复标题。
+- iOS 材料只用于顶部控制层和底部导航：半透明、模糊、内高光；内容数据区保持实体、低饱和冷蓝和可扫描灰阶。
+- “只读”从大型胶囊改为设备副标题中的静态模式文本；触控按钮仍保持 44×44。
+- 底栏保留概览/网络/终端/日志四个稳定目的地；选中态改为图标后的轻量玻璃层，不再使用网页式底部蓝线。
+- 所有可见文字保持至少 12px；44px 是触控命中区，不是把内容做成老人机大字。
+
+### 当前验证与未冒充的边界
+
+- TypeScript、production build 通过：1869 modules，CSS 68.65 kB，JS 486.66 kB。
+- 新模型、Overview 产品静态门禁和新架构门禁通过；旧门禁已改为检查当前 owner 和五类事故结构。
+- 最新 full runtime 的 49 个场景/视口 cell 全部通过；横屏正常态最初因 CSS 隐藏趋势被新门禁抓到，已恢复紧凑趋势。
+- full runtime 唯一失败是连接 workflow 使用了不够精确的可见性触发器；改成当前手机工具栏的精确按钮后，4 格 smoke + route/detail/history + More + connection 全部通过。由于工具文件改变了工作树指纹，完整 exact 49 仍必须再跑，不能拿失败报告冒充最终证据。
+- 平板大面积白色容器已取消 viewport 强制最小高度；最终截图需要在下一次 exact full 后重新生成并复核。
+- GitHub 未上传，发布保持关闭；任务 active、blocked=false。
+- latestStepOutcome: 984:rejected-scene-rail-tree-deleted-edge-to-edge-state-specific-mobile-owner-build-and-smoke-green-exact-full-rerun-pending-release-closed
+- nextAction: Rebuild after the final tablet-density and accessibility edits, run the exact 49-cell runtime with all workflows, then replace the CSS-zoom accessibility gate with real text-only 200% evidence and rerun independent Product/Visual/Accessibility/Engineering review.
+
+
+## 第 985 步：清除退役手机 owner 的验收残留；发布门禁迁移到当前 Telemetry 树
+
+### 为什么这是产品工作的一部分
+
+- 第二套手机展示树已经物理删除，但 21 个旧校验脚本仍读取 `mobile-domain`、`Incident Lens`、旧 tablet relation 和旧 inspector。继续保留会造成两种错误：旧文件不存在时无意义报红，或者未来为了让脚本通过而把已否决 owner 接回来。
+- 发布门禁必须验证当前产品，而不是验证历史 DOM token。删除旧脚本不是放宽标准；当前能力必须由新 owner 的结构、运行时和无障碍合同重新接管。
+
+### 本步决策与实现
+
+1. 物理删除 21 个只服务退役 mobile-domain / Incident Lens / tablet inspector 的静态检查器，并删除对应 npm 入口；保留 `test-public-release-semantic-gates.js` 对旧路径必须不存在的历史否定断言。
+2. `check-route-title-focus-visible` 迁移到 `MobileTelemetryRouteSurface` 和 `telemetry-route.css`。手机路由标题只在 `:focus-visible` 显示内侧 3px 标记，程序化路由聚焦不再留下装饰焦点框。
+3. `check-route-recovery-integration` 保留 17 个 route-specific policy、历史/缺失语义、桌面恢复边界，并把手机侧验证改为当前 route surface 的 evidence mode、状态标签和共享 section model；不再要求不存在的 `MobileDomainWorkspace`。
+4. `check-service-log-maturity` 迁移到当前手机对象工作区：服务日志仍有专用 model、专用 evidence type、来源集合和分类；手机详情通过 `SectionRowEvidence` 展示结构化与原始证据，不恢复旧 dedicated inspector。
+5. `check-release-blockers` 的旧 tablet-risk-focus 自证替换为当前 Telemetry radio selector 的 radiogroup/radio、Arrow、Home、End 语义合同。
+
+### 验证
+
+- package JSON 可解析；三个迁移检查器 syntax PASS。
+- package script file-reference gate PASS：90 个 npm scripts、105 个 JavaScript validators、10 个 Python validators、203 个静态仓库读取全部指向真实文件。
+- route-title-focus-visible-v2 PASS 6/6。
+- route recovery integration PASS：17 routes，desktop boundary + mobile evidence mode。
+- service-log-maturity-v2 PASS 7/7。
+- mobile telemetry architecture、overview architecture 与 release-blocker P0 runtime/time/shell/public packaging contracts 全部 PASS。
+- `rg` 后，tools/package/.github 中对 `src/panel-framework/mobile/` 或 `overview/mobile-overview/incident-lens` 的正向读取只剩历史否定测试；旧 owner 没有被恢复。
+
+### 心得与边界
+
+- Product Loop 的门禁必须随 owner 迁移，但验证意图不能丢：焦点、证据恢复、服务日志和对象选择仍是阻断项，只是由当前实现负责。
+- Emil 的原则在这里同样适用：程序化焦点负责可预测导航，视觉焦点只响应键盘；两者不应被一个常驻粗框混为一谈。
+- 本步只关闭验收架构残留，不代表手机视觉签收。完整 exact 49、最终 200% 文本、当前截图复核和四路独立评审仍未完成。
+- GitHub 未上传；CL 未触发；任务 active、blocked=false；发布 FAIL/CLOSED。
+- latestStepOutcome: `985:retired-mobile-validator-ownership-deleted-current-telemetry-gates-green-release-closed`
+- nextAction: Run TypeScript, model/architecture/overview/build, then regenerate the exact full 49-cell runtime and final text-only 200% accessibility evidence on one unchanged fingerprint.
+
+
+## 第 986 步：精确工件四路独立否决；边到边账本母版再次判废
+
+### 精确工程证据
+
+- 当前工件：`worktree-6aa7d327c022-a3d73d625506`，fingerprint `a3d73d6255064ed8dd09acae4fb20f5f1a44ac51c1eddb978820bba3111e9ce7`。
+- Mobile Telemetry runtime 49/49，详情 Back/Forward、More、连接和 18 个可访问路由工作流全部通过。
+- text-only 200% 压力测试、触控、焦点、reduced preferences、forced colors 和对象 radio 键盘合同 9/9 通过。
+- 这些只证明当前实现的工程合同；报告仍明确 `releaseEvidenceEligible=false`，不能充当产品或发布签收。
+
+### 四路独立评审
+
+| 角色 | 结论 | P0 | P1 | P2 |
+| --- | --- | ---: | ---: | ---: |
+| Product / IA | VETO | 0 | 7 | 3 |
+| Visual / Emil | VETO | 0 | 8 | 4 |
+| Accessibility / Interaction | VETO | 0 | 3 | 4 |
+| Engineering / Architecture | VETO | 0 | 8 | 3 |
+
+### 共同根因
+
+1. 手机首页仍由结论格、折线、2×2 均权事实格、证据表和箭头行组成；它是传统控制台账本缩窄，不是手机单任务巡检。
+2. 资源、接口、全离线、采集失败仍共享“结论 → 中段量测 → 判断边界 → 主按钮 → supporting facts → 证据来源”的固定母版，只替换中段结构和颜色。
+3. 正常态所有层级视觉重量近似，没有唯一当前任务；用户必须逐行读表。
+4. 横屏和平板直接变成左侧 selector + 右侧通用详情；所选对象仍复用全局 evidenceRows/actions，缺少对象特有新证据，并留下大面积空白。
+5. 路由与详情仍是通用 SectionTable / dl / raw evidence 壳，接口、WAN、终端、日志没有各自高频任务面。
+6. More、资源、审计和诊断被错误映射为底栏“概览”选中；serviceLogs / readonlyDiagnostics 在当前夹具没有对象却仍作为普通可进入任务。
+7. 显式详情返回用 replace 关闭对象，破坏 Forward 恢复详情的预期；当前门禁只证明浏览器 Back 路径。
+8. 手机和桌面仍只是运行时分支，同一个 IIFE 静态包含两端组件/CSS，尚未达到用户要求的构建资产隔离。
+9. runtime 顶层 `pass=true` 与 `releaseEvidenceEligible=false` 容易误导；探针还把隐藏 adaptive radio 报告为存在，必须分离 runtimePass/releasePass 并只报告可见交互。
+
+### 决策
+
+- 当前 `MobileTelemetryPhone` 的格线账本、`mto-facts` 2×2 均权格和 `MobileTelemetryAdaptiveWorkspace` 固定左右栏全部标记为 rejected；不得继续靠颜色、圆角或阴影抛光。
+- 下一版手机以“单一当前任务”为首页中心：只有一个 active focus，可横向切换对象；次级对象使用触控友好的横向巡检轨，来源证据按需展开，不再常驻表格。
+- 七种场景拥有独立呈现顺序与组件：正常出口/流量、fleet 比较、全离线 WAN 对象、无快照撤回、采集双通道、资源压力条/阈值、接口依赖链，禁止共享同一事故流水线。
+- 平板必须为选中对象生成专属证据、关系、当前采样和核查入口；工作区按视口实际内容填充，而不是把手机 facts 左右摆放。
+- 路由/详情按网络、终端、日志至少拆成三种任务面；显式返回与浏览器历史对称；More 不宣称概览为当前。
+- 构建器后续必须形成 mobile/desktop 两个独立资产闭包并由薄 bootstrap 选择；移动 metafile 禁止到达 desktop 组件/CSS。
+
+### Product Loop / Emil 心得
+
+- 工程矩阵越完整，越要防止把“现有母版没有坏”误读为“母版值得保留”。四路独立评审的职责正是推翻自动化看不到的产品假设。
+- 手机原生不是把信息减少、字体放大或把表格改成卡片；它是让一次拇指动作只回答一个当前问题，并用空间和转场表达任务层级。
+- iOS 材料必须服务真实导航和对象切换；iKuai 的密度必须来自对象比较和状态证据，而不是满屏细线。
+
+### 边界 / 下一步
+
+- GitHub 未上传；CL 未触发；发布 FAIL/CLOSED；任务 active、blocked=false。
+- latestStepOutcome: `986:exact-a3d7-four-role-veto-ledger-grid-and-fake-adaptive-workspace-rejected-release-closed`
+- nextAction: Physically replace the rejected phone/adaptive presentation with scenario-owned mobile task surfaces, repair history/navigation/report truth, then rebuild exact screenshots before any new review.
+
+
+## 第 987–990 步：物理替换被否决的手机母版；场景任务面、平板工作区与真实交互门禁闭环
+
+### 为什么不是继续修旧 UI
+
+- 第 986 步已经否决“边到边账本 + 2×2 事实格 + 通用事故流水线 + 假自适应左右栏”。本轮没有保留它的表现结构：旧 `MobileTelemetryAdaptiveWorkspace.tsx` 已物理删除，手机七场景由不同组件与不同信息顺序负责。
+- 设计目标从“把证据都排出来”改为“在手机上先完成一次判断”：正常态只有一个实时出口焦点；事故态直接进入资源压力、接口依赖、离线出口、采集通道、快照撤回或路由核实任务。
+- Emil 门禁只允许功能性动效：按压缩放 0.98、明确属性 transition、hover 仅限 fine pointer、reduced motion 关闭动效；没有用动画掩盖层级。
+
+### 第 987 步：新手机表现树
+
+1. `MobileTelemetryPhone.tsx` 改为场景 owner：
+   - 正常态：当前出口/证据时间/可信流量为唯一焦点，WAN 与对象进入横向巡检轨，来源证据默认折叠。
+   - resource-full：当前 CPU/内存/磁盘压力条 → 资源核查动作 → 关联对象。
+   - interfaces-down：依赖链对象 → 接口核查动作 → 依赖对象。
+   - all-offline：离线 WAN 对象或明确的出口证据链。
+   - collection-down：REST/SSH 双通道 + 当前业务值撤回。
+   - no-snapshot：专属不可判断范围，不用零值或缓存填补。
+   - route-unverified：路由记录/活动标记/网关三段核实链。
+2. 新 `telemetry-overview.css` 不再使用整屏硬格线。材料层只用于实时焦点、操作按钮、对象卡与底部导航；正文最小 12px，触控目标至少 44px。
+3. 320px 首屏进一步压缩：图表改为 64 高度、时间窗保留两端刻度，WAN 状态不换行；首屏在实时焦点之后能露出下一组对象，而不是只看到一张老人机大卡。
+4. 流量 SVG 使用真实纵轴、零点、首末时间与单位，`preserveAspectRatio` 不再拉伸证据。
+
+### 第 988 步：真正的平板任务工作区
+
+1. 删除 `MobileTelemetryAdaptiveWorkspace.tsx`，新增 `MobileTelemetryTabletWorkbench.tsx` 与独立样式。
+2. 600–759 采用两层任务流：横向对象选择 → 单一检查器；760–1199 才使用对象列表 + 检查器，不再在容不下时强塞三件套。
+3. 所选对象不再重放全局 facts/evidenceRows：
+   - 路由显示核实出口、流量、WAN 对象、目标网段、路由表、来源和时间边界；
+   - 资源显示当前采样与可用性；
+   - 接口显示依赖对象；
+   - 采集显示 REST/SSH 独立证据或来源台账。
+4. 正常态平板工作区按视窗填充，并增加路由 provenance，消除“左栏结束、右栏重复、下半屏全空”的旧结构。
+
+### 第 989 步：验收所有权迁移
+
+- `check-mobile-telemetry-architecture`、overview product/static、overview architecture 和 a11y source list 全部迁移到 TabletWorkbench；旧 Adaptive 文件成为明确禁止项。
+- 浏览器 inspector 改为 current task workspace、`#mtt-current-object` 和场景专属关键值；可横向滚动、能通过手势到达的对象不再被错误判成视口裁切。
+- 当前静态结果：mobile telemetry architecture PASS、overview product/static PASS、overview architecture PASS、model/workspace/security/online-hint 全部 PASS。
+
+### 第 990 步：详情、历史、报告真值与运行时证据
+
+1. 手机详情按 evidence kind 提供新增判断：接口承载/质量、路由指向/关联出口、终端身份/会话、日志来源/邻近事件、资源阈值/连续样本、连接与诊断证据；主页结论不再放大复读。原始字段降为真实 disclosure。
+2. 服务日志和只读诊断无对象时，DOM 中明确展示“没有记录 + 下一步”，不再依赖 CSS 伪元素或空白壳。
+3. 显式返回详情使用真实历史返回；Forward 可恢复同一对象详情。18 个路由的导航、标题聚焦、aria-controls 和对象行语义已运行时验证。
+4. More/二级路由不再错误点亮“概览”；selected radio 只统计已连接且可见 DOM。
+5. runtime 报告区分：
+   - `runtimePass=true`：运行时矩阵与工作流通过；
+   - `releasePass=false`：当前仍不是可发布精确工件；
+   - 顶层 `pass=false`，不再用工程烟测冒充发布通过。
+6. 生产构建 PASS：1870 modules；CSS 78.26 kB；JS 503.49 kB。
+7. 完整 Mobile Telemetry runtime：49/49，详情历史、18 路由、More、连接工作流通过。
+8. Mobile accessibility runtime：9/9；包括触控、焦点、Back/Forward、横向可达对象、computed-font-size ×2 文本压力、reduced motion/transparency、forced colors 和 radio 键盘。该结果只称“文本压力测试”，不冒充物理 iOS Dynamic Type。
+
+### 当前判断与仍未关闭的门禁
+
+- 新手机 UI 已经替换旧母版并获得工程证据，但尚未经过新的四路独立产品/视觉签收，因此 Design、Visual QA 和 public release 继续保持 FAIL/PENDING。
+- 架构只完成了渲染树隔离，尚未完成构建闭包隔离。只读审计确认当前单 IIFE 仍静态包含移动与桌面；下一步必须拆成 mobile/desktop 两个独立 JS/CSS 闭包，由不会响应 resize 重挂载产品的薄 loader 选择。
+- 仓库仍有 Incident Lens 历史脚本被 package/release 入口引用；必须迁移到当前 Telemetry 合同或删除，禁止为了旧脚本恢复历史 DOM。
+- GitHub 未上传；CL 未触发；发布 FAIL/CLOSED；任务 active、blocked=false。
+- latestStepOutcome: `990:new-scenario-phone-tablet-task-detail-history-report-truth-runtime49-a11y9-green-release-closed`
+- nextAction: Migrate or delete remaining Incident Lens release validators, then implement mobile/desktop asset-closure isolation before fresh independent Product/Visual/Accessibility/Engineering review.
+
+
+## 第 995 步：汇总第 991–995 步——双端源与资产闭包、报告真值、原子流量证据和当前运行时证据闭环
+
+### 触发与问题
+
+- 第 990 步已经完成场景化手机 owner，但公开构建仍由一个 IIFE 静态包含手机和桌面代码；这不满足“手机 UI 与电脑 UI 彻底隔绝”的所有权要求。
+- 一批发布检查器仍引用已删除的 Incident Lens、旧 mobile-domain 或旧单 bundle 标识。继续迎合它们会诱导恢复被否决 UI，必须迁移验证意图，而不是恢复历史 DOM。
+- required matrix 的子报告失败、缺失、不完整或过期时，合并报告仍存在顶层误报成功风险；流量历史时间也必须绑定计数器观测时刻，不能绑定稍后的页面刷新时刻。
+- 当前手机工件需要重新生成完整 49 格与 200% 文本证据，确认构建拆分没有破坏真实运行时。
+
+### 第 991–992 步：源代码所有权分离
+
+1. 新增共享无视觉所有权层 `PanelSurfaceShared` 与 `PanelRuntimeShared`，只承载两端都需要的数据、运行时状态和只读边界。
+2. 手机入口改为 `mobile/MobilePanelApp.tsx`、`MobileRuntimeChrome.tsx` 和独立 `mobile/main.tsx`；它直接挂载 Mobile Telemetry 路由 owner，不经过桌面 `OperationalSectionPage`。
+3. 桌面入口改为 `desktop/DesktopPanelApp.tsx`、`DesktopRuntimeChrome.tsx` 和独立 `desktop/main.tsx`；桌面页面不再被手机入口静态到达。
+4. 两端拥有独立 CSS 入口：`mobile-entry.css` / `mobile-runtime.css` 与 `desktop-entry.css` / `desktop-runtime.css`。共享 CSS 只保留运行时无品牌、无布局的基础语义。
+5. 修正共享 surface 中 React RefCallback 的返回契约；TypeScript 通过，证明拆分不是靠 `any` 或隐藏运行时错误绕过。
+
+### 第 993 步：生成资产闭包与一次性选择器
+
+1. `build-framework-inline.mjs` 改为生成四个独立主资产：`panel-mobile.js`、`mobile.css`、`panel-desktop.js`、`desktop.css`。
+2. `manifest.json` 升级为 v3，明确 `assets.mobile`、`assets.desktop` 与 `assets.loader`，不再把一个主 JS/CSS 冒充两端。
+3. `panel-surface-loader.js` 只负责一次性选择：显式 query 优先，其次 sessionStorage，再以 coarse/touch 与 screen width 判断。它不监听 resize，不在旋转或拉伸窗口时重挂载整棵产品树。
+4. 新 `check-surface-asset-isolation.js` 验证 mobile bundle 不包含 desktop owner/样式标记，desktop bundle 不包含 mobile owner/样式标记；静态资产、identity、budget 和公开 index 门禁同步迁移到 manifest v3。
+5. 当前构建结果：mobile `1833` modules、JS `348.31 kB`、CSS `44.95 kB`；desktop `1853` modules、JS `431.91 kB`、CSS `74.43 kB`。这些数字是工程体积证据，不是审美评分。
+
+### 第 994 步：清理过期门禁并修正证据真值
+
+1. 物理删除只验证 Incident Lens 的四个静态/模型/运行时检查器与共享 runtime；当前兼容 inspector 只读取 Mobile Telemetry DOM。
+2. 迁移 workspace、time、fleet、visual surface、toolbar 200%、desktop v1030、resource trend、collector、readiness 和 semantic-gate 检查器到双端 loader 与当前 owner。
+3. required matrix 合并逻辑改为 fail-closed：任一 required child 失败、缺失、不完整或 stale，顶层 `pass` 必须为 false；增加 `test-route-state-report-truth.js` 覆盖这条发布真值。
+4. `snapshot_builder.py` 的 trafficSamples 时间改为 `last_counter_sample_at`；前端只接受带时区 RFC3339 的原子样本，拒绝 epoch、空值和无时区时间。旧 parallel arrays 仅保留为兼容字段，不再作为可信趋势输入。
+5. 验证通过：merge 13/13、route-state truth 5/5、local-predeploy matrix 14/14、public semantic gate、atomic traffic、collector regressions、RFC3339 time contract、asset isolation、identity 和 static assets。
+
+### 第 995 步：在同一双端构建上重新生成真实运行时证据
+
+- 当前 mobile report：`_acceptance/mobile-telemetry-runtime/report.json`。
+- 工件身份：`worktree-6aa7d327c022-5c5d8384a5b1`，fingerprint `5c5d8384a5b16604cb6e5fb3cfd107a95788de7fcf3f06ed99bd40d7fb865534`。
+- 七场景 × 七视口完整手机矩阵 `49/49`：320、390、430、667 横屏、844 横屏、768 平板、1199 平板；route detail/history、More、连接安全和 18 个可访问路由工作流通过。
+- 报告保持真实边界：`runtimePass=true`、`complete=true`，但顶层 `pass=false`、`releasePass=false`、`releaseEvidenceEligible=false`。这避免把 dirty-worktree 工程证据冒充发布证据。
+- mobile accessibility runtime `9/9`：真实渲染的 200% 文本压力、焦点与 Back/Forward、44px 触控、reduced preferences、forced colors、底栏与对象 radio 键盘通过。它不冒充物理 iPhone Safari、VoiceOver 或 Dynamic Type 实机签收。
+- desktop v1030、desktop no-snapshot、desktop incident hierarchy（all-offline 与 resource-full）聚焦运行时通过；证明拆分没有破坏已覆盖的桌面场景，但完整 public 28 仍需重放。
+- 主 Agent 已查看 normal phone390、resource phone390、interfaces phone430 和 tablet768 原图；它们证明场景结构已经不同，但不能由实现者自评关闭 Product/Visual 门禁。
+
+### Product Loop 与 Emil 心得
+
+- “隔绝”必须落到依赖图和发布资产，而不只是 JSX 中的条件分支。只有 mobile metafile 无法到达 desktop owner，用户要求的独立性才可自动验证。
+- 发布门禁迁移必须保留意图并删除历史 token。若为了让旧检查器变绿而恢复旧 DOM，测试会反向控制产品。
+- Emil 的动效原则继续保持：反馈即时、属性明确、可被用户中断、尊重 reduced motion；动效不承担解释网络状态的职责。
+- 工程矩阵只能证明页面没有在已定义路径上坏掉，不能证明信息层级、精致度或 iOS/iKuai 产品气质成立；因此新一轮独立 Product/Visual 评审是下一道真实阻断门禁。
+- 决策日志记录的是可审计的观察、选择、理由和证据摘要，不输出模型私有逐字思维链。
+
+### 当前边界与唯一下一步
+
+- Implementation/Architecture 为 focused PASS；Mobile State Matrix 和 browser Accessibility 为 focused PASS。
+- Product、Design/Visual 仍是 pending fresh independent review；完整 public/route matrices、clean candidate、RouterOS soak、promotion 和 exact-SHA CL 均未关闭。
+- GitHub 未上传；没有 CL 可验证；发布 FAIL/CLOSED；任务 active、blocked=false。
+- latestStepOutcome: `995:dual-surface-closures-mobile49-a11y9-desktop-focused-green-fresh-independent-review-pending-release-closed`
+- nextAction: Run four fresh independent Product/IA, Visual/Emil, Accessibility/Interaction and Engineering/Architecture reviews against the Step995 source and original screenshots, then fix every P0/P1 before clean-candidate replay.
+
+## 第 996 步：裁决 Step995 四路评审并关闭短横屏、补充路由与双端 CI 契约缺口
+
+### 触发与观察
+
+- Step995 Product 评审给出 GO；Visual 评审发现 667/844 短横屏只露出对象选择器，所选对象证据与操作被固定底栏遮住。
+- Engineering 评审发现两个真实断链：移动补充路由检查器仍读取已删除的 mobile-domain 文件；Windows CI 仍按旧单 bundle 检查打包资产。
+- Accessibility 评审提出三项，其中“200% 文本未验证”和“reduced preferences 未验证”与同一工件的 9/9 浏览器报告冲突；“物理 iOS/VoiceOver 未验证”仍是有效外部证据边界。
+- 首次重放的新短横屏门禁准确抓到 no-snapshot 上方运行时通知额外占高，证明“DOM 存在 inspector”不足以代表首屏可操作。
+
+### 决策、理由与拒绝项
+
+1. 短横屏采用独立巡检工作区，不把 600–759px 平板堆叠页缩小：左侧对象列表、右侧当前证据和底部真实操作保持同屏；列表与证据内部各自滚动。
+2. 在短横屏隐藏重复的“运行概览”页标题。设备运行栏与状态结论已经提供上下文，保留重复标题只会挤走事故证据。
+3. 新增运行时几何门禁：横屏必须证明 selected evidence 与 44px action 位于固定底栏之前；不再只检查 inspector DOM 是否存在。
+4. 移动端当前 owner 正式挂载 `MobileRouteSupplement` 和 `useRouteSupplementEvidence`；DNS/连接补充证据被接受时，快照集合退为 fallback，禁止同屏重复。
+5. Windows/Linux CI 迁移到 manifest v3：只由 index 加载 content-addressed surface loader，检查 mobile/desktop JS/CSS 及 SHA-256 记录，不再要求旧 `panel-framework.js/style.css`。
+6. 拒绝用缩小触控目标换空间；短横屏选择项和操作仍保持至少 44px。拒绝用截图偏移量伪造通过，门禁按实际证据/操作与导航几何关系判定。
+
+### 验证
+
+- 当前工件：`worktree-6aa7d327c022-d17d54c3f05a`，fingerprint `d17d54c3f05a95a46b2cdcc7c0059bba43a995c45a0df91152e326badf486e07`。
+- production build PASS：mobile 1835 modules / JS 375.60 kB / CSS 52.37 kB；desktop 1853 modules / JS 431.91 kB / CSS 74.43 kB。
+- Mobile Telemetry runtime：49/49；route detail/history、Forward、More、连接与 18 路由 accessibility workflow 全部通过。
+- 新横屏门禁覆盖 normal、fleet、all-offline、no-snapshot、collection-down、resource-full、interfaces-down 在 667×375 与 844×390 的 selected evidence/action 可见性。
+- Mobile accessibility runtime：9/9，包括 text-only-scale-200 与 adaptive-media；只声明浏览器证据，不冒充物理 iPhone/VoiceOver。
+- route supplement contract、workflow release integrity、manifest v3 asset identity、surface asset isolation 全部通过。
+- desktop v1030、no-snapshot、all-offline、resource-full 聚焦运行时继续通过。
+
+### Product Loop 与 Emil 心得
+
+- 横屏不是“矮一点的平板”。用户在短高度里需要对象—证据—行动的连续任务链；视觉材料应服务这个链，而不是保留页面标题和纵向节奏。
+- 信息密度的正确做法是消除重复上下文并把内部区域变成可控滚动，不是继续缩小字号或触控目标。
+- Emil 原则在这里表现为即时、可中断的按压反馈；状态本身保持静态，避免动画暗示新的测量或更高可信度。
+- 测试只有在能复现评审发现时才有价值。本轮新增的 selected evidence/action 几何断言先红后绿，避免以后再次出现“组件存在但首屏不可用”。
+
+### 当前边界与唯一下一步
+
+- Step995 Visual/Engineering P1 已在 Step996 实现与运行时中关闭；Product 继续无 P0/P1。
+- Accessibility 的 200% 与 reduced-preference 两项已有同工件证据，物理 iOS/VoiceOver 仍未验证。
+- 四路 Step996 fresh re-review 尚未完成；完整 public/route release matrices、clean candidate、RouterOS soak、promotion 和 exact-SHA CL 仍未关闭。
+- GitHub 未上传；发布 FAIL/CLOSED；任务 active、blocked=false。
+- latestStepOutcome: `996:step995-vetoes-remediated-mobile49-a11y9-desktop-focused-green-fresh-resignoff-pending-release-closed`
+- nextAction: Run four fresh independent Step996 reviews against the exact d17d54c3f05a artifact and current originals, then adjudicate and fix every remaining P0/P1 before the complete release replay.
+
+## 第 997 步：修复补充路由生产运行门禁的当前表面选择与登录契约，并重新绑定精确证据
+
+### 触发与根因
+
+- Step996 静态补充路由契约通过后，生产 bundle 运行门禁仍在四个视口挂到 25 秒。
+- 根因不是产品请求变慢，而是门禁仍等待已删除的 `data-mobile-domain-workspace/data-mobile-row-id`，并且登录 helper 只认识旧桌面表单。
+- 双表面 loader 只在首次导航选择一次表面；旧门禁先用默认 1280px 登录、后改视口，导致手机合同实际可能加载桌面闭包。桌面 headless 环境又可能因 coarse/touch 信号选错表面。
+
+### 决策与实现
+
+1. 手机运行时选择器迁移到当前 `data-panel-route-content + .mtc-route + mtc-row-*`，桌面继续使用自身 `data-desktop-domain-workspace`。
+2. 每个视口在第一次导航前设置真实宽高，并显式追加 `surface=mobile|desktop`；这验证 loader 的正式显式选择契约，而不是依赖 headless 浏览器能力猜测。
+3. 删除复制的旧登录流程，复用 accessibility runtime 的当前双表面登录 helper，统一支持手机连接表单、指纹确认和 current phase。
+4. 不放宽数据语义、分页、历史、错误态或浏览器 25 秒上限；只修正测试所有权与表面选择。
+
+### 验证与边界
+
+- supplemental production runtime PASS：390×844、844×390、768×1024、1366×768 四个表面，每个连接显式查询/历史、DNS 分页/快照保留、健康证据状态三项全部通过，共 12/12。
+- 浏览器 lifecycle 均有界完成；最后一格优雅关闭超时后执行 PID 有界恢复并验证无残留，未产生无界挂起。
+- 因门禁源文件改变，旧 `d17d54c3f05a` 评审身份失效；主 Agent 主动暂停四路评审，没有让评审签署过期指纹。
+- 新精确工件：`worktree-6aa7d327c022-9fb5178e4d71`，fingerprint `9fb5178e4d714da80f9ab4bb902d539b3fc849ac3243069617afec96fe0aef22`。
+- 新精确 Mobile Telemetry 49/49 与 Accessibility 9/9 重新通过；顶层发布 pass 继续为 false，因为这是 dirty diagnostic worktree。
+- GitHub 未上传；发布 FAIL/CLOSED；任务 active、blocked=false。
+- latestStepOutcome: `997:supplement-runtime-current-owner-and-one-shot-loader-contract-green-exact-evidence-rebound-fresh-reviews-pending-release-closed`
+- nextAction: Run four fresh independent Step997 reviews against exact 9fb5178e4d71 reports and originals; adjudicate and fix every remaining P0/P1 before complete release replay.
+
+## 第998步：产品所有者否决 Telemetry Canvas，手机端回到零基线重建
+
+### 触发与现场判断
+
+- 产品所有者明确指出：当前手机界面仍是电脑监控台思路的缩小与放大混合体，不是手机原生任务界面；现有表现层必须整体删除，禁止继续视觉修补。
+- 主 Agent 重新查看 `single-phone390`、`interfaces-down-phone390`、`single-landscape667` 与 `single-tablet768` 原图后确认否决成立：页面用大标题、大结论块、横向对象卡和桌面式主从工作台组织任务，手机首屏扫描路径不自然，普通用户信息密度反而被大控件稀释。
+- 旧 Step997 的 49/49 与 9/9 只证明旧契约的工程稳定性，不能证明产品方向正确；自本步起全部降为历史回归参考，不再作为当前视觉或产品签收证据。
+
+### 新零基线与禁止项
+
+1. 手机端只共享后端快照、证据真值、路由枚举和只读安全契约；不得共享桌面组件、桌面布局、桌面 CSS、桌面信息顺序或桌面工作台隐喻。
+2. 删除当前 `mobile-telemetry` 的页面组件与视觉样式所有权；不在 `.mto/.mtt/.mtc` 选择器上继续打补丁，也不保留其卡片、结论块、对象横滑条和桌面式平板工作台。
+3. 新手机产品以“10 秒巡检”为主任务：一眼确认当前证据鲜度、默认出口、最高风险与可信速率；第二步直接进入对应对象，不先阅读解释性规格书。
+4. 正常态采用紧凑对象账页与小型趋势证据；事故态改变结构和操作顺序，先受影响对象与下一动作，再证据边界；禁止所有场景共用一套换字模板。
+5. 触控命中区保持至少 44px，但视觉容器不必巨大；通过透明命中区、行内图标和紧凑分隔实现正常成年人可用的密度，禁止以“无障碍”为理由制造老年机尺寸。
+6. iOS 语言只用于浮动导航、材料分层、触控反馈、系统层级和可预测转场；内容区保持克制、低饱和、对象化的 iKuai 运维密度，禁止假毛玻璃、假手柄和装饰性拓扑。
+7. 手机竖屏、短横屏与 768 平板是三种任务构图：竖屏为单手巡检流；短横屏为对象/证据并置；平板为原生侧栏与详情关系。它们不是桌面断点缩放，也不能只靠机械两栏完成。
+
+### Product Company Loop 与 Emil 本轮心得
+
+- 产品门禁必须先问“用户在十秒内完成什么判断”，再讨论卡片、颜色和阴影。旧方向把工程字段完整当成了产品完整，这是根因。
+- Emil 的 44px 原则约束的是可触达区域，不是可见按钮必须 44px 高、文字必须放大。紧凑视觉与可靠触控并不冲突。
+- iOS 的原生感来自信息层级、导航状态、材料用途和即时反馈，不来自把桌面白卡换成半透明白卡。
+- iKuai 的专业感来自对象、状态、比较和操作效率，不来自全页面染成冷蓝，也不来自表格外观。
+
+### 当前边界与唯一下一步
+
+- 当前产品、设计与视觉签收全部重新打开；发布继续 FAIL/CLOSED，GitHub 未上传，任务 active、blocked=false。
+- 四路只读产品/视觉/无障碍/工程方向请求已发起；若子任务通道不可用，主 Agent 不等待、不标阻塞，继续按同一契约完成裁决与实现。
+- latestStepOutcome: `998:owner-vetoes-telemetry-canvas-mobile-zero-baseline-rebuild-selected-release-closed`
+- nextAction: Record the winning phone-native architecture, then delete the rejected mobile presentation ownership and implement the winner in a clean isolated mobile render/style tree.
+
+## 第999步：Mobile Patrol List 接管手机端，旧 Telemetry Canvas 表现层物理删除
+
+### 架构裁决
+
+- 选择 `Mobile Patrol List / mobile-ops`：以手机巡检列表为唯一主线，不再使用桌面仪表盘、拓扑画布、主从工作台或大型结论卡。
+- 手机端只复用类型化快照、证据真值、路由标识和只读安全契约；组件层级、路由页面、导航、触控节奏和样式入口全部由 `src/panel-framework/mobile-ops/` 独立拥有。
+- 纵向手机使用紧凑分组列表；短横屏使用双区巡检；平板使用对象证据工作区。44px 只约束触控面积，正文维持 10.5–14px 的运维密度，结论标题维持 18px，不再把控件和文字视觉放大。
+- iOS 材料仅用于顶部/底部系统层与轻量表面分层；iKuai 语言由对象、状态、速率、阈值和可追溯证据形成，而不是用全屏冷蓝或桌面表格冒充。
+
+### 物理删除与新所有权
+
+- 已删除旧 `mobile-telemetry` 的 Overview、Briefing、Signals、Phone、Detail、Navigation、RouteSurface、TabletWorkbench、模型、类型与四个旧样式文件；连接表单迁入 `mobile-ops/connection`，不再保留旧表现所有者。
+- 新增 `MobileOpsOverview`、`MobileOpsNavigation`、`MobileOpsRouteSurface`、`MobileOpsConnectionSurface`、`mobileOpsTruth` 以及四个隔离样式入口，并由 `MobilePanelApp`、`panel-framework-app` 与 `OverviewPanel` 接管真实运行时。
+- 首页按“结论/鲜度 → 默认出口与当前速率 → 最高风险对象 → 三项巡检事实 → 下一步 → 来源披露”排序；缺失或历史速率继续撤回，明确数值零继续保留为 `0 bps`。
+- 路由页改为手机分组对象列表与真实对象详情；Back/Forward URL 状态、焦点返回、四个稳定底部目的地和只读连接安全契约继续保留。
+- 平板不再机械把手机块左右摆放：新增资源阈值/样本和对象证据比较工作区，利用可用高度承载新证据，避免把下半屏空白解释为“诚实留白”。
+
+### 已验证证据
+
+- `npm run build` 通过：TypeScript、mobile 与 desktop bundle 均成功；mobile CSS `37.14 kB`，mobile JS `348.23 kB`。
+- `npm run check:mobile-telemetry-model` 五项全部通过：7 场景证据真值、41 文件/108 边所有权、独立架构、连接安全与浏览器在线提示恢复。
+- 最新 smoke runtime `4/4` 完成，`runtimePass=true`；route/detail Back/Forward、18 个路由无障碍、More 与连接工作流全部通过。
+- 顶层 `pass=false`、`releasePass=false` 是正确结果：当前仍为 dirty diagnostic worktree，完整 49 格、9 格无障碍、独立视觉/产品签收和公开发布矩阵尚未重放。
+
+### 当前边界与唯一下一步
+
+- 产品与视觉方向不再沿用被否决的 Telemetry Canvas；新的 `mobile-ops` 原图必须重新独立签收，旧评审不能继承。
+- GitHub 未上传，发布 FAIL/CLOSED，任务 active、blocked=false。
+- latestStepOutcome: `999:mobile-patrol-list-owner-live-old-telemetry-presentation-deleted-focused-runtime-green-release-closed`
+- nextAction: Regenerate the complete mobile and accessibility matrices for mobile-ops, inspect every required original, then adjudicate and fix all independent P0/P1 findings before any release replay.
+
+## 第1000步：产品所有者再次否决 Mobile Patrol List，停止桌面语法压缩并重启真正手机方向
+
+### 触发与诚实结论
+
+- 产品所有者明确否决当前 `mobile-ops`：它仍然把桌面监控的卡片、表格、证据栏和工作台语法压进手机，只是尺寸更小，不是独立手机产品。
+- 主 Agent 重新查看 320/390/430 竖屏、667/844 横屏、768/1199 平板、路由详情和连接原图后接受该结论。当前界面仍依赖白色矩形容器、横向字段行和桌面式证据区建立秩序；OriginOS/iOS 所强调的空间层次、浮动功能层、拇指任务流和自然反馈没有成为结构。
+- 最新独立视觉复核另有一项 P1：短横屏证据组被固定行动条挤压。随后虽然修掉裁切并补充 12px 字号门槛，但这类局部修复不能挽救已被产品所有者否决的总方向。
+- Step999 的 49/49、9/9、路由历史和工程门禁只作为历史工程证据；不得继续用它们证明当前视觉可接受，也不得为了保留沉没成本继续修 `mobile-ops`。
+
+### 官方设计研究转化
+
+- Apple 当前 HIG 将 Liquid Glass 定义为浮在内容之上的功能层，主要服务导航和关键控制；内容层应保持清晰，不能把所有卡片都玻璃化。
+- OriginOS 6 / iQOO 官方设计强调光影空间、渐进模糊、动态透彩、堆叠深度、G2 圆角、精确图表与流畅反馈；这些不是“加 blur”，而是让空间关系、交互状态和信息层级共同成立。
+- iKuai 官方系统概况把运行状态、外网连接、CPU/内存、上下行速率、连接设备、接口和近时段趋势作为可直接跳转的对象；其价值是对象/状态/流量优先，而不是复制桌面菜单或表格皮肤。
+- 因此新手机设计只共享 RouterOS 快照、证据真值和安全契约；视觉与任务架构从手机重新定义：三秒扫视、单手触达、风险对象直达、导航浮于内容、内容连续滚动、事故态改变构图。
+
+### 新方向生成与禁止项
+
+1. 当前 `mobile-ops` 表现层正式判废；在新方向胜出前不再为其调色、改间距或补横屏。
+2. 并行生成三套真正不同的 390×844 原型：`Glance Stack`、`Atomic Console`、`Pocket NOC`。每套必须使用独立 DOM/CSS，禁止引用当前 `mobile-ops`。
+3. 原型只允许 Liquid Glass 出现在浮动导航和瞬时控制；内容层使用清晰表面、少量半透明色和可验证数据。
+4. 禁止桌面表格、桌面侧栏、巨大状态卡、机械双栏、假手柄、装饰拓扑、无功能按钮、固定矩形证据墙和“所有场景只换字换色”。
+5. 44px 是命中面积而非视觉尺寸；正常字体不得低于 12px，但不能通过巨大行高、巨型标题和空白制造老年机感。
+6. 三套原型先逐张视觉淘汰，只实施唯一胜出者；未胜出方案和当前 `mobile-ops` 均物理退出生产表现所有权。
+
+### 当前边界
+
+- Product / Design / Visual 全部 FAIL/open；发布 FAIL/CLOSED；GitHub 未上传；任务 active、blocked=false。
+- 自动 hooks 仍未获信任，继续使用手工中央 checkpoint；本步骤已登记到 session `019f418b-7f9d-7ae0-abb0-f8bc10c7b7e5` state_version 275。
+- latestStepOutcome: `1000:owner-veto-invalidates-mobile-ops-three-phone-native-directions-active-release-closed`
+- nextAction: Complete the three isolated phone prototypes, inspect their original 390x844 captures, reject two directions, record the winner, then delete the rejected mobile-ops presentation and implement only the winner.
+
+## 第1001步：三套深色仪表盘方向全部淘汰，不以“最不差”冒充手机原生方案
+
+### 原图裁决
+
+- `Glance Stack`、`Atomic Console`、`Pocket NOC` 的 390×844 原图和交互说明均已收齐并由主 Agent 逐张检查；三套均不进入生产实现。
+- `Glance Stack` 依赖巨大深色状态岛、横向裁切信号卡和概念化底栏，仍是展示稿而非高效手机巡检。
+- `Atomic Console` 继续使用 2×2 指标卡、巨型结论卡和卡片化对象墙，正是产品所有者反复否决的桌面仪表盘压缩语法。
+- `Pocket NOC` 虽然对象和阈值更紧凑，但仍是暗色 NOC 后台卡片堆叠；事故卡、趋势卡和比较卡同时争抢首屏，不具备 iOS/OriginOS 的内容层、控制层和拇指任务节奏。
+- 三套共同问题不是颜色不对，而是结构错误：把“监控模块”作为首屏单位，而不是把手机用户的一次判断、一个对象和一个下一步作为单位。
+
+### 新的唯一候选定义：Origin Control
+
+1. 先在隔离目录制作第四套 `Origin Control` 390×844 原型；未通过主 Agent 原图裁决前不碰生产树。
+2. 内容采用浅色、边到边、连续滚动的手机内容平面；禁止暗色电竞仪表盘、指标卡网格、巨大状态块和横向裁切卡。
+3. 首屏只有紧凑当前状态条、当前 WAN 信号、最高风险对象和一个明确动作；证据台账与比较数据下沉到对象详情。
+4. 对象使用带前导符号、状态、主值和披露箭头的原生分组列表；图表嵌入内容而不是再包一层大卡。
+5. 玻璃、渐进模糊和动态透彩仅属于浮动底栏、瞬时工具和转场层；内容层以柔和冷灰、克制青蓝、有限珊瑚告警和 G2 连续圆角建立 OriginOS/iQOO 气质。
+6. 四个稳定入口为 `概览 / 网络 / 终端 / 日志`；44px 通过命中区实现，视觉字号和行高保持正常成年人所需的紧凑度。
+7. 正常、事故、无快照和采集失败必须改变内容排序与动作，不允许沿用同一张卡只换文字和颜色。
+
+### Loop 心得与边界
+
+- Product Company Loop 本轮纠正：方向探索不是必须选一个；当所有候选共享同一错误范式时，正确门禁是全部淘汰并重开，而不是奖励“最不差”。
+- Emil 原则本轮纠正：触控目标、材料反馈和空间层级必须服务动作；单纯把所有信息放进精致圆角容器，只会得到更漂亮的桌面卡片。
+- 当前 Product / Design / Visual 仍为 FAIL/open；发布 FAIL/CLOSED；GitHub 未上传；任务 active、blocked=false。
+- latestStepOutcome: `1001:all-three-dark-dashboard-directions-rejected-origin-control-prototype-active-release-closed`
+- nextAction: Build and capture the isolated Origin Control 390x844 prototype, inspect the original against the phone-native contract, and only then decide whether it may replace the rejected mobile-ops presentation.
+
+## 第1002步：Origin Control 原图通过，确定为唯一生产替换方向
+
+### 原型与整改
+
+- 新建完全隔离的 `_design/mobile-restart/d-origin-control/`，独立 HTML/CSS/JS 和 390×844 原图均未引用 `mobile-ops`。
+- 第一版采用浅色边到边内容、紧凑状态条、WAN 当前信号、原生对象列表和四栏浮动导航；主 Agent 原图确认它已摆脱暗色后台卡片和桌面工作台语法。
+- 两路独立视觉复核首轮共同发现 P1：主结论误称“3 个接口异常”，内容事实条错误使用玻璃材质；另一路发现 9–11px 小字和趋势系列标识不足。
+- 已将结论改为“3 项待处理”，所有信息文字提升至至少 12px，事实条改为清晰技术分区，下载/上传加入就近图例；重新捕获后两路复核均为 PASS、P0=0、P1=0。
+
+### 生产替换裁决
+
+1. `Origin Control` 是当前唯一获准进入生产实现的手机方向；A/B/C 与 `mobile-ops` 均不得被兼容或继续引用。
+2. 新生产树命名为 `src/panel-framework/mobile-origin/`，同时接管 Overview、Route、Navigation、Connection；只换 Overview 会让旧导航和路由 DOM 把被否决语法带回来。
+3. 保留快照校验、证据真值、路由状态、只读补充证据和运行时控制器；`observedCurrentWanRates` 的真值规则迁入新 owner，禁止反向依赖旧表现层。
+4. 先实现竖屏真实运行时与所有 7 场景，再实现短横屏和平板独立构图；完成新 owner 验证后物理删除 `mobile-ops`。
+
+### 当前边界
+
+- 当前是“方向通过、生产实现开始”，不是产品发布通过；单张原型不能代替完整场景、尺寸、200% 文本、历史导航和独立签收。
+- 发布仍 FAIL/CLOSED，GitHub 未上传，任务 active、blocked=false。
+- latestStepOutcome: `1002:origin-control-original-p0p1-zero-selected-clean-mobile-origin-replacement-active-release-closed`
+- nextAction: Implement Origin Control as a clean mobile-origin Overview/Route/Navigation/Connection tree, switch every mobile entry to it, delete mobile-ops ownership, and run focused truth/types/build/runtime gates.
+
+## 第1003步：mobile-origin 全表面接管生产，旧 mobile-ops 表现层物理删除
+
+### 实现结果
+
+- 新增 `OriginControlOverview`、`OriginControlRouteSurface`、`OriginControlNavigation`、`OriginControlConnectionSurface` 及完全隔离的 Overview/Route/Navigation/Connection 样式；四个 owner 均不导入旧 `mobile-ops`。
+- `MobilePanelApp`、`OverviewPanel` 和兼容入口 `panel-framework-app` 已全部切换到 Origin Control；路由成熟度来源指针同步指向新 owner。
+- 新 Overview 绑定真实 `buildOverviewEvidenceModel`：只有 current 且完整的观测才显示速率，已验证活动路径才显示当前路由；历史/不可用数据继续撤回。
+- 7 场景生产原图已生成。根据原图发现并修复根级 content-box 横向溢出、右侧动作裁切、资源三栏裁切、手机路由对象名被事实列挤压、趋势 SVG 拉伸和低于 12px 的文字。
+- 资源事故新增 CPU/磁盘/内存阈值比较，避免只有一行事故对象造成无意义空屏；手机路由行改为名称在上、两项事实在下的原生纵向信息节奏。
+- 旧 `src/panel-framework/mobile-ops/` 的 Overview、Route、Navigation、Connection、truth helper 与四份样式已物理删除，不保留双树兼容。
+
+### 验证与当前边界
+
+- `npm run check:types` PASS。
+- `npm run build` PASS：mobile 1829 modules、CSS 34.56kB、JS 345.49kB；desktop 1853 modules，独立构建未回归。
+- 当前生产原图证明新 owner 可运行，但旧验收工具仍包含 `data-mobile-ops-*` 和 `.mop-*` 选择器，必须迁移为只接受 Origin owner；在此之前旧报告全部无效。
+- 发布仍 FAIL/CLOSED，GitHub 未上传，任务 active、blocked=false。
+- latestStepOutcome: `1003:mobile-origin-all-surfaces-live-mobile-ops-physically-deleted-types-build-green-release-closed`
+- nextAction: Migrate mobile runtime/accessibility/architecture gates to exclusively require Origin Control markers, then run the complete 7-scenario responsive matrix and fix every P0/P1 result.
+
+## 第 1004 步：Origin 专属运行矩阵和 200% 文字重排闭环，取消关键证据截断（2026-08-15）
+
+### 为什么这样做
+
+- 用户再次明确指出手机端不能继承桌面控制台的缩放思路；触控尺寸合格不代表要用“老年机式”超大排版，真正的手机设计必须同时保留紧凑扫读、自然重排和可达触控。
+- 新 Origin Control 已经替换生产树，但旧验收 selector 不能证明新 owner。验收必须只识别 `mobile-origin` 的真实标记，否则旧 UI 的历史通过会污染当前结论。
+- 200% 文字门禁暴露了事实标签、对象名称、原因和状态仍使用 `ellipsis`。关键运维证据被省略不是高密度，而是丢失信息；因此选择让内容自然换行，而不是继续缩小字体或增加截图特供宽度。
+- 667×375 横屏发现固定底部导航覆盖内容。修复采用短横屏专属可用高度和 44px 触控导航，不把桌面侧栏搬进手机横屏，也不通过放松门禁掩盖重叠。
+
+### 实现决策
+
+- `origin-overview.css` 中事实、对象名称、原因和状态取消省略号；320px 事实项保留至少 68px 的可达内容高度，大文字模式显式解除宽度和单行限制。
+- 短横屏 Overview 使用视窗扣除运行时顶栏和底部导航后的独立内容高度；底部导航收紧到 54px 外框和 44px 真实触控项，仍保持四个横向稳定入口。
+- 运行门禁已迁移为 Origin-only 标记，完整矩阵覆盖 7 场景 × 7 视窗，共 49 个单元；路由详情 Back/Forward、18 个路由语义、More 工作流和连接安全工作流同时通过。
+
+### 验证与当前边界
+
+- `npm run build` PASS：mobile 1830 modules、CSS 41.59kB、JS 345.45kB；desktop 1853 modules、CSS 74.43kB、JS 432.30kB。
+- `npm run check:mobile-accessibility-runtime-v2` PASS，9 个阶段全部通过，包含 200% text-only reflow、底部导航、焦点/历史和 route keyboard。
+- `npm run check:mobile-accessibility-runtime-v2-native` PASS，真实浏览器页面缩放路径同样通过。
+- `_acceptance/mobile-telemetry-runtime/report.json` 记录当前 Origin 49/49 完整矩阵通过；dirty worktree 仍不是发布候选，顶层发布 pass 保持 false 是正确行为。
+- 视觉方向尚未完成最终独立签收，Origin-only 静态架构门禁、全部原图人工审查和新一轮产品/视觉/工程/无障碍评审仍是阻断项。
+- GitHub 未上传，发布 FAIL/CLOSED；任务 active、blocked=false。
+
+- latestStepOutcome: `1004:origin-runtime49of49-text200-rendered-and-native-pass-critical-evidence-untruncated-release-closed`
+- nextAction: Run every migrated Origin-only architecture/static/release gate, then inspect the full scenario and viewport screenshot set and resolve every remaining P0/P1 visual or product finding.
+
+## 第 1005 步：产品所有者否决 Origin Control，确认其仍是桌面运维报表的手机压缩版（2026-08-15）
+
+### 为什么必须停止修补
+
+- 产品所有者明确指出：当前手机端仍然沿用电脑端“结论、事实、图表、对象列表”的报表顺序，只是缩窄后纵向排列；这不是手机 UI，更不是 iQOO / OriginOS 与 iOS 级审美。
+- 主 Agent 重新检查 320、390、430 竖屏、667/844 横屏与 768/1199 平板原图后确认该结论。正常态仍是速率、折线、三格事实和白色列表；事故态仍是粉色列表、事实条与信号区的同构替换；路由、详情和连接页仍是窄版后台表单。
+- 旧方向的 49/49 与 200% 文字门禁只证明工程契约可运行，不证明手机产品成立。继续调颜色、间距、字号或圆角只会把错误的信息隐喻打磨得更精致。
+- 因此 `mobile-origin` 表现层被判废；保留的只有类型化快照、`current | historical | unavailable` 证据真值、已验证路由、明确零值、只读安全与 URL 历史契约。
+
+### 独立复审共识
+
+- 产品复审提出三条实质不同的手机方向：巡检流、对象驾驶舱、任务收件箱；严格选择“对象驾驶舱”。
+- 视觉复审确认当前 P1 包括：桌面报表纵向堆叠、320 老年机式放大、正常/Fleet 空白、事故结构同构、图表证据不足、资源复读、路由/连接页仍是后台表单。
+- 响应式复审确认：横屏缺少选中对象检查器，平板不是真正 list-detail，最高风险资源动作不总是直达对象，资源证据重复。
+- 发布继续关闭；这些评审用于否决当前方向，不允许被旧绿测覆盖。
+
+### 当前边界与唯一下一步
+
+- Product / Design / Visual 重新为 FAIL/open；GitHub 未上传；任务 active、blocked=false。
+- latestStepOutcome: `1005:owner-vetoes-origin-control-desktop-ledger-mobile-full-rebuild-selected-release-closed`
+- nextAction: Adjudicate and record the new object-first phone architecture, then implement it in a physically isolated mobile tree without importing mobile-origin presentation code.
+
+## 第 1006 步：选择“对象驾驶舱”，确立 iQOO / OriginOS 空间系统与 iOS 控制层契约（2026-08-15）
+
+### 官方语言如何转化为产品结构
+
+- iQOO OriginOS 6 官方强调空间系统、动态光、透彩、渐进模糊、卡片堆叠、G2 圆角、精确图表与可中断的自然反馈。这里采用的是“层次清楚、状态连续、对象可切换”，不是复制控制中心，也不是全页面加毛玻璃。
+- Apple 当前设计系统明确把 Liquid Glass 放在导航与控制的顶层功能层，内容本身保持清晰；因此玻璃只用于顶部状态控制、底部导航和瞬时菜单，不用于所有内容卡。
+- 爱快的专业感由对象、状态、比较、速率、阈值和直达动作形成；冷蓝只承担已验证或可操作状态，不再覆盖全部表面。
+
+### 唯一胜出架构：Object Cockpit
+
+1. 手机首页只回答一个问题：现在最该看哪个对象。
+2. 正常态主对象是已验证默认 WAN；接口故障主对象是最高风险接口；资源满载主对象是最高风险资源；全离线主对象是路由器可达性；采集失败主对象是采集链路；Fleet 先选择最高风险设备，无风险时才显示规模。
+3. 390×844 首屏预算：56px 顶栏、32px 可信胶囊、约 220px 主对象舞台、52px 对象切换轨道、约 120px 非重复证据、68px 顶级导航。首屏禁止同时出现完整趋势、三格 facts、风险列表、运行快照和对象表格。
+4. Proof、signal、object 三层严格去重：可信胶囊回答“能不能信”；主对象回答“现在发生什么”；次级证据回答“为什么这么判断”。详情页必须增加新证据，禁止复读首页。
+5. 44px 约束命中区，不强迫视觉容器和字体巨大；正文 15/21、标签 13/17、元信息 12/16，主标题 22/28，唯一主数值 34/40。320px 通过减少同屏内容，而不是制造老年机字号。
+6. 正常与事故使用不同构图：正常态可含可信 WAN 小趋势；事故态用对象舞台、影响与单一下一步，禁止先展示无关 WAN 流量。
+7. 详情使用全屏层级与可中断转场；平板使用真实对象列表 + 选中对象详情，横屏使用对象/证据并置；不复用桌面布局、组件或 CSS。
+
+### 新树与删除边界
+
+- 新生产候选放入 `src/panel-framework/mobile-object/`，独立拥有 Overview、Route、Navigation、Connection、交互状态与样式。
+- 仅允许导入共享 evidence model、route contract、runtime controller 与安全组件类型；禁止导入 `mobile-origin` 组件或样式。
+- 新树通过原图裁决后，生产入口一次性切换并物理删除 `mobile-origin`；不会保留双树兼容或用旧 CSS 兜底。
+
+### Product Company Loop 与 Emil 本轮心得
+
+- 工程门禁只能证明事实与交互契约，不能替代视觉裁决；每次产品所有者否决都必须回到 Discover/Define，而不是把 Verify 结果当作沉没成本。
+- Emil 的“动画服务空间连续性”在这里落实为对象切换、全屏详情和状态胶囊的短时、可中断反馈；禁止 `transition: all` 和轮询触发的整页动画。
+- 真正的手机密度来自删去复读、只保留当前任务，而不是缩字，也不是把桌面模块全部塞入首屏。
+
+### 当前边界与唯一下一步
+
+- 新方向已获准实施，但尚未通过原图、完整矩阵和独立签收；发布继续 FAIL/CLOSED，GitHub 未上传。
+- latestStepOutcome: `1006:object-cockpit-selected-clean-mobile-object-owner-implementation-active-release-closed`
+- nextAction: Build the isolated mobile-object model and phone-first surfaces, capture 390x844 normal and incident originals, then reject or refine before switching production ownership.
+
+## 第 1007 步：产品所有者否决 Object Cockpit；确认它仍是桌面对象工作台压缩版，重新归零手机呈现（2026-08-15）
+
+### 现场结论
+
+- 产品所有者再次明确否决当前 `mobile-object`：它仍然沿用桌面的“对象标题、证据分栏、表格式对象行、后台连接表单”语法，只是缩窄并加上浮动底栏；这不是 iQOO / OriginOS 手机 UI，也没有 iOS 级审美和交互精度。
+- 主 Agent 重新检查了 `route-interfaces-phone390.png`、`detail-interface-phone390.png`、`route-more-phone390.png`、`connection-phone390.png` 与 `resource-full-tablet768.png`。结论与用户一致：路由页是窄版表格，详情页是字段审计表，更多页是后台目录，连接页是设置表单，平板页是桌面工作台；它们不能靠调色、圆角或间距修复。
+- Step1006 的 Object Cockpit 方向、实现和预览全部降级为历史工程试验，不再具有产品或视觉有效性。已通过的 16/16 预览和 build/type 结果只证明代码可运行，不能证明手机产品成立。
+
+### 新的强制边界
+
+1. 新手机呈现必须建立全新的独立 owner，禁止导入 `mobile-object` 或 `mobile-origin` 的组件、样式、DOM 结构和视觉模型；只允许复用类型化快照、证据真值、路由身份、运行时控制器与只读安全契约。
+2. 手机首页从“报告模块”改成“拇指巡检流”：设备身份、一个当前判断、一个可直接触达的对象、一个下一步；其余信息以原子化信号和连续内容组织，而不是证据表、对象工作台或大卡堆叠。
+3. iQOO / OriginOS 语言用于空间层级、动态光感、原子组件、G2 连续圆角和精确图表；iOS 水准用于排版、触控、材质用途、导航连续性与即时反馈；iKuai 语言用于对象、状态、速率、阈值和直达操作。三者都不得退化成蓝色皮肤。
+4. Overview、Network、Terminals、Logs、More、Object Detail 与 Connection 必须作为一套手机任务系统共同重做；禁止只换首页，留下后台式路由页和连接表单污染产品。
+5. 390×844 正常/事故原图必须先由主 Agent 视觉裁决；不通过就继续返回设计阶段，不允许用 DOM 数量、截图矩阵通过或自动评审代替产品所有者判断。
+6. 当前任务保持 active、`blocked=false`；GitHub 未上传，发布继续 FAIL/CLOSED。
+
+### Product Company Loop 与 Emil 本轮心得
+
+- 视觉失败必须回到 Design/Architect，而不是继续在 Build/Verify 阶段补 CSS。正确做法是撤销错误呈现所有权，而不是保护沉没成本。
+- 44px 是命中面积，不是可见控件高度；手机信息密度来自删除复读、缩短路径和把对象变成可操作实体，不来自桌面表格缩放，也不来自老年机字号。
+- 动态材质只能解释层级和反馈；如果没有手机任务流，毛玻璃、渐变与弹簧只会把后台页面装饰得更贵。
+
+### 当前边界与下一步
+
+- Product / Design / Visual 全部 FAIL/open；Object Cockpit 被否决；新手机 owner 设计与实现启动；发布 FAIL/CLOSED；GitHub 未上传。
+- latestStepOutcome: `1007:owner-vetoes-object-cockpit-full-phone-ui-zero-baseline-rebuild-active-release-closed`
+- nextAction: Implement a clean phone-native surface family for Overview, Navigation, Route/Detail and Connection, capture 390×844 normal and incident originals, and adjudicate them before deleting rejected mobile-object/mobile-origin presentation trees.
+
+## 第 1008 步：Network Pulse 全手机表面接管生产，旧 mobile-object / mobile-origin 呈现物理删除（2026-08-15）
+
+### 实现结果
+
+- 新建完全隔离的 `src/panel-framework/mobile-pulse/`，独立拥有 Overview、四根导航、Route/Detail、More、Connection、ViewModel 与全部手机样式；生产手机入口和兼容入口均已切换到新 owner。
+- 首页不再使用 Object Cockpit 的大白卡、三列 proof、对象工作台和同构场景堆叠。正常态使用出口焦点、真实双线趋势和三个原子信号；接口事故使用待处理对象队列；资源事故使用尾部连续超限与阈值图；全离线使用 WAN 链路核对；采集失败与无快照分别使用历史证据和判断边界顺序。
+- 路由页改为手机对象流，不再显示表头和多列字段；详情页使用全屏推进、对象焦点、关键信号和折叠原始证据；More 改为工具启动器；连接改为设备—身份—验证的移动步骤流。
+- iQOO / OriginOS 语言落在冷白空间、对象周围动态光、原子信息、G2 圆角和精确图表；玻璃只保留在顶部工具与四根 Dock；内容面不再全页毛玻璃化。
+- 平板增加场景工作区和真实比较项；短横屏使用结论/证据并置；320 短屏压缩可见容器但保留 44px 命中区。
+- `src/panel-framework/mobile-object/` 与 `src/panel-framework/mobile-origin/` 的 React、ViewModel 和 CSS 已全部物理删除；路由成熟度元数据和移动补充证据样式已迁入新 owner，不保留双树兼容。
+
+### 验证与诚实边界
+
+- `npm run check:types` PASS。
+- `npm run build` PASS：mobile `1829` modules、CSS `45.26 kB`、JS `341.90 kB`；desktop `1853` modules、CSS `74.43 kB`、JS `432.34 kB`。
+- `_acceptance/mobile-pulse-preview/report.json` 覆盖 6 场景 × 4 视口，共 24/24 几何单元；最新一次实现前捕获已通过，旧树删除后仍需重新捕获并绑定新构建指纹。
+- 主 Agent 已检查正常、接口、资源、全离线、采集失败、无快照、Route、Detail、More、Connection 与 tablet 原图。新方向已明显摆脱后台表格与大卡工作台，但产品/视觉独立签收尚未完成；路由低对象量留白、平板空间效率和 320 初始可见区域仍须继续硬化。
+- 旧测试仍有多处读取已删除 `mobile-origin` 文件；这些测试当前必须 fail-closed，下一步要按新手机能力重写，不能只替换 selector 让旧结构复活。
+- GitHub 未上传，发布保持 FAIL/CLOSED，任务 active、`blocked=false`。
+
+### Loop 心得
+
+- 真正的“删除重做”必须同时删除呈现 owner、样式、元数据指针和结构测试；只换入口会让旧表面通过补充页或门禁重新渗回。
+- 手机审美不是把字号做小，而是让焦点、信号和动作形成拇指任务节奏；触控面积和视觉尺寸必须分离。
+- 视觉矩阵只能证明原图存在与几何成立；是否达到 iQOO / iOS 审美仍需独立人工裁决，不能让 24/24 代替签收。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1008:mobile-pulse-all-surfaces-live-old-mobile-presentations-deleted-types-build-green-release-closed`
+- nextAction: Rewrite the mobile model, architecture, runtime and accessibility gates for Network Pulse, regenerate the complete responsive/scenario matrix, then resolve every independent product/visual/accessibility P0/P1 finding.
+
+## 第 1009 步：产品所有者否决 Network Pulse，手机视觉再次归零并回到 Design / Architect（2026-08-15）
+
+### 原图复核与否决原因
+
+- 产品所有者明确指出当前手机 UI 仍是电脑审美压入窄屏，不是 iQOO / OriginOS 手机 UI，也没有 iOS 级审美精度。
+- 主 Agent 重新查看了 `single-phone390.png`、`interfaces-down-phone390.png`、`resource-full-tablet768.png` 与 `interfaces-down-landscape844.png`。结论与用户一致：
+  - 正常态仍以报告式标题、分割线、图表和三列事实组织首屏，缺少原子组件的重组能力与手机空间节奏；
+  - 事故态是“标题 + 队列 + 三个事实”的运维报表，状态变化没有带来真正不同的手机任务结构；
+  - 768 平板退回左结论右证据的桌面工作台；
+  - 已捕获的 844 横屏原图存在左侧 Dock 侵入内容，直接证明当前响应式语言并未成立。
+- 因此 Network Pulse 的 24/24 预览几何与 types/build 结果只能证明实现可运行，不能继续作为产品或视觉通过证据。
+
+### 外部设计事实复核
+
+- vivo 官方对 OriginOS 6 的定义不是“蓝色卡片”，而是光影空间、渐进模糊、堆叠式深度、动态透彩材质与原子动效；光包括边缘光、增强光、弥散光和环境光，动效强调弹性、帧形变、帧模糊与一镜到底：
+  - <https://www.vivo.com.cn/service/questions/all?categoryId=170&questionId=2027>
+  - <https://www.vivo.com.cn/service/questions/all?categoryId=170&questionId=2102>
+- Apple 当前材料规则明确要求 Liquid Glass 只形成导航与控制的最上层功能层，内容层应保持内容优先，不能把每个内容容器都玻璃化：
+  - <https://developer.apple.com/design/human-interface-guidelines/materials>
+  - <https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass>
+- 新方向必须提取这些原则，而不是复制系统截图或只给现有报表换皮。
+
+### 新的产品与视觉约束
+
+1. `mobile-pulse` 从产品候选降级为历史工程试验；禁止继续通过调颜色、圆角、间距和局部重排来挽救。
+2. 新手机系统必须先生成至少三条 materially different 的 390×844 可运行方向，再按首屏判断速度、拇指路径、异常结构差异、空间层级、对象识别和实现风险裁决唯一赢家。
+3. 首页必须是手机的连续任务面，不得出现桌面报告标题、三列 KPI、表格式证据、左/右工作台或固定大面积空白。
+4. 可见控件应紧凑，44px 只作为命中面积；字号以正常手机用户为目标，不再用放大控件制造“易用”的假象。
+5. OriginOS 的光只附着于当前状态或可交互对象；渐进模糊只解释前后景；堆叠必须提高内容效率；原子组件必须能随正常、断网、采集、资源、接口场景重组。
+6. iOS 级精度落在内容优先、层级、同心曲率、系统化图标、即时按压反馈、Back / Forward、焦点恢复、减少动态和减少透明度；玻璃只用于浮动控制层。
+7. iKuai 价值落在可扫描的对象、状态、速率、阈值、影响和直达动作，不允许退化成装饰拓扑或后台表单。
+
+### Loop 与 Emil 心得
+
+- 连续两次把“证据正确”误当成“手机产品成立”，说明验收顺序仍然错误。下一轮必须先用真实原图通过产品所有者视觉裁决，再迁移大矩阵门禁。
+- 组件变小不等于信息密度变高；真正的手机密度来自去重复、对象化和在当前场景只保留一次关键判断。
+- 动效必须解释空间关系或提供反馈，常看元素不做表演；按钮按压可见尺寸轻微缩放，命中区仍保持 44px；所有位移动效必须可打断并尊重 reduced motion。
+- 当前任务继续 `active`、`blocked=false`；GitHub 未上传，发布继续 FAIL/CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1009:owner-vetoes-network-pulse-originos-ios-mobile-design-reset-active-release-closed`
+- nextAction: Produce three materially different 390×844 phone-native directions, adjudicate one winner from real originals, then replace the rejected mobile-pulse presentation owner before capability-gate migration.
+
+## 第 1010 步：三条真实 390×844 手机方向完成，Object Orbit 被裁决为唯一生产母体（2026-08-15）
+
+### 三条可运行方向与原图
+
+- A `Network Specimen Tray`：正常态用可达路径，接口态用断裂依赖簇，资源态用持续负荷柱。
+- B `Edge Stream`：用水平对象镜头和连续边带组织信息。
+- C `Object Orbit`：首屏只围绕一个当前对象，同行对象以原子轨道提供切换，详情从对象本身展开。
+- 每条方向都实现 normal / interfaces / resource 三个可切换场景；`tools/capture-mobile-reset-directions.js` 生成 9 张 390×844 原图，`_design/mobile-reset-1009/originals/report.json` 为 9/9 PASS 并绑定 PNG SHA256。
+
+### 主 Agent 与两路独立裁决
+
+- 主 Agent 逐张检查 9 张原图。A 的证据表达最完整，但正常态仍接近精致诊断报告；B 的半张镜头露出造成明显裁切和桌面轮播感；C 的当前对象、局部光、对象轨道与功能玻璃最像真正手机任务面。
+- 独立产品 Agent 与独立视觉 Agent 均选择 C，并共同淘汰 B；两者都只允许外科式借用 A 的接口依赖顺序，不允许三案平均融合。
+- 两个 Agent 声称部分接口原图缺少顶部设备身份或底部四根导航。主 Agent 复核 9 张原图后判定该项与图像不符：A/B/C 的接口原图均显示设备栏与四根 Dock，因此不接受该假 P0。独立评审意见必须经过原图核对，不能因为“来自独立 Agent”就自动成为事实。
+
+### 选定方案与必须修正
+
+1. C Object Orbit 成为唯一视觉母体；新的生产 owner 使用全新 `mobile-orbit` 树，不在 `mobile-pulse` 上改皮肤。
+2. 正常态中心对象固定为已验证出口；原子证据必须是路由 / WAN / 采集，不再把无关 CPU 混入出口判断。
+3. 接口态不复用正常两列事实骨架：中心是首个风险接口，主状态写“未运行”，原始 `false` 只进入证据；中段改为接口 → 断点 → 默认路由 / WAN 的依赖序列。
+4. 资源态不复用正常事实骨架：中心是最高风险资源，中段只呈现阈值与尾部连续样本微型轨迹，同行轨道只放磁盘 / 内存 / 采集，不重复 CPU。
+5. 当前对象才拥有边缘光与弥散光；禁止整块粉色或青色氛围云。
+6. 箭头必须属于具名动作；不保留孤立圆形箭头。
+7. 所有状态固定保留 64px 内的设备身份、鲜度、刷新与更多，以及视觉 56–60px / 命中至少 64px 的四根功能玻璃导航。
+8. 生产实现必须证明对象一跳、详情新增证据、Back / Forward、焦点/滚动恢复、320、200%、reduced motion/transparency 和 forced colors；9 张设计原图不能替代运行验收。
+
+### Loop 心得
+
+- “生成三案”不是把同一骨架换三套颜色；本轮三案在主对象、滚动方式和状态表达上确实不同，因而裁决有价值。
+- 独立 Agent 是对抗性输入，不是权威真相；所有 P0/P1 仍必须回到原图和运行证据核实。
+- C 的价值不是大数字或圆角，而是“对象就是界面”。这次生产重建必须保持该原则，不能在接入真实数据时重新堆成 proof/atoms/table。
+- 当前任务 active、`blocked=false`；GitHub 未上传，发布继续 FAIL/CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1010:three-mobile-directions-object-orbit-selected-production-rebuild-active-release-closed`
+- nextAction: Implement a clean mobile-orbit production owner for Overview, Route/Detail, Navigation and Connection, switch the mobile entry only after 390×844 normal/interface/resource originals pass visual adjudication, then delete mobile-pulse.
+
+## 第 1011 步：产品所有者否决 Object Orbit，确认其仍是桌面运维语法的手机化包装（2026-08-15）
+
+### 原图复核与判废
+
+- 产品所有者再次明确：目标是 iQOO / OriginOS 的手机空间与交互、达到 iOS 级精度；不是把电脑端的字段、表格和运维报告缩进窄屏。
+- 主 Agent 重新按原始像素检查了当前生产截图：
+  - `route-interfaces-phone390.png` 仍由三列统计、横向分割线和字段列表构成；
+  - `detail-interface-phone390.png` 仍是对象标题、三列字段、来源说明和折叠原始字段；
+  - `route-more-phone390.png` 是后台模块宫格，图形身份重复，缺少手机任务重心；
+  - `connection-phone390.png` 是桌面连接表单的纵向压缩；
+  - 首页虽然把对象放到中心，但仍以“标题—主对象—证据分栏—动作—同行对象”的报告骨架组织，和其余页面也没有形成统一的手机空间系统。
+- 因此 24/24 几何通过只证明页面可渲染，不构成产品、视觉或响应式签收。`mobile-orbit` 全部呈现被判废，不再允许调颜色、圆角、字号或局部顺序挽救。
+
+### 根因与新约束
+
+1. 前几轮错误地先保留了桌面数据展示单位，再试图用 OriginOS 光影包装它；正确顺序应是先定义手机任务、空间和触控节奏，再选择最少的事实进入当前场景。
+2. 新手机树只可复用事实模型、安全契约和路由身份；不得复用 `mobile-orbit` 的页面组件、CSS、统计三列、字段表、报告标题、工具宫格或连接表单结构。
+3. 视觉尺寸按正常手机用户设计：正文 13–15px、对象标题 18–24px、唯一主读数 28–34px；44px 仅作为命中区，不把每个可点击项做成巨大按钮。
+4. Overview、对象列表、对象详情、终端、事件、更多和连接必须属于同一套空间语法：紧凑原子对象、局部状态光、内容优先、可预测推进、功能玻璃仅在导航和瞬时控制层。
+5. 新候选先在隔离目录中生成完整的 Overview / Route / Detail / More / Connection 原图；未通过主 Agent 原图裁决前不切生产，也不迁移旧门禁。
+
+### Loop 心得
+
+- “对象中心”只是信息架构原则，不自动等于手机设计。对象周围如果仍然是统计列、字段行和审计说明，它仍是桌面控制台。
+- 设计评审不能只看首页三态；Route、Detail、More、Connection 才最容易暴露桌面语法回流。以后手机方向门禁必须一次检查完整表面族。
+- 任何几何矩阵、类型检查和构建通过都不得覆盖产品所有者的视觉否决；当前任务继续 `active`、`blocked=false`，GitHub 未上传，发布继续 FAIL/CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1011:owner-vetoes-object-orbit-full-mobile-presentation-reset-active-release-closed`
+- nextAction: Build an isolated compact OriginOS/iOS mobile surface family with no mobile-orbit presentation reuse, capture Overview/Route/Detail/More/Connection at 390×844, and switch production only after real-original visual adjudication.
+
+## 第 1012 步：产品所有者再次否决桌面缩放语法，Mobile Atom 手机原生任务树接管生产（2026-08-15）
+
+### 为什么必须重新归零
+
+- 产品所有者明确指出：被否决版本仍是电脑控制台的字段、统计与操作节奏压进手机，并以大字号和圆角掩盖移动任务没有成立的问题。这一判断优先于此前几何矩阵和独立 Agent 的绿灯。
+- 主 Agent 重新查看 `mobile-spatial` 全表面原图后确认：正常页仍有概念 Hero、三列状态卡和超宽导航按钮；接口与资源页复读同一证据；列表、详情和 More 仍有明显后台字段页语法。
+- 因此 `mobile-spatial` 以及仍残留的 `mobile-object`、`mobile-origin`、`mobile-telemetry` 均不再是候选，禁止继续小修小补。
+
+### 产品、视觉与工程合议
+
+- 三路独立输入分别从 OriginOS 6 空间系统、Apple 27 Liquid Glass 功能层和 iKuai 20 秒巡检任务出发，结论一致：手机首页必须只完成一次判断；正常态以三项核验收口，事故态以最高风险对象、影响边界与下一条证据收口。
+- 新方向命名为 `mobile-atom`。它只复用 `OverviewEvidenceModel`、`buildSectionModel`、路由身份、RFC3339 和连接安全逻辑，不复用任何旧呈现组件、class 或 CSS。
+- 玻璃只出现在顶部瞬时控制和浮动导航；内容层采用连续雾白画布、分组原子行、局部状态光和 G2 曲率。可视字号回到正常手机密度，触控命中区仍保持至少 44px。
+
+### 已完成实现
+
+- 新建独立 owner：`src/panel-framework/mobile-atom/`，覆盖 Overview、Navigation、Route、Detail、More、Connection、模型与独立样式。
+- 正常、接口依赖、资源超限、WAN 离线、采集中断、无快照分别使用不同首屏骨架；历史和不可用证据继续撤回当前速率与出口结论。
+- 四个稳定入口改为 `巡检 / 网络 / 终端 / 记录`；More 回到顶部低频入口。
+- Route 使用连续对象列表，Detail 使用全屏对象证据推进；Connection 保留 TLS、SSH 指纹、REST/SSH 独立状态和绝不保存密码的安全契约，但移除了桌面三步表单海报。
+- 生产入口已经切换到 Mobile Atom；四套旧手机呈现目录已物理删除。
+
+### 当前证据
+
+- `npm run check:types`：PASS。
+- `npm run build`：PASS；mobile CSS 46.41 kB，mobile JS 344.23 kB，桌面构建不变。
+- `_acceptance/mobile-atom-preview/report.json`：24 / 24 场景-视口原图与 Overview / Route / Detail / More / Connection 4 / 4 表面完成，顶层 `pass=true`。
+- 原图由当前生产构建生成；没有 `mobileDesign` 候选参数。
+- 旧静态门禁仍引用被删除 owner，必须迁移后才能执行完整发布矩阵；因此此步骤不是发布签收。
+
+### Loop 心得
+
+- “44px 触控命中”不能被误解成“所有可见元素都做成 44px 大块”；视觉尺寸与命中尺寸应解耦。
+- iOS / OriginOS 的价值不是圆角数量，而是功能层与内容层分离、状态切换有空间因果、动作可以被中断且位置可预测。
+- iKuai 的价值不是桌面字段密度，而是用户能在 20 秒内回答状态、证据、对象和下一步。手机端应保留决策密度，删除字段密度。
+- 独立 Agent 的绿灯不能覆盖产品所有者的否决；下一轮独立评审必须检查本次真实原图，而不是沿用上一 owner 的评分。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1012:mobile-atom-production-owner-live-old-mobile-presentation-physically-deleted-24cell-full-surface-green-release-closed`
+- nextAction: Migrate all blocking mobile architecture, runtime, accessibility and release gates from deleted owners to Mobile Atom, then run the complete scenario and responsive matrices before independent signoff.
+
+## 第 1013 步：产品所有者否决 Mobile Atom，停止把“运维卡片”误当手机原生设计（2026-08-15）
+
+### 原图裁决
+
+- 产品所有者明确否决当前生产原图：它依旧是电脑监控页的标题、证据行、对象行和主按钮在窄屏内重新排版，既不是 iQOO / OriginOS 的手机任务空间，也没有 iOS 级视觉精度。
+- 主 Agent 复核当前 390×844 原图后确认否决成立：
+  - 首页仍由大结论卡、三条核验列表和整宽动作按钮组成，视觉骨架是后台工作台，不是原生手机应用；
+  - 接口与资源场景只是替换 Hero 内容，缺少真正不同的场景结构；
+  - Route 页面是标题、分割线、字段列表和巨大空白，最直接暴露桌面语法回流；
+  - 内容层圆角、描边和阴影过多，底栏虽使用玻璃，但没有和内容形成 OriginOS 的空间关系；
+  - 绿色主色被当成“设计风格”，而不是语义状态，整体既不具备 iQOO 的原子组件秩序，也没有 Apple 功能层克制。
+- 因此 Mobile Atom 的 24/24 截图与类型/构建绿灯仅保留为工程历史证据，不再拥有产品有效性；暂停旧门禁迁移，先重建手机呈现。
+
+### 新方向的硬约束
+
+1. 手机端采用独立渲染树和独立样式，不复用桌面 DOM、桌面布局单位、字段表、详情表格或整宽后台 CTA。
+2. 采用 OriginOS 的华容网格与原子组件思想：用少量不同尺寸的任务单元完成“一眼判断—定位对象—进入证据”，禁止所有内容等高等权。
+3. 内容层是连续、低对比的实体表面；渐进模糊、透彩和 Liquid Glass 只服务顶部瞬时控制、底部导航与短暂浮层，禁止给每张内容卡加玻璃。
+4. 视觉尺寸面向普通手机用户：默认正文 13–15px、状态标题 19–22px、读数 20–28px；44px 只保证命中区，不把信息本体放大成老年机组件。
+5. 正常、接口、资源、采集和无快照必须使用不同网格占位与信息节奏；不能只换标题、颜色和数字。
+6. Route、Detail、More、Connection 必须使用同一原子空间语法，且每个表面在 390×844 首屏都要有明确任务重心，禁止列表结束后留下大面积无意义空白。
+7. 动效只用于空间连续性和触控反馈；高频巡检不使用入场表演。过渡采用可中断的 transform/opacity，尊重 reduced-motion 与 reduced-transparency。
+
+### Loop 心得
+
+- “证据正确”是监控产品的底线，不是视觉设计完成的证明；正确数据放进错误手机骨架，仍然是失败产品。
+- 圆角、浅色和底栏不会自动产生手机原生感。手机原生感来自任务重心、单手路径、空间连续性、命中反馈和不同状态下真实改变的信息权重。
+- OriginOS 的“卡片”不是把后台每个模块装进白框，而是用空间和尺寸表达优先级；Apple 的玻璃也不是内容背景，而是浮在内容之上的功能层。
+- 本轮不再迁移旧 UI 门禁来保护一个已被否决的 owner。先完成新的全表面原图裁决，再为最终结构建立门禁。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1013:owner-vetoes-mobile-atom-desktop-derived-cards-new-iqoo-ios-mobile-reset-active-release-closed`
+- nextAction: Build and visually adjudicate an isolated iQOO/OriginOS atomic-grid mobile surface family for Overview, incident, Route, Detail, More and Connection before switching production or resuming release-gate migration.
+
+## 第 1014 步：Mobile Vivo 全表面接管生产，旧 Mobile Atom 呈现物理删除（2026-08-15）
+
+### 设计合议与选择
+
+- 三路并行角色分别完成视觉系统、手机产品流程和对抗式验收审查。共同结论是：不能继续使用 `Hero + facts + priority + CTA` 卡片堆，也不能把桌面 SectionTable 投射成窄屏列。
+- 本轮采用 `mobile-vivo`：全幅设备/证据功能层 + 单一连续内容 Sheet + 场景专属结构 + 四根稳定导航。它结合 OriginOS 6 的原子化空间、堆叠/透彩功能层和 Apple 对 Liquid Glass 的边界：玻璃只用于刷新、返回、底栏等功能层，内容证据保持实体清晰。
+- 正常态使用出口脉冲与三项核验，再补充不重复的 CPU、内存、在线终端和活动连接；接口态使用纵向已知事实链；资源态使用带阈值、当前点和连续样本的压力刻度；采集/无快照撤回当前业务数字并对照独立采集证据。
+
+### 实现与删除
+
+- 新建 `src/panel-framework/mobile-vivo/`，独立拥有 Overview、Route、Detail、More、Connection、Navigation、模型和样式。
+- 生产手机入口、Overview 移动分支、运行时连接页和路由成熟度来源全部切换到 Mobile Vivo。
+- 将唯一可复用的证据模型迁入 `mobile-vivo/mobileVivoModel.ts` 并完成命名清理；旧 `src/panel-framework/mobile-atom/` 呈现目录已物理删除。
+- 删除 Mobile Atom、Spatial、Object 和方向草图的旧截图脚本；新增 `tools/capture-mobile-vivo-preview.js`。
+- 移除旧平板侧栏栅格和横屏桌面双栏；手机、短横屏与平板仍保持同一移动任务流，平板仅限制内容宽度。
+- 修复新树首次运行发现的两个真实问题：装饰光场导致固定 62px 横向溢出，以及 Overview 父链百分比高度未闭合造成只渲染 480px。两项均由运行时原图门禁捕获并修复。
+
+### 当前证据
+
+- `npm run check:types`：PASS。
+- `npm run build`：PASS；mobile CSS 47.44 kB，mobile JS 347.68 kB；desktop 构建保持通过。
+- `_acceptance/mobile-vivo-preview/report.json`：24 / 24 场景-视口单元和 Overview / Route / Detail / More / Connection 4 / 4 完整表面，顶层 `pass=true`。
+- 视口包括 320×568、390×844、844×390、768×1024；场景包括正常、全离线、资源超限、接口 Down、采集中断、无快照。
+- 当前生产源码中不再存在 `mobile-atom` 或 `MobileAtom` 引用；只剩一个手机呈现目录 `mobile-vivo`。
+
+### Loop 心得
+
+- 这次真正有效的重置不是换圆角，而是先删除固定页面模板，再让场景决定内容结构。
+- 运行时 `scrollWidth` 比肉眼截图更早暴露光场伪元素造成的隐藏横向溢出；视觉装饰必须接受几何门禁。
+- “平板响应式”不等于自动增加侧栏或双栏。手机任务在平板上首先要保持连续，再在对象已选择时才考虑主从关系。
+- 旧 owner 的名字、选择器、截图脚本和成熟度来源若不一起删除，下一轮门禁会把历史结构重新拖回生产。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1014:mobile-vivo-production-owner-live-mobile-atom-physically-deleted-24cell-full-surface-green-independent-review-pending-release-closed`
+- nextAction: Complete fresh independent product, visual and accessibility review of the exact Mobile Vivo originals, remediate every P0/P1, then rebuild blocking gates and full matrices.
+
+## 第 1015 步：三路独立评审否决 Mobile Vivo，确认“网页账本 + 玻璃底栏”仍不等于 iQOO 手机 UI（2026-08-15）
+
+### 触发与原图裁决
+
+- 产品所有者明确指出当前成品仍是电脑审美压入手机：大结论、横向分割、字段行和空白工作台共同形成“老年机尺寸的网页诊断页”，缺少 iQOO / OriginOS 的空间活力和 iOS 级精细度。
+- 主 Agent 逐张复核正常、接口事故、横屏、平板、工具与对象详情原图，确认否决成立：正常页是单块白色报告 Sheet；工具页是设置清单；详情页是字段审计页；横屏只是把同一列锁到 600px；平板只是放大手机并留下大面积空白。
+- 产品、视觉、无障碍三路独立评审全部 VETO。共同 P0/P1 包括：详情下一证据被底栏遮挡、连接页返回错误、异常/平板导航像素不可见而 DOM 门禁假绿、无快照出现第二套原始提示条、More 错误高亮巡检、320 截断关键核验、横屏没有独立任务构图、路由焦点落点缺失。
+
+### 重新查证的设计边界
+
+- OriginOS 6 官方语言的关键不是“蓝绿色圆角”，而是光影空间、渐进模糊、堆叠式信息、动态透彩和可中断的原子动效；这些能力必须提高内容效率和触控连续性。
+- Apple 的 Liquid Glass 是浮在内容之上的功能层，负责导航和控制；内容层保持实体、可读和稳定。把整张监控内容做成玻璃或白色大卡都会模糊层级。
+- 新手机 UI 的判定标准改为：在 390×844 上看起来首先是手机应用，其次才是网络面板；在 320 上不靠删时间或截字维持布局；844 横屏必须改变任务编排；768 必须形成真实的主从工作区。
+
+### 决策与并行实现边界
+
+1. `mobile-vivo` 呈现整体判废；只允许复用证据模型、路由身份、安全契约和 RFC3339，不允许复用其 Overview、Route、Detail、More、Connection 组件或 CSS。
+2. 新生产候选命名为 `mobile-origin`，在隔离目录中一次重建完整表面族；接管后必须物理删除 `mobile-vivo` 呈现。
+3. 三路实现并行且写集隔离：Overview；Route/Detail/More；Navigation/Connection。主 Agent 负责数据契约、生产接线、删除旧 owner、运行门禁和最终视觉裁决。
+4. 视觉密度面向正常手机用户：正文 13–15px、主判断 20–24px；44px 是命中区，不是可见控件高度模板。异常结构必须因风险而变化，不以换色替代信息重排。
+5. 截图门禁从“DOM 中有 4 个 Dock 项”升级为像素/几何可用性：底栏必须在视口内可见、触控矩形完整、不得遮挡当前动作；连接返回、Back/Forward、焦点、320/横屏/平板均是阻断项。
+
+### Loop 心得
+
+- 这轮再次证明，换一个新目录并不等于真正归零；如果主信息单位仍是标题、字段、横线和报表留白，视觉皮肤再新也会回到桌面后台。
+- OriginOS 的“原子”是任务单元与空间关系，iOS 的“玻璃”是功能层；两者都不能被简化成圆角、浅蓝和模糊。
+- 自动截图报告若只检查 DOM 存在，会把“元素在页面里但被遮住/未绘制”误报为通过。下一版门禁必须证明用户真的看得见、点得到、回得去。
+- 当前任务保持 `active`、`blocked=false`；GitHub 未上传，发布继续 FAIL/CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1015:mobile-vivo-three-role-veto-mobile-origin-total-rebuild-active-release-closed`
+- nextAction: Complete the isolated Mobile Origin Overview, Route/Detail/More, Navigation/Connection trees, integrate them, physically delete Mobile Vivo presentation, and capture exact originals before any gate migration.
+
+## 第 1016 步：Mobile Origin 全表面接管生产，旧 Mobile Vivo 呈现物理删除（2026-08-15）
+
+### 实现与视觉取舍
+
+- 三路并行实现分别交付 Overview、Route/Detail/More、Navigation/Connection，写集互不冲突；主 Agent 统一完成数据模型迁移、生产接线、运行时外壳收口与门禁。
+- 新 Overview 不再使用白色诊断 Sheet：当前出口、可信速率和微趋势属于一个场景原子；三项核验拆成可触控证据原子；CPU、内存、终端和连接形成不复读的 2×2 体征网格。接口、资源、采集和无快照使用不同主结构。
+- 工具目录从纵向后台清单改成分组双列任务原子；对象流从粘连表格改成独立对象卡；详情下一证据停靠在主导航上方；连接页返回使用 `runtime.cancelConnection()`。
+- 320×568 使用占据真实布局行的底部导航，避免浮层遮挡滚动内容；844×390 改为左侧紧凑功能 rail 和横向双区任务；768×1024 使用主判断/证据工作区而不是放大单列。
+- Liquid Glass 只用于刷新、More、底部/侧边导航和详情下一步等功能层；内容层使用低对比实体表面、动态透彩、边缘光和场景色，不把整页做成玻璃。
+
+### 删除与真值边界
+
+- `src/panel-framework/mobile-origin/` 现独立拥有 Overview、Model、Route、Detail、More、Navigation、Connection 和全部手机样式。
+- 生产手机入口、组合入口、Overview 移动分支、路由成熟度来源与补充证据样式已切换到 Mobile Origin。
+- `src/panel-framework/mobile-vivo/` 已物理删除；当前 `src/panel-framework` 中不存在 `MobileVivo` 或 `mobile-vivo` 引用。
+- 手机有快照时不再渲染外部原始 runtime notice 条；历史/不可用边界由同一手机空间内的证据状态表达。屏幕朗读的业务边界公告仍保留。
+
+### 当前证据
+
+- `npm run check:types`：PASS。
+- `npm run build`：PASS；mobile CSS 49.29 kB、mobile JS 346.80 kB；desktop CSS 74.43 kB、desktop JS 432.34 kB。
+- `_acceptance/mobile-origin-preview/report.json`：24 / 24 场景-视口单元和 4 / 4 完整表面 PASS。
+- 新门禁不再把 `dockItems=4` 当充分条件：它同时证明 Dock 在视口内、4 个命中区至少 44px、没有可见控件被 Dock 遮挡、详情下一证据不与 Dock 相交、More 无错误主入口高亮、连接返回确实回到 More、无外部原始提示条、无水平溢出。
+
+### Loop 心得
+
+- 真正摆脱桌面 UI，需要同时改变信息单位和空间单位：从“字段行/表格/大报告卡”切换为“当前任务原子/对象卡/功能层”。只改颜色和圆角不会改变产品类型。
+- 短手机不能只增加底部 padding；被遮住的控件仍会在首屏露出。让导航进入真实布局行，才能从结构上消除遮挡。
+- 可见性门禁必须计算祖先裁切后的可见矩形；直接比较原始 `getBoundingClientRect()` 会把滚动容器外的不可见控件误判为被 Dock 遮挡。
+- 当前几何和交互预览通过不等于视觉签收；任务保持 `active`、`blocked=false`，GitHub 未上传，发布继续 FAIL/CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1016:mobile-origin-production-owner-live-mobile-vivo-deleted-24cell-full-surface-green-independent-review-pending-release-closed`
+- nextAction: Run fresh independent product, visual and accessibility review on the exact Mobile Origin originals, remediate every P0/P1, then rebuild current-owner static/runtime/accessibility gates.
+
+## 第 1017 步：三路独立评审否决首版 Mobile Origin，按真实根因并行返工（2026-08-15）
+
+### 为什么不能把 24 / 24 与 4 / 4 当作产品通过
+
+- 产品、视觉、无障碍三路评审均完成 28 张原始 PNG 与对应源码复核，结论全部为 VETO。截图哈希没有问题，但截图来自 mock runtime；它们只能证明场景视觉和几何，不是 RouterOS 真实接入、20 秒巡检或生产发布证据。
+- 当前报告把候选写成 `mobile-origin-production`，语义过度。后续必须明确命名为 mock visual fixture，并将真实设备运行、视觉夹具和发布候选证据分开，任何一类都不能替代另一类。
+- 可见矩形门禁仍有假绿：被祖先完全裁切的交互控件会得到 `null`，随后被过滤掉；报告也没有滚动每个真实滚动根到末端、逐项键盘到达、验证返回后的焦点与滚动恢复。
+
+### 共同 P0 / P1 根因
+
+1. Overview 已形成方向，但 Detail 和 Connection 又退回硬分割数据页与传统管理表单，三套表面没有同一材料、控制和空间语法。
+2. More / Connection 仍依赖右上角入口，未形成拇指可达闭环；四个稳定主根可以保留，但 More 必须作为与主根视觉分离的底部功能附件，而不是伪装成第五个主标签。
+3. 844 横屏把三张证据卡压成省略号；768 平板只把手机组件上移并留下大空腔；320 又把行动提前到三项证据之前。三种断点都没有完成各自任务架构。
+4. 多个可见按钮只有 38–42px；44px 应是命中区下限，不是把文字和图标放大的理由。
+5. Detail 打开没有把焦点交给新内容；对象返回和连接返回没有完整 Back / Forward、触发点焦点和内部滚动恢复。
+6. 200% 文字缩放门禁仍指向已退役选择器，forced-colors 与 reduced-transparency 也没有覆盖当前 owner。
+7. 当前透彩主要是静态渐变和模糊，缺少克制、可中断、尊重 reduced-motion 的状态连续性；同时概览内容原子半径与阴影过度同质。
+
+### 为什么按四个互斥写集并行返工
+
+- Overview / Navigation：负责横屏、平板、320 信息顺序、底部 More 附件、44px 命中和状态连续性。
+- Route / Detail / More：负责统一材料系统、任务型 More、详情焦点、Back / Forward 与对象滚动恢复。
+- Connection / Runtime：负责移动原生连接空间、全部安全契约不回退，以及连接历史、来源焦点和滚动恢复。
+- Acceptance：只改门禁，负责诚实的 mock 命名、全断点 Route / Detail / More / Connection、真实滚动根末端、键盘、祖先裁切、200% 和辅助模式。
+- 写集互斥是为了加速，不是让四个方向各自设计；最终仍由主 Agent 对同一套 OriginOS / iOS 功能层和 iKuai 证据优先原则做统一裁决。
+
+### Loop 心得
+
+- “新目录 + 新圆角”仍可能产生三套互不相干的页面。重做完成的判据必须跨完整任务链，而不是只看首页最好的一张图。
+- mock 是必要的场景夹具，但把 mock 写成 production 会污染发布真值。工程矩阵、视觉矩阵和真实设备证据必须各自诚实命名。
+- 单手性不是把所有功能都塞进底栏；主根和功能附件可以共存，关键是视觉身份不同、拇指路径短且无错误选中语义。
+- 自动门禁不能通过“忽略不可见元素”证明没有遮挡。不可见必须解释为可滚动到达并实际到达，否则就是失败。
+- 当前任务保持 `active`、`blocked=false`；GitHub 未上传，发布继续 FAIL / CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1017:mobile-origin-three-role-veto-p0p1-parallel-remediation-active-release-closed`
+- nextAction: Integrate the four disjoint remediation slices, regenerate exact Mobile Origin artifacts, and rerun truth, responsive, accessibility and independent visual gates before any release work.
+
+## 第 1018 步：首轮返工 40 个夹具全绿，但第二轮独立评审继续否决（2026-08-15）
+
+### 已关闭的根因
+
+- Overview / Navigation 已把 More 下移为四根导航之外的拇指附件，44px 命中区、横屏完整证据文字、短屏真实布局行和辅助模式基础样式成立。
+- Route / Detail / More 统一为对象原子和功能层；详情拥有 URL 对象状态、打开焦点、Back / Forward、对象流滚动恢复和 44px 下一证据。
+- Connection 建立应用自有 history，返回不再盲目调用浏览器后退；来源焦点、窗口/内部滚动恢复以及全部原安全契约保留。
+- 夹具报告改名为 `mobile-origin-mock-visual-fixtures`，`releaseEvidenceEligible=false`；24 个概览场景视图与 16 个完整任务表面都记录祖先裁切、真实滚动根末端、44px 与 Dock 遮挡，40 / 40 通过。
+- 旧 `originTruth.ts` 和 `OriginControlNavigation` 门禁已开始迁移到当前 `buildMobileOriginModel` 与 `MobileOriginNavigation` owner；显式零、缺失速率、未知路由和场景风险回归通过。
+
+### 第二轮独立评审为什么仍然 VETO
+
+1. 320×568 虽可滚动，但第三项事实仍进入导航区域；“结论 + 三项证据”的首次扫视闭环没有完成。
+2. 768 平板把手机组件居中后产生更明显的大空腔；需要用现有事实注释、对象上下文、体征和行动形成真正的平板任务工作区，不能靠居中掩盖内容不足。
+3. More 底部入口已可达，但“连接与身份”仍在 More 顶部；高频切换设备仍要求拇指从底部跨到顶部。
+4. Connection 虽修复历史和滚动，视觉仍是大白表单、硬分隔字段和饱和整宽 CTA，与 Overview / Detail 不是同一产品。
+5. 透彩仍偏静态皮肤；需要与场景、层叠和触控状态相关、可中断且尊重 reduced-motion 的连续反馈。
+6. 新可访问性夹具仍只 Tab 到第一个控件；未签收每个控件、Back → Forward 后的活动元素/对象/滚动，以及全部表面的强制色、降动效、200% 当前-owner 浏览器结果。
+
+### 第二轮并行边界
+
+- Overview：只修 320 首扫与 768 真实工作区，并用既有 `fact.note` 增加平板新信息，不制造数据。
+- More：把 Connection 变成靠近底部功能层的持续动作，不增加第五主根。
+- Connection：彻底拆掉大白表单和硬分割，改为分组输入原子与克制功能层；安全和 history 不得回退。
+- Acceptance：完整 Tab 顺序、详情/连接 Back-Forward-焦点-滚动、五类表面辅助模式、真实 200% 与横向零溢出。
+
+### Loop 心得
+
+- 一个门禁能证明“最终可滚到”，不等于产品满足“首次扫视”。首次判断效率和末端可达必须是两条不同契约。
+- 平板空白不能靠把组件上下居中解决。额外空间必须承载额外上下文，或建立更清晰的主从关系。
+- 行为安全正确后，视觉断层仍然是真实 P1。Connection 不能因为是表单就自动退回后台管理语法。
+- 当前任务仍为 `active`、`blocked=false`；GitHub 未上传，发布继续 FAIL / CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1018:first-remediation-40fixture-green-second-independent-veto-active-release-closed`
+- nextAction: Integrate the second disjoint Overview, More, Connection and acceptance remediations, regenerate exact fixtures, and rerun fresh independent P0/P1 review.
+
+## 第 1019 步：40 个工程夹具转绿，但卡片账本视觉方向被用户与主审共同否决（2026-08-15）
+
+### 现场证据
+
+- `check:types`、生产构建和 Mobile Origin `24` 个场景视窗 + `16` 个任务表面已经通过；Connection 的 Back/Forward、焦点、对象状态和内部滚动恢复在 `320 / 390 / 844 横屏 / 768 平板` 全部成立。
+- 这些结果只证明当前交互与几何契约成立。报告继续标记为 mock visual fixtures，`releaseEvidenceEligible=false`，不得把工程绿灯写成视觉合格。
+- 主审逐张查看 `single-phone390.png`、`resource-full-phone390.png`、`single-tablet768.png`、`connection-phone390.png` 后确认：当前首页仍由一张大结论卡、三张大证据卡、四张体征卡和大操作卡主导；平板仍是纵向手机卡片放大；Connection 虽已改善，但与首页的视觉语法仍未形成同一套移动产品。
+- 用户明确否决该方向：它仍然是把电脑端“结论 + 证据行 + 面板卡片”压到手机，尺寸和节奏接近老年模式，不是独立的手机 UI。
+
+### 为什么必须回到设计阶段
+
+- Apple 当前设计规范把 Liquid Glass 限定为导航和顶层控件的功能层，不允许把内容层全部做成玻璃卡；层级必须首先由布局、分组和内容关系建立。
+- iQOO / OriginOS 6 的官方语言是空间系统、动态光效、半透明色彩、渐进模糊、堆叠卡片、G2 圆角和精确数据图表；“每条证据一张浅色大卡”既没有空间堆叠效率，也没有原子信息结构。
+- iKuai 的价值来自对象、状态、比较和操作效率。手机端应保留证据真值，但不能照搬桌面的账本结构。
+
+### 新的移动架构裁决
+
+1. **内容层改为 Origin Workspace**：边到边的设备画布、一个紧凑状态仪表、一个可扫描的原子证据组；禁止继续使用“大卡 + 三张整行卡 + 大 CTA”的纵向模板。
+2. **玻璃只属于功能层**：底部四根导航、刷新、更多和临时操作附件可以使用透明/折射/光边；事实、表格和资源样本使用清晰的标准材质与分组，不套玻璃。
+3. **视觉尺寸恢复正常手机尺度**：标题约 `22–24px`，核心数值 `20–28px`，正文 `13–14px`；`44px` 只用于命中区，不把每个可点击对象画成 `58–68px` 高的大按钮。
+4. **场景真正换节奏**：正常态先出口与流量；接口事故先受影响对象和依赖；资源事故先当前值、阈值和连续样本；无快照/采集失败先撤回哪些结论。禁止只换颜色和标题。
+5. **平板不是放大手机**：`768px` 使用对象列表 + 当前任务/证据工作区，不能在上半屏铺手机卡、下半屏留空。
+6. **动效服务关系**：采用 OriginOS/Emil 的即时按压、短促空间连续性和可中断过渡；高频导航不做拖沓动画，reduced-motion 下移除位移。
+
+### 当前边界
+
+- 当前 40 个夹具保留为交互回归基线，但视觉方向已经失效，不能进入独立签收或发布。
+- GitHub 未上传；产品、设计、视觉、状态矩阵和发布全部保持 FAIL / CLOSED。
+- latestStepOutcome: `1019:engineering-fixtures-green-card-ledger-visual-direction-rejected-origin-workspace-reset-active`
+- nextAction: 删除首页卡片账本展示所有权，按 Origin Workspace 架构重建手机与平板内容层，再生成 40 张原图做新一轮独立产品/视觉/无障碍签收。
+
+## 第 1020 步：产品所有者否决 Mobile Origin，手机视觉从“模块缩放”改为“一屏一个判断对象”（2026-08-15）
+
+### 为什么现有版本必须整体删除
+
+- 产品所有者再次明确：目标是 iQOO / OriginOS 的手机空间、交互和审美，并达到 iOS 27 级精细度；不是把桌面运维模块缩小、放大字号后塞进手机。
+- 主 Agent 逐张查看 `single-phone390.png`、`resource-full-phone390.png`、`route-interfaces-phone390.png` 与 `single-tablet768.png` 后确认否决成立：正常态仍是“大结论卡 + 三行状态 + 四格体征 + 描边 CTA”；资源态只是同构换红；接口页仍是后台对象表；平板只是把手机模块拉成两列并留下大面积空白。
+- 当前 `_acceptance/mobile-origin-preview/report.json` 顶层为 `pass=false`。320 与横屏存在 Dock 遮挡，横屏详情的截图初始滚动位置不为零；现有 `fullPage` mock 截图也不能证明真实手机首屏。
+- 因此 `src/panel-framework/mobile-origin/` 的呈现组件与 CSS 全部判废。只允许保留独立于呈现的证据真值、安全、RFC3339、路由身份与浏览器历史契约；不得继续对现有手机 UI 调字号、圆角、颜色或顺序。
+
+### 三路并行评审后的产品裁决
+
+1. **唯一主线**：证据是否可信 → 哪个对象最该处理 → 影响到哪里 → 下一步去哪里。首屏不再平均展示所有模块。
+2. **一屏一个判断对象**：正常态的对象是已核验默认出口；接口事故是最高风险接口组；资源事故是连续超阈值对象；采集失败与无快照是判断边界。场景必须更换结构，不得只换颜色。
+3. **内容层不是卡片瀑布**：画布由设备/鲜度、一个判断舞台、一条主证据、三个以内原子状态和一个下一步组成。CPU/内存/终端/连接四宫格从正常首页删除。
+4. **四个稳定入口**：巡检 / 网络 / 终端 / 事件。More 不再伪装成第五主 Tab，而是顶部低频入口与真实历史页面；连接与身份从设备上下文和 More 均可进入。
+5. **玻璃只在功能层**：浮动导航、刷新、更多、临时菜单和瞬时控制可使用 Liquid Glass；事实、列表、图表、字段与事故内容必须是清晰实体材质。Apple 官方明确要求 Liquid Glass 作为导航/控制层并避免进入内容层。
+6. **OriginOS 空间而非蓝色皮肤**：采用空间层次、局部动态光、半透明色彩、渐进模糊、堆叠关系和精确图表；状态色只服务当前对象与关键读数，不把整页染成浅蓝或酒红。
+7. **视觉尺寸与命中区解耦**：正文 13–15px、标题 20–26px、唯一主数字 28–36px、图标 16–22px；所有操作仍提供至少 44×44px 真实命中区，但可见控件不得按 44px 模板膨胀。
+8. **平板独立任务架构**：768 使用 280–304px 对象/事故队列 + 右侧当前任务工作区；未选对象有明确待选态，选择后不替换主区，Back/Forward 恢复对象、焦点和滚动。禁止放大手机或简单左右分卡。
+
+### 390×844 首屏约束
+
+- 顶部设备/鲜度层约 48px；判断对象约 140–176px；主证据约 80–96px；三个原子状态约 52–60px；首要动作约 56–68px。
+- 页面左右基线 16px；首要动作进入拇指自然覆盖的中下区域；首屏末端应露出后续内容线索，不能留下数百像素空白。
+- 正常态只保留已核验出口、当前完整上下行、25 秒可信趋势、路由/WAN/采集三个状态和进入网络对象的下一步。
+- 接口事故隐藏正常速率，先显示受影响对象组、默认路由依赖、首个待处理接口和剩余异常摘要。
+- 资源事故只放一个 28–36px 主读数，并把阈值、连续样本、时间窗和来源连接为同一证据链；禁止三处重复 CPU/内存/磁盘。
+- 采集失败、全离线、无快照必须撤回不可信业务数字，并清楚区分管理面、采集面、转发面与业务面。
+
+### 新的验收真值
+
+- mock 视觉夹具只可标记 `synthetic=true`，不具有发布资格；发布原图必须 `fullPage=false`，记录 viewport、DPR、UA、safe-area、构建/资产/场景哈希和全部滚动根。
+- 必测竖屏：320×568、360×800、375×812、390×844、430×932、768×1024；必测横屏：568×320、800×360、812×375、844×390、932×430、1024×768。
+- 44px 门禁同时记录真实 `hitRect` 与 12–24px `visualRect`，并用中心、边缘和四角真实 pointer/touch 验证同一动作；不得只读 CSS 尺寸。
+- 200% 文字、Back/Forward、焦点、对象选择、内部滚动、初始滚动为零、Dock 不遮挡、forced-colors、reduced-motion 和 reduced-transparency 全部是阻断项。
+- 未运行的矩阵 cell 是 `not-run`，继续阻断发布；静态扫描、fixture 自测、JSON 存在和 mock 截图均不能冒充运行证据。
+
+### Loop 心得
+
+- 这轮最重要的纠正是：先删除桌面模块这个“页面最小单位”，再谈 OriginOS 光影和 iOS 材质。只要信息仍按卡片、字段和后台列表组织，换多少皮肤都会回到老年机式桌面压缩。
+- iQOO / OriginOS 的空间系统必须提高任务效率；iOS 的玻璃必须强化控制层；iKuai 的密度必须体现为判断密度，而不是字段密度。三者不能各取一个视觉符号后拼贴。
+- 工程矩阵只能证明已检查的行为，不能推翻产品所有者对原图的否决。视觉签收必须建立在真实首屏原图和完整任务链上。
+- 当前任务保持 `active`、`blocked=false`；GitHub 未上传，发布继续 FAIL / CLOSED。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1020:owner-vetoes-mobile-origin-one-object-mobile-glance-rebuild-active-release-closed`
+- nextAction: Create an isolated Mobile Glance render/style tree for Overview, Route/Detail/More, Navigation and Connection; switch production only after 390×844 normal/interface/resource originals pass main visual adjudication; then delete Mobile Origin presentation ownership.
+
+## 第 1021 步：Mobile Glance 再次被三路独立评审否决，改用全新 Mobile Pulse 并物理删除两代旧手机呈现（2026-08-15）
+
+### 为什么不能继续修 Mobile Glance
+
+- 主 Agent 查看 `single / interfaces-down / resource-full / route / detail / more / connection / tablet` 原图后确认：Glance 虽然比 Origin 更紧凑，但首页仍是标题、事实格、操作条和对象队列的后台报告语法；接口页仍是搜索表格；连接页仍是 PC 设置表单；平板左栏仍是静态说明。
+- 产品、视觉、交互/无障碍三路独立评审一致否决。共同结论是：保留证据真值，删除全部呈现；新手机只能采用“一眼巡检 / 一对象处理 / 三步连接”，不能把 Glance 当作可继续打磨的底稿。
+- 因此没有在 `mobile-glance` 上继续调颜色、圆角或字号，而是新建完全隔离的 `src/panel-framework/mobile-pulse/` 所有权。
+
+### Mobile Pulse 的新产品骨架
+
+1. **首页对象化**：正常态直接以 `pppoe-wan1` 为判断对象，不再用“网络良好/出口已核验”作巨型口号；接口事故以最高风险接口为对象；资源事故以 CPU 等超限对象为对象。
+2. **一个信号模块**：正常态只呈现上下行与可信微趋势；接口态改成可横向处理的风险对象序列；资源态只呈现阈值、连续样本、峰值和真实时间序列；证据缺失态撤回业务数字。
+3. **四根真实任务入口**：巡检 / 网络 / 终端 / 事件。More 改为可关闭的上下文命令 sheet，并保持来源 Tab；不再成为第五个无选中页面。
+4. **对象页与详情分工**：对象流先风险后普通，详情只回答状态、影响、关系、可信来源与下一步；原始字段退到二级 disclosure。Back/Forward、焦点和滚动恢复继续使用真实浏览器历史。
+5. **连接渐进化**：连接重做为设备 → 身份与通道核验 → 结果三步；端口/协议默认折叠，REST 与 SSH 独立，密码只留在内存，SSH 指纹和 TLS 风险继续阻断误连接。
+6. **视觉尺寸恢复手机尺度**：标题 24px、唯一主读数 28px、对象名 13–15px；44px 仅是触控命中区。玻璃只属于顶部控制、底部导航和临时 sheet，证据内容保持清晰实体材质。
+7. **平板使用真实主从结构**：左侧是当前对象队列与证据边界，右侧是同一任务的工作区；删除静态说明伪栏。
+
+### 已完成的工程动作与验证边界
+
+- Mobile Pulse Overview、Navigation、Route/Detail/More、Connection 与独立 tokens/styles 已挂入 mobile entry 和 shared fallback；desktop `OverviewPanel` 不再导入任何手机呈现。
+- `src/panel-framework/mobile-origin/` 与 `src/panel-framework/mobile-glance/` 已在确认无生产 import 后物理删除；mobile shell、路由历史选择器和成熟度元数据改指向 Mobile Pulse。
+- 一轮 viewport-first synthetic capture 的 6 个 Overview cell 与 4 个任务表面通过，但其后又发生了对象化标题、资源趋势、风险对象横滑、上下文 sheet 层级和旧所有权删除，因此这份 capture 只能作为中间方向记录，必须重新生成。
+- `npm ci` 恢复了缺失的 `lucide-react` 安装文件；随后 `check:types` 与生产构建通过：mobile `1830` modules、CSS `45.93 kB`、JS `352.16 kB`；desktop `1853` modules、CSS `74.43 kB`、JS `436.94 kB`。
+- 旧 mobile-origin 工具门禁仍在迁移，不能把构建通过写成完整产品或发布通过。GitHub 未上传，发布继续关闭。
+
+### Loop 心得
+
+- “新目录”不等于新产品。Glance 虽然代码隔离了，但只要页面最小单位仍是标题、表格、事实格与 CTA，它仍会回到桌面后台语法。
+- 正确顺序是先确定手机任务、唯一对象和场景结构，再做材质。iQOO / OriginOS 的空间感必须服务拇指处理与对象连续性；iOS 级精细度体现在行为和边界，不是到处加玻璃。
+- 物理删除旧树是防止模型和工程继续回忆旧布局的必要措施；测试门禁也必须随后迁移，否则旧测试会把被否决的视觉重新定义成“正确”。
+- 当前任务保持 `active`、`blocked=false`；不存在需要停工等待的外部阻塞。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1021:glance-vetoed-mobile-pulse-mounted-old-mobile-presentations-deleted-active-release-closed`
+- nextAction: 完成 Mobile Pulse 工具门禁迁移，重新生成 390/768 全任务原图并主审修正，再扩展七场景全视口、200%、触控、历史和无障碍矩阵；独立 P0/P1 清零前不得发布。
+
+## 第 1022 步：产品所有者否决 Mobile Pulse，三方向原图裁决选择 Atomic Signal Workspace（2026-08-15）
+
+### 这次为什么不能继续修 Pulse
+
+- 产品所有者明确指出 Pulse 仍然是电脑审美压进窄屏，尺寸和节奏像老年机，不具备 iQOO / OriginOS 的手机空间组织，也没有 iOS 27 的控件与材料精度。
+- 主 Agent 重新查看当前 `single / interfaces-down / resource-full` 390 原图后确认：正常态仍是标题、独立大趋势卡、三格事实、整行 CTA 和列表；接口态只是改为事故卡；资源态只是改为资源卡。它们共享“报告模块纵向堆叠”的页面最小单位，因此调字号、颜色和圆角只会继续回到旧结构。
+- 自动钩子健康检查仍为 `automatic_hooks_ready=false`，本轮继续使用手工 checkpoint；这不构成停工理由，也没有标记 blocked。
+
+### 外部规范与三路独立输入
+
+- vivo 官方 OriginOS 6 将原子设计描述为光影空间、渐进模糊、堆叠式设计与三层着色模糊；原子岛强调只在有关键状态/任务时出现，避免持续视觉干扰。
+- Apple HIG 将 Liquid Glass 限定为导航和顶层控件的功能层，并强调手机需要快速触控任务、清晰层级、适配方向和尺寸；“简单”不是把功能藏起来或把内容放大。
+- 产品方向提出 Patrol Island / 真值对象栈；视觉方向提出 Signal Orbit；架构方向要求新树不得 import Pulse React/CSS 或沿用 `.mp-*` 与 `data-mobile-pulse-*`，并在原子切换时物理删除 Pulse。
+
+### 三个可运行方向与裁决
+
+1. **A / Signal Orbit**：网络对象沿空间轨道展开，能表达关系，但 390 原图的轨道主面达到 438px，装饰弧线和巨大白面再次制造低信息效率，因此否决为生产底座。
+2. **B / Atomic Signal Workspace**：先生成华容式原子网格，再进行第二次紧凑重排；一个主对象、两个不重复的小事实、一个可信图表、两个比较对象和一段决策账目共同构成首屏。它最接近 OriginOS 的原子信息重组，同时保留 iKuai 对象密度，因此胜出。
+3. **C / Focus Deck**：深色对象面强调选中对象，但重新引入此前被否决的全宽大型深色结论块，并牺牲信息效率，因此否决。
+
+### 胜出方向的非协商边界
+
+- 视觉字号回到正常手机尺度：设备 14px、主对象 21–24px、主数字 21–33px、正文 11–13px；44px 只属于命中区，不能决定可见控件体积。
+- 内容层使用冷瓷白与清晰实体材质；只有刷新、更多、Dock、Sheet 等控制层使用玻璃和渐进模糊。
+- 正常、接口事故、资源事故使用不同的主对象/证据构图：出口+流量、依赖链、余量尺。事故不是正常模板换红。
+- proof / signal / object 三层不得复读：主对象回答“先看谁”，信号回答“证据是什么”，对象账目回答“下一步去哪”。
+- 详情必须增加来源、时间、依赖、阈值或原始证据；More 保留来源页面；Connection 使用相同材料与原子阶段关系，但继续保持密码仅内存、REST/SSH 分离、TLS/SSH 指纹阻断。
+- 390 只是第一视觉门槛；320/360/375/430、手机横屏、768 平板、200%、Back/Forward、焦点、触控、reduced-motion/transparency、forced-colors 和七场景仍全部阻断。
+
+### 已生成证据与当前边界
+
+- 三方向原图：`_design/mobile-reset-1022/originals/a-390x844.png`、`b-390x844.png`、`c-390x844.png`。
+- 胜出方向三态原图：`_design/mobile-reset-1022/winner-originals/normal-390x844.png`、`interfaces-390x844.png`、`resource-390x844.png`。
+- 原图仅是 synthetic design evidence，不具备发布资格。Mobile Pulse 当前仍挂载，但已经失去设计权威；生产切换成功后必须物理删除整棵呈现树，禁止包装复用。
+- GitHub 未上传；发布继续 FAIL / CLOSED；当前任务 `active`、`blocked=false`。
+
+### Loop 心得
+
+- 过去失败的共同原因不是缺少新目录，而是每次仍把“卡片/字段/模块”当作手机页面最小单位。真正移动化必须先把最小单位换成“当前对象 + 证据 + 下一步”。
+- iQOO / OriginOS 不能被简化为浅蓝、圆角和弹性动画；它的价值是原子信息按任务重组、空间关系连续并提高首屏效率。
+- iOS 级审美也不是统一大圆角或全页毛玻璃；它体现为材料分层、光学对齐、可预测触控、Back/Forward、焦点恢复和每个控件的细节一致。
+- latestStepOutcome: `1022:owner-vetoed-mobile-pulse-three-direction-adjudication-selects-atomic-signal-workspace-release-closed`
+- nextAction: 在全新隔离的移动 render/style tree 中实现 Atomic Signal Workspace，原子切换生产并物理删除 Mobile Pulse 呈现，然后生成全部任务/场景/视口原图并进行独立 P0/P1 签收。
+
+## 第 1023 步：产品所有者否决 Atomic Signal Workspace，撤销桌面压缩式手机方向（2026-08-15）
+
+### 否决证据
+
+- 产品所有者明确指出当前手机界面仍是“电脑审美压进手机”，不是 iQOO / OriginOS 的手机产品，也没有达到 iOS 级别的层级、材质与细节。
+- 最新生产原图确认该判断：390 正常态由多张白色指标卡、桌面式证据行和固定四栏导航组成；接口与资源事故页下半屏大面积空置；详情页仍是桌面字段表；连接页仍是后台分步表单。
+- 768 原图不是平板工作区：左侧导航与对象列发生裁切，右侧只是放大的手机卡片，存在大面积无任务空间。
+- 因此 Step1022 的工程绿灯与 synthetic prototype 不能继续代表 Product / Design / Visual 方向；`_acceptance/mobile-atomic-focus` 只保留为否决证据，不具备签收资格。
+
+### 重新建立的边界
+
+1. 删除当前 Atomic Signal 的呈现所有权，不在现有卡片、字号、网格或底栏上做小修小补。
+2. 桌面端只提供数据与证据契约，不提供手机布局、信息层级、导航或视觉语法。
+3. 新手机方向必须从拇指操作、短时巡检、推入式对象纵深、OriginOS 原子组件节奏和 iOS 级控制层材质出发；玻璃只属于导航与控件层，不把正文做成一屏白卡。
+4. 先并行产出三套互不继承当前实现的 390×844 可运行方向，再由真实原图裁决；未选方向不得进入生产。
+5. 胜出方向进入新的隔离 render/style tree 后，才允许切换生产入口并物理删除被否决的 `mobile-atomic` 呈现树。
+
+### 发布边界
+
+- Product、Design、Visual QA 重新置为 FAIL；当前任务保持 `active`、`blocked=false`。
+- 完整场景/视口、200% 文字、无障碍、Back/Forward、RouterOS soak、clean candidate、exact-SHA Linux/Windows/GHCR CL、GitHub 上传与公众发布继续关闭。
+- latestStepOutcome: `1023:owner-vetoes-desktop-compressed-atomic-signal-mobile-direction-reset-release-closed`
+- nextAction: 并行生成三套完全手机原生的 iQOO/OriginOS × iOS 级 390×844 可运行方向，逐张审图裁决后再建立新生产树。
+
+## 第 1024 步：五方向原图裁决选择 Origin Network Space，生产替换开始（2026-08-15）
+
+### 方向裁决
+
+- A `Origin Signal Canvas`：否决。大面积雷达/环形拓扑成为装饰主角，业务对象和下一步被挤成注脚。
+- B `Live Network Island`：否决为生产方向。证据时间线具有手机节奏，但整体是通用暗色 iOS 卡片，缺少 iQOO / OriginOS 身份；场景下拉还会误导为可编辑运行状态。
+- C `Origin Control Stack`：否决。荧光 HUD、全大写终端字和硬分割线仍是 2015 年赛博桌面监控语法。
+- D `Origin Flow`：否决。虽然退出巨卡并改善手机尺度，仍残留三张 KPI 卡和桌面式三列巡检行，iQOO 身份不足。
+- E `Origin Network Space`：选择为原型母方向。它使用任务专属光学位图、OriginOS 华容/原子重组、非等面积组件、功能玻璃控制层和稳定四根导航；正常、接口异常、资源压力三态拥有不同组合，不是换色模板。
+
+### 独立原图核验
+
+- 最新唯一工件 `e2-normal-390x844.png`、`e2-interfaces-down-390x844.png`、`e2-resource-full-390x844.png` 以 `local_image` 直接交给新独立 reviewer，避免同名文件缓存误读。
+- reviewer 明确确认三张图均包含“家庭网关”页头、刷新/更多按钮和四根底部 dock；原型方向 P0=0，建议选择 E。
+- 进入生产前保留的 P1：提高次级文字对比度；让接口和资源最高风险更硬；为趋势补时间/尺度；统一阈值与连续性用语；四个根入口必须成为真实路由而非静态装饰。
+
+### 生产边界
+
+1. 新建独立 `mobile-origin-space` render/style tree，只消费共享证据真值，不 import、复制或包装 `mobile-atomic` 呈现。
+2. 首页、对象/详情、更多、连接和四根导航都必须使用同一手机视觉语法；不能只换首页皮肤。
+3. 原子切换生产入口后物理删除被否决的 `mobile-atomic` 呈现所有权；旧截图仅作历史否决证据。
+4. 原型 P0=0 不是生产签收。320/360/375/390/430、横屏、768、七场景、200%、触控、焦点、Back/Forward、reduced media、forced colors、连接安全和独立 P0/P1 仍全部阻断。
+
+### 发布边界
+
+- 当前任务 `active`、`blocked=false`；GitHub 未上传；公众发布继续 FAIL / CLOSED。
+- latestStepOutcome: `1024:origin-network-space-selected-new-isolated-mobile-production-tree-active-release-closed`
+- nextAction: 并行实现 `mobile-origin-space` 首页模型、真实导航/对象纵深和连接流，主线程原子切换入口并删除 `mobile-atomic` 呈现树。
+
+## 第 1025 步：Origin Network Space 接管生产，旧手机呈现物理删除（2026-08-15）
+
+### 为什么这次不是继续修旧手机页
+
+- 新实现位于独立 `src/panel-framework/mobile-origin-space` render/style tree；它只读取共享证据模型，不导入、不包装、不复制 `mobile-atomic` 或桌面 `OverviewPanel` 呈现。
+- 生产手机入口、共享回退入口、路由滚动/焦点契约和独立 CSS 入口一次切换到 Origin Space；被否决的 `mobile-atomic` 目录、旧架构门禁、旧截图工具和 `mobile-shell.css` 已物理删除。
+- 首页不再由桌面字段表缩成手机卡片，而由场景专属华容组件组成：正常态是已核实出口/鲜度/趋势，接口事故是最高风险依赖对象，资源事故是阈值/连续样本/判断边界。缺失与历史证据继续撤回当前速率。
+- More 不占用第五个底部根入口。底部只保留概览、网络、终端、日志四个稳定任务根；More 属于顶部功能控制，并提供真实连接入口和真实路由目录。
+
+### 产品与交互决定
+
+1. 玻璃只用于刷新、更多、底部导航和模态控制层；内容层使用冷瓷白原子组件，避免全页毛玻璃和后台白框。
+2. 44px 是命中区下限，不是可见字号和组件体积；手机正文保持 12–17px，只有资源事故主数字和当前对象标题获得更高权重。
+3. 对象详情增加来源、时间、身份、字段和原始证据；Back/Forward 可以关闭并重新打开详情，More 可以进入连接流。
+4. RouterOS 连接流继续保持密码仅组件内存、REST/SSH 独立结果、HTTP/TLS 显式风险确认和 SSH 指纹变化阻断。
+5. 生产壁纸由 1.47MB PNG 无损视觉转换为 38KB WebP；移动 CSS 从重复内联后的 9.8MB 降至 142.81KB，保留同一光学画面而不让审美成为首屏负载事故。
+6. 路由历史只记录真实 `[data-origin-space-scroll]` 所有者，修复父 `.section` 旧滚动位置导致接口事故页从中部打开的问题。
+
+### 当前证据与未关闭项
+
+- `check:types` PASS；`check:mobile-origin-space-architecture` PASS，11 个必需文件齐全，旧呈现树不存在，禁用 `!important` 和跨呈现导入。
+- 生产 build PASS：mobile CSS 142.81KB、mobile JS 343.66KB；桌面仍独立构建。
+- 新 runtime smoke 6/6 PASS，覆盖 390/768 的正常、接口事故、资源事故；Back/Forward、More、连接地址前置拒绝 PASS。
+- 三张 390 原图已经主线程逐张检查：尺寸回到正常手机尺度、无重复导航、正常/接口/资源构图不同。768 仍暴露“上半屏完成、下半屏空”的平板空间问题，因此已加入真实 `tabletComparisonObjects` 对象比较轨，尚待重新 build、截图和签收。
+- 56 格全矩阵、200% 文本、reduced media、forced colors、完整路由/连接、安全回归和独立 P0/P1 评审仍未完成，发布继续关闭。
+
+### Loop 心得
+
+- “手机独立树”只有在旧树、旧 CSS 和旧 DOM 契约都消失时才是真的；仅换入口名称仍可能把旧滚动、测试和导航习惯带回来。
+- iQOO / OriginOS 的识别度来自原子组件按场景重组和任务空间连续，不来自把所有东西染蓝；iOS 级精度来自控制层材质、历史行为、焦点和触控一致。
+- 原型好看并不等于生产成立。把同一壁纸重复内联到多个 CSS 表面曾让移动 CSS 膨胀到 9.8MB；视觉资产、代码体积和运行行为必须一起验收。
+- latestStepOutcome: `1025:origin-network-space-production-owner-live-old-mobile-presentation-deleted-focused-runtime-green-visual-qa-active-release-closed`
+
+## 第 1026 步：方向纠正为爱快 4.0，完成真实界面研究与三方向裁决（2026-08-15）
+
+### 已观察事实
+
+- 产品所有者明确纠正：目标不是 iQOO/OriginOS 外观，而是爱快 4.0 的整体 UI 设计语言；现有 `mobile-origin-space` 仍是大卡片、壁纸和桌面监控信息的手机化排列，因此被否决。
+- 本轮直接检查了爱快 4.0 的系统概览、WAN 信息、线路监控、流量排行与接口对象实图，并检查爱快官方 iOS App 的移动组织。原图归档在 `_research/ikuai4/`。
+- 爱快 4.0 的核心不是“浅蓝”：它依靠低圆角细边框、对象名、紧凑比较、明确单位、完整时间轴、选中蓝和可直接进入的运维入口形成产品身份。
+- 三套 390×844 可运行方向位于 `_design/ikuai4-mobile-reset/`。独立评审结论为：A 适合正常概览，B 适合网络/线路深钻，C 适合事故覆盖态；三者应综合成一个按任务变化的产品，而不是任选一张静态首页。
+
+### 判断与取舍
+
+1. 终止 OriginOS/iQOO 视觉母语；保留 iOS 的触控、排版、历史与无障碍完成度，但不复制 iOS 外观。
+2. 正常态采用 A 的“状态带 + WAN 可信趋势 + 紧凑对象行”；网络页采用 B 的线路对象、当前/峰值三列比较；事故态采用 C 的异常队列和受影响关系。
+3. 删除壁纸、华容卡片、巨型指标块、装饰性圆形和同构场景。蓝色只表示交互、选中与可信当前数据。
+4. 图表必须同时说明时间窗、系列、单位与峰值口径；异常必须包含对象、影响、证据时间和可达详情，不以感叹号和一句话冒充处置闭环。
+5. 新实现只进入全新的 `mobile-ikuai4` render/style tree；原子切换成功后物理删除 `mobile-origin-space`，禁止包装复用旧呈现。
+
+### 为什么这样做
+
+- 产品所有者连续否决的根因不是颜色不对，而是手机端一直沿用“桌面模块/卡片/KPI”作为最小单位。爱快 4.0 真正可迁移的是对象比较和监控可信度，桌面侧栏和宽表格本身不能迁移。
+- A、B、C 分别对应三种真实任务：三秒确认、线路深钻、事故处理。把它们分配到正常首页、网络页和事故态，比强迫一套模板覆盖所有场景更符合移动使用节奏。
+- 使用真实成品截图和可运行原型裁决，能避免再次用抽象风格词为同一套旧布局换皮。
+
+### 已创建/修改
+
+- `docs/mobile-ikuai4-design-contract.md`
+- `_research/ikuai4/`
+- `_design/ikuai4-mobile-reset/`
+- `src/panel-framework/mobile-ikuai4/`（生产替换正在实现）
+- `docs/decision-system/current-state.md`
+- `docs/decision-system/current-index.md`
+- `docs/product-loop-current.md`
+
+### 验证证据
+
+- 三张可运行原图：`direction-a-390x844.png`、`direction-b-390x844.png`、`direction-c-390x844.png`。
+- 独立视觉评审：P0 要求集中在图表契约、事故闭环和正常/故障自动结构切换；选择结论为 A 正常、B 深钻、C 事故。
+- 新生产模型、首页、导航和连接流已开始落地；当前 `check:types` 通过，但生产入口尚未切换，因此不能声明实现、矩阵或视觉通过。
+
+### 未解决风险
+
+- 新路由/对象工作区仍在实现；`mobile-origin-space` 尚未物理删除。
+- 生产截图、320/360/375/390/430/横屏/768、200% 文字、媒体偏好、Back/Forward、连接安全和完整场景矩阵尚未重放。
+- Product、Design、Visual QA、Accessibility、State Matrix 和 Release 继续 FAIL/PENDING；GitHub 未上传。
+
+### 心得
+
+- “爱快风格”不是把界面涂成浅蓝，而是让 WAN、接口、终端、采集和路由成为可比较、可核验、可进入的对象。
+- 手机的高密度不是缩字；它来自减少重复容器、固定数值列、把对象和证据放在同一行，并让每个区块只回答一个问题。
+- 设计方向只有落到正常、事故、网络深钻、对象详情、更多和连接全链路，才不是一张好看的首页稿。
+
+- latestStepOutcome: `1026:owner-corrects-direction-to-ikuai4-three-direction-research-adjudicated-clean-mobile-replacement-active-release-closed`
+- nextAction: 完成 `mobile-ikuai4` 全部手机表面，原子切换生产并物理删除 `mobile-origin-space`，随后生成首批真实生产原图。
+
+## 第 1027 步：爱快 4.0 手机树接管生产，旧 Origin 呈现物理删除，首批真实原图进入视觉 QA（2026-08-15）
+
+### 本步实际完成
+
+1. 完成独立 `src/panel-framework/mobile-ikuai4/` 全表面：正常/事故首页、四根任务导航、网络/终端/日志对象工作区、搜索/筛选/排序、全屏对象详情、更多工具目录和只读连接流。
+2. 手机专用入口与共享回退入口同时切换到 `IkuaiMobileHome / Navigation / Routes / Connection`；移动 CSS 入口只挂载新 tokens、home、navigation、routes、connection。
+3. 在新树类型检查和生产构建通过后，物理删除整个 `src/panel-framework/mobile-origin-space/`，包括壁纸、Origin 组件和样式。架构门禁要求旧 owner 不存在、无旧引用、无装饰壁纸、无 `!important`、无低于 12px 的 CSS 字号。
+4. 修复连接页真实回归：选择已保存设备后手动编辑地址会被旧 profile effect 立即覆盖。删除该重置 effect 后，协议型地址可在发起请求前被本地校验拒绝。
+5. 把旧 Origin runtime 门禁迁移为 `check-mobile-ikuai4-runtime.js`，并把生产 package scripts 指向新架构与 runtime owner，不保留已退役测试名称。
+
+### 产品与视觉判断
+
+- 390 正常态已经形成爱快式对象秩序：紧凑设备头、细状态带、明确 WAN 对象、上下行当前值、时间窗、双序列趋势、峰值口径，以及路由/WAN/采集对象行。蓝色只用于选择和可信当前值，状态色被限制在小标记与边界。
+- 接口事故不再沿用正常速率模板：首屏直接展示按影响排序的接口对象、依赖与证据时间，然后列出仍可确认的默认路由、WAN 范围和采集通道。
+- 资源事故以异常队列、CPU/磁盘/内存阈值和连续相邻样本为主，当前可确认对象位于其后；缺失/历史证据仍不得显示当前速率。
+- 对象页使用爱快式紧凑列表与可操作筛选，但没有复制桌面侧栏或宽表格。详情新增来源、观测时间、身份、字段和原始证据，不逐字复读列表。
+- 首批原图已显著退出壁纸、巨卡、装饰拓扑和桌面 KPI 压缩，但它们只是主线程视觉观察，不是独立产品签收。正常态剩余空间如何用于真实排行、平板任务结构、完整图表尺度与事故文本压缩仍需继续审查，禁止为了填空制造假数据。
+
+### 验证证据
+
+- `npm run check:types` PASS。
+- production build PASS：mobile CSS `35.94 kB`、mobile JS `338.63 kB`；desktop CSS `74.43 kB`、desktop JS `437.03 kB`。
+- `check-mobile-ikuai4-architecture` PASS：10 个必需文件齐全，旧 presentation absent，0 个失败项。
+- `check-mobile-ikuai4-model` PASS：7 场景和缺失值/明确零值/路由未知/资源连续样本合同通过。
+- 首轮 runtime smoke `6/6` PASS：390/768 的 normal、resource、interfaces；Back/Forward、More 目录和连接地址前置拒绝通过。
+- 首批生产原图：`_acceptance/mobile-ikuai4-runtime/single-phone390-overview.png`、`resource-full-phone390-overview.png`、`interfaces-down-phone390-overview.png` 及对应 768 原图。
+
+### Loop 心得
+
+- 爱快的识别度不是蓝灰底色，而是“对象名 + 当前值/状态 + 证据时间 + 直接入口”在同一视线中的对齐；这比继续增加卡片或玻璃有效。
+- 连接流也属于产品表面。只重做首页、保留后台式连接页，仍会让整套手机产品在第一次使用时断裂。
+- 自动门禁必须随着 owner 一起迁移。保留旧 selector 再让它判绿，会把已删除的设计重新定义成产品合同。
+- 首批截图看起来更接近目标不代表完成。下一步必须让七场景 × 八视口、200% 文本、媒体偏好和独立评审共同对同一生产树负责。
+
+### 当前边界与下一步
+
+- latestStepOutcome: `1027:ikuai4-mobile-production-owner-live-old-presentation-deleted-first-runtime-green-visual-qa-active-release-closed`
+- Product / Design / Visual、Accessibility、完整 State Matrix 和 Release 仍为 FAIL/PENDING；GitHub 未上传，CL 未触发，发布 CLOSED。
+- nextAction: 运行 56 格完整手机矩阵和 200%/媒体/无障碍检查，逐张检查 320/390/横屏/768 原图，修复 P0/P1 后再发起独立产品与视觉签收。
+
+
+## 第 1028 步：深化爱快 4.0 研究，以对象比较替换通用摘要卡（2026-08-15）
+
+### 为什么重新研究
+
+- 产品所有者再次纠正目标：不是 iQOO，也不是只把当前页面涂成爱快浅蓝，而是详细学习爱快 4.0 的整体产品语言。
+- 主线程重新检查 `_research/ikuai4/` 的系统概览、线路监控、流量排行和官方移动 App 原图，并浏览爱快官方系统概况、4.0 实机截图与升级说明。
+- 两个独立只读评审分别从视觉语言和移动产品架构复核，结论一致：爱快 4.0 的识别度来自对象名、同行比较、时间/单位、选中蓝、状态色稀缺性和直达运维入口，不来自卡片、浅蓝背景或桌面表格。
+
+### 本轮明确学到的规则
+
+1. 密度来自同一视线内的对象、状态、上下行、累计量、阈值与时间，不来自缩小字号。
+2. 正常首页应由一个真实 WAN 对象承担出口、上下行和趋势，不能再用默认路由、WAN 数量和采集状态三层复读。
+3. 图表必须有纵轴刻度、起止时间、上下行系列和分别计算的峰值。
+4. 接口事故必须列受影响接口，再给默认路由依赖、同链路 WAN 与采集证据；不能只放一张通用事故卡。
+5. 资源事故的基本比较是当前、阈值、偏差和连续样本，不是三条无解释红色进度条。
+6. 768 平板应形成对象列表与选中对象证据的工作区；简单左右并排仍未完成，继续作为视觉 P1。
+
+详细研究记录新增为 `docs/ikuai4-ui-study.md`，并纳入 `D:\想法\面板` 决策镜像。
+
+### 已实施的第一轮修正
+
+- WAN 监控面现在使用真实 WAN 对象名，不再把路由网关冒充 WAN 名称；没有可验证活动路径时仍显示“未确认可用出口”。
+- 正常态“当前对象”队列使用真实接口对象、采集通道、资源比较和连接对象；默认路由不再在 WAN 监控面下重复出现。
+- WAN 趋势删除“参考”伪 KPI，加入 0/中值/上限纵轴刻度、起止时间及下载/上传独立峰值。
+- 接口事故删除汇总任务复读，增加已验证默认路由依赖数量和接口名，并补实际 WAN 与采集上下文。
+- 资源事故删除 CPU 告警复读，三项资源改为 `当前 / 阈值 / 偏差 / 连续相邻样本` 同行比较；关联证据不再重复超阈值和当前样本。
+- 内容圆角与阴影进一步收敛，保持爱快式低圆角、细边框、低表面感。
+
+### 当前验证与边界
+
+- `check:types` PASS。
+- `check-mobile-ikuai4-model` PASS：新增真实 WAN 名称、对象队列、资源去重和接口依赖回归。
+- `check-mobile-ikuai4-architecture` PASS：最小 CSS 字号仍为 12px，无旧 owner、无 `!important`。
+- production build PASS：mobile CSS `39.35 kB`，mobile JS `341.36 kB`；desktop CSS/JS 保持 `74.43 kB / 437.03 kB`。
+- 新指纹的 390/768 normal、resource、interfaces smoke `6/6` PASS；Back/Forward、More、连接地址拒绝仍通过。
+- 390 原图已人工复核：正常态对象复读减少，资源页比较关系更直接，接口页补了依赖与真实 WAN。768 资源左列空壳已修复，但平板工作区的下半屏利用率仍未签收。
+- 完整 56 格与 200%/媒体/无障碍证据因本轮产品改动已经需要重跑；独立 Product/Visual 签收仍未开始。GitHub 未上传，发布门继续 CLOSED。
+
+### Loop / Emil 心得
+
+- Product Company Loop 应在“视觉不对”时返回 Design，而不是用已经通过的矩阵为旧方向辩护；矩阵证明没坏，不证明像爱快。
+- Emil 原则这轮主要用于删除多余控件、保持 120ms 按压反馈和明确材质所有权；没有用动画掩盖信息架构。
+- 爱快桌面 UI 不能直接套入手机，但它的对象比较语言必须保留。手机 UI 的任务不是缩小字段，而是让用户以更少滚动完成同一判断。
+
+- latestStepOutcome: `1028:ikuai4-deep-study-object-comparison-remediation-smoke-green-full-evidence-and-tablet-signoff-open-release-closed`
+- nextAction: 重跑完整 56 格、200%/媒体/无障碍，继续完善 768 对象—证据工作区并对全部原图发起新一轮独立产品与视觉评审。
+
+
+## 第 1029 步：爱快 4.0 手机对象工作台通过精确工件产品与视觉签收（2026-08-15）
+
+### 为什么 1028 的证据必须作废后重建
+
+- Step1028 的 `64db/e406` 一类中间指纹只覆盖聚焦 smoke；后续对象队列、Fleet 证据边界、平板主从工作区、异常压缩、搜索归一化和门禁迁移都改变了生产工件，因此旧截图与旧报告不能继续充当当前证据。
+- 本轮不把“研究过爱快 4.0”当作完成条件，而把研究结论落实为可检查的对象、比较、时间、单位、异常优先级和直接入口，并要求全部验证绑定同一个精确工作树指纹。
+
+### 产品与视觉裁决
+
+1. 正常态对象队列只保留真实对象：实际接口、`REST + SSH` 采集通道和已观测终端；CPU/内存/磁盘与连接跟踪不再伪装成首页对象。
+2. Fleet 的设备规模若没有观测值，明确显示“未观测”，只展示当前快照真实提供的 WAN 与接口在线/总量比较；规模属性不得盖过最高风险。
+3. 600px 以上不再机械并排两个手机块，而是对象队列—选中对象—事实—关联证据的真实主从工作区；事故场景默认选中最高风险对象。
+4. 全离线以 `3 / 8` 和“查看全部”表达受影响对象；接口事故逐对象给出速率或未记录、最后变化、管理状态和路由依赖。
+5. 采集失败与无快照只保留端点状态、最近成功和错误记录边界，原始错误进入详情，删除首页复读。
+6. WAN 趋势使用真实 15 分钟采样跨度，具有纵轴数值/单位、起止时间、当前端点、当前值和峰值；缺失速率仍保持 unavailable，禁止改写为零。
+7. 手机与桌面继续使用独立 render/style tree；本轮只复用证据真值，不回退到桌面表格、侧栏或卡片压缩思路。
+
+### 精确工件与验证证据
+
+- `artifactKey = worktree-ed9195a9a9cd-60fa42e9b5f3`
+- `worktreeFingerprint = 60fa42e9b5f35093e8e841d988a26c7c29706bd2075ef28dc8da85aafee0b269`
+- `check:types` PASS；production build PASS。
+- `check:overview` PASS，12 个当前 owner 门禁全部通过。
+- `check-mobile-ikuai4-model` PASS，7 场景及真实性回归通过。
+- `_acceptance/mobile-ikuai4-runtime/report.json`：7 场景 × 8 视口，`56/56`、`complete=true`、`freshness=true`。
+- `_acceptance/mobile-accessibility-runtime-v2/telemetry/report.json`：10/10 阶段通过，并绑定同一精确工件。
+- 后端公开契约 `18/18` PASS；采集回归、公开时间契约与 Router 时钟契约 PASS。
+- 独立 Product 签收：PASS，P0=0、P1=0、P2=1。
+- 独立 Visual / Emil 签收：PASS，审美 `74/100`，P0=0、P1=0；评审明确未把视觉签收冒充发布签收。
+
+### 保留但不阻断当前手机签收的 P2
+
+- 320px 顶部设备副标题可进一步优先显示完整目标地址。
+- 320px 正常态可略收紧 WAN 图例，让第二个对象与采集对象拥有更舒适的首屏余量。
+- 接口详情可把连续说明句进一步压成 `下行 / 上行 / 最后变化 / 管理状态` 字段组。
+
+### Loop / Emil 心得
+
+- 爱快 4.0 的可迁移设计语言不是“整页冷蓝”，而是对象身份、同列比较、时间与单位、克制蓝色交互和稀缺状态色；颜色只能服务于判断，不能代替信息架构。
+- iOS 只作为触控、层级、反馈和精细度标准，不能成为大卡片、大字号或毛玻璃装饰的借口。
+- Product Company Loop 必须区分“手机产品签收”和“发布资格”：本轮前者已由精确工件关闭，后者仍需完整本地 release-readiness、安全、clean candidate，以及上传后精确 SHA 的 Linux / Windows / GHCR CL。
+
+### 发布边界
+
+- 当前没有 blocker，任务保持 active；下一步直接进入本地发布资格与安全回放，不得因远端证据尚未产生而标记阻塞。
+- GitHub 仍未上传；没有当前远端精确 SHA，也没有对应 Linux、Windows、GHCR CL。
+- 因此手机 Product / Visual / Accessibility 签收已关闭，但总体发布仍为 FAIL / CLOSED。
+
+- latestStepOutcome: `1029:ikuai4-mobile-exact-60fa-product-visual-p0p1-zero-state-matrix-a11y-green-release-closed`
+- nextAction: 运行完整本地 public release-readiness、安全回归和 clean-candidate 审核；保持 GitHub 与发布关闭，直到本地资格成立并在获准上传后完成精确 SHA Linux / Windows / GHCR CL。
+
+## 第 1031 步：产品所有者否决现有手机表现层，1029 签收撤销并选择全新手机架构（2026-08-15）
+
+### 为什么不能继续修补
+
+- 产品所有者再次明确指出当前截图仍是桌面后台压进 390px：通用边框卡、字段行、细小辅助字、弱视觉中心、底部导航竞争和大面积空白都没有形成手机任务。
+- 主 Agent 重新查看 `_acceptance/mobile-ikuai4-runtime/single-phone390-overview.png` 后确认该判断。此前矩阵与独立评审证明了事实语义和工程稳定，但无法替代产品所有者对视觉方向的否决。
+- 因此 Step1029 的 Product、Visual、Accessibility 和 state matrix 结论全部改为 stale/pending；旧图只保留为失败诊断。
+
+### 学习与方向比较
+
+- 重新核对爱快 4.0 真实首页、线路监控、对象排行和官方移动 App 的任务演进。爱快的母语是对象、比较、状态、证据，不是蓝色卡片。
+- Product 只读评审比较了缩略仪表盘、事故消息流和场景接管式巡检台；前两者分别会回到桌面压缩和正常态贫弱，选择第三种。
+- Visual/Emil 只读评审比较了对象账本、线路优先和事件队列；选择对象账本，并吸收线路 15 分钟趋势和最高风险置顶。
+
+### 新架构
+
+```text
+设备与快照鲜度
+→ 可验证状态
+→ 当前最高风险对象
+→ 同行比较和可信趋势
+→ 一个直接调查入口
+```
+
+- 正常、资源、接口、采集、全离线拥有结构不同的首屏，不再共享万能卡模板。
+- 固定四根导航：概览、网络、终端、日志；刷新和更多位于顶部。
+- 600px+ 是导航—对象列表—详情工作区；空间不足时退成两层任务流。
+- 详细规则写入 `docs/mobile-patrol-reset-contract.md`。
+
+### 删除与保留边界
+
+- 删除当前手机首页、路由、导航、连接 JSX 与全部专属 CSS；新实现使用新的独立目录和类名前缀。
+- 不复制旧卡片层级、CSS 数值、截图几何和 DOM 数量门禁。
+- 只保留 API、领域证据、原子流量样本、明确路由证据、RFC3339 与只读安全边界。
+
+### Loop / Emil 心得
+
+- Loop 发现产品所有者否决后必须回到 Problem/Design，而不是继续追发布门禁；工程绿灯不能保护错误视觉方向。
+- Emil 的价值不是增加动画，而是先删除错误结构；高频手机运维只保留 100–180ms 的按压、颜色和推进反馈。
+
+### 发布边界
+
+- 当前没有 blocker，任务保持 active；GitHub 未上传，发布 CLOSED。
+- 新表现层尚未实现，没有可签收的手机工件。
+
+- latestStepOutcome: `1031:mobile-owner-veto-rescinds-1029-signoff-clean-presentation-rebuild-selected-release-closed`
+- nextAction: 物理删除现有 `mobile-ikuai4` 表现层，在全新独立目录实现场景接管式对象账本，并捕获正常与四种事故原图进行新一轮独立评审。
+
+
+## 第 1033 步：全新 Mobile Patrol 手机产品树完成首轮独立签收，发布仍关闭（2026-08-15）
+
+### 为什么这次不是继续修补旧手机页面
+
+- `src/panel-framework/mobile-ikuai4` 已物理删除；新的首页、导航、对象工作区、连接流程、数据适配与全部专属样式均由 `src/panel-framework/mobile-patrol` 独立拥有。
+- 手机与桌面只共享证据、领域对象、路由、安全和历史契约，不共享 JSX、CSS、断点布局或桌面表格呈现。
+- 首页不再把桌面控制台压缩到 390px，而是按场景接管：正常态以 WAN 当前证据与趋势为主；资源、接口、采集、全离线分别由最高风险对象接管首屏。
+
+### 第一轮独立评审如何否决、如何修正
+
+- 第一轮独立 Product 与 Visual 均给出 VETO：正常态“已验证”复读、详情字段复读、667 横屏仍像竖屏硬转、平板大 CTA、选中风险蓝化、详情状态断行。
+- 修正后，WAN 卡只承载对象与流量证据；对象账本改为接口与采集通道；详情按已展示事实去重；横屏使用 64px 移动任务轨道与单一主任务；平板由对象行直接进入工作区；风险状态保持红色；详情状态压缩为单行。
+- 第二轮全新独立 Product 与 Visual 均为 PASS，`P0=0 / P1=0 / P2=0`。该结论只关闭手机产品与视觉门禁，不替代 Accessibility、Security、State Matrix、Release 或远端 CL。
+
+### 当前证据
+
+- `npm run check:types` PASS；production build PASS。
+- `npm run check:overview` PASS，12 道当前门禁全部通过。
+- `_acceptance/mobile-patrol-runtime/report.json`：7 场景 × 8 视口，`56/56`、`pass=true`、`complete=true`、`freshness=true`；Back/Forward、对象详情、更多目录和连接地址前置拒绝通过。
+- 真实原图覆盖 320/360/375/390/430、768、667×375、844×390，并额外覆盖接口列表、手机详情、平板详情和连接第一步。
+- GitHub 未上传；报告仍明确 `releasePass=false`、`releaseEvidenceEligible=false`。
+
+### Loop / Emil 心得
+
+- iOS 质量不是大字号、毛玻璃和圆角，而是单一主任务、稳定返回、可预测历史、44px 触控、状态不被选中色吞没，以及正文在 12px 以上仍保持高密度。
+- 爱快 4.0 的可迁移语言是对象身份、同列比较、时间与单位、稀缺状态色和直接调查入口，不是把所有表面染成冷蓝。
+- 横屏手机不能在“桌面双栏”和“竖屏硬转”之间二选一；本轮采用窄任务轨道 + 单一主内容，并让最高风险对象与调查入口同时进入首屏。
+- 自动矩阵只证明被编码的契约。产品与视觉必须由独立审阅原图关闭，且其 PASS 不能冒充发布资格。
+
+### 当前边界与下一步
+
+- Product / Design / Visual：PASS（当前 Mobile Patrol 精确工作树原图，P0/P1/P2 为 0）。
+- Implementation / Architecture：PASS（新 owner 已挂载，旧 owner 已删除，模型、静态、架构与 Overview 门禁通过）。
+- Mobile state matrix：PASS 56/56；Accessibility、完整 public matrix、安全回归、clean candidate 与远端精确 SHA CL 仍待重跑。
+- Release：FAIL / CLOSED；GitHub 未上传。
+
+- latestStepOutcome: `1033:mobile-patrol-56cell-product-visual-p0p1-zero-old-owner-deleted-release-readiness-replay-open`
+- nextAction: 将剩余 Accessibility、public readiness、release blocker 与时间契约门禁全部迁移到 Mobile Patrol，重跑完整本地发布证据并形成 clean candidate；在此之前禁止上传 GitHub。
+## 第 1034 步：产品所有者否决 Mobile Patrol；回到手机原生零基线
+
+### 触发 / 问题
+
+产品所有者再次明确指出，当前手机端仍是浏览器桌面控制台压窄：平直顶栏、整行表格、机械分栏、固定侧轨和桌面表单并不构成手机 UI。此前 Step1033 的代理 Product/Visual 签收不能覆盖产品所有者对真实视觉方向的否决，因此该签收立即失效。
+
+### 观察事实
+
+- `390×844` 正常页由设备条、状态横条、WAN 表格、折线图和对象表组成；它在结构上仍是窄桌面报表。
+- 接口列表、接口详情和连接向导继续使用桌面筛选栏、四格属性表和传统后台表单，手机的单手推进、内容层与控制层分离、原生层级都没有建立。
+- `667×375` 使用固定左轨，把桌面导航思路直接带入短横屏。
+- 当前底栏只是贴底矩形工具条；没有浮动控制层、内容透出、紧凑选中器或滚动层级。
+- 爱快 4.0 的可取之处是对象身份、状态比较、WAN/终端/连接/资源模块和有时间单位的监控图；不是照搬其桌面栅格。
+- Apple 当前设计规则把 Liquid Glass 放在最上层导航与控制，不把业务数据全部玻璃化；Tab Bar 用于稳定顶层导航，层级内容用 push/back 进入。
+
+### 决策
+
+1. 撤销 Step1033 的手机 Product/Design/Visual pass；历史 56 格只证明旧实现的工程行为，不再是当前视觉证据。
+2. 新建完全隔离的 `src/panel-framework/mobile-native-ui/` 表现树，手机概览、对象工作区、详情、连接和导航全部重做。
+3. 新方案采用“Native Network Briefing”：紧凑设备标题、64–76px 决策脉冲、三项对象信号、场景接管的仪表/风险队列、真实 push detail、浮动四栏 Tab Bar。
+4. Liquid Glass 只属于浮动导航和小型工具控制；数据层使用克制的实心分组表面。爱快蓝只表示活动导航、已核实路径和链接，不再染满页面。
+5. 在新树挂载并通过类型/构建/首轮截图检查后，物理删除 `mobile-patrol` 表现层；禁止通过隐藏 CSS 或兼容分支保留。
+
+### 为什么这样做
+
+- 手机效率来自单手顺序、稳定顶层入口和一次只解决一个问题，不来自把桌面字段压成更小字号。
+- 爱快的专业感来自对象、状态、比较、时间窗和操作效率；iOS 的高级感来自层级、材质归属、触控反馈和过渡连续性。两者必须在职责层融合，而不是混成蓝色圆角卡片。
+- 先撤销错误签收再实施，避免工程矩阵再次把视觉方向假绿。
+
+### 拒绝项
+
+- 拒绝继续修改 Mobile Patrol 的现有 JSX/CSS。
+- 拒绝桌面顶栏、桌面表格、固定左轨、全宽白底列表和桌面多步表单的缩放移植。
+- 拒绝把毛玻璃铺到数据卡、用大字号冒充层级、用无交互手柄暗示抽屉、用大面积蓝灰或酒红冒充爱快/iOS。
+
+### 验证边界 / 心得
+
+当前只有方向契约成立，产品、设计、视觉、实现和状态矩阵均重新打开。GitHub 未上传，发布保持 FAIL/CLOSED。真正的手机 UI 不是“更窄的控制台”，而是把巡检判断压缩成可单手完成的连续动作；材质只能强化层级，不能替代信息架构。
+
+- latestStepOutcome: `1034:owner-vetoes-mobile-patrol-native-network-briefing-clean-rebuild-active-release-closed`
+
+## 第 1035 步：独立手机所有者已挂载，旧 Mobile Patrol 物理删除
+
+### 做了什么
+
+- 新的 `src/panel-framework/mobile-native-ui/` 已接管概览、四根浮动导航、对象列表/详情、更多目录和连接流程。
+- 手机入口与兼容入口都只挂载 `MobileNativeOverview`、`MobileNativeRoutes`、`MobileNativeNavigation` 和 `MobileNativeConnection`；桌面渲染树保持独立。
+- `src/panel-framework/mobile-patrol/` 已物理删除，不保留回退 JSX、CSS 或旧选择器。
+- 路由对象仍复用共享的 SectionModel、WorkspaceRow 与证据类型，但展示归手机树所有，避免复制业务事实，也避免复用桌面布局。
+- 补齐当前/历史/不可用证据属性、四个稳定根入口、顶部更多模块入口、对象 Back/Forward、连接安全边界和带单位/时间轴的 SVG 微趋势。
+
+### 为什么这样做
+
+- 手机和桌面可以共享事实与对象模型，不能共享页面几何和操作节奏；这次把共享边界固定在数据层，而不是 JSX/CSS。
+- 先物理删除旧所有者，门禁才能真正 fail-closed，避免以后又把旧 UI 当成降级路径挂回来。
+- 本步只证明新树已接入、旧树已删除、类型/构建/模型/安全门禁通过；它还不能证明视觉成立，必须看精确截图再裁决。
+
+### 当前证据
+
+- `npm run check:types`：通过。
+- `npm run build`：手机与桌面 bundle 均通过。
+- `npm run check:mobile-telemetry-model`：7 场景事实边界、新架构和连接安全通过。
+- 当前产品、视觉、56 格矩阵、200% 文字和独立签收仍为 OPEN；GitHub 未上传，发布仍为 CLOSED。
+
+- latestStepOutcome: `1035:mobile-native-owner-mounted-mobile-patrol-physically-deleted-focused-engineering-green-visual-proof-open-release-closed`
+
+## 第 1036 步：手机任务结构、对象详情、连接流程与 200% 文本闭环
+
+### 为什么必须继续重做
+
+- 独立产品与视觉评审明确指出：旧工件仍像窄化后台，320px 事故队列被导航遮挡，667px 横屏把竖屏模块压扁，768px 只有轨道没有任务板，对象详情与连接页也没有提供足够的手机原生信息增益。
+- 本轮不把“矩阵通过”当成视觉成立，也不在旧 Mobile Patrol 上打补丁；只修改独立的 `mobile-native-ui` 所有者。
+
+### 做了什么
+
+- 概览改为一条手机主线：紧凑设备栏 → 合并的判断/三信号指挥面 → 当前路由或最高风险对象 → 流量仪表/对象队列；对象状态值不再被窄列省略，重复事故说明只保留在首要对象。
+- 667px 横屏改为同一顶部控制带中的设备上下文与四根导航，随后以左侧判断/路由、右侧信号/任务形成真实横向组合；验收允许“同一顶部带且互不重叠”，不再强迫制造空白带。
+- 768px 改为持续的双栏任务板：对象列表与当前对象证据、采集边界、证据链并存，而不是电话概览旁边附一条轨道。
+- 对象详情改为推入式手机检查页，按“观测边界 → 当前读数 → 关系与依赖 → 原始字段”组织；连接页改为紧凑 iOS 分组表单，同时保留 TLS、SSH 指纹与密码仅内存等安全语义。
+- Liquid Glass 只保留在浮动导航和控制层，内容面使用实色分组；44px 触控、强制色、减弱透明/动态和文本 200% 重排均纳入真实运行时验证。
+
+### 当前证据
+
+- `npm run check:types`：通过。
+- `npm run build`：手机与桌面 bundle 均通过。
+- `npm run check:mobile-ikuai4-runtime`：8 个聚焦场景与详情历史、连接安全、更多目录通过。
+- `npm run check:mobile-accessibility-runtime-v2`：10 个阶段全部通过，包含 200% 文本重排、强制色、横屏/平板导航、详情焦点与连接控件。
+
+### 仍然关闭的边界
+
+- 当前改动尚未完成 56 格全矩阵与新的独立产品/视觉复审，因此不得写成视觉签收，更不得发布或上传 GitHub。
+
+- latestStepOutcome: `1036:mobile-native-phone-task-architecture-focused-runtime-accessibility-green-visual-resignoff-open-release-closed`
+
+## 第 1037 步：当前手机工件完成全矩阵、无障碍与独立产品/视觉签收
+
+### 精确证据
+
+- 当前 `mobile-native` 工件键：`worktree-ed9195a9a9cd-29250856d3d6`。
+- 7 场景 × 8 视窗共 56/56 通过；320/360/375/390/430、768 平板、667/844 横屏均为当前工件，四条交互工作流全部通过。
+- accessibility-v2 10/10 阶段通过，覆盖 200% 文本重排、强制色、减弱动态/透明、触控尺寸、路由搜索、详情 Back/Forward/焦点和连接控件。
+- 独立产品评审：96/100，P0=0、P1=0、P2=0。
+- 独立视觉/交互评审：96/100，P0=0、P1=0、P2=0。
+
+### 最后一轮细化
+
+- 320px 事故首屏压缩重复说明，使三项高优先级对象和次级默认出口都不再被浮动导航遮挡。
+- WAN 图补充中间刻度并提高图内元数据可读性。
+- 平板对象证据面明确收束“已显示全部当前证据；未提供连续历史时不补画趋势”，不再用无解释空白冒充详情容量。
+- 概览、导航、对象工作区、目录和连接的按压反馈统一为 `scale(.98)`，并保留减弱动态等价状态。
+
+### 边界
+
+- 手机产品、视觉、无障碍和 56 格状态矩阵在当前本地工件上已经闭环。
+- 这不等于整体公众发布资格：更广的安全、收集器、公开发布矩阵、clean candidate 和获授权后的精确 SHA Linux/Windows/GHCR CL 仍未完成。GitHub 未上传。
+
+- latestStepOutcome: `1037:mobile-native-exact56-a11y10-product-visual-p0p1p2-zero-mobile-signoff-closed-release-still-closed`
+
+
+## 第 1038 步：否决旧手机表现层，三方向裁决为“线路优先的运行脉冲”（2026-08-15）
+
+### 为什么不能继续修旧稿
+
+产品所有者再次指出旧稿仍是电脑控制台被压窄后的结构。自动矩阵、Back/Forward 和 44px 触控只能证明工程行为，不能证明它已经像手机产品。继续在旧卡片账本上调圆角、留白或冷蓝色，只会重复“截图变一点、产品语法不变”的失败。
+
+### 三个真实方向与裁决
+
+1. iKuai 对象/线路优先：强调 WAN、接口、活动路径和状态比较。
+2. iOS 原生任务流：强调连续内容层、push 导航、拇指操作顺序与克制的浮动控制层。
+3. 移动运维决策流：强调正常态与事故态完全不同的首屏节奏。
+
+最终选择“线路优先的运行脉冲”：iKuai 提供对象、线路、接口、检测和比较语义；iOS 只负责手机层级、触控顺序、原生导航与控制层材质。明确拒绝拓扑概念稿、假 bottom sheet、桌面三栏压缩和卡片账本复刻。
+
+### 原型签收
+
+- 390×844 normal / interfaces-down / resource-full 原型完成。
+- 第一轮独立 Product 与 Visual 均 VETO；根据真实 P1 增加事故关系证据、资源连续性说明、图表图例并收轻导航。
+- 最终原型独立 Product 与 Visual 均 PASS，P0=0、P1=0。
+- 原型通过只允许进入生产切换，不等于生产视觉或发布通过。
+
+### Loop / Emil 心得
+
+- Product Company Loop 的 Design gate 必须由真实图像打开，不能由 JSX、CSS 或自命名 DOM 属性打开。
+- Emil 的价值不在“增加动画”，而在删掉无任务目的的视觉暗示，让常用操作立即、短促、可中断。
+- latestStepOutcome: `1038:three-mobile-directions-adjudicated-line-first-operational-pulse-prototype-product-visual-p0p1-zero`
+
+## 第 1039 步：Mobile Pulse 生产 owner 接管，旧手机表现层物理删除（2026-08-15）
+
+### 所有权与隔离
+
+- 新生产 owner：`src/panel-framework/mobile-pulse-ui/`。
+- 概览、对象工作区、详情、四根导航和连接流程均由该目录独立拥有。
+- 手机入口只挂载 `MobilePulseOverview`、`MobilePulseRoutes`、`MobilePulseNavigation` 和 `MobilePulseConnection`。
+- 旧 `src/panel-framework/mobile-native-ui/` 全部物理删除；桌面组件、桌面样式和桌面 DOM 不进入手机树。
+
+### 事实边界
+
+- 默认路由只来自明确的活动路径；不存在 `rows[0]` 兜底。
+- 缺失速率保持 unavailable，不改写为 0 bps；明确观测到的零值仍保留为零。
+- 资源连续性只统计尾随相邻超阈值记录，不冒充持续时间。
+- `navigator.onLine` 只作为浏览器提示，不阻断真实快照请求。
+- RFC3339 时间契约保持严格。
+
+### 当前边界
+
+这一步只证明新 owner 已经接管且类型检查通过。生产截图、响应式、视觉、Accessibility 与发布资格全部保持 pending。
+
+- latestStepOutcome: `1039:mobile-pulse-production-owner-mounted-rejected-mobile-native-physically-deleted-types-green`
+
+## 第 1040 步：真实生产截图否决首轮实现，触控修复后 200% 文本门禁暴露问题（2026-08-15）
+
+### 真实截图发现
+
+首轮生产矩阵虽然 56/56，但主 Agent 和独立只读视觉审查共同发现：告警脉冲 SVG 变成实心色块、667×375 图表重叠、768 平板侧栏遮挡和空白、事故页空洞、详情被底栏覆盖、密码输入样式失配、H1 层级错误，以及部分目标不足 44px。
+
+这些问题说明矩阵只证明页面能渲染，不能替视觉签收。
+
+### 门禁结果
+
+- 工作区搜索、清除、筛选、排序全部补到 44px。
+- production build 通过。
+- Accessibility runtime 首次重跑失败：200% 文本注入后，320px 的省略号和越界控件仍被门禁准确抓住。
+- 因此任务保持 active、无 blocker；没有把失败标成受阻，也没有跳过继续工作。
+
+- latestStepOutcome: `1040:production-screenshots-expose-eight-real-p1s-touch-targets-fixed-build-green-a11y-red`
+
+## 第 1041 步：生产视觉 P1 根因修复，事实关系上下文进入事故首屏（2026-08-15）
+
+### 修复与原因
+
+- 脉冲竖线只接收背景色，SVG 只接收前景色，消除实心方块。
+- 手机标题改为“概览”，设备与 RouterOS 信息降为上下文副标题。
+- 短横屏隐藏低优先级巡检列表，禁止与图表重叠。
+- 平板为 62px 侧栏预留独立轨道，不再覆盖主内容。
+- 详情 push 层隐藏全局 Tab Bar，避免固定导航压住对象证据。
+- 密码输入继承同组原生列表输入样式。
+- 200% 文本模式取消关键对象名和证据的省略裁切，允许真实重排。
+- 接口事故新增“默认出口核验 + 出口依赖/仅 Down 分组 + 全部接口/默认路由入口”。
+- 资源事故新增“尾随记录 + 转发面未测量边界 + 资源/采样审计入口”。
+- 将“已确认接口影响”收窄为“出口依赖接口未运行”，禁止把配置依赖证据夸大成业务中断。
+
+### 验证
+
+- `check:types` PASS。
+- Mobile Pulse 7 场景模型、架构、连接安全和 online-hint 真值门禁 PASS。
+- latestStepOutcome: `1041:mobile-pulse-production-visual-root-fixes-and-truth-context-model-gates-green`
+
+## 第 1042 步：200% 文本、导航与 56 格生产矩阵重新闭环（2026-08-15）
+
+### 200% 文本回归
+
+第一次修复后，门禁仍准确发现 320px 下默认出口按钮超过视口、事故上下文动作因负 margin 越界。根因不是字号，而是 320px 规则遗漏新 context owner，且 route 仍按 32px 外扩。随后把 320px 外扩统一为 24px，并让 context 边距跟随 12px 手机 gutter。
+
+### 精确结果
+
+- production build PASS：mobile CSS 约 40.8 kB，mobile JS 约 354.9 kB；desktop bundle 保持独立。
+- Mobile Pulse 7 场景 × 8 视口：56/56，`pass=true`、`complete=true`。
+- Back/Forward、焦点、对象详情、更多目录和连接地址前置拒绝通过。
+- Accessibility runtime-v2 10/10 阶段通过，包含 200% text-only、强制色、减弱动态/透明、44px、底部/侧边导航、路由搜索和连接控件。
+
+### 仍未允许的结论
+
+这些结果只关闭当前实现的工程和 Accessibility 阻断；Product、Design 与 Visual 必须对当前生产原图重新独立签收。整体 public release、clean candidate 与远端精确 SHA Linux/Windows/GHCR CL 仍为 CLOSED。
+
+- latestStepOutcome: `1042:mobile-pulse-exact56-and-accessibility10-green-production-independent-visual-signoff-open-release-closed`
+
+
+## 第 1043 步：当前生产原图独立 Product 与 Emil Visual 双重否决（2026-08-15）
+
+### 精确评审范围
+
+两名独立评审分别逐一检查 _acceptance/mobile-pulse-runtime/report.json 绑定的 56 张当前生产原图，并额外检查接口工作区、手机详情、平板详情和连接页。评审不参与实现，也没有用 56/56 或 Accessibility 绿灯替代产品判断。
+
+### 结果
+
+- Product：VETO，P0=0、P1=4、P2=4。
+- Emil Visual / Interaction：VETO，P0=0、P1=8、P2=5。
+- 结构化记录：
+  - docs/decision-system/independent-reviews/step1043-mobile-pulse-product.json
+  - docs/decision-system/independent-reviews/step1043-mobile-pulse-visual.json
+
+### 共同 P1 根因
+
+1. 768 平板仍是手机模块机械分栏，没有“对象列表 + 当前所选对象证据”的真实任务关系。
+2. Fleet 与 single 在首屏没有规模、设备比较或风险分布差异。
+3. all-offline 缺最后可用证据与仍可达采集面的判断链。
+4. 正常首屏重复状态和默认路由，缺唯一视觉主线。
+5. 全宽白区、细边线和相同标题模式使多场景退化成同构字段墙。
+6. 资源和接口事故缺少快速比较与当前焦点。
+7. 667/844 横屏仍是左状态、右报表的微型桌面。
+8. 概览、工作区、详情和连接页尚未形成同一套移动产品语法。
+
+### 裁决
+
+Product、Design、Visual 继续保持 failed；工程矩阵和 Accessibility 只作为已验证输入保留。返回 Design / Build，先解决平板任务架构、Fleet、all-offline、首屏复读、场景同构和横屏桌面化，再生成新指纹重新独立签收。没有 blocker，GitHub 仍未上传。
+
+### Loop / Emil 心得
+
+- 独立评审的价值正是推翻“我已经改得差不多”的自我感觉；只要 P1 不为零，就必须回到最早负责的阶段。
+- 视觉材料不是设计主线。iKuai 的专业感来自对象比较和任务效率，iOS 的完成度来自层级、节奏与一致的触控行为。
+- latestStepOutcome: `1043:mobile-pulse-exact-production-product-visual-double-veto-design-remediation-active-release-closed`
+
+## 第 1044 步：从手机任务流重建概览、事故、横屏和平板架构（2026-08-16）
+
+### 为什么不能继续沿用旧页面骨架
+
+- 用户再次明确否决“桌面报表压窄”的手机思路。旧实现即使拥有独立渲染树，仍通过同构白色区块、横屏双栏、平板机械分栏和重复路线结论复刻桌面阅读方式。
+- 本轮不把问题归因于颜色、圆角或字号，而是回到 Design / Architecture：每一层只回答一个问题，正常态与事故态使用不同任务节奏，横屏仍保持单一手机任务流，平板必须具有对象选择与所选对象证据关系。
+- Product Company Loop 负责把独立评审的 P1 返回最早责任阶段；Emil gate 负责删除无任务目的的动效与视觉暗示。二者都不允许用自动矩阵冒充视觉签收。
+
+### 结构决策
+
+1. 正常手机首屏把“默认出口 + 当前上下行 + 15 分钟趋势”合并为一个线路仪表；状态脉冲只回答是否需要立即处理，巡检区不再重复默认路由。
+2. 资源事故使用 CPU / 磁盘 / 内存三列的当前值、阈值、差值与尾随相邻样本比较；接口事故把有明确出口依赖的对象置顶；无快照改为恢复当前证据步骤；采集失败改为通道事实；全离线改为有界线路记录。
+3. Fleet 不再与 single 同图：只在无事故时显示规模与比较摘要，实际风险出现时仍由风险场景接管。
+4. all-offline 明确展示最近可用证据、当前采集面是否可观测和“不得由此推断业务”的边界。
+5. 768 平板删除固定“继续检查”任务壳，改为对象列表 + 当前所选对象的新增证据；正常态不再同时重复线路仪表和已选路由详情。
+6. 667 / 844 短横屏删除左状态、右报表、顶部导航的微型桌面结构，恢复为可纵向滚动的单一手机任务流和底部四根任务导航。
+7. 详情页删除标题状态复读，将不影响当前判断的 unavailable / raw 字段下沉到“更多证据”。
+
+### 首轮工程结果
+
+- 两路 `gpt-5.6-terra/high` 子代理分别完成 Fleet / all-offline 真值投影，以及详情 / 工作区去重；主线程重建概览、场景、平板和横屏。
+- `npm run check:types`、Mobile Pulse 模型 / 架构 / 连接安全 / online-hint 门禁通过。
+- 本步没有 Product / Visual 签收；它只证明结构重做已进入真实生产树。
+
+- latestStepOutcome: `1044:phone-native-task-flow-scene-tablet-landscape-and-detail-architecture-rebuilt-focused-types-green`
+
+## 第 1045 步：新手机结构通过 56 格与无障碍门禁，独立产品视觉复审仍打开（2026-08-16）
+
+### 当前可观察工件
+
+- 正常态形成唯一线路主仪表；Fleet 使用四项规模 / 运行比较；资源态形成三对象阈值比较；接口、无快照、采集失败和全离线分别使用不同的信息结构。
+- 390 手机保留紧凑标题、64px 左右的决策脉冲、一个主仪表 / 风险任务和轻量四根导航；控制层使用克制透明材质，数据层保持实色。
+- 768 平板为真实 master-detail；短横屏为底部四根导航下的单一手机任务流，不再把导航与状态改造成桌面顶部工具条。
+- WAN 图使用固定 viewBox、等比缩放、明确时间窗、单位、峰值、中值、零值和下载 / 上传线型说明，不再使用 `preserveAspectRatio="none"` 拉伸曲线。
+
+### 验证与门禁修正
+
+- production build PASS：mobile CSS 约 47.76 kB、mobile JS 约 360.90 kB；桌面 bundle 独立。
+- Mobile Pulse 7 场景 × 8 视口 56/56 PASS，四条历史 / 详情 / 连接 / 目录工作流通过。
+- Accessibility runtime-v2 10/10 PASS：44px、200% text-only、Back/Forward 焦点、减弱动态 / 透明、强制色、手机 / 横屏 / 平板导航、搜索键盘和连接控件均通过。
+- 旧无障碍断言曾强制短横屏导航放在顶部；这与当前独立视觉否决“微型桌面顶部控制”矛盾。本轮把它改为能力门禁：短横屏必须保持四根、单行、44px、固定且完全可达的手机任务控制，但不强制桌面式顶部位置。
+
+### 当前边界
+
+- 自动矩阵和 Accessibility 只说明工程 / 可访问性成立，不能关闭 Product / Design / Visual。
+- 下一步必须由新的独立 Product 和 Emil Visual 审阅当前精确原图；任一 P1 不为零就继续回到 Design / Build。
+- GitHub 未上传，完整 public release、clean candidate、RouterOS soak 和精确 SHA Linux / Windows / GHCR CL 仍关闭。
+
+- latestStepOutcome: `1045:phone-native-mobile-pulse-56cell-a11y10-green-independent-product-visual-review-open-release-closed`
+
+## 第 1046 步：否决 Mobile Pulse 呈现层，建立全新的手机对象任务流（2026-08-16）
+
+### 为什么这次不能继续小修
+
+- 用户再次指出当前稿仍然是电脑监控模块被压进手机，所谓 iOS 只剩圆角、浅蓝和底部玻璃；这是架构误判，不是字号或间距问题。
+- 三名独立只读审稿人对当前生产原图形成一致结论：`StatusStrip / LineInstrument / SceneTakeover / EvidenceInspector / Resource grid` 仍然是桌面 Dashboard 语法，横屏和平板尤其暴露了机械分栏问题。
+- 因此本轮明确废弃 `mobile-pulse-ui` 的概览和导航呈现所有权；证据真值层、路由核验、缺失值语义与只读安全可以保留，但旧 JSX、旧 class、旧 CSS 和旧断点结构不得复制到新树。
+
+### 外部设计依据
+
+- Apple HIG 的 Liquid Glass 是导航和控制层材料，不是数据内容层皮肤；内容层应保持实体、稳定和可读。
+- Apple 的手机顶级导航应保持稳定、带图标与文字，并服务于内容区域切换，不承载当前页动作。
+- 爱快 4.0 的价值来自对象、状态、上下行、阈值、连接关系和直接入口能在一次扫视中比较；不是把整个页面染成冷蓝，也不是把桌面表格改成卡片。
+
+### 新的唯一手机语法
+
+1. 顶部只保留设备上下文、证据鲜度、刷新和更多；不会再用全宽正常态结论卡占据首屏。
+2. 正常态只有一个默认出口任务面：活动路径、上下行和带时间/单位/峰值的 15 分钟双序列图；随后是 WAN、采集、接口、资源等连续对象行。
+3. 事故态由最高风险对象直接接管：资源使用同轴的当前/阈值/差值/尾随样本行；接口使用按默认路由依赖排序的对象队列；采集、无快照和 WAN 分别拥有自己的判断边界。
+4. 手机内容层使用连续实色分组和一像素分隔，不再堆叠白卡；Liquid Glass 只允许出现在刷新/更多与四根顶级导航。
+5. 390px 使用紧凑单手巡检流；320px 不缩成微型桌面；短横屏围绕同一个对象任务横向展开；768px 后续必须继续补齐真正对象—详情工作区，不能靠把两张卡拉高填空。
+
+### 当前实现与真实截图
+
+- 新 owner：`src/panel-framework/mobile-ops-ui/`。
+- `MobileOpsOverview` 与 `MobileOpsNavigation` 已接管实际手机 bundle；旧概览和旧导航不再被手机入口引用。
+- 正常 390 原图现在表现为紧凑顶栏、证据行、默认出口+速率+趋势联合仪表、四项连续巡检对象和四根导航；资源与接口事故已形成与正常态不同的任务树。
+- 修复了 `24.00 MbpsMbps` 与峰值重复单位；新增 WAN、采集、接口和资源对象行，删除正常态大面积复读。
+- 资源平板不再通过两个不同 grid row 制造面板内部大空洞；证据与下一步进入同一右侧支持列。
+
+### 已验证与仍打开的边界
+
+- `npm run check:types`：PASS。
+- production build：PASS；手机 bundle 已包含新 `mobile-ops-ui`。
+- 8 格聚焦运行时与四条对象详情/历史/连接/目录工作流：PASS。
+- 旧 `mobile-pulse-ui` 的工作区与连接仍暂时被非概览路由引用，因此“整套手机呈现层物理删除”尚未完成；这不是 blocker，下一原子步骤继续替换这些所有者。
+- Product / Visual、56 格、200% 文字和整体发布资格均保持 OPEN；GitHub 未上传。
+
+- latestStepOutcome: `1046:mobile-ops-clean-overview-navigation-mounted-focused-runtime-green-old-workspace-connection-replacement-active-release-closed`
+
+## 第 1047 步：Mobile Ops 全手机所有权闭合、可访问性复验通过，独立视觉 P1 继续整改（2026-08-16）
+
+### 本步纠正了什么
+
+- `mobile-pulse-ui` 的工作区、连接流与样式所有权已经全部迁入 `src/panel-framework/mobile-ops-ui/`，旧目录被物理删除；实际手机入口不再引用被否决的呈现树。
+- 可访问性门禁不再把已删除 owner 当成通过条件，根标记统一迁为 `data-mobile-ops-*`；保留了 44px 触控、Back/Forward 焦点恢复、200% 文字重排、减弱动态、减弱透明和强制色检查。
+- 真实浏览器门禁首先暴露 42px 顶栏按钮与 40px 筛选按钮，产品代码修为 44px；随后 200% 文字暴露紧凑列裁切，新增基于运行时文字能力的重排，而不是按固定设备宽度猜测。
+- 底部导航由悬浮大胶囊改为占据完整手机底边的系统控制层，并使用共享保留高度；横屏不再静默 `display:none` 第四个及之后的事故对象。
+- Fleet 只在没有更高风险时成为独立场景，新增异常、待确认、已核验计数与风险优先对象队列；接口等真实事故仍优先于规模属性。
+
+### 已验证证据
+
+- `npm run check:types`：PASS。
+- `npm run check:mobile-telemetry-model`：PASS，7 场景真值、架构、安全连接与浏览器在线提示边界均为绿色。
+- production build：PASS；手机 CSS 42.67 kB，手机 JS 343.03 kB。
+- `npm run check:mobile-accessibility-runtime-v2`：10/10 PASS，包含真实 320/390 的 200% 文字重排、强制色、四根导航、对象搜索、详情历史焦点和连接控件。
+
+### 独立视觉结论与仍打开项
+
+- 独立只读视觉审查确认 390 正常态已经形成真实手机应用基础，不再是旧 Mobile Pulse；同时仍给出 FAIL：横屏对象丢失、悬浮导航、Fleet 非独立、平板任务架构和事故复读为 P1。
+- 本步已在源码中处理前三项；新截图与完整 56 格尚需重放，不能把源码修复直接冒充视觉关闭。
+- 平板概览仍需形成对象列表—当前对象证据关系；事故 signal / objects / evidence 仍需进一步去重。Product / Visual 保持 OPEN，GitHub 未上传，发布保持关闭。
+
+- latestStepOutcome: `1047:mobile-ops-full-owner-a11y10-green-visual-p1-remediation-active-release-closed`
+
+## 第 1048 步：否决 Mobile Ops 桌面缩窄语法，Mobile Native 全手机所有权重建并完成 56 格工程矩阵（2026-08-16）
+
+- 产品所有者再次明确否决“桌面运维页压进手机”的方法。主 Agent 逐张复核 390、320、横屏与 768 原图，确认旧候选仍由同权白卡、表格式字段和平板机械分栏主导；因此禁止继续在 `mobile-ops-ui` 上美容。
+- 设计输入重新回到手机任务：顶部只承担设备身份和工具，证据状态降为 32px 边界，结论不再占一个同权卡片；正常态只有一个默认出口/当前速率/15 分钟趋势主模块，事故态分别拥有资源、接口路径、采集、快照与 WAN 骨架。
+- 爱快 4.0 的对象语法通过稳定的 WAN、路由、接口、采集、资源图标和风险优先对象队列表达；iOS 材质只用于顶部工具和底部导航，内容层保持实色与清晰边界，不使用假 bottom sheet、假 grabber 或整页毛玻璃。
+- 新唯一手机 owner 为 `src/panel-framework/mobile-native-ui/`，覆盖概览、四根导航、对象目录、搜索/筛选/排序、对象详情和 RouterOS 连接。旧 `src/panel-framework/mobile-ops-ui/` 文件与空目录均已物理删除；桌面呈现树未被复用。
+- 连接页重新实现为手机分组表单，保持地址验证、密码仅当前内存、REST/SSH 独立结果、TLS 风险确认、SSH 指纹确认/变化阻断和只保存非秘密元数据。
+- 第一轮新原图被独立视觉评审以 P1×6 否决；随后移除证据/结论同权白卡、增加资源影响边界、把接口事故改为默认出口路径中心、修复 320 导航遮挡、建立 iPad 左侧巡检对象/右侧当前对象证据布局，并为对象建立稳定图标语法。
+- `npm run check:types` 与 production build 通过；手机 CSS 从 67.60 kB 在删除旧 owner 后降至 31.01 kB。当前 `check-mobile-ikuai4-runtime --full` 为 56/56、四个交互工作流全部通过。
+- 56 格只证明工程与响应式行为，不代表产品签收。新的精确原图尚需重新进行独立 Product / Visual P0/P1 评审；无障碍及其他发布门禁需迁移到新 owner 后复验。GitHub 未上传，发布保持关闭。
+
+- latestStepOutcome: `1048:mobile-native-full-owner-old-owner-deleted-runtime56-green-independent-resignoff-open-release-closed`
+## 第 1049 步：用户否决 Mobile Native，手机端再次回到零基线（2026-08-16）
+
+- 时间：2026-08-16
+- 结论：`1049:owner-vetoes-mobile-native-card-console-mobile-flow-clean-rebuild-selected-release-closed`
+- 用户裁决：当前界面仍不像手机 UI，依然把电脑监控的分块思路压进窄屏；禁止继续小修小补。
+- 原图复核：390px 正常态由状态、WAN 白卡和巡检白卡连续堆叠，底部留空明显；768px 把两个手机模块机械并排；事故页虽有真实因果词，但仍是相同容器换数据。
+- 根因：把“触控目标达到 44px”和“使用系统字体、玻璃导航”误当成手机产品成立，没有形成单拇指任务主线、场景节奏和对象直达关系。
+- 新方向：`Mobile Flow Console`。内容层改为边到边状态轨、唯一场景仪表和紧凑对象列表；Liquid Glass 只保留在控制层；七场景必须采用不同的决定性仪表；平板使用有默认选中对象的 master/detail。
+- 架构裁决：创建全新的 `src/panel-framework/mobile-flow-ui/`，不得导入 `mobile-native-ui` 的呈现组件或 CSS；新树 smoke 通过后物理删除旧 owner。
+- 证据真实性：当前/历史/不可用、默认路由核验、缺失速率、原子采样与末尾连续样本契约继续保留，因为这些是产品数据边界，不是被否决的视觉方案。
+- 当前门禁：Product=`open`，Design/Visual=`open`，Accessibility=`replay required`，State matrix=`stale after owner change`，Release=`closed`，GitHub=`untouched`。
+- 下一步：实现新 owner 的概览、四根导航、对象工作区、详情和连接流；生成新的 56 格原图后再申请独立 Product/Visual 签收。
+
+- latestStepOutcome: `1049:owner-vetoes-mobile-native-card-console-mobile-flow-clean-rebuild-selected-release-closed`
+
+## 第 1056 步：Mobile Flow 手机任务流工程、视觉与可访问性闭环，发布资格仍待 clean candidate（2026-08-16）
+
+### 为什么这次不再是“桌面压进手机”
+
+- 手机端由 `src/panel-framework/mobile-flow-ui/` 独占 JSX 与 CSS；被否决的 Mobile Native / Mobile Ops / Mobile Pulse 呈现树已物理删除。
+- 首屏只沿一条拇指扫描路径组织：设备工具栏 → 当前/历史/不可用证据轨 → 可验证结论 → 场景专属仪表 → 对象或下一步。
+- 七个场景不再共用卡片模板：正常态是默认路径与原子流量；Fleet 是最高风险与范围统计；全离线是出口对象；无快照撤回数字；采集失败分离 REST/SSH；资源异常比较当前值、阈值和连续样本；接口异常展示路径到第一责任接口的因果链。
+- 390px 使用四个稳定根入口；667/844 横屏改为左右任务流；768px 使用左侧根导航、对象/仪表工作区和选中证据区。对象详情为手机 push flow，平板为真实 master/detail。
+
+### 独立评审发现与裁决
+
+- 首轮 Product 指出采集页重复 SSH；该问题先被浏览器门禁复现为红，再改为新增信息的“采集来源台账”下一步。
+- 主 Agent 额外发现两位评审都漏掉的 768px 根导航压住对象列表；增加导航/工作区几何隔离门禁后修复。
+- 同一门禁随后发现 Fleet 和资源场景的 signal/object 复读；Fleet 从对象队列移除 signal 已拥有的首对象，资源改为“资源采样审计”下一步。
+- Product 对最终 worktree 工件的产品体验没有新增 P1/P2，但因 `worktree-*`、`releasePass=false`、`releaseEvidenceEligible=false` 正确拒绝把它当作正式发布证据；这是发布资格 P0，不是手机体验回退。
+- 独立 Emil Visual / Interaction 对最终 60 张原图 PASS，P0=0、P1=0、P2=0。
+
+### 当前精确证据
+
+- 工件：`worktree-ed9195a9a9cd-244947f64392`；fingerprint `244947f64392fd11b27822de368234be81faf6da33d430733f759eef5a069a77`。
+- Mobile Flow 7 场景 × 8 视口：56/56 PASS；Back/Forward、对象可访问性、连接地址拒绝和更多目录四条工作流 PASS。
+- Accessibility runtime-v2 10/10 PASS：44px、200% text-only、强制色、减弱动态/透明、路由搜索、详情历史/焦点和连接控件全部通过。
+- `npm run check:overview` 12/12 PASS；production build PASS，手机 bundle 与桌面 bundle 分离。
+
+### Loop / Emil 心得
+
+- 视觉评审也会漏项；真实签收需要“原图判断 + 可复现几何门禁”，二者不能互相替代。
+- 高密度不是同一个对象在 proof、signal、object 三层重复。signal 已解释的对象，下一层必须提供新对象或新行动。
+- iOS 感来自稳定控制层、清晰 push/master-detail、精确触控与克制材质；iKuai 感来自对象、状态、路径、比较和行动效率。配色与圆角都不能代替这两种结构。
+
+### 当前边界
+
+- 手机产品体验、Visual、Architecture、Accessibility 和 56 格工程矩阵已闭环。
+- 当前仍不是 release evidence：必须先形成 clean committed candidate，再对该非 worktree 精确 SHA 重新生成完整公开矩阵、独立签收和全部 release gates。
+- GitHub 未上传；Linux、Windows、GHCR exact-SHA CL 均未开始，发布保持 CLOSED。
+
+- latestStepOutcome: `1056:mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open`

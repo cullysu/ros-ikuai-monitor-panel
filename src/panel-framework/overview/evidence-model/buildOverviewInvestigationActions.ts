@@ -83,10 +83,17 @@ function investigation(
   return { route, mode: "investigation", scope: "object", label, note, ...compactCopy(label, note), icon, navigation };
 }
 
+/**
+ * `priorityObjects` is the already-ranked, stable incident queue for the
+ * active risk. The primary action must keep that ordering instead of falling
+ * back to an unscoped workspace merely because more than one object exists.
+ */
+function primaryTargetObjectId(priorityObjects: OverviewPriorityObject[], route: PanelRouteId): string | null {
+  return priorityObjects.find((object) => object.route === route && object.targetObjectId)?.targetObjectId || null;
+}
+
 function uniqueTargetObjectId(priorityObjects: OverviewPriorityObject[], route: PanelRouteId): string | null {
-  if (priorityObjects.length !== 1) return null;
-  const [object] = priorityObjects;
-  return object.route === route && object.targetObjectId ? object.targetObjectId : null;
+  return priorityObjects.length === 1 ? primaryTargetObjectId(priorityObjects, route) : null;
 }
 
 function investigationNavigation(
@@ -156,7 +163,7 @@ export function buildOverviewInvestigationActions({
       ];
     }
     if (risk === "wan") {
-      const objectId = uniqueTargetObjectId(priorityObjects, "lineStatus");
+      const objectId = primaryTargetObjectId(priorityObjects, "lineStatus");
       const navigation = objectId
         ? investigationNavigation(evidenceAt, null, objectId)
         : null;
@@ -169,7 +176,7 @@ export function buildOverviewInvestigationActions({
       ];
     }
     if (risk === "interfaces" || risk === "interface-review") {
-      const objectId = uniqueTargetObjectId(priorityObjects, "interfaces");
+      const objectId = primaryTargetObjectId(priorityObjects, "interfaces");
       const navigation = investigationNavigation(evidenceAt, risk, objectId);
       return [
         navigation

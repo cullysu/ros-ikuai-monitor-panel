@@ -26,6 +26,13 @@ const {
   toolbarScenarioConfig,
 } = require("./check-browser-toolbar-zoom200");
 
+const runnerSource = fs.readFileSync(path.join(__dirname, "check-browser-toolbar-zoom200.js"), "utf8");
+
+assert.match(runnerSource, /main\[data-ikuai-mobile-home\]/, "the Edge runner must inspect the current iKuai 4 overview main landmark");
+assert.match(runnerSource, /main\[data-ikuai4-mobile-route/, "the Edge runner must inspect the current iKuai 4 route owner");
+assert.match(runnerSource, /\.ikuai4-object-row/, "the Edge runner must focus a real iKuai 4 route object");
+assert.doesNotMatch(runnerSource, /data-mobile-pulse|data-mobile-ops-overview|mop-route-row|\.oc-objects/, "the Edge runner must not retain retired mobile selector fallbacks");
+
 assert.equal(TOOLBAR_INCREMENTS, 5, "real Edge toolbar flow must remain Ctrl+0 + five Ctrl++ commands");
 assert.deepEqual(TOOLBAR_SCENARIOS, ["normal", "interfaces-down"], "the real Edge matrix must independently exercise normal and highest-risk interfaces-down");
 assert.deepEqual(
@@ -152,4 +159,4 @@ assert.match(
   "the Windows-owned capture must expose bounded foreground stabilization diagnostics",
 );
 
-process.stdout.write(`${JSON.stringify({ pass: true, contract: "edge-toolbar-zoom200-offline-v5", cells: TOOLBAR_200_REQUIRED_CELLS.length }, null, 2)}\n`);
+process.stdout.write(`${JSON.stringify({ pass: true, contract: "edge-toolbar-zoom200-offline-v7-ikuai4", cells: TOOLBAR_200_REQUIRED_CELLS.length }, null, 2)}\n`);

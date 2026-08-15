@@ -1,10 +1,10 @@
 # Mobile Incident Split Lens design contract
 
-- status: `implemented / local independent acceptance passed / release closed`
+- status: `superseded / owner rejected / historical only`
 - decisionStep: `947`
 - supersedesPresentation: `overview/mobile-overview/optical-patrol`
 - desktopBoundary: desktop Overview remains isolated at 1200+
-- releaseBoundary: exact clean runtime candidate local acceptance only; not a public promotion authorization
+- releaseBoundary: superseded by Step968 Mobile Attention Queue; never a public promotion authorization
 
 ## Product thesis
 

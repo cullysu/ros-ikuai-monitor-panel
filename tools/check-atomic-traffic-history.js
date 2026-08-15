@@ -10,8 +10,10 @@ const app = fs.readFileSync(appPath, "utf8");
 const fixture = fs.readFileSync(fixturePath, "utf8");
 const schemaPath = path.join(root, "src", "panel-framework", "runtime", "panelRuntimeSchema.ts");
 const typesPath = path.join(root, "src", "panel-framework", "overview", "types.ts");
+const evidenceModelPath = path.join(root, "src", "panel-framework", "overview", "evidence-model", "buildOverviewInstruments.ts");
 const schema = fs.readFileSync(schemaPath, "utf8");
 const types = fs.readFileSync(typesPath, "utf8");
+const evidenceModel = fs.readFileSync(evidenceModelPath, "utf8");
 
 const failures = [];
 const expectAbsent = (source, pattern, label) => {
@@ -25,6 +27,14 @@ const expectIncludes = (source, text, label) => {
 };
 expectIncludes(schema, "validTimestamp(sample.timestamp)", "traffic sample timestamp validation is missing");
 expectIncludes(types, "timestamp: string;", "traffic sample timestamp type is not required");
+expectIncludes(types, "export interface OverviewLegacyTrafficHistory", "legacy traffic compatibility boundary is not explicit");
+expectIncludes(types, "readonly timestamps?: readonly unknown[];", "legacy timestamps are not read-only");
+expectIncludes(types, "readonly uplink?: readonly unknown[];", "legacy uplink values are not read-only");
+expectIncludes(types, "readonly downlink?: readonly unknown[];", "legacy downlink values are not read-only");
+expectIncludes(evidenceModel, "function atomicTrafficSampleTimestamp", "traffic evidence accepts an unscoped timestamp source");
+expectIncludes(evidenceModel, "parseRfc3339Timestamp(value)", "atomic traffic timestamps do not require RFC3339 parsing");
+expectAbsent(evidenceModel, /timestampOf\(record\.timestamp\)/, "traffic evidence still accepts numeric or unqualified sample timestamps");
+expectAbsent(evidenceModel, /history\.(?:timestamps|uplink|downlink)/, "traffic evidence still reads legacy parallel arrays");
 // One timestamped aggregate stream is the only history contract consumed by the UI.
 // WAN-row parallel arrays have no per-sample provenance and must not be emitted.
 expectPresent(builder, /trafficSamples/, "aggregate trafficSamples producer is missing");

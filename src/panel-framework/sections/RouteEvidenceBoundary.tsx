@@ -4,7 +4,7 @@ import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
 import { routeRecoveryPolicyFor } from "./route-recovery/routeRecoveryPolicies";
 import { missingEvidenceLabels, sectionRecoveryState } from "./route-recovery/routeRecoveryState";
 import type { SectionModel } from "./sectionModels";
-import "../mobile/mobile-interface-recovery.css";
+import "./route-evidence-boundary.css";
 
 const DESKTOP_RECOVERY_TOKENS = {
   "--mdw-line": "rgb(42 83 99 / 14%)",

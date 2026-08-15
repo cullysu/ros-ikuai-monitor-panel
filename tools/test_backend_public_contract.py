@@ -409,12 +409,12 @@ class PublicTimestampContractTest(unittest.TestCase):
         self.assertEqual((protocol_by_name["TCP 活跃流量"]["upRate"], protocol_by_name["TCP 活跃流量"]["downRate"], protocol_by_name["TCP 活跃流量"]["totalRate"]), (None, None, None))
         self.assertEqual((protocol_by_name["UDP 活跃流量"]["upRate"], protocol_by_name["UDP 活跃流量"]["downRate"], protocol_by_name["UDP 活跃流量"]["totalRate"]), (0, 0, 0))
 
-    def test_terminal_mobile_inspector_marks_missing_rates_unavailable(self) -> None:
-        inspector = (ROOT / "src" / "panel-framework" / "mobile" / "mobile-inspector" / "TerminalLogInspectors.tsx").read_text(encoding="utf-8")
+    def test_mobile_object_inspector_keeps_missing_values_unavailable(self) -> None:
+        inspector = (ROOT / "src" / "panel-framework" / "mobile-flow-ui" / "workspace" / "MobileFlowWorkspace.tsx").read_text(encoding="utf-8")
 
-        self.assertIn("const hasCompleteRateObservation = hasDownRate && hasUpRate;", inspector)
-        self.assertIn("本次连接记录未提供速率观测", inspector)
-        self.assertIn("连接记录未提供完整双向速率", inspector)
+        self.assertIn('row.values[column.key] || "未取得"', inspector)
+        self.assertIn("<dd>{value}</dd>", inspector)
+        self.assertNotIn('value || 0', inspector)
 
     def test_production_history_exposes_atomic_timezone_qualified_evidence_only(self) -> None:
         collector = app.Collector()
@@ -430,16 +430,31 @@ class PublicTimestampContractTest(unittest.TestCase):
         }
         rest["interfaces"] = [{"name": "ether1", "type": "ether", "running": True, "rx-byte": "10", "tx-byte": "20"}]
 
-        collector.build_snapshot(
-            rest,
-            {"counts": {"all": None, "tcp": None, "udp": None, "icmp": None}, "active_connections": []},
-            fresh_counter_sample=True,
-        )
-        snapshot = collector.build_snapshot(
-            rest,
-            {"counts": {"all": None, "tcp": None, "udp": None, "icmp": None}, "active_connections": []},
-            fresh_counter_sample=True,
-        )
+        timestamps = [
+            "2026-08-10T01:00:00Z",
+            "2026-08-10T01:00:01Z",
+            "2026-08-10T01:00:02Z",
+            "2026-08-10T01:00:03Z",
+            "2026-08-10T01:00:04Z",
+            "2026-08-10T01:00:05Z",
+            "2026-08-10T01:00:06Z",
+        ]
+        with patch.object(app, "format_iso_now", side_effect=timestamps):
+            collector.build_snapshot(
+                rest,
+                {"counts": {"all": None, "tcp": None, "udp": None, "icmp": None}, "active_connections": []},
+                fresh_counter_sample=True,
+            )
+            snapshot = collector.build_snapshot(
+                rest,
+                {"counts": {"all": None, "tcp": None, "udp": None, "icmp": None}, "active_connections": []},
+                fresh_counter_sample=True,
+            )
+            non_rate_snapshot = collector.build_snapshot(
+                rest,
+                {"counts": {"all": None, "tcp": None, "udp": None, "icmp": None}, "active_connections": []},
+                fresh_counter_sample=False,
+            )
 
         history = snapshot["overview"]["history"]
         self.assertEqual(set(history), {"resourceSamples", "trafficSamples"})
@@ -451,10 +466,13 @@ class PublicTimestampContractTest(unittest.TestCase):
         self.assertEqual(app.require_rfc3339_timestamp(sample["timestamp"]), snapshot["updatedAt"])
         self.assertEqual(len(history["trafficSamples"]), 1)
         traffic = history["trafficSamples"][0]
-        self.assertEqual(traffic["timestamp"], snapshot["updatedAt"])
+        self.assertEqual(traffic["timestamp"], timestamps[3])
+        self.assertNotEqual(traffic["timestamp"], snapshot["updatedAt"])
         self.assertEqual(traffic["source"], "counter-delta")
         self.assertEqual(traffic["evidenceMode"], "current")
-        self.assertEqual(app.require_rfc3339_timestamp(traffic["timestamp"]), snapshot["updatedAt"])
+        self.assertEqual(app.require_rfc3339_timestamp(traffic["timestamp"]), timestamps[3])
+        self.assertEqual(non_rate_snapshot["updatedAt"], timestamps[6])
+        self.assertEqual(non_rate_snapshot["overview"]["history"]["trafficSamples"], [traffic])
 
     def test_health_findings_never_repeat_an_ambiguous_source_timestamp(self) -> None:
         findings = app.build_health_findings({"status": "ok", "updatedAt": "2026-08-09 12:34:56"})

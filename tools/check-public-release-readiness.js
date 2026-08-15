@@ -8,7 +8,18 @@ const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
 const { assertFrameworkAssetBudget } = require('./framework-asset-budget');
 const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
 const { TOOLBAR_200_REQUIRED_CELLS, TOOLBAR_INCREMENTS, validWindowsCapture } = require('./check-browser-toolbar-zoom200');
-const { MOBILE_OVERVIEW_REQUIRED_CHECKS } = require('./acceptance/inspect-overview-mobile');
+// Local matrix reports expose a fail-closed iKuai 4 mobile probe.  The
+// dedicated iKuai 4 runtime report proves route/detail/More/connection flows.
+const MOBILE_IKUAI4_REQUIRED_CHECKS = Object.freeze([
+  'ikuai4Root',
+  'evidenceMode',
+  'scene',
+  'currentOnlyRates',
+  'fourNavigationRoots',
+  'moreDirectory',
+  'objectDetail',
+  'noRejectedOwner',
+]);
 
 const ROOT = path.resolve(__dirname, '..');
 const READINESS_CHILD_TIMEOUT_MS = 120000;
@@ -403,10 +414,20 @@ function validateMatrixReport(reportPath, expectedCells, head, options = {}) {
   }
   const matrix = report?.matrix;
   const cells = Array.isArray(matrix?.cells) ? matrix.cells : [];
+  const browserChecks = Array.isArray(report?.browserChecks) ? report.browserChecks : [];
   const expectedIds = expectedCells.map(expectedCellId);
   const actualIds = cells.map(matrixCellId);
+  const browserIds = browserChecks.map(browserCellId);
   const missingCells = listDifference(actualIds, expectedIds);
   const unexpectedCells = listDifference(expectedIds, actualIds);
+  const missingBrowserChecks = listDifference(browserIds, expectedIds);
+  const unexpectedBrowserChecks = listDifference(expectedIds, browserIds);
+  const boundedScopePass = Boolean(
+    options.allowBoundedScope &&
+    report?.boundedPass === true &&
+    matrix?.requestedComplete === true &&
+    matrix?.failed === 0
+  );
   if (!matrix || matrix.commit !== head) errors.push(`matrix.commit must equal current HEAD ${head}`);
   if (options.requiredWorktreeIdentity) {
     const identity = options.requiredWorktreeIdentity;
@@ -417,10 +438,16 @@ function validateMatrixReport(reportPath, expectedCells, head, options = {}) {
     }
   }
   if (matrix?.requestedComplete !== true) errors.push('matrix.requestedComplete must be true');
+  if (!boundedScopePass && matrix?.complete !== true) errors.push('matrix.complete must be true');
   if (!Array.isArray(report.failures) || report.failures.length !== 0) errors.push('report.failures must be an empty array');
+  if (!boundedScopePass && report.exitCodeShouldFail !== false) errors.push('report.exitCodeShouldFail must be false');
+  if (options.allowBoundedScope && report?.boundedPass !== true) errors.push('report.boundedPass must be true');
   if (matrix?.failed !== 0) errors.push('matrix.failed must be 0');
   const nestedFalsePasses = reportNestedPassFalsePaths(report)
-    .filter((item) => options.requireReportPass || item !== '/pass');
+    .filter((item) => {
+      if (boundedScopePass && (item === '/pass' || item === '/matrix/complete')) return false;
+      return options.requireReportPass || item !== '/pass';
+    });
   if (nestedFalsePasses.length) {
     errors.push('report contains nested pass=false evidence: ' + nestedFalsePasses.slice(0, 8).join(', '));
   }
@@ -437,10 +464,16 @@ function validateMatrixReport(reportPath, expectedCells, head, options = {}) {
   if (cells.length !== expectedIds.length || missingCells.length || unexpectedCells.length) {
     errors.push(`matrix.cells does not exactly match the requested matrix (missing=${missingCells.length}, unexpected=${unexpectedCells.length}, total=${cells.length})`);
   }
+  if (!Array.isArray(report.browserChecks) || browserChecks.length !== expectedIds.length || missingBrowserChecks.length || unexpectedBrowserChecks.length) {
+    errors.push(`browserChecks does not exactly match the requested matrix (missing=${missingBrowserChecks.length}, unexpected=${unexpectedBrowserChecks.length}, total=${browserChecks.length})`);
+  }
   for (const cell of cells) {
     if (cell.pass !== true) errors.push(`${matrixCellId(cell)} did not pass`);
   }
-  if (options.requireReportPass && report.pass !== true) errors.push('report.pass must be true');
+  for (const check of browserChecks) {
+    if (check?.pass !== true) errors.push(`${browserCellId(check)} browser check did not pass`);
+  }
+  if (!boundedScopePass && report.pass !== true) errors.push('report.pass must be true');
   if (options.requireSemanticGates) {
     const checks = Array.isArray(report.checks) ? report.checks.filter(Boolean) : [];
     const checkNames = new Set(checks.map((check) => String(check.name || '').trim()).filter(Boolean));
@@ -571,7 +604,7 @@ function assertToolbarZoom200Report(rootDir = ROOT, currentIdentity = gitWorktre
   const identity = report?.identity && typeof report.identity === 'object' ? report.identity : {};
   const exactIdentityFields = ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible'];
   const identityMismatches = exactIdentityFields.filter((field) => identity[field] !== currentIdentity[field]);
-  if (report?.pass !== true || report?.contract !== 'edge-toolbar-zoom200-windows-v5' || identityMismatches.length) {
+  if (report?.pass !== true || report?.contract !== 'edge-toolbar-zoom200-windows-v7-mobile-ikuai4' || identityMismatches.length) {
     throw new Error(`actual Edge toolbar 200% report is failed or stale: ${JSON.stringify({
       pass: report?.pass,
       contract: report?.contract,
@@ -680,12 +713,12 @@ function collectGateDetailFailures(latest) {
     }
 
     if (parsed.viewport === 'wide' || parsed.viewport === 'narrow') {
-      const probe = detail.mobileOverviewAppHomeGateProbe && typeof detail.mobileOverviewAppHomeGateProbe === 'object'
-        ? detail.mobileOverviewAppHomeGateProbe
+      const probe = detail.mobileIkuai4GateProbe && typeof detail.mobileIkuai4GateProbe === 'object'
+        ? detail.mobileIkuai4GateProbe
         : {};
       if (check.pass !== true) pushFailure('mobileSemantic', 'check.pass', check.pass);
       if (detail.surface !== 'mobile-overview') pushFailure('mobileSemantic', 'surface', detail.surface);
-      if (probe.contract !== 'incident-split-lens-runtime-v1') pushFailure('mobileSemantic', 'contract', probe.contract);
+      if (probe.contract !== 'mobile-ikuai4-runtime-v1') pushFailure('mobileSemantic', 'contract', probe.contract);
       if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
       assertProbeChecks('mobileSemantic', probe);
       const reportedRequiredChecks = Array.isArray(probe.requiredChecks)
@@ -695,10 +728,10 @@ function collectGateDetailFailures(latest) {
         (field, index) => reportedRequiredChecks.indexOf(field) !== index
       ))];
       const actualCheckFields = Object.keys(probe.checks && typeof probe.checks === 'object' ? probe.checks : {});
-      const missingRequiredChecks = listDifference(reportedRequiredChecks, MOBILE_OVERVIEW_REQUIRED_CHECKS);
-      const unexpectedRequiredChecks = listDifference(MOBILE_OVERVIEW_REQUIRED_CHECKS, reportedRequiredChecks);
-      const missingActualChecks = listDifference(actualCheckFields, MOBILE_OVERVIEW_REQUIRED_CHECKS);
-      const unexpectedActualChecks = listDifference(MOBILE_OVERVIEW_REQUIRED_CHECKS, actualCheckFields);
+      const missingRequiredChecks = listDifference(reportedRequiredChecks, MOBILE_IKUAI4_REQUIRED_CHECKS);
+      const unexpectedRequiredChecks = listDifference(MOBILE_IKUAI4_REQUIRED_CHECKS, reportedRequiredChecks);
+      const missingActualChecks = listDifference(actualCheckFields, MOBILE_IKUAI4_REQUIRED_CHECKS);
+      const unexpectedActualChecks = listDifference(MOBILE_IKUAI4_REQUIRED_CHECKS, actualCheckFields);
       if (duplicateRequiredChecks.length) {
         pushFailure('mobileSemantic', 'requiredChecks.duplicates', duplicateRequiredChecks);
       }
@@ -714,7 +747,7 @@ function collectGateDetailFailures(latest) {
       if (unexpectedActualChecks.length) {
         pushFailure('mobileSemantic', 'checks.unexpected', unexpectedActualChecks);
       }
-      for (const field of MOBILE_OVERVIEW_REQUIRED_CHECKS) {
+      for (const field of MOBILE_IKUAI4_REQUIRED_CHECKS) {
         if (probe.checks?.[field] !== true) {
           pushFailure('mobileSemantic', `checks.${field}`, probe.checks?.[field]);
         }
@@ -796,13 +829,13 @@ function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
     rootDir,
     '19x4 single-scenario route responsive matrix',
     ROUTE_RESPONSIVE_MATRIX_CELLS,
-    { requiredWorktreeIdentity: currentIdentity }
+    { requiredWorktreeIdentity: currentIdentity, allowBoundedScope: true }
   ));
   collect('routeState', () => findCurrentMatrixReport(
     rootDir,
     '19x7x2 route-state matrix',
     ROUTE_STATE_MATRIX_CELLS,
-    { requiredWorktreeIdentity: currentIdentity }
+    { requiredWorktreeIdentity: currentIdentity, allowBoundedScope: true }
   ));
   collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
   if (failures.length) throw new Error(`Required current-HEAD release evidence is incomplete: ${failures.join(' | ')}`);
@@ -981,8 +1014,8 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'window.addEventListener("offline"');
   assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'window.addEventListener("online"');
   assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'document.addEventListener("visibilitychange"');
-  assertContains('src/panel-framework/panel-framework-app.tsx', '<SnapshotContractError issues={validated.issues} />');
-  assertContains('src/panel-framework/panel-framework-app.tsx', 'clientEvidenceBoundary: runtimeBoundary');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<PanelSnapshotContractError issues={validated.issues} />');
+  assertContains('src/panel-framework/surface/PanelSurfaceShared.tsx', 'clientEvidenceBoundary: boundary');
 
   assertContains('README.md', '# RouterOS Read-only Status Panel');
   assertContains('README.zh-CN.md', '# RouterOS 只读状态面板');
@@ -1003,48 +1036,58 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.history.pushState');
   assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.history.replaceState');
   assertNotContains('src/panel-framework/routes/usePanelRoute.ts', 'querySelectorAll<HTMLElement>("[data-section]")', 'legacy DOM route ownership');
-  assertContains('src/panel-framework/panel-framework-app.tsx', 'route === "overview"');
-  assertContains('src/panel-framework/panel-framework-app.tsx', '<OperationalSectionPage route={route}');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', 'route === "overview"');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileRoutes route={route}');
+  assertContains('src/panel-framework/desktop/DesktopPanelApp.tsx', '<OperationalSectionPage route={route}');
   assertContains('tools/acceptance/inspect-panel-routes.js', 'history.forward()');
   assertContains('tools/acceptance/inspect-panel-routes.js', 'canonicalUnknown');
 
-  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-root');
-  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-evidence-mode');
-  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-expanded-claim');
-  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-action');
-  assertContains('public/assets/framework/panel-framework.js', 'data-incident-lens-evidence-deck');
-  assertContains('public/assets/framework/panel-framework.js', 'data-desktop-overview');
-  assertContains('public/assets/framework/panel-framework.js', 'data-panel-route-content');
-  assertContains('public/assets/framework/panel-framework.js', '当前业务状态不可判断');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native');
-  assertNotContains('public/assets/framework/panel-framework.js', 'mn-topology');
-  assertNotContains('public/assets/framework/panel-framework.js', 'mn-sheet');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-linkboard-root');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-pocket-console-root', 'superseded Pocket Console owner');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', './incident-lens');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'buildIncidentLensModel');
-  assertNotContains('src/panel-framework/overview/mobile-overview/MobileOverviewEntry.tsx', 'pocket-console', 'superseded Pocket Console entry');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx', 'data-incident-lens-root');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx', 'data-incident-lens-evidence-mode');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx', 'data-incident-lens-forbids-current');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/PatrolLens.tsx', 'data-incident-lens-expanded-claim');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/PatrolLens.tsx', 'data-incident-lens-action');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/IncidentWorkspace.tsx', 'data-incident-lens-evidence-deck');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/buildIncidentLensModel.ts', 'buildIncidentLensModel');
-  assertContains('src/panel-framework/overview/mobile-overview/incident-lens/buildIncidentLensModel.ts', 'currentNumbersAllowed: evidence.evidenceMode === "current"');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai-mobile-home');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-evidence-mode');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai4-mobile');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai4-mobile-route');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai4-connection');
+  assertNotContains('public/assets/framework/panel-mobile.js', 'data-mobile-ops-overview', 'retired mobile owner leaked into mobile bundle');
+  assertNotContains('public/assets/framework/panel-mobile.js', 'data-desktop-overview', 'desktop owner leaked into mobile bundle');
+  assertContains('public/assets/framework/panel-desktop.js', 'data-desktop-overview');
+  assertContains('public/assets/framework/panel-desktop.js', 'data-panel-route-content');
+  assertNotContains('public/assets/framework/panel-desktop.js', 'data-ikuai-mobile-home', 'mobile owner leaked into desktop bundle');
+  for (const asset of ['public/assets/framework/panel-mobile.js', 'public/assets/framework/panel-desktop.js']) {
+    assertNotContains(asset, 'data-panel-mobile-next', 'retired mobile-next owner');
+    assertNotContains(asset, 'data-mobile-native');
+    assertNotContains(asset, 'mn-topology');
+    assertNotContains(asset, 'mn-sheet');
+    assertNotContains(asset, 'data-linkboard-root');
+    assertNotContains(asset, 'data-pocket-console-root', 'superseded Pocket Console owner');
+  }
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileHome');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileNavigation');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileRoutes');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileConnection');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileHome.tsx', 'data-ikuai-mobile-home');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileHome.tsx', 'data-evidence-mode');
+  assertContains('src/panel-framework/mobile-ikuai4/ikuaiMobileModel.ts', 'evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"');
+  assertContains('src/panel-framework/mobile-ikuai4/ikuaiMobileModel.ts', 'const activePath = evidence.routeEvidence.activePath;');
+  assertContains('src/panel-framework/mobile-ikuai4/ikuaiMobileModel.ts', 'verified: Boolean(activePath)');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileNavigation.tsx', 'data-ikuai4-mobile="navigation"');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileNavigation.tsx', 'data-ikuai4-mobile-nav={destination}');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'data-ikuai4-mobile-route="more"');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'ikuai4-object-detail');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'useObjectHistory(route)');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'role="list"');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'type="search"');
+  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileConnection.tsx', 'data-ikuai4-connection="flow"');
+  assertNotExists('src/panel-framework/mobile-pulse');
   assertNotExists('src/panel-framework/overview/mobile-overview/pocket-console');
   assertNotExists('src/panel-framework/overview/mobile-overview/MobileLinkboard.tsx');
   assertNotExists('src/panel-framework/overview/mobile-overview/LinkboardTimeEvidence.tsx');
   assertNotExists('src/panel-framework/overview/mobile-overview/linkboardModel.ts');
   assertNotExists('src/panel-framework/overview/mobile-overview/scenes/NativeOperationsCanvas.tsx');
   assertNotExists('src/panel-framework/overview/mobile-overview/scenes/operationsPrimitives.tsx');
-  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'type="search"');
-  assertContains('src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx', 'data-mobile-object-detail');
-  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'pageSize = 20');
-  assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.history.pushState');
-  assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.addEventListener("popstate"');
-  assertContains('src/panel-framework/mobile/mobileDomainDefinitions.ts', 'domainDefinitionFor');
-  assertContains('src/panel-framework/mobile/mobileDomainDefinitions.ts', 'sortWorkspaceRows');
+  assertContains('src/panel-framework/domain-workspace/workspaceHistory.ts', 'window.history.pushState');
+  assertContains('src/panel-framework/domain-workspace/workspaceHistory.ts', 'window.addEventListener("popstate"');
+  assertContains('src/panel-framework/domain-workspace/domainDefinitions.ts', 'domainDefinitionFor');
+  assertContains('src/panel-framework/domain-workspace/domainDefinitions.ts', 'sortWorkspaceRows');
   assertContains('src/panel-framework/sections/DesktopDomainWorkspace.tsx', 'data-desktop-domain-workspace');
   assertContains('src/panel-framework/sections/DesktopDomainWorkspace.tsx', 'type="search"');
   assertContains('src/panel-framework/sections/DesktopDomainWorkspace.tsx', 'filterWorkspaceRows');
@@ -1053,22 +1096,20 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/sections/DesktopDomainInspector.tsx', 'InterfaceEvidence');
   assertContains('src/panel-framework/sections/DesktopDomainInspector.tsx', 'LogEvidence');
   assertNotContains('src/panel-framework/sections/OperationalSectionPage.tsx', 'DataTable', 'retired generic desktop data table');
-  assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'panelObject');
-  assertNotContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'mobileObject', 'surface-specific history state');
+  assertContains('src/panel-framework/domain-workspace/workspaceHistory.ts', 'panelObject');
+  assertNotContains('src/panel-framework/domain-workspace/workspaceHistory.ts', 'mobileObject', 'surface-specific history state');
   assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'stablePanelObjectId');
   assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'panelObjectIdForValues');
   assertContains('.agents/skills/router-panel-product-loop/SKILL.md', 'emil-design-engineering.md');
   assertContains('.agents/skills/router-panel-product-loop/references/emil-design-engineering.md', 'emilkowalski/skills');
-  assertAnyContains(
-    'src/panel-framework/mobile/MobileDomainWorkspace.tsx',
-    ['aria-controls="mdw-domain-controls"', 'aria-controls={toolsOpen ? "mdw-domain-controls" : undefined}'],
-    'mobile filter disclosure must expose a valid expanded-state aria-controls target',
-  );
-  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'role="group"');
-  for (const style of ['tokens.css', 'patrol-next.css', 'incidents-next.css', 'shell-next.css', 'motion.css']) {
-    assertNotContains(`src/panel-framework/overview/mobile-overview/incident-lens/styles/${style}`, '!important');
+  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileHome.tsx');
+  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileNavigation.tsx');
+  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileRoutes.tsx');
+  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileConnection.tsx');
+  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'page.goForward(');
+  for (const style of ['tokens.css', 'home.css', 'navigation.css', 'routes.css', 'connection.css']) {
+    assertNotContains(`src/panel-framework/mobile-ikuai4/styles/${style}`, '!important');
   }
-  assertNotContains('src/panel-framework/mobile/mobile-domain.css', '!important');
   assertNotContains('src/panel-framework/sections/section-timeseries.css', '!important');
 
   assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-desktop-overview');
@@ -1086,13 +1127,21 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'resourceEvidenceWindow(snapshot)', 'Overview shared resource evidence consumer');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'Math.abs(snapshotAt - last.timestamp)');
   assertNotContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'rows[0]');
-  assertContains('tools/check-incident-lens-model.js', 'historical/unavailable evidence must explicitly withdraw current values');
-  assertContains('tools/check-incident-lens-model.js', 'missing measurements must not be rewritten as observed zero');
-  assertContains('tools/check-incident-lens-contract.js', 'data-incident-lens-root');
-  assertContains('tools/check-incident-lens-runtime.js', 'source: "incident-lens-runtime"');
-  assertContains('tools/check-incident-lens-runtime.js', 'contract: CONTRACT');
-  assertContains('tools/check-incident-lens-runtime.js', 'writeReport(report)');
-  assertContains('tools/lib/incident-lens-runtime/runtime.js', 'acceptanceDirectory(name = "incident-lens-runtime")');
+  assertContains('tools/check-mobile-ikuai4-model.js', 'missing rates must remain unavailable');
+  assertContains('tools/check-mobile-ikuai4-model.js', 'fleet scale must not cover the current highest-risk object');
+  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileHome.tsx');
+  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileNavigation.tsx');
+  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileRoutes.tsx');
+  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileConnection.tsx');
+  assertContains('tools/check-mobile-ikuai4-connection-security.js', '永不保存密码');
+  assertContains('tools/check-mobile-ikuai4-connection-security.js', 'sshHostKeyFingerprint');
+  assertContains('tools/check-mobile-ikuai4-runtime.js', 'contract: "mobile-ikuai4-runtime-v1"');
+  assertContains('tools/check-mobile-ikuai4-runtime.js', 'routeDetailHistory');
+  assertContains('tools/check-mobile-ikuai4-runtime.js', 'moreDirectory');
+  assertContains('tools/check-mobile-ikuai4-runtime.js', 'inspectConnectionSecurity');
+  assertContains('tools/check-mobile-ikuai4-runtime.js', 'releaseEvidenceEligible: false');
+  assertNotExists('src/panel-framework/mobile-next');
+  assertNotExists('tools/check-mobile-next-runtime.js');
   assertNotExists('tools/check-pocket-console-runtime.js');
   assertNotExists('tools/lib/pocket-console-runtime/runtime.js');
   assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-overview-task-contract="overview-task-v1"');
@@ -1120,7 +1169,7 @@ function main(argv = process.argv.slice(2)) {
   for (const inspector of [
     'tools/local-predeploy-check.js',
     'tools/acceptance/inspect-section-browser.js',
-    'tools/acceptance/inspect-overview-mobile.js',
+    'tools/check-mobile-accessibility-runtime-v2.js',
     'tools/acceptance/inspect-overview-desktop-layout.js',
   ]) {
     for (const fakeDensityToken of [
@@ -1150,18 +1199,22 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', '<div id="app"', 'neutral app mount');
   assertNotContains('public/index.html', '<main id="app"', 'nested app main mount');
   assertContains('public/index.html', 'data-deploy-channel="public"');
-  assertContains('public/index.html', 'data-overview-framework-asset="style"');
-  assertContains('public/index.html', 'data-overview-framework-asset="script"');
-  assertMatches('public/index.html', /\/assets\/framework\/style\.[0-9a-f]{12}\.css/, 'content-addressed framework style URL');
-  assertMatches('public/index.html', /\/assets\/framework\/panel-framework\.[0-9a-f]{12}\.js/, 'content-addressed framework script URL');
+  assertContains('public/index.html', 'data-overview-framework-asset="surface-loader"');
+  assertMatches('public/index.html', /\/assets\/framework\/panel-surface-loader\.[0-9a-f]{12}\.js/, 'content-addressed surface loader URL');
+  assertNotContains('public/index.html', 'rel="stylesheet" href="/assets/framework/', 'surface CSS must be selected by the loader');
   assertNotContains('public/index.html', 'http-equiv="Cache-Control"', 'cache-control meta override');
-  assertContains('public/assets/framework/manifest.json', '"version": 2');
+  assertContains('public/assets/framework/manifest.json', '"version": 3');
+  assertContains('public/assets/framework/manifest.json', '"mobile"');
+  assertContains('public/assets/framework/manifest.json', '"desktop"');
+  assertContains('public/assets/framework/manifest.json', '"loader"');
   assertContains('public/assets/framework/manifest.json', '"inputs"');
   assertNotContains('public/index.html', 'layout-whitespace-patch.js');
   assertNotContains('public/index.html', 'readonly-diagnostics.js');
   assertContains('vite.config.ts', 'publicDir: false');
   assertContains('vite.config.ts', 'outDir: "public/assets/framework"');
-  assertContains('vite.config.ts', 'fileName: () => "panel-framework.js"');
+  assertContains('vite.config.ts', 'src/panel-framework/${surface}/main.tsx');
+  assertContains('vite.config.ts', 'fileName: () => `panel-${surface}.js`');
+  assertContains('tools/check-surface-asset-isolation.js', 'mobile script');
 
   assertContains('panel_backend/config_store.py', 'passwords are never persisted');
   assertContains('panel_backend/api_schema.py', 'Request JSON body must be an object');
@@ -1249,7 +1302,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  MOBILE_OVERVIEW_REQUIRED_CHECKS,
+  MOBILE_IKUAI4_REQUIRED_CHECKS,
   MATRIX_REPORT_ALIAS_NAMES,
   assertDecisionLedgerFreshness,
   assertLatestFullMatrixReport,
@@ -1262,6 +1315,7 @@ module.exports = {
   matrixEvidenceStatusMessage,
   parseArgs,
   reportNameMatchesKind,
+  validateMatrixReport,
   FULL_MATRIX_CELLS,
   FULL_MATRIX_SCENARIOS,
   FULL_MATRIX_VIEWPORT_KEYS,

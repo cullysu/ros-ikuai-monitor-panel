@@ -97,12 +97,6 @@
   }
 }
 @media (max-width: 399px) {
-  .panel-runtime-bar-mobile {
-    min-height: calc(64px + env(safe-area-inset-top));
-    align-items: start;
-    padding-top: calc(env(safe-area-inset-top) + 7px);
-    padding-bottom: 7px;
-  }
   .panel-runtime-bar-mobile .panel-runtime-device { align-self: center; }
   .panel-runtime-device > span {
     overflow: visible;
@@ -114,32 +108,21 @@
 @media (max-width: 1199px) {
   .panel-runtime-live { min-height: 100svh; }
   .panel-runtime-bar-mobile {
-    position: sticky;
+    position: relative;
     z-index: 25;
-    top: max(8px, env(safe-area-inset-top));
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    min-height: 58px;
-    margin: 0 10px 8px;
-    padding: 0 8px 0 12px;
-    border: 1px solid rgb(255 255 255 / 88%);
-    border-bottom-color: rgb(55 78 87 / 20%);
-    border-radius: 22px;
-    background: rgb(248 252 253 / 74%);
-    box-shadow: 0 14px 36px rgb(28 48 56 / 13%), inset 0 1px 0 rgb(255 255 255 / 90%);
-    -webkit-backdrop-filter: blur(24px) saturate(145%);
-    backdrop-filter: blur(24px) saturate(145%);
-  }
-  .panel-runtime-bar-mobile::after {
-    content: "";
-    position: absolute;
-    top: 1px;
-    right: 8%;
-    left: 8%;
-    height: 1px;
-    pointer-events: none;
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 92%), transparent);
+    min-height: calc(54px + env(safe-area-inset-top));
+    margin: 0;
+    padding: env(safe-area-inset-top) 6px 0 14px;
+    border: 0;
+    border-bottom: 1px solid rgb(168 190 198 / 70%);
+    border-radius: 0;
+    background: rgb(244 249 250 / 90%);
+    box-shadow: 0 5px 18px rgb(28 48 56 / 7%);
+    backdrop-filter: saturate(145%) blur(18px);
+    -webkit-backdrop-filter: saturate(145%) blur(18px);
   }
   .panel-runtime-bar-mobile .panel-runtime-device { min-width: 0; }
   .panel-runtime-bar-mobile .panel-runtime-device b {
@@ -161,9 +144,9 @@
     text-overflow: clip;
     white-space: normal;
   }
-  .panel-runtime-bar-mobile .panel-runtime-mode { min-height: 34px; border-color: rgb(31 73 86 / 13%); border-radius: 12px; color: #38555f; background: rgb(255 255 255 / 45%); }
+  .panel-runtime-bar-mobile .panel-runtime-mode { width: auto; min-width: 58px; min-height: 44px; justify-content: center; padding: 0 9px; border: 0; border-radius: 12px; color: #38555f; background: rgb(45 97 116 / 7%); }
   .panel-runtime-actions button { width: 44px; height: 44px; }
-  .panel-runtime-bar-mobile .panel-runtime-actions button { border-radius: 14px; transition: transform 110ms cubic-bezier(.23, 1, .32, 1), background-color 110ms ease; }
+  .panel-runtime-bar-mobile .panel-runtime-actions button { border-radius: 8px; transition: transform 110ms cubic-bezier(.23, 1, .32, 1), background-color 110ms ease; }
   .panel-runtime-bar-mobile .panel-runtime-actions button:active { transform: scale(.96); background: rgb(20 76 89 / 8%); }
   .panel-runtime-notice { position: relative; z-index: 20; padding-right: 10px; padding-left: 12px; font-size: 13px; }
   .panel-runtime-notice button { width: 44px; height: 44px; }
@@ -214,22 +197,19 @@
 
 @media (max-width: 359px) and (max-height: 650px) {
   .panel-runtime-bar-mobile {
-    min-height: calc(54px + env(safe-area-inset-top));
-    margin-bottom: 6px;
-    border-radius: 18px;
-    box-shadow: 0 9px 24px rgb(28 48 56 / 11%), inset 0 1px 0 rgb(255 255 255 / 88%);
+    min-height: 52px;
+    box-shadow: 0 3px 12px rgb(28 48 56 / 7%);
   }
 }
 
 @media (min-width: 600px) and (max-width: 1199px) {
   .panel-runtime-notice {
-    margin-inline-start: 70px;
+    margin-inline-start: 0;
   }
 }
 
 @media (max-width: 359px) {
-  .panel-runtime-bar-mobile .panel-runtime-mode { width: 34px; min-width: 34px; padding-inline: 0; justify-content: center; }
-  .panel-runtime-bar-mobile .panel-runtime-mode > span { display: none; }
+  .panel-runtime-bar-mobile .panel-runtime-mode { width: auto; min-width: 54px; padding-inline: 7px; justify-content: center; }
   .panel-runtime-bar-mobile .panel-runtime-device b {
     overflow: hidden;
     overflow-wrap: normal;

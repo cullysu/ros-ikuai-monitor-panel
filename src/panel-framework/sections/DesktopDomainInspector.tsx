@@ -3,7 +3,7 @@ import { formatRfc3339Local } from "../timeContract";
 import { panelRiskOriginLabel, type PanelRiskContext } from "../routes/panelRoutes";
 import { diagnosticChannelLabel, diagnosticFailureLabel } from "./diagnosticFailureModel";
 import type { SectionModel } from "./sectionModels";
-import type { WorkspaceRow } from "../mobile/mobileDomainWorkspaceModel";
+import type { WorkspaceRow } from "../domain-workspace/workspaceRows";
 import { resourceEvidencePresentation } from "./resourceEvidencePresentation";
 
 interface Fact { label: string; value: string; }

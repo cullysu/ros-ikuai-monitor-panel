@@ -413,7 +413,7 @@ for (const [route, evidence] of Object.entries(maturity.PANEL_ROUTE_MATURITY_EVI
   assert.equal(evidence.acceptanceRefs.length, 0, `${route}: route-local acceptance refs cannot establish public-release acceptance`);
 }
 
-const accessibilityRuntime = fs.readFileSync(path.join(root, "tools", "check-panel-runtime-browser.js"), "utf8");
+const accessibilityRuntime = fs.readFileSync(path.join(root, "tools", "check-mobile-telemetry-runtime.js"), "utf8");
 const accessibilityBlock = accessibilityRuntime.match(/const accessibilityRoutes = \[(.*?)\];/s);
 assert.ok(accessibilityBlock, "runtime checker must expose its accessibility route scope");
 const actualAccessibilityRoutes = [...accessibilityBlock[1].matchAll(/route:\s*'([^']+)'/g)].map((match) => match[1]).sort();

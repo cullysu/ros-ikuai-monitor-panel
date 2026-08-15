@@ -11,6 +11,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
 const { startMock, browserExecutable } = require('./check-panel-runtime-browser');
+const { login } = require('./acceptance/accessibility-v2/runtime');
 const { runBrowserLifecycle } = require('./acceptance/browser-lifecycle-v2/browser-lifecycle');
 
 const root = path.resolve(__dirname, '..');
@@ -171,31 +172,14 @@ function healthBody(options = {}) {
 
 function workspaceSelector(viewport, route) {
   return viewport.workspace === 'mobile'
-    ? `[data-mobile-domain-workspace="${route}"]`
+    ? `[data-panel-route-content="${route}"].mop-route`
     : `[data-desktop-domain-workspace="${route}"]`;
 }
 
 function baseRowSelector(viewport) {
-  return viewport.workspace === 'mobile' ? '[data-mobile-row-id]' : '[data-desktop-row-id]';
-}
-
-async function login(page, baseUrl) {
-  await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
-  const form = page.locator('[data-router-login-form]');
-  await form.waitFor();
-  await page.locator('input[name="host"]').fill('192.0.2.1');
-  await page.locator('input[name="user"]').fill('observer');
-  await page.locator('input[name="password"]').fill('correct-horse');
-  await form.locator('button[type="submit"]').click();
-  const hostKey = page.locator('.router-host-key-confirmation');
-  await hostKey.waitFor();
-  await hostKey.locator('input[type="checkbox"]').check();
-  await form.locator('button[type="submit"]').click();
-  await page.waitForFunction(
-    () => document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'current',
-    undefined,
-    { timeout: 8_000 },
-  );
+  return viewport.workspace === 'mobile'
+    ? '.mop-route-group li > button[id^="mop-row-"]'
+    : '[data-desktop-row-id]';
 }
 
 async function openRoute(page, baseUrl, viewport, route) {
@@ -213,7 +197,7 @@ async function openRoute(page, baseUrl, viewport, route) {
 
 async function baseRows(page, viewport, route) {
   return page.locator(`${workspaceSelector(viewport, route)} ${baseRowSelector(viewport)}`)
-    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-mobile-row-id') || node.getAttribute('data-desktop-row-id')).filter(Boolean));
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-desktop-row-id') || (node.id || '').replace(/^mop-row-/, '')).filter(Boolean));
 }
 
 async function supplementSnapshot(page, kind) {
@@ -323,7 +307,7 @@ async function runConnectionContract(page, mock, baseUrl, viewport) {
     await page.waitForFunction(({ workspace, rowSelector, expected }) => {
       const root = document.querySelector(workspace);
       if (!root) return false;
-      const ids = [...root.querySelectorAll(rowSelector)].map((node) => node.getAttribute('data-mobile-row-id') || node.getAttribute('data-desktop-row-id'));
+       const ids = [...root.querySelectorAll(rowSelector)].map((node) => node.getAttribute('data-desktop-row-id') || (node.id || '').replace(/^mop-row-/, ''));
       return expected.every((id) => ids.includes(id));
     }, { workspace: workspaceSelector(viewport, 'connections'), rowSelector: baseRowSelector(viewport), expected: originalRows });
     assert(mock.state.supplemental.requests.filter((item) => item.kind === 'connection-search').length === 1,
@@ -506,12 +490,19 @@ async function main() {
         cleanupTimeoutMs,
       }, async (runtime) => {
         runtime.registerCleanup('supplemental.mock.stop', () => mock.stop());
-        await login(runtime.page, mock.url);
+        // The public loader makes a one-shot surface choice. Establish the
+        // target capability before the first navigation so the test exercises
+        // the same mobile/desktop closure that the viewport contract names.
+        await runtime.page.setViewportSize({ width: viewport.width, height: viewport.height });
+        const surfaceUrl = new URL(mock.url);
+        surfaceUrl.searchParams.set('surface', viewport.workspace);
+        const baseUrl = surfaceUrl.toString();
+        await login(runtime.page, baseUrl);
         // Each viewport owns a bounded browser lifecycle. This keeps one slow
         // surface from consuming every other surface's diagnostic budget.
         runtime.page.setDefaultTimeout(1_500);
         runtime.page.setDefaultNavigationTimeout(8_000);
-        return runViewportContracts(runtime.page, mock, mock.url, viewport);
+        return runViewportContracts(runtime.page, mock, baseUrl, viewport);
       });
     } finally {
       // Browser startup can fail before its cleanup registry exists. The mock

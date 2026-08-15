@@ -200,6 +200,19 @@ def finalize_merged_truth(report: dict[str, Any]) -> dict[str, Any]:
     """
 
     failures: list[dict[str, Any]] = []
+    reported_failures = report.get("failures")
+    if not isinstance(reported_failures, list):
+        failures.append({
+            "name": "merged failures shape",
+            "pass": False,
+            "detail": {"reason": "failures must be a list"},
+        })
+    elif reported_failures:
+        failures.append({
+            "name": "merged reported failures",
+            "pass": False,
+            "detail": {"count": len(reported_failures)},
+        })
     nested_false_passes = false_pass_paths(report)
     if nested_false_passes:
         failures.append({

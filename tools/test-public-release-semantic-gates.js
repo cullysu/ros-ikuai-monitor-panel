@@ -3,10 +3,12 @@
 
 const assert = require('assert');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const {
   MATRIX_REPORT_ALIAS_NAMES,
-  MOBILE_OVERVIEW_REQUIRED_CHECKS,
+  MOBILE_IKUAI4_REQUIRED_CHECKS,
   assertEvidenceModeEligibility,
   assertMatrixEvidenceIdentity,
   collectGateDetailFailures,
@@ -14,6 +16,8 @@ const {
   matrixEvidenceStatusMessage,
   parseArgs,
   reportNameMatchesKind,
+  ROUTE_STATE_MATRIX_CELLS,
+  validateMatrixReport,
 } = require('./check-public-release-readiness');
 const { isGovernancePath } = require('./worktree-runtime-identity');
 const { RUNTIME_CHECK_CONTRACT } = require('./runtime-screenshot-contract');
@@ -26,8 +30,8 @@ function mobileReport(checks, requiredChecks = Object.keys(checks)) {
       pass: true,
       detail: {
         surface: 'mobile-overview',
-        mobileOverviewAppHomeGateProbe: {
-          contract: 'incident-split-lens-runtime-v1',
+        mobileIkuai4GateProbe: {
+          contract: 'mobile-ikuai4-runtime-v1',
           appHomePass: true,
           truthMode: 'current',
           risk: 'none',
@@ -80,40 +84,40 @@ assert.equal(
 );
 
 const completeMobileChecks = Object.fromEntries(
-  MOBILE_OVERVIEW_REQUIRED_CHECKS.map((name) => [name, true])
+  MOBILE_IKUAI4_REQUIRED_CHECKS.map((name) => [name, true])
 );
 const missing = collectGateDetailFailures(mobileReport({
   ...completeMobileChecks,
-  expandedClaim: undefined,
+  ikuai4Root: undefined,
 }));
 assert(
-  missing.mobileSemantic.some((failure) => failure.field === 'checks.expandedClaim'),
-  'release evidence must fail when the current Incident Split Lens expanded-claim contract is omitted'
+  missing.mobileSemantic.some((failure) => failure.field === 'checks.ikuai4Root'),
+  'release evidence must fail when the current iKuai 4 root contract is omitted'
 );
 
 const passing = collectGateDetailFailures(mobileReport(completeMobileChecks));
 assert.deepEqual(passing.mobileSemantic, []);
 
-const unreadableOperationalText = collectGateDetailFailures(mobileReport({
+const rejectedOwner = collectGateDetailFailures(mobileReport({
   ...completeMobileChecks,
-  readableText: false,
+  noRejectedOwner: false,
 }));
 assert(
-  unreadableOperationalText.mobileSemantic.some((failure) => failure.field === 'checks.readableText'),
-  'release evidence must fail when otherwise-complete Incident Split Lens checks report unreadable operational text'
+  rejectedOwner.mobileSemantic.some((failure) => failure.field === 'checks.noRejectedOwner'),
+  'release evidence must fail when a retired mobile owner is still mounted'
 );
 
 const staleProducer = mobileReport(completeMobileChecks);
-staleProducer.checks[0].detail.mobileOverviewAppHomeGateProbe.requiredChecks =
-  MOBILE_OVERVIEW_REQUIRED_CHECKS.filter((field) => field !== 'readableText');
+staleProducer.checks[0].detail.mobileIkuai4GateProbe.requiredChecks =
+  MOBILE_IKUAI4_REQUIRED_CHECKS.filter((field) => field !== 'ikuai4Root');
 assert(
   collectGateDetailFailures(staleProducer).mobileSemantic.some((failure) => failure.field === 'requiredChecks.missing'),
   'release evidence must fail when the producer declares a stale required-check contract'
 );
 
 const retiredProducerField = mobileReport(completeMobileChecks);
-retiredProducerField.checks[0].detail.mobileOverviewAppHomeGateProbe.requiredChecks = [
-  ...MOBILE_OVERVIEW_REQUIRED_CHECKS,
+retiredProducerField.checks[0].detail.mobileIkuai4GateProbe.requiredChecks = [
+  ...MOBILE_IKUAI4_REQUIRED_CHECKS,
   'decisiveEvidence',
 ];
 assert(
@@ -122,8 +126,8 @@ assert(
 );
 
 const duplicateProducerField = mobileReport(completeMobileChecks, [
-  ...MOBILE_OVERVIEW_REQUIRED_CHECKS,
-  'mounted',
+  ...MOBILE_IKUAI4_REQUIRED_CHECKS,
+  'ikuai4Root',
 ]);
 assert(
   collectGateDetailFailures(duplicateProducerField).mobileSemantic.some((failure) => failure.field === 'requiredChecks.duplicates'),
@@ -133,28 +137,28 @@ assert(
 const undeclaredActualField = mobileReport({
   ...completeMobileChecks,
   decisiveEvidence: true,
-}, MOBILE_OVERVIEW_REQUIRED_CHECKS);
+}, MOBILE_IKUAI4_REQUIRED_CHECKS);
 assert(
   collectGateDetailFailures(undeclaredActualField).mobileSemantic.some((failure) => failure.field === 'checks.unexpected'),
   'release evidence must fail when checks contains an undeclared retired field'
 );
 
 const missingActualChecks = { ...completeMobileChecks };
-delete missingActualChecks.expandedClaim;
-const missingActualField = mobileReport(missingActualChecks, MOBILE_OVERVIEW_REQUIRED_CHECKS);
+delete missingActualChecks.ikuai4Root;
+const missingActualField = mobileReport(missingActualChecks, MOBILE_IKUAI4_REQUIRED_CHECKS);
 assert(
   collectGateDetailFailures(missingActualField).mobileSemantic.some((failure) => failure.field === 'checks.missing'),
   'release evidence must fail when the declared producer contract omits an actual check key'
 );
 
 const retiredMobile = mobileReport(completeMobileChecks);
-retiredMobile.checks[0].detail.mobileOverviewAppHomeGateProbe.contract = 'pocket-console-v1';
+retiredMobile.checks[0].detail.mobileIkuai4GateProbe.contract = 'pocket-console-v1';
 assert(
   collectGateDetailFailures(retiredMobile).mobileSemantic.some((failure) => failure.field === 'contract'),
   'the superseded Pocket Console contract must not satisfy public readiness'
 );
 const legacyLinkboard = mobileReport(completeMobileChecks);
-legacyLinkboard.checks[0].detail.mobileOverviewAppHomeGateProbe.contract = 'linkboard-overview-v1';
+legacyLinkboard.checks[0].detail.mobileIkuai4GateProbe.contract = 'linkboard-overview-v1';
 assert(
   collectGateDetailFailures(legacyLinkboard).mobileSemantic.some((failure) => failure.field === 'contract'),
   'the retired Linkboard contract must not satisfy public readiness'
@@ -165,30 +169,33 @@ assert(!readinessSource.includes('src/panel-framework/mobile/MobilePatrolScreen.
 assert(!readinessSource.includes('src/panel-framework/mobile/MobileEvidenceLedger.tsx'));
 assert(!readinessSource.includes('src/panel-framework/mobile/mobile-patrol.css'));
 assert(!readinessSource.includes('optical-patrol'));
-assert(readinessSource.includes('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx'));
-assert(readinessSource.includes("contract !== 'incident-split-lens-runtime-v1'"));
+assert(readinessSource.includes('src/panel-framework/mobile-native-ui/overview/MobileNativeOverview.tsx'));
+assert(readinessSource.includes("contract !== 'mobile-native-ui-runtime-v1'"));
 assert(!readinessSource.includes("contract !== 'pocket-console-v1'"));
 assert(!readinessSource.includes("contract !== 'linkboard-overview-v1'"));
-assert(readinessSource.includes("assertNotContains('public/assets/framework/panel-framework.js', 'data-linkboard-root')"));
-assert(readinessSource.includes("'data-incident-lens-expanded-claim'"));
-assert(readinessSource.includes("'data-incident-lens-action'"));
-assert(readinessSource.includes("'data-incident-lens-evidence-deck'"));
+assert(readinessSource.includes("assertNotContains(asset, 'data-linkboard-root')"));
+assert(readinessSource.includes("public/assets/framework/panel-mobile.js"));
+assert(readinessSource.includes("public/assets/framework/panel-desktop.js"));
+assert(readinessSource.includes("'data-mobile-native-overview'"));
+assert(readinessSource.includes("'data-mobile-native-route'"));
+assert(!readinessSource.includes('src/panel-framework/mobile-patrol/'));
+assert(!readinessSource.includes('src/panel-framework/mobile-ikuai4/'));
 assert(readinessSource.includes("assertNotExists('tools/check-pocket-console-runtime.js')"));
 assert(readinessSource.includes("assertNotExists('tools/lib/pocket-console-runtime/runtime.js')"));
-assert(readinessSource.includes("assertContains('tools/check-incident-lens-runtime.js', 'source: \"incident-lens-runtime\"')"));
+assert(readinessSource.includes("assertContains('tools/check-mobile-ikuai4-runtime.js', 'contract: \"mobile-native-ui-runtime-v1\"')"));
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 assert.equal(packageJson.scripts['check:mobile-linkboard'], undefined);
 assert.equal(packageJson.scripts['check:mobile-pocket-console'], undefined);
-assert.equal(typeof packageJson.scripts['check:mobile-incident-lens'], 'string');
-assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-model.js'));
-assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-architecture.js'));
-assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-accessibility-static.js'));
-assert(packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-runtime.js'));
-assert.equal((packageJson.scripts['check:runtime-browser'].match(/check:mobile-incident-lens/g) || []).length, 1);
+assert.equal(packageJson.scripts['check:mobile-incident-lens'], undefined);
+assert.equal(typeof packageJson.scripts['check:mobile-telemetry'], 'string');
+assert(packageJson.scripts['check:mobile-telemetry'].includes('check:mobile-telemetry-model'));
+assert(packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-ikuai4-runtime.js'));
+assert.equal((packageJson.scripts['check:runtime-browser'].match(/check:mobile-telemetry/g) || []).length, 1);
 assert.equal(fs.existsSync(path.join(__dirname, 'check-pocket-console-runtime.js')), false);
 assert.equal(fs.existsSync(path.join(__dirname, 'lib', 'pocket-console-runtime', 'runtime.js')), false);
-assert.equal(fs.existsSync(path.join(__dirname, 'check-incident-lens-runtime.js')), true);
+assert.equal(fs.existsSync(path.join(__dirname, 'check-mobile-next-runtime.js')), false);
+assert.equal(fs.existsSync(path.join(__dirname, 'check-mobile-ikuai4-runtime.js')), true);
 
 const supersededPocketReview = inspectIndependentReviewRecords({ step: 932 });
 assert.equal(supersededPocketReview.pass, true, 'the historical Step932 review record must remain readable without becoming current evidence');
@@ -324,6 +331,76 @@ assert.throws(
   () => assertMatrixEvidenceIdentity(mixedIdentity, currentIdentity),
   /do not share the current runtime worktree identity/,
   'mixed dirty fingerprints must never be merged into readiness evidence'
+);
+
+function routeStateReportFixture(commit) {
+  const cells = ROUTE_STATE_MATRIX_CELLS.map((expected) => ({
+    profile: expected.profile,
+    scaleScenario: expected.scaleScenario,
+    section: expected.section,
+    viewportKey: `${expected.viewport.name}=${expected.viewport.width}x${expected.viewport.height}`,
+    pass: true,
+  }));
+  return {
+    checks: [{ name: 'required route-state evidence', pass: true }],
+    failures: [],
+    browserChecks: ROUTE_STATE_MATRIX_CELLS.map((expected) => ({
+      profile: expected.profile,
+      scaleScenario: expected.scaleScenario,
+      requestedSection: expected.section,
+      viewport: expected.viewport,
+      pass: true,
+    })),
+    pass: true,
+    exitCodeShouldFail: false,
+    matrix: {
+      commit,
+      requestedComplete: true,
+      complete: true,
+      failed: 0,
+      cells,
+    },
+  };
+}
+
+function validateRouteStateFixture(mutator) {
+  const head = String(spawnSync('git', ['rev-parse', 'HEAD'], {
+    cwd: path.resolve(__dirname, '..'),
+    encoding: 'utf8',
+  }).stdout || '').trim();
+  assert.match(head, /^[0-9a-f]{40}$/);
+  const report = routeStateReportFixture(head);
+  mutator(report);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'route-state-report-'));
+  const reportPath = path.join(root, 'report.json');
+  try {
+    fs.writeFileSync(reportPath, JSON.stringify(report));
+    return validateMatrixReport(reportPath, ROUTE_STATE_MATRIX_CELLS, head).errors;
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+assert.deepEqual(validateRouteStateFixture(() => {}), []);
+assert(
+  validateRouteStateFixture((report) => { report.checks[0].pass = false; })
+    .some((error) => error.includes('report checks contain failures')),
+  'a failed required route-state child check must reject otherwise green evidence'
+);
+assert(
+  validateRouteStateFixture((report) => { report.browserChecks.pop(); })
+    .some((error) => error.includes('browserChecks does not exactly match')),
+  'a missing route-state browser check must reject otherwise green evidence'
+);
+assert(
+  validateRouteStateFixture((report) => { report.matrix.complete = false; })
+    .some((error) => error === 'matrix.complete must be true'),
+  'an incomplete route-state matrix must reject otherwise green evidence'
+);
+assert(
+  validateRouteStateFixture((report) => { report.matrix.commit = '0'.repeat(40); })
+    .some((error) => error.startsWith('matrix.commit must equal current HEAD')),
+  'a stale route-state report must reject otherwise green evidence'
 );
 assert.equal(isGovernancePath('docs/decision-system/current-state.md'), true);
 assert.equal(isGovernancePath('docs/panel-redesign-decision-log.md'), true);

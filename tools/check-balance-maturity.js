@@ -7,8 +7,7 @@ const root = path.resolve(__dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 const routes = read("src/panel-framework/routes/panelRoutes.ts");
 const maturity = read("src/panel-framework/routes/panelRouteMaturity.ts");
-const inspector = read("src/panel-framework/mobile/mobile-inspector/BalanceInspector.tsx");
-const domainInspector = read("src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx");
+const routeSurface = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
 
 const checks = [
   {
@@ -20,16 +19,16 @@ const checks = [
     pass: /balance:\s*sectionEvidence\("balance"/.test(maturity),
   },
   {
-    name: "balance has a dedicated inspector",
-    pass: /function BalanceInspector\s*\(/.test(inspector),
+    name: "balance remains below complete maturity until it has a dedicated inspector",
+    pass: !/balance:\s*\{[\s\S]*?maturity:\s*"complete"/.test(routes),
   },
   {
-    name: "balance routes policy rows to the dedicated inspector",
-    pass: domainInspector.includes('currentRoute === "balance"'),
+    name: "balance uses the Mobile Flow object destination",
+    pass: /useObjectHistory\(route\)/.test(routeSurface) && /open\(row\.id\)/.test(routeSurface) && /data-mobile-flow-detail=\{row\.id\}/.test(routeSurface),
   },
   {
-    name: "balance detail exposes policy-specific evidence",
-    pass: ["匹配与动作", "路由标记", "对象 ID"].every((label) => inspector.includes(label)),
+    name: "bounded balance detail exposes Mobile Flow identity and complete raw fields",
+    pass: /mflow-detail__identity/.test(routeSurface) && /const fields = row\.columns\.map/.test(routeSurface) && /row\.evidence\.sourceTable \|\| row\.table/.test(routeSurface) && /对象证据/.test(routeSurface),
   },
 ];
 

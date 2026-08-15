@@ -35,6 +35,13 @@ function timestampOf(value: unknown): number | null {
   return parseRfc3339Timestamp(value);
 }
 
+function atomicTrafficSampleTimestamp(value: unknown): number | null {
+  // Epoch values and timezone-less text are not interchangeable evidence for
+  // a public traffic observation. The atomic payload contract requires RFC3339
+  // with an explicit timezone.
+  return typeof value === "string" ? parseRfc3339Timestamp(value) : null;
+}
+
 function currentRates(snapshot: OverviewRawSnapshot): { down: number; up: number } | null {
   const rows = wanRows(snapshot).filter((row) => row.running !== false && row.disabled !== true);
   if (!rows.length) return null;
@@ -68,8 +75,8 @@ function trafficPoints(history: Record<string, unknown>): OverviewTrafficPoint[]
       points.length = 0;
       continue;
     }
-    if (typeof record.source !== "string" || !record.source) continue;
-    const timestamp = timestampOf(record.timestamp);
+    if (typeof record.source !== "string" || !record.source.trim()) continue;
+    const timestamp = atomicTrafficSampleTimestamp(record.timestamp);
     const down = finite(record.downlink);
     const up = finite(record.uplink);
     if (timestamp === null || down === null || up === null) continue;

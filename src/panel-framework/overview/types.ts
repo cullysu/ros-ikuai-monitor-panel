@@ -93,6 +93,17 @@ export interface OverviewTrafficHistorySample {
   [key: string]: unknown;
 }
 
+/**
+ * Compatibility-only fields from payloads emitted before traffic observations
+ * were atomic. They remain readable as raw data, but never identify a chart
+ * sample because independently appended arrays cannot be paired safely.
+ */
+export interface OverviewLegacyTrafficHistory {
+  readonly timestamps?: readonly unknown[];
+  readonly uplink?: readonly unknown[];
+  readonly downlink?: readonly unknown[];
+}
+
 export interface OverviewResourceHistorySample {
   timestamp?: string;
   cpu?: number | null;
@@ -103,9 +114,9 @@ export interface OverviewResourceHistorySample {
   [key: string]: unknown;
 }
 
-export interface OverviewRawHistory extends Record<string, unknown> {
+export interface OverviewRawHistory extends Record<string, unknown>, OverviewLegacyTrafficHistory {
   resourceSamples?: OverviewResourceHistorySample[];
-  trafficSamples?: OverviewTrafficHistorySample[];
+  trafficSamples?: readonly OverviewTrafficHistorySample[];
 }
 
 export interface OverviewRawRoute {

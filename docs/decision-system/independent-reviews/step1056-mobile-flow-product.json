@@ -1,0 +1,27 @@
+{
+  "review": "independent-mobile-flow-product-release-acceptance",
+  "scope": {
+    "artifact": "_acceptance/mobile-flow-runtime/report.json",
+    "artifactKey": "worktree-ed9195a9a9cd-244947f64392",
+    "commit": "ed9195a9a9cd393b254e3a5daa2af3850e4991ef",
+    "worktreeFingerprint": "244947f64392fd11b27822de368234be81faf6da33d430733f759eef5a069a77",
+    "screenshotsReviewed": 56,
+    "additionalSurfacesReviewed": [
+      "interfaces-phone390-workspace.png",
+      "interfaces-phone390-detail.png",
+      "interfaces-tablet768-detail.png",
+      "connection-phone390-device.png"
+    ]
+  },
+  "verdict": "VETO",
+  "p0": [
+    "The exact artifact is a quarantined worktree report with releasePass=false and releaseEvidenceEligible=false; it cannot sign a public release."
+  ],
+  "p1": [],
+  "p2": [],
+  "productExperience": "PASS_NO_P1_P2",
+  "requiredActions": [
+    "Create a clean committed candidate and regenerate non-worktree exact-SHA evidence.",
+    "Repeat independent Product release acceptance on the release-eligible artifact."
+  ]
+}

@@ -1,20 +1,14 @@
 #!/usr/bin/env node
 "use strict";
 
-/*
- * Incident Split Lens keeps fleet coverage as a normal patrol fact. A concrete
- * incident must remain the first investigation object, and the phone follow-up
- * set must be bounded by construction rather than silently hidden by CSS.
- */
-
 const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
 const read = (...segments) => fs.readFileSync(path.join(root, ...segments), "utf8");
-const model = read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "buildIncidentLensModel.ts");
-const workspace = read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "IncidentWorkspace.tsx");
-const patrol = read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "PatrolLens.tsx");
+const model = read("src", "panel-framework", "overview", "evidence-model", "buildOverviewEvidenceModel.ts");
+const overview = read("src", "panel-framework", "mobile-pulse", "MobilePulseHome.tsx");
+const runtime = read("tools", "check-mobile-telemetry-runtime.js");
 const failures = [];
 
 function check(name, pass, detail) {
@@ -22,35 +16,40 @@ function check(name, pass, detail) {
 }
 
 check(
-  "fleet scale is a normal-state summary rather than an incident override",
-  /scopeFacts:\s*state\.scale\s*===\s*"fleet"\s*&&\s*!incident\s*\?/.test(model),
-  "fleet facts must require the absence of a selected incident",
+  "risk state is projected before normal overview evidence",
+  /const riskQueue\s*=\s*buildOverviewRiskQueue\(mode, state, route\)/.test(model)
+    && /const risk:\s*OverviewEvidenceRisk\s*=\s*riskQueue\[0\]\?\.risk\s*\|\|\s*"none"/.test(model),
+  "the highest-ranked current risk must remain the first model projection",
 );
 check(
-  "risk object selection happens before fleet coverage projection",
-  /const incident\s*=\s*evidence\.risk\s*===\s*"none"\s*\?\s*null\s*:\s*objectForRisk[\s\S]{0,2000}scopeFacts:\s*state\.scale\s*===\s*"fleet"\s*&&\s*!incident/.test(model),
-  "the incident object must derive from evidence risk before normal fleet facts",
+  "priority evidence remains bounded by the shared model and mobile owner",
+  /priorityObjects:\s*priority\.rows\.slice\(0, 3\)/.test(model)
+    && /priorityObjectsAll:\s*priority\.rows/.test(model)
+    && /model\.priorityObjectsAll\.slice\(0, 3\)/.test(overview),
+  "the current model and mobile owner must cap the visible priority window before rendering",
 );
 check(
-  "phone investigation follow-ups have an explicit bounded visible window",
-  /model\.secondaryObjects\.slice\(0,\s*3\)\.map/.test(workspace) && /patrolObjects\.filter\([\s\S]{0,180}\.slice\(0,\s*3\)/.test(model),
-  "the model and incident workspace must both keep follow-ups to three visible evidence objects",
+  "normal overview keeps evidence-gated WAN comparison in its own current DOM",
+  /comparisonObjects:\s*comparisonObjectsFor\(coverageObjects, mode, risk, route, state\.scale\)/.test(model)
+    && /function OriginSignal/.test(overview)
+    && /originVerifiedRoute/.test(overview)
+    && /data-mobile-pulse-overview/.test(overview),
+  "normal overview comparison must be rendered by the current Mobile Pulse owner",
 );
 check(
-  "bounded follow-ups remain native selectable controls",
-  /data-incident-lens-claim-control[\s\S]{0,280}aria-pressed=\{selectedId\s*===\s*object\.id\}/.test(workspace),
-  "each bounded follow-up must remain an explicit, stateful investigation control",
-);
-check(
-  "patrol scale facts belong to the Incident Split Lens owner",
-  /data-incident-lens-scope-facts/.test(patrol) && /data-incident-lens-scale=\{model\.scale\}/.test(read("src", "panel-framework", "overview", "mobile-overview", "incident-lens", "IncidentLens.tsx")),
-  "fleet-specific treatment must remain attached to Incident Split Lens evidence ownership",
+  "the current full report covers fleet alongside every telemetry state",
+  /\{ id: "fleet", mock: "fleet-coverage" \}/.test(runtime)
+    && /scenarios\.flatMap\(\(scenario\)\s*=>\s*viewports\.map/.test(runtime)
+    && /source:\s*"mobile-telemetry-runtime"/.test(runtime),
+  "fleet must remain one cell in the current seven-by-seven runtime report",
 );
 
 const report = {
   pass: failures.length === 0,
-  contract: "fleet-bounded-priority-v3-incident-split-lens",
-  checks: 5,
+  contract: "fleet-bounded-priority-v5-mobile-pulse",
+  owner: "src/panel-framework/mobile-pulse",
+  reportMatrix: "49",
+  checks: 4,
   failures,
 };
 console.log(JSON.stringify(report, null, 2));

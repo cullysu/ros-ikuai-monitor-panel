@@ -2,10 +2,10 @@
 'use strict';
 
 const assert = require('assert');
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const crypto = require('crypto');
 const zlib = require('zlib');
 const {
   REQUIRED_INPUT_FILES,
@@ -13,7 +13,7 @@ const {
   verifyFrameworkAssetIdentity,
 } = require('./framework-asset-identity');
 
-const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'framework-identity-'));
+const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'framework-identity-v3-'));
 
 function write(relative, body) {
   const target = path.join(fixture, ...relative.split('/'));
@@ -25,37 +25,45 @@ function sha256(body) {
   return crypto.createHash('sha256').update(body).digest('hex');
 }
 
+function emit(prefix, extension, body) {
+  const digest = sha256(body);
+  const file = `${prefix}.${digest.slice(0, 12)}.${extension}`;
+  const gzipBody = zlib.gzipSync(body, { level: 9, mtime: 0 });
+  const brotliBody = zlib.brotliCompressSync(body);
+  write(`public/assets/framework/${file}`, body);
+  write(`public/assets/framework/${file}.gz`, gzipBody);
+  write(`public/assets/framework/${file}.br`, brotliBody);
+  return { file, sha256: digest, bytes: body.length, gzipBytes: gzipBody.length, brotliBytes: brotliBody.length };
+}
+
 function writeBuiltAssets() {
-  const definitions = {
-    script: { prefix: 'panel-framework', extension: 'js', body: Buffer.from('console.log("framework");\n') },
-    style: { prefix: 'style', extension: 'css', body: Buffer.from(':root { color: #123; }\n') },
+  const assets = {
+    mobile: {
+      script: emit('panel-mobile', 'js', Buffer.from('console.log("mobile");\n')),
+      style: emit('mobile', 'css', Buffer.from('.mobile { color: #123; }\n')),
+    },
+    desktop: {
+      script: emit('panel-desktop', 'js', Buffer.from('console.log("desktop");\n')),
+      style: emit('desktop', 'css', Buffer.from('.desktop { color: #456; }\n')),
+    },
   };
-  const assets = {};
-  for (const [kind, definition] of Object.entries(definitions)) {
-    const digest = sha256(definition.body);
-    const file = `${definition.prefix}.${digest.slice(0, 12)}.${definition.extension}`;
-    const gzipBody = zlib.gzipSync(definition.body, { level: 9, mtime: 0 });
-    const brotliBody = zlib.brotliCompressSync(definition.body);
-    write(`public/assets/framework/${file}`, definition.body);
-    write(`public/assets/framework/${file}.gz`, gzipBody);
-    write(`public/assets/framework/${file}.br`, brotliBody);
-    assets[kind] = {
-      file,
-      sha256: digest,
-      bytes: definition.body.length,
-      gzipBytes: gzipBody.length,
-      brotliBytes: brotliBody.length,
-    };
-  }
-  write(
-    'public/index.html',
-    `<div id="app"></div><link rel="stylesheet" href="/assets/framework/${assets.style.file}"><script src="/assets/framework/${assets.script.file}"></script>\n`
-  );
+  const loaderBody = Buffer.from([
+    assets.mobile.script.file,
+    assets.mobile.style.file,
+    assets.desktop.script.file,
+    assets.desktop.style.file,
+  ].map((file) => `/assets/framework/${file}`).join('\n'));
+  assets.loader = emit('panel-surface-loader', 'js', loaderBody);
+  write('public/index.html', `<div id="app"></div><script src="/assets/framework/${assets.loader.file}"></script>\n`);
   return assets;
 }
 
-function writeManifest(inputs, version = 2, assets) {
+function writeManifest(inputs, version, assets) {
   write('public/assets/framework/manifest.json', JSON.stringify({ version, inputs, assets }));
+}
+
+function restoreIndex(assets, prefix = '<div id="app"></div>') {
+  write('public/index.html', `${prefix}<script src="/assets/framework/${assets.loader.file}"></script>\n`);
 }
 
 try {
@@ -65,145 +73,87 @@ try {
 
   const original = computeFrameworkInputIdentity(fixture);
   const assets = writeBuiltAssets();
-  writeManifest(original, 2, assets);
-  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, true, 'matching inputs must pass');
+  writeManifest(original, 3, assets);
+  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, true, 'matching v3 inputs must pass');
 
   const frameworkDirectory = path.join(fixture, 'public', 'assets', 'framework');
-  const frameworkDirectoryBackup = path.join(fixture, 'framework-directory-backup');
-  const externalFrameworkDirectory = path.join(fixture, 'external-framework-directory');
-  fs.mkdirSync(externalFrameworkDirectory, { recursive: true });
-  fs.renameSync(frameworkDirectory, frameworkDirectoryBackup);
-  let frameworkDirectorySymlinkCreated = false;
+  const backup = path.join(fixture, 'framework-directory-backup');
+  const external = path.join(fixture, 'external-framework-directory');
+  fs.mkdirSync(external, { recursive: true });
+  fs.renameSync(frameworkDirectory, backup);
+  let linked = false;
   try {
-    fs.symlinkSync(externalFrameworkDirectory, frameworkDirectory, 'junction');
-    frameworkDirectorySymlinkCreated = true;
+    fs.symlinkSync(external, frameworkDirectory, 'junction');
+    linked = true;
   } catch (error) {
     if (!['EPERM', 'EACCES', 'EINVAL'].includes(error.code)) throw error;
   }
-  if (frameworkDirectorySymlinkCreated) {
-    const directorySymlink = verifyFrameworkAssetIdentity(fixture);
-    assert.equal(directorySymlink.pass, false, 'framework output directory symlink must fail closed');
-    assert(directorySymlink.reasons.some((reason) => reason.includes('directory chain')));
+  if (linked) {
+    const report = verifyFrameworkAssetIdentity(fixture);
+    assert.equal(report.pass, false, 'framework output directory symlink must fail closed');
+    assert(report.reasons.some((reason) => reason.includes('directory chain')));
     fs.unlinkSync(frameworkDirectory);
   }
-  fs.renameSync(frameworkDirectoryBackup, frameworkDirectory);
+  fs.renameSync(backup, frameworkDirectory);
 
-  const scriptPath = `public/assets/framework/${assets.script.file}`;
-  const originalScript = fs.readFileSync(path.join(fixture, ...scriptPath.split('/')));
+  const mobileScriptPath = `public/assets/framework/${assets.mobile.script.file}`;
+  const originalScript = fs.readFileSync(path.join(fixture, ...mobileScriptPath.split('/')));
   const mutatedScript = Buffer.from(originalScript);
   mutatedScript[0] ^= 1;
-  write(scriptPath, mutatedScript);
-  const mutated = verifyFrameworkAssetIdentity(fixture);
-  assert.equal(mutated.pass, false, 'a same-size built-asset byte mutation must fail');
-  assert(mutated.reasons.some((reason) => reason.includes('sha256 mismatch')));
-  write(scriptPath, originalScript);
+  write(mobileScriptPath, mutatedScript);
+  assert(verifyFrameworkAssetIdentity(fixture).reasons.some((reason) => reason.includes('sha256 mismatch')));
+  write(mobileScriptPath, originalScript);
 
-  const gzipPath = `${scriptPath}.gz`;
+  const gzipPath = `${mobileScriptPath}.gz`;
   const originalGzip = fs.readFileSync(path.join(fixture, ...gzipPath.split('/')));
   const mutatedGzip = Buffer.from(originalGzip);
   mutatedGzip[mutatedGzip.length - 1] ^= 1;
   write(gzipPath, mutatedGzip);
-  const sidecarMutation = verifyFrameworkAssetIdentity(fixture);
-  assert.equal(sidecarMutation.pass, false, 'a same-size compressed-sidecar mutation must fail');
-  assert(sidecarMutation.reasons.some((reason) => reason.includes('gz sidecar')));
+  assert(verifyFrameworkAssetIdentity(fixture).reasons.some((reason) => reason.includes('gz sidecar')));
   write(gzipPath, originalGzip);
 
-  write('public/index.html', `<div id="app"></div><link href="/assets/framework/${assets.style.file}">\n`);
-  const missingReference = verifyFrameworkAssetIdentity(fixture);
-  assert.equal(missingReference.pass, false, 'the public index must reference every manifest asset');
-  assert(missingReference.reasons.some((reason) => reason.includes('does not load')));
-  write(
-    'public/index.html',
-    `<div id="app"></div><link rel="stylesheet" href="/assets/framework/${assets.style.file}"><script src="/assets/framework/${assets.script.file}"></script>\n`
-  );
+  write('public/index.html', '<div id="app"></div>\n');
+  assert(verifyFrameworkAssetIdentity(fixture).reasons.some((reason) => reason.includes('does not load')));
+  write('public/index.html', `<div id="app"></div><!-- <script src="/assets/framework/${assets.loader.file}"></script> -->\n`);
+  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'comment-only loader reference must fail');
+  write('public/index.html', `<div data-loader="${assets.loader.file}"></div>\n`);
+  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'inert loader reference must fail');
+  write('public/index.html', `<img src="/assets/framework/${assets.loader.file}">\n`);
+  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'wrong loader tag must fail');
+  write('public/index.html', `<script src="/wrong.js" src="/assets/framework/${assets.loader.file}"></script>\n`);
+  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'duplicate loader src must fail');
+  write('public/index.html', `<script type="application/json" src="/assets/framework/${assets.loader.file}"></script>\n`);
+  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'inert loader type must fail');
+  restoreIndex(assets, `<link rel="stylesheet" href="/assets/framework/${assets.mobile.style.file}">`);
+  assert(verifyFrameworkAssetIdentity(fixture).reasons.some((reason) => reason.includes('must not eagerly load')));
+  restoreIndex(assets);
 
-  const validStyleLink = `<link rel="stylesheet" href="/assets/framework/${assets.style.file}">`;
-  write('public/index.html', `<div id="app"></div><!-- <script src="/assets/framework/${assets.script.file}"></script> -->${validStyleLink}\n`);
-  assert.equal(
-    verifyFrameworkAssetIdentity(fixture).pass,
-    false,
-    'a script filename present only in an HTML comment must fail'
-  );
-  write('public/index.html', `<div id="app" data-script="${assets.script.file}"></div>${validStyleLink}\n`);
-  assert.equal(
-    verifyFrameworkAssetIdentity(fixture).pass,
-    false,
-    'a script filename present only in an inert data attribute must fail'
-  );
-  write('public/index.html', `<div id="app"></div><img src="/assets/framework/${assets.script.file}">${validStyleLink}\n`);
-  assert.equal(
-    verifyFrameworkAssetIdentity(fixture).pass,
-    false,
-    'a script filename loaded through the wrong tag must fail'
-  );
-  write(
-    'public/index.html',
-    `<div id="app"></div>${validStyleLink}<script src="/wrong.js" src="/assets/framework/${assets.script.file}"></script>\n`
-  );
-  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'duplicate script src attributes must fail');
-  write(
-    'public/index.html',
-    `<div id="app"></div><link rel="stylesheet" href="/wrong.css" href="/assets/framework/${assets.style.file}"><script src="/assets/framework/${assets.script.file}"></script>\n`
-  );
-  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'duplicate stylesheet href attributes must fail');
-  write(
-    'public/index.html',
-    `<div id="app"></div>${validStyleLink}<script type="application/json" src="/assets/framework/${assets.script.file}"></script>\n`
-  );
-  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'an inert script type must fail');
-  write(
-    'public/index.html',
-    `<div id="app"></div><link rel="stylesheet" disabled href="/assets/framework/${assets.style.file}"><script src="/assets/framework/${assets.script.file}"></script>\n`
-  );
-  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'a disabled stylesheet must fail');
-  write(
-    'public/index.html',
-    `<div id="app"></div><link rel="stylesheet" media="print" href="/assets/framework/${assets.style.file}"><script src="/assets/framework/${assets.script.file}"></script>\n`
-  );
-  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, false, 'a non-all-media stylesheet must fail');
-  write(
-    'public/index.html',
-    `<div id="app"></div>${validStyleLink}<script src="/assets/framework/${assets.script.file}"></script>\n`
-  );
-
-  const brotliPath = `${scriptPath}.br`;
+  const brotliPath = `${mobileScriptPath}.br`;
   const originalBrotli = fs.readFileSync(path.join(fixture, ...brotliPath.split('/')));
   const mutatedBrotli = Buffer.from(originalBrotli);
   mutatedBrotli[mutatedBrotli.length - 1] ^= 1;
   write(brotliPath, mutatedBrotli);
-  const brotliMutation = verifyFrameworkAssetIdentity(fixture);
-  assert.equal(brotliMutation.pass, false, 'a same-size Brotli sidecar mutation must fail');
-  assert(brotliMutation.reasons.some((reason) => reason.includes('br sidecar')));
+  assert(verifyFrameworkAssetIdentity(fixture).reasons.some((reason) => reason.includes('br sidecar')));
   write(brotliPath, originalBrotli);
 
   write('src/panel-framework/main.tsx', 'export const value = 2;\n');
-  const stale = verifyFrameworkAssetIdentity(fixture);
-  assert.equal(stale.pass, false, 'a managed source change must fail');
-  assert(stale.reasons.some((reason) => reason.includes('digest mismatch')));
-
+  assert(verifyFrameworkAssetIdentity(fixture).reasons.some((reason) => reason.includes('digest mismatch')));
   write('src/panel-framework/main.tsx', 'export const value = 1;\n');
   write('docs/decision.md', 'unrelated documentation\n');
-  write(
-    'public/index.html',
-    `<div id="app" data-unrelated="changed"></div><link rel="stylesheet" href="/assets/framework/${assets.style.file}"><script src="/assets/framework/${assets.script.file}"></script>\n`
-  );
-  assert.equal(
-    verifyFrameworkAssetIdentity(fixture).pass,
-    true,
-    'unrelated documentation and generated index changes must not invalidate the bundle'
-  );
+  restoreIndex(assets, '<div id="app" data-unrelated="changed"></div>');
+  assert.equal(verifyFrameworkAssetIdentity(fixture).pass, true, 'unrelated documentation and index markup must not invalidate the bundle');
 
-  writeManifest(original, 1, assets);
+  writeManifest(original, 2, assets);
   const legacy = verifyFrameworkAssetIdentity(fixture);
   assert.equal(legacy.pass, false, 'legacy manifests must fail closed');
-  assert(legacy.reasons.some((reason) => reason.includes('version 2')));
+  assert(legacy.reasons.some((reason) => reason.includes('version 3')));
 
-  write('public/assets/framework/manifest.json', JSON.stringify({ version: 2, assets }));
+  write('public/assets/framework/manifest.json', JSON.stringify({ version: 3, assets }));
   const missing = verifyFrameworkAssetIdentity(fixture);
   assert.equal(missing.pass, false, 'missing input identity must fail closed');
   assert(missing.reasons.some((reason) => reason.includes('does not record')));
 
-  console.log('[framework-asset-identity] PASS source + bundle + sidecar + public-reference identity');
+  console.log('[framework-asset-identity] PASS v3 dual-surface assets + loader + sidecars + public references');
 } finally {
   fs.rmSync(fixture, { recursive: true, force: true });
 }

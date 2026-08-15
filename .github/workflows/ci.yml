@@ -91,7 +91,9 @@ jobs:
           for file in public/*.js tools/*.js; do
             node --check "$file"
           done
-          node --check public/assets/framework/panel-framework.js
+          node --check public/assets/framework/panel-surface-loader.js
+          node --check public/assets/framework/panel-mobile.js
+          node --check public/assets/framework/panel-desktop.js
           node <<'NODE'
           const fs = require('fs');
           const vm = require('vm');
@@ -310,16 +312,38 @@ jobs:
           $indexText = Get-Content -Raw -LiteralPath $index.FullName
           if ($indexText -notmatch '<div\s+id="app"(?:\s|>)') { throw "Bundled frontend is missing the neutral React application mount." }
           if ($indexText -match 'data-app-shell="ikuai"' -or $indexText -match '<div\s+class="app ik-shell"(?:\s|>)') { throw "Bundled frontend still contains retired legacy shell markers." }
-          if ($indexText -notmatch 'data-overview-framework-asset="style"') { throw "Bundled frontend is missing the framework style asset marker." }
-          if ($indexText -notmatch 'data-overview-framework-asset="script"') { throw "Bundled frontend is missing the framework script asset marker." }
+          if ($indexText -notmatch 'data-overview-framework-asset="surface-loader"') { throw "Bundled frontend is missing the surface loader asset marker." }
           $publicRoot = Split-Path -Parent $index.FullName
-          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\style.css"))) { throw "Bundled framework style asset was not found." }
-          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\panel-framework.js"))) { throw "Bundled framework script asset was not found." }
-          $styleAsset = [regex]::Match($indexText, '/assets/framework/(style\.[0-9a-f]{12}\.css)').Groups[1].Value
-          $scriptAsset = [regex]::Match($indexText, '/assets/framework/(panel-framework\.[0-9a-f]{12}\.js)').Groups[1].Value
-          if (-not $styleAsset -or -not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\$styleAsset"))) { throw "Bundled content-addressed framework style was not found." }
-          if (-not $scriptAsset -or -not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\$scriptAsset"))) { throw "Bundled content-addressed framework script was not found." }
-          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\manifest.json"))) { throw "Bundled framework asset manifest was not found." }
+          $frameworkRoot = Join-Path $publicRoot "assets\framework"
+          $manifestPath = Join-Path $frameworkRoot "manifest.json"
+          if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { throw "Bundled framework asset manifest was not found." }
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          if ($manifest.version -ne 3) { throw "Bundled framework asset manifest must use dual-surface version 3." }
+          $requiredFrameworkAssets = @(
+            @{ Name = "surface loader"; Record = $manifest.assets.loader; Pattern = '^panel-surface-loader\.[0-9a-f]{12}\.js$'; Script = $true },
+            @{ Name = "mobile script"; Record = $manifest.assets.mobile.script; Pattern = '^panel-mobile\.[0-9a-f]{12}\.js$'; Script = $true },
+            @{ Name = "mobile style"; Record = $manifest.assets.mobile.style; Pattern = '^mobile\.[0-9a-f]{12}\.css$'; Script = $false },
+            @{ Name = "desktop script"; Record = $manifest.assets.desktop.script; Pattern = '^panel-desktop\.[0-9a-f]{12}\.js$'; Script = $true },
+            @{ Name = "desktop style"; Record = $manifest.assets.desktop.style; Pattern = '^desktop\.[0-9a-f]{12}\.css$'; Script = $false }
+          )
+          foreach ($asset in $requiredFrameworkAssets) {
+            $record = $asset.Record
+            if ($null -eq $record -or [string]::IsNullOrWhiteSpace([string]$record.file)) { throw "Bundled framework manifest is missing the $($asset.Name) record." }
+            if ($record.file -notmatch $asset.Pattern) { throw "Bundled framework $($asset.Name) is not content-addressed as expected: $($record.file)" }
+            if ([string]$record.sha256 -notmatch '^[0-9a-f]{64}$') { throw "Bundled framework $($asset.Name) is missing a SHA-256 identity." }
+            $assetPath = Join-Path $frameworkRoot $record.file
+            if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) { throw "Bundled framework $($asset.Name) asset was not found: $($record.file)" }
+            if ($asset.Script) {
+              node --check "$assetPath"
+              if ($LASTEXITCODE -ne 0) { throw "Bundled framework $($asset.Name) failed JavaScript syntax validation." }
+            }
+          }
+          $loaderPublicPath = "/assets/framework/$($manifest.assets.loader.file)"
+          if ($indexText -notmatch [regex]::Escape($loaderPublicPath)) { throw "Bundled index does not load the manifest surface loader asset." }
+          foreach ($asset in $requiredFrameworkAssets | Where-Object { $_.Name -ne "surface loader" }) {
+            $publicPath = "/assets/framework/$($asset.Record.file)"
+            if ($indexText -match [regex]::Escape($publicPath)) { throw "Bundled index eagerly loads the $($asset.Name) instead of deferring surface selection to the loader." }
+          }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
           Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing loopback bind default." }

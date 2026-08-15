@@ -1,2 +1,0 @@
-@media (prefers-reduced-motion:no-preference) { .incident-lens__object-row, .incident-lens__next-action button, .incident-lens__object-action, .incident-lens__chrome button { transition:transform 160ms cubic-bezier(.23,1,.32,1), background-color 180ms ease, color 180ms ease; } }
-@media (prefers-reduced-motion:reduce) { .incident-lens *, .incident-lens *::before, .incident-lens *::after { scroll-behavior:auto; transition:none; animation:none; transform:none; } }

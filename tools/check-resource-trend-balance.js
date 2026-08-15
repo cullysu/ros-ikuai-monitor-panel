@@ -344,6 +344,9 @@ async function main() {
     lifecycle.server = staticServer;
     url = `http://127.0.0.1:${staticServer.address().port}/`;
   }
+  if (!/[?&]surface=desktop(?:&|$)/.test(url)) {
+    url += `${url.includes('?') ? '&' : '?'}surface=desktop`;
+  }
   const section = arg('--section', 'desktopV1030');
   const outJson = path.resolve(arg('--json', `resource-balance-${section}.json`));
   const outPng = path.resolve(arg('--png', `resource-balance-${section}.png`));

@@ -29,7 +29,7 @@ function phaseLabel(phase: PanelSnapshotPhase, age: number | null): string {
 }
 
 function mobilePhaseLabel(phase: PanelSnapshotPhase): string {
-  if (phase === "current") return "当前快照";
+  if (phase === "current") return "传输已更新";
   if (phase === "refreshing") return "刷新中";
   if (phase === "stale") return "历史快照";
   if (phase === "recovering") return "恢复中";
@@ -48,7 +48,7 @@ function RuntimeActions({ runtime, onMore }: { runtime: PanelRuntimeController; 
         <Router size={19} aria-hidden="true" />
       </button>
       {onMore ? (
-        <button type="button" title="更多只读工具" aria-label="更多只读工具" data-panel-runtime-more onClick={onMore}>
+        <button type="button" id="panel-runtime-more" title="更多只读工具" aria-label="更多只读工具" data-panel-runtime-more onClick={onMore}>
           <Ellipsis size={20} aria-hidden="true" />
         </button>
       ) : null}
@@ -59,8 +59,7 @@ function RuntimeActions({ runtime, onMore }: { runtime: PanelRuntimeController; 
 function MobileRuntimeBar({ runtime, onMore }: { runtime: PanelRuntimeController; onMore?: () => void }) {
   return (
     <header className="panel-runtime-bar panel-runtime-bar-mobile" data-panel-runtime-toolbar="mobile">
-      <div className="panel-runtime-device"><b>{runtime.connection.profile?.host || "RouterOS"}</b><span>{mobilePhaseLabel(runtime.snapshot.phase)}</span></div>
-      <span className="panel-runtime-mode" aria-label="只读监控模式" title="只读监控模式"><LockKeyhole size={14} aria-hidden="true" /><span>只读</span></span>
+      <div className="panel-runtime-device"><b>{runtime.connection.profile?.host || "RouterOS"}</b><span>{mobilePhaseLabel(runtime.snapshot.phase)} · 只读</span></div>
       <RuntimeActions runtime={runtime} onMore={onMore} />
     </header>
   );
@@ -89,8 +88,8 @@ export function PanelRuntimeChrome({
 }) {
   const mobile = useRuntimeMedia(MOBILE_RUNTIME_QUERY);
   return mobile
-    ? <MobileRuntimeBar runtime={runtime} onMore={route === "overview" ? () => onNavigate("more") : undefined} />
-    : <DesktopRuntimeBar runtime={runtime} onMore={route === "overview" ? () => onNavigate("more") : undefined} />;
+    ? <MobileRuntimeBar runtime={runtime} onMore={route === "more" ? undefined : () => onNavigate("more", { focusId: "panel-runtime-more" })} />
+    : <DesktopRuntimeBar runtime={runtime} onMore={route === "overview" ? () => onNavigate("more", { focusId: "panel-runtime-more" }) : undefined} />;
 }
 
 export function PanelRuntimeNotice({ runtime }: { runtime: PanelRuntimeController }) {

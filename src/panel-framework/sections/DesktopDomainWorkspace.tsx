@@ -4,13 +4,10 @@ import {
   domainDefinitionFor,
   filterWorkspaceRows,
   sortWorkspaceRows,
-} from "../mobile/mobileDomainDefinitions";
-import {
-  rowsFromModel,
-  useObjectHistory,
-  type WorkspaceRow,
-} from "../mobile/mobileDomainWorkspaceModel";
-import { selectSemanticWorkspacePreview } from "../mobile/mobileWorkspacePreview";
+} from "../domain-workspace/domainDefinitions";
+import { useObjectHistory } from "../domain-workspace/workspaceHistory";
+import { selectSemanticWorkspacePreview } from "../domain-workspace/workspacePreview";
+import { rowsFromModel, type WorkspaceRow } from "../domain-workspace/workspaceRows";
 import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
 import { DesktopDomainInspector } from "./DesktopDomainInspector";
 import { DesktopRouteSupplement } from "./DesktopRouteSupplement";

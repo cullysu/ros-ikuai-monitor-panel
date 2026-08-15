@@ -251,15 +251,16 @@ async function waitForCurrent(page) {
 
 async function login(page, baseUrl) {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
-  const form = page.locator("[data-router-login-form]");
+  const form = page.locator('[data-router-login-form], [data-mobile-native-connection="flow"] form').first();
   await form.waitFor();
   await page.locator('input[name="host"]').fill("192.0.2.1");
   await page.locator('input[name="user"]').fill("observer");
   await page.locator('input[name="password"]').fill("correct-horse");
   const submit = form.locator('button[type="submit"]');
   const submitWhenReady = async () => {
+    await form.locator('button[type="submit"]:not([disabled])').waitFor({ timeout: LAUNCH_TIMEOUT_MS });
     await page.waitForFunction(() => {
-      const button = document.querySelector('[data-router-login-form] button[type="submit"]');
+      const button = document.querySelector('[data-router-login-form] button[type="submit"], [data-mobile-native-connection="flow"] button[type="submit"]');
       return button instanceof HTMLButtonElement && !button.disabled;
     }, null, { timeout: LAUNCH_TIMEOUT_MS });
     // Login is test setup rather than the interaction under review. Dispatch
@@ -268,11 +269,11 @@ async function login(page, baseUrl) {
     await submit.evaluate((button) => button.click());
   };
   await submitWhenReady();
-  const hostKey = page.locator(".router-host-key-confirmation");
+  const hostKey = page.locator(".router-host-key-confirmation, .ikuai4-connect-fingerprint").first();
   const nextStepHandle = await page.waitForFunction(() => {
     const current = document.querySelector("[data-panel-runtime-phase]")?.getAttribute("data-panel-runtime-phase") === "current";
     if (current) return "current";
-    const confirmation = document.querySelector(".router-host-key-confirmation");
+    const confirmation = document.querySelector(".router-host-key-confirmation, .ikuai4-connect-fingerprint");
     if (confirmation instanceof HTMLElement) {
       const style = getComputedStyle(confirmation);
       if (style.display !== "none" && style.visibility !== "hidden") return "host-key";
@@ -301,7 +302,8 @@ async function visitRoute(page, baseUrl, route, { requireWorkspace = true, runti
     throw new Error(`route did not settle on canonical ?section= URL: ${JSON.stringify({ route, canonical })}`);
   }
   if (!requireWorkspace) return null;
-  const workspace = page.locator(`[data-mobile-domain-workspace="${route}"]`);
+  // iKuai 4 owns mobile routes directly; desktop keeps the shared route marker.
+  const workspace = page.locator(`[data-mobile-native-workspace="${route}"], [data-panel-route-content="${route}"]`).first();
   await workspace.waitFor();
   return workspace;
 }

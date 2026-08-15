@@ -6,6 +6,7 @@ const {
   analyzeScreenshotAnchorPixels,
   buildSnapshot,
   buildMatrixSummary,
+  finalizeReportTruth,
   matrixArtifactKey,
   matrixStatePath,
   refreshOverviewWanRates,
@@ -299,6 +300,43 @@ function testDirtyWorktreeArtifactsCannotUseCommitReleaseKey() {
   assert.notEqual(dirtyA, commit);
 }
 
+function testRouteStateFailedCellCannotClaimCompleteMatrix() {
+  const options = args({
+    sections: ['public-release'],
+    scaleScenarios: OVERVIEW_RELEASE_SCALE_SCENARIOS,
+    viewports: [
+      { name: 'desktop', width: 1366, height: 768 },
+      { name: 'narrow', width: 390, height: 844 },
+    ],
+  });
+  const checks = OVERVIEW_RELEASE_SCALE_SCENARIOS.flatMap((scenario) => options.viewports.map((viewport) => ({
+    ...check(scenario, viewport, !(scenario === 'fleet' && viewport.name === 'narrow')),
+    requestedSection: 'public-release',
+  })));
+  const matrix = buildMatrixSummary(checks, options);
+  const gate = scenarioMatrixGate(options, matrix);
+
+  assert.equal(matrix.requestedComplete, false);
+  assert.equal(matrix.complete, false, 'a failed route-state cell must make the matrix incomplete');
+  assert.equal(gate.pass, false);
+}
+
+function testReportFinalizerKeepsFailureEvidenceAndIncompleteMatrixRed() {
+  const report = {
+    checks: [{ name: 'required child', pass: true }],
+    failures: [{ name: 'prior required failure', pass: true }],
+    matrix: { complete: false, requestedComplete: false },
+  };
+
+  finalizeReportTruth(report, true);
+
+  assert.equal(report.pass, false);
+  assert.equal(report.exitCodeShouldFail, true);
+  assert(report.failures.some((failure) => failure.name === 'prior required failure'));
+  assert(report.failures.some((failure) => failure.name === 'required matrix completeness'));
+  assert(report.failures.some((failure) => failure.name === 'required matrix gate'));
+}
+
 function testMatrixAggregateFamiliesDoNotOverwriteEachOther() {
   const commit = '0123456789abcdef0123456789abcdef01234567';
   assert.match(matrixStatePath(commit, '_acceptance/release-matrix-01234567'), /release-matrix-0123456789abcdef0123456789abcdef01234567\.json$/);
@@ -313,6 +351,8 @@ testClaimedRequiredMatrixMissingViewportFails();
 testCompleteRequiredMatrixPasses();
 testBoundedCapabilityMatrixIsExplicitlyNotApplicable();
 testBoundedCapabilityMatrixFailureStillBlocks();
+testRouteStateFailedCellCannotClaimCompleteMatrix();
+testReportFinalizerKeepsFailureEvidenceAndIncompleteMatrixRed();
 testReleaseScenarioDenominatorHasOneOwner();
 testBrowserFixturesUseAtomicTimezoneQualifiedTraffic();
 testTrafficAccumulatingIsDiagnosticAndAtomic();
@@ -320,4 +360,4 @@ testMissingWanRatesRemainUnavailable();
 testScreenshotAnchorAnalyzerRejectsMissingLayers();
 testDirtyWorktreeArtifactsCannotUseCommitReleaseKey();
 testMatrixAggregateFamiliesDoNotOverwriteEachOther();
-console.log('local-predeploy matrix contract: 12/12 passed');
+console.log('local-predeploy matrix contract: 14/14 passed');

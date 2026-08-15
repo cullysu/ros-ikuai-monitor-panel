@@ -46,6 +46,19 @@ function clean(value: unknown, fallback = "未记录"): string {
   return normalized || fallback;
 }
 
+function observedRate(value: unknown): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "未记录";
+  const absolute = Math.abs(value);
+  if (absolute >= 1_000_000) return `${(value / 1_000_000).toFixed(2)} Mbps`;
+  if (absolute >= 1_000) return `${(value / 1_000).toFixed(2)} Kbps`;
+  return `${Math.round(value)} bps`;
+}
+
+function qualifiedInterfaceChange(row: Record<string, unknown>): string {
+  const candidate = [row.lastChange, row.updatedAt, row.observedAt].find((value) => typeof value === "string" && parseRfc3339Timestamp(value) !== null);
+  return typeof candidate === "string" ? shortTimestamp(candidate) : "未记录";
+}
+
 function wanRows(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
   if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
   return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
@@ -397,6 +410,8 @@ function priorityObjectsFor(
           targetObjectId: objectId,
           sourcePath: `interfaces[${(snapshot.interfaces || []).indexOf(row)}]`,
           attributes: [
+            { label: "当前速率", value: `下 ${observedRate(row.downRate ?? row.rxRate)} · 上 ${observedRate(row.upRate ?? row.txRate)}` },
+            { label: "最后变化", value: qualifiedInterfaceChange(row) },
             { label: "管理状态", value: row.disabled === false ? "已启用" : row.disabled === true ? "已停用" : "未确认" },
             { label: "默认路由依赖", value: confirmed ? `${assessment.enabledDefaultRouteDependencies.length} 条` : "未核实" },
             { label: "角色 / 类型", value: clean([row.role, row.type].filter(Boolean).join(" / ")) },
@@ -406,22 +421,25 @@ function priorityObjectsFor(
     };
   }
   if (risk === "resource") {
-    const leadingResource = leadingResourceMetric(snapshot, state);
-    if (!leadingResource) return { total: 0, rows: [] };
+    const window = resourceEvidenceWindow(snapshot);
+    const resources = resourceMetrics(state)
+      .filter((metric) => metric.value >= metric.threshold)
+      .map((metric) => ({ ...metric, evidence: window.metrics[metric.key].evidence }))
+      .sort((left, right) => compareResourceRisk(left.evidence, right.evidence));
     return {
-      total: 1,
-      rows: [{
-        id: `resource:${leadingResource.key}`,
+      total: resources.length,
+      rows: resources.map((resource) => ({
+        id: `resource:${resource.key}`,
         category: "系统资源",
-        name: leadingResource.label,
-        state: `${Math.round(leadingResource.value)}% · 阈值 ${Math.round(leadingResource.threshold)}% · +${Math.round(leadingResource.value - leadingResource.threshold)}pp`,
+        name: resource.label,
+        state: `${Math.round(resource.value)}% · 阈值 ${Math.round(resource.threshold)}% · +${Math.round(resource.value - resource.threshold)}pp`,
         reason: "当前样本已越过策略阈值；趋势与持续性见历史证据。",
         tone: "danger",
         route: "trafficLoad",
-        targetObjectId: stablePanelObjectId("trafficLoad", "resource", panelObjectIdentityPartsForRaw("trafficLoad", "资源证据", { key: leadingResource.key })),
+        targetObjectId: stablePanelObjectId("trafficLoad", "resource", panelObjectIdentityPartsForRaw("trafficLoad", "资源证据", { key: resource.key })),
         sourcePath: "overview + overview.history",
         attributes: [],
-      }],
+      })),
     };
   }
   if (risk === "route") {

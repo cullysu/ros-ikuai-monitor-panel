@@ -20,21 +20,23 @@ const runtimeSource = source('src/panel-framework/runtime/usePanelRuntime.ts');
 const chromeSource = source('src/panel-framework/runtime/PanelRuntimeChrome.tsx');
 const indexSource = source('public/index.html');
 const sectionChartSource = source('src/panel-framework/sections/SectionTimeSeriesChart.tsx');
-const incidentLensSource = source('src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx');
-const incidentLensModelSource = source('src/panel-framework/overview/mobile-overview/incident-lens/buildIncidentLensModel.ts');
-const patrolLensSource = source('src/panel-framework/overview/mobile-overview/incident-lens/PatrolLens.tsx');
-const incidentWorkspaceSource = source('src/panel-framework/overview/mobile-overview/incident-lens/IncidentWorkspace.tsx');
+const ikuaiMobileHomeSource = source('src/panel-framework/mobile-flow-ui/overview/MobileFlowOverview.tsx');
+const ikuaiMobileNavigationSource = source('src/panel-framework/mobile-flow-ui/navigation/MobileFlowNavigation.tsx');
+const ikuaiMobileRoutesSource = source('src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx');
+const ikuaiMobileWorkspaceSource = source('src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx');
+const ikuaiMobileModelSource = source('src/panel-framework/mobile-flow-ui/overview/mobileFlowModel.ts');
+const ikuaiMobileArchitectureSource = source('tools/check-mobile-ikuai4-architecture.js');
+const ikuaiMobileModelCheckSource = source('tools/check-mobile-ikuai4-model.js');
+const ikuaiMobileConnectionSecuritySource = source('tools/check-mobile-ikuai4-connection-security.js');
+const ikuaiMobileRuntimeSource = source('tools/check-mobile-ikuai4-runtime.js');
 const sectionModelSource = source('src/panel-framework/sections/sectionModels.ts');
 const resourceHistorySource = source('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts');
 const resourceTimeSeriesSource = source('src/panel-framework/sections/resourceTimeSeries.ts');
-const connectionSource = source('src/panel-framework/connection/RouterConnectionScreen.tsx');
+const connectionSource = source('src/panel-framework/mobile-flow-ui/connection/MobileFlowConnection.tsx');
 const apiSchemaSource = source('panel_backend/api_schema.py');
 const browserGateSource = source('tools/check-panel-runtime-browser.js');
 const browserLifecycleSource = source('tools/check-runtime-browser-lifecycle.js');
 const browserLifecycleV2Source = source('tools/acceptance/browser-lifecycle-v2/browser-lifecycle.js');
-const incidentLensRuntimeSource = source('tools/check-incident-lens-runtime.js');
-const incidentLensRuntimeOwnerSource = source('tools/lib/incident-lens-runtime/runtime.js');
-const tabletRiskFocusSource = source('tools/check-tablet-risk-focus.js');
 const desktopBrowserGateSource = source('tools/check-resource-trend-balance.js');
 const desktopRuntimeWrapperSource = [
   source('tools/check-desktop-v1030-runtime.js'),
@@ -48,6 +50,8 @@ const localCiPsSource = source('tools/ci-local.ps1');
 const localCiShSource = source('tools/ci-local.sh');
 const quarantineSource = source('tools/check-acceptance-report-quarantine.js');
 const artifactIdentitySource = source('tools/check-acceptance-artifact-identity.js');
+const currentReleaseBoundarySource = source('tools/check-current-release-boundary.js');
+const exactShaReleaseSource = source('tools/check-exact-sha-release-cl.js');
 const packageJson = JSON.parse(source('package.json'));
 
 check(
@@ -104,22 +108,18 @@ check(
   'shared section chart evidence must preserve aspect ratio, retain time/unit labels, and expose summaries'
 );
 check(
-  'Incident Split Lens is the only current mobile overview owner and withdraws non-current data',
-  incidentLensSource.includes('data-incident-lens-root') &&
-    incidentLensSource.includes('data-incident-lens-evidence-mode') &&
-    incidentLensSource.includes('data-incident-lens-forbids-current') &&
-    patrolLensSource.includes('data-incident-lens-patrol') &&
-    incidentWorkspaceSource.includes('data-incident-lens-impact') &&
-    incidentWorkspaceSource.includes('data-incident-lens-evidence') &&
-    incidentLensModelSource.includes('buildIncidentLensModel') &&
-    /currentNumbersAllowed:\s*evidence\.evidenceMode\s*===\s*"current"/.test(incidentLensModelSource) &&
-    !/PocketConsole|pocketConsole|data-pocket|MobileLinkboard|NativeOperationsCanvas/.test([
-      incidentLensSource,
-      patrolLensSource,
-      incidentWorkspaceSource,
-      incidentLensModelSource,
+  'Mobile Flow owns the mobile overview and only exposes measured traffic for current complete evidence',
+  ikuaiMobileHomeSource.includes('data-mobile-flow-overview') &&
+    ikuaiMobileHomeSource.includes('data-evidence-mode') &&
+    ikuaiMobileHomeSource.includes('data-mobile-flow-scene') &&
+    ikuaiMobileHomeSource.includes('buildMobileFlowModel') &&
+    ikuaiMobileModelSource.includes('scene === "normal" && evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"') &&
+    ikuaiMobileModelCheckSource.includes('missing traffic values must remain unavailable') &&
+    !/MobilePulse|mobile-pulse|data-mobile-pulse|MobileNext|mobile-next|data-panel-mobile-next|mnx-/.test([
+      ikuaiMobileHomeSource,
+      ikuaiMobileModelSource,
     ].join('\n')),
-  'Incident Split Lens must expose patrol/impact/evidence current-data boundaries without retaining rejected presentation ownership'
+  'the Mobile Flow owner must withhold measured traffic unless evidence is current and complete'
 );
 check(
   'resource visualization requires timestamped samples',
@@ -135,10 +135,14 @@ check(
   'the API may remember connection metadata, never a field named as saved password state'
 );
 check(
-  'connection form keeps transport details behind real progressive disclosure',
-  /name="host"[\s\S]*?name="user"[\s\S]*?name="password"[\s\S]*?<details[^>]*data-router-advanced-settings[\s\S]*?name="sshPort"[\s\S]*?name="restPort"[\s\S]*?<\/details>/.test(connectionSource) &&
-    browserGateSource.includes('advanced connection settings are disclosed on demand'),
-  'the default form must prioritize address, user, and password while keeping ports and transport security inspectable on demand'
+  'Mobile Flow connection form makes transport security explicit and blocks unconfirmed risk',
+  connectionSource.includes('data-mobile-flow-connection="flow"') &&
+    /name="host"[\s\S]*?name="user"[\s\S]*?name="password"/.test(connectionSource) &&
+    connectionSource.includes('scheme === "http" || !verifyTls') &&
+    connectionSource.includes('riskConfirmed') &&
+    connectionSource.includes('insecureRestConfirmed') &&
+    connectionSource.includes('scheme === "https" && verifyTls'),
+  'the form must prioritize address, user, and password while keeping ports, TLS state, and explicit insecure-transport confirmation inspectable'
 );
 check(
   'local browser matrix has deterministic Python and one bounded browser lifecycle',
@@ -179,17 +183,14 @@ check(
   'the runtime gate must verify process completion separately from report contents'
 );
 check(
-  'Incident Split Lens incident priority and short-phone visibility are independently gated',
-  incidentLensRuntimeSource.includes('SHORT_PHONE_INCIDENT_SCENES') &&
-    incidentWorkspaceSource.includes('data-incident-lens-impact') &&
-    incidentWorkspaceSource.includes('data-incident-lens-evidence') &&
-    incidentLensRuntimeOwnerSource.includes('expectedScene: "interfaces-down"') &&
-    incidentLensRuntimeOwnerSource.includes('expectedScene: "resource-full"') &&
-    incidentLensRuntimeOwnerSource.includes('expectedScene: "collection-down"') &&
-    incidentLensRuntimeOwnerSource.includes('expectedScene: "all-offline"') &&
-    incidentLensRuntimeOwnerSource.includes('expectedScene: "no-snapshot"') &&
-    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-runtime.js'),
-  'the current mobile owner must prove incident split semantics and unobscured short-phone investigation'
+  'Mobile Flow blocks false-current values and keeps route uncertainty explicit',
+  ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down']
+    .every((scenario) => ikuaiMobileRuntimeSource.includes(`"${scenario}"`)) &&
+    ikuaiMobileHomeSource.includes('当前路径未核实') &&
+    ikuaiMobileModelSource.includes('route: evidence.evidenceMode === "current" ? evidence.routeEvidence.activePath : null') &&
+    !/route:\s*[^\n;]*(?:rows|defaultRoutes)\s*\[\s*0\s*\]/.test(ikuaiMobileModelSource) &&
+    ikuaiMobileModelSource.includes('scene === "normal" && evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"'),
+  'the seven-scene runtime must reject stale/absent measurements and report an unverified route instead of selecting an arbitrary row'
 );
 check(
   'the public release aggregate executes the release blocker and its file-reference regression',
@@ -199,36 +200,57 @@ check(
   'the declared release blocker must run in the aggregate, and nested source() dependencies must fail closed before runtime'
 );
 check(
-  'tablet risk focus contract is independently gated',
-  tabletRiskFocusSource.includes("tablet-risk-focus-v1") &&
-    packageJson.scripts['check:tablet-risk-focus'] === 'node --max-old-space-size=2048 tools/check-tablet-risk-focus.js',
-  'the tablet risk-object focus must remain an explicit regression contract'
+  'Mobile Flow keeps four stable roots, More, object workspaces, and evidence-backed detail continuity',
+  ikuaiMobileNavigationSource.includes('const ITEMS') &&
+    ikuaiMobileNavigationSource.includes('data-mobile-flow-navigation') &&
+    ['overview', 'network', 'terminals', 'logs'].every((root) => ikuaiMobileNavigationSource.includes(`id: "${root}"`)) &&
+    ikuaiMobileRoutesSource.includes('data-mobile-flow-workspace="more"') &&
+    ikuaiMobileRoutesSource.includes('data-panel-route-content="more"') &&
+    ikuaiMobileWorkspaceSource.includes('useObjectHistory(route)') &&
+    ikuaiMobileWorkspaceSource.includes('data-mobile-flow-detail') &&
+    ikuaiMobileWorkspaceSource.includes('<ol') &&
+    ikuaiMobileWorkspaceSource.includes('type="search"'),
+  'the Mobile Flow owner must keep four stable navigation roots, More, object workspaces, and detail evidence actionable'
 );
 check(
-  'runtime browser invokes the current Incident Split Lens aggregate exactly once',
-  packageJson.scripts['check:mobile-linkboard'] === undefined &&
-    packageJson.scripts['check:mobile-pocket-console'] === undefined &&
-    packageJson.scripts['check:mobile-optical-patrol'] === undefined &&
-    typeof packageJson.scripts['check:mobile-incident-lens'] === 'string' &&
-    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-contract.js') &&
-    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-model.js') &&
-    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-architecture.js') &&
-    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-accessibility-static.js') &&
-    packageJson.scripts['check:mobile-incident-lens'].includes('tools/check-incident-lens-runtime.js') &&
-    (packageJson.scripts['check:runtime-browser'].match(/check:mobile-incident-lens/g) || []).length === 1,
-  'the current Incident Split Lens aggregate must include static contract, model, architecture, accessibility, and runtime checks exactly once'
+  'runtime browser invokes the iKuai 4 smoke aggregate exactly once and retains a full 7x8 matrix command',
+  packageJson.scripts['check:mobile-incident-lens'] === undefined &&
+    packageJson.scripts['check:mobile-linkboard'] === undefined &&
+  packageJson.scripts['check:mobile-pocket-console'] === undefined &&
+  packageJson.scripts['check:mobile-optical-patrol'] === undefined &&
+    typeof packageJson.scripts['check:mobile-telemetry-model'] === 'string' &&
+    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-ikuai4-model.js') &&
+    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-ikuai4-architecture.js') &&
+    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-ikuai4-connection-security.js') &&
+    typeof packageJson.scripts['check:mobile-telemetry'] === 'string' &&
+    packageJson.scripts['check:mobile-telemetry'].includes('npm run check:mobile-telemetry-model') &&
+    packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-ikuai4-runtime.js') &&
+    typeof packageJson.scripts['check:mobile-telemetry:full'] === 'string' &&
+    packageJson.scripts['check:mobile-telemetry:full'].includes('npm run check:mobile-telemetry-model') &&
+    packageJson.scripts['check:mobile-telemetry:full'].includes('tools/check-mobile-ikuai4-runtime.js --full') &&
+    packageJson.scripts['check:runtime-browser'].includes('npm run check:mobile-telemetry'),
+  'runtime browser must use iKuai 4 once for smoke and retain a separate required full-matrix command'
 );
 check(
-  'the current Incident Split Lens runtime owns its report namespace and retired mobile runtimes are absent',
-  fs.existsSync(path.join(root, 'tools', 'check-incident-lens-runtime.js')) &&
-    fs.existsSync(path.join(root, 'tools', 'lib', 'incident-lens-runtime', 'runtime.js')) &&
-    source('tools/check-incident-lens-runtime.js').includes('source: "incident-lens-runtime"') &&
-    source('tools/lib/incident-lens-runtime/runtime.js').includes('acceptanceDirectory(name = "incident-lens-runtime")') &&
-    !fs.existsSync(path.join(root, 'tools', 'check-optical-patrol-runtime.js')) &&
-    !fs.existsSync(path.join(root, 'tools', 'lib', 'optical-patrol-runtime', 'runtime.js')) &&
-    !fs.existsSync(path.join(root, 'tools', 'check-pocket-console-runtime.js')) &&
-    !fs.existsSync(path.join(root, 'tools', 'lib', 'pocket-console-runtime', 'runtime.js')),
-  'the release runtime must use only the Incident Split Lens report namespace; rejected runtime owners must not remain executable'
+  'Mobile Flow full runtime report is identity-bound, includes deep workflows, and is fail-closed',
+  ikuaiMobileRuntimeSource.includes('const full = process.argv.includes("--full")') &&
+    ikuaiMobileRuntimeSource.includes('requiredTargets') &&
+  ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down']
+      .every((scenario) => ikuaiMobileRuntimeSource.includes(`"${scenario}"`)) &&
+    ikuaiMobileRuntimeSource.includes('contract: "mobile-flow-runtime-v1"') &&
+    ikuaiMobileRuntimeSource.includes('source: "mobile-flow-runtime"') &&
+    ikuaiMobileRuntimeSource.includes('Object.values(workflows).every') &&
+    ikuaiMobileRuntimeSource.includes('routeDetailHistory') &&
+    ikuaiMobileRuntimeSource.includes('routeAccessibility') &&
+    ikuaiMobileRuntimeSource.includes('moreDirectory') &&
+    ikuaiMobileRuntimeSource.includes('inspectConnectionSecurity') &&
+    ikuaiMobileRuntimeSource.includes('cells.length === requiredTargets.length') &&
+    ikuaiMobileRuntimeSource.includes('gitWorktreeIdentity(root)') &&
+    ikuaiMobileRuntimeSource.includes('releaseEvidenceEligible: false') &&
+    /path\.join\(output,\s*full\s*\?\s*["']report\.json["']/.test(ikuaiMobileRuntimeSource) &&
+    ikuaiMobileArchitectureSource.includes('MobileFlowRoutes.tsx') &&
+    ikuaiMobileConnectionSecuritySource.includes('mobile-flow-connection-security-v1'),
+  'the required full mobile matrix must identify its exact worktree and remain release-ineligible until an authority-backed clean-SHA release exists'
 );
 check(
   'focused desktop browser gates use one bounded Playwright lifecycle',
@@ -278,16 +300,21 @@ check(
   'reports with current/worktree/working-tree directory labels require explicit historical/worktree identity and must never become current release input'
 );
 check(
-  'current-state authority and current release boundary are wired into every release validation path; current product release remains fail-closed',
+  'current-state authority, exact-SHA CL verification, and the current release boundary keep publication fail-closed',
   packageJson.scripts['check:decision-system'].includes('tools/check-current-state-authority.js') &&
     packageJson.scripts['check:decision-system'].includes('tools/check-current-release-boundary.js') &&
+    packageJson.scripts['check:release-gates'].includes('npm run test:exact-sha-release') &&
     ciWorkflowSource.includes('npm run check:decision-system') &&
     localCiPsSource.includes('check-current-state-authority.js') &&
     localCiShSource.includes('check-current-state-authority.js') &&
     localCiPsSource.includes('check-current-release-boundary.js') &&
     localCiShSource.includes('check-current-release-boundary.js') &&
-    source('tools/check-decision-truth-integration.js').includes('current release boundary'),
-  'current-state authority and current release boundary must be executed by package/CI and remain fail-closed'
+    source('tools/check-decision-truth-integration.js').includes('current release boundary') &&
+    currentReleaseBoundarySource.includes('current-release-boundary-v1') &&
+    currentReleaseBoundarySource.includes('current product release fail-closed') &&
+    exactShaReleaseSource.includes("for (const jobName of ['Linux validation', 'Windows packaging'])") &&
+    exactShaReleaseSource.includes("const REQUIRED_CONTAINER_IMAGE_EVIDENCE = 'ghcr-image-evidence'"),
+  'publication must stay closed until the authoritative current-state boundary and exact-SHA Linux, Windows, and GHCR evidence all exist'
 );
 
 const schemaPath = path.join(root, 'src', 'panel-framework', 'runtime', 'panelRuntimeSchema.ts');

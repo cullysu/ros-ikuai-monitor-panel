@@ -5,31 +5,22 @@ const fs = require('fs');
 const path = require('path');
 
 const FRAMEWORK_ASSET_BUDGETS = Object.freeze({
-  script: Object.freeze({
-    // The supplemental evidence routes are shipped in the same offline-safe
-    // IIFE. Terser absorbs most of that cost; keep raw and Brotli ceilings
-    // tighter than the former budget while allowing a bounded gzip variance.
-    bytes: 600000,
-    gzipBytes: 160000,
-    brotliBytes: 130000,
-  }),
-  style: Object.freeze({
-    bytes: 120000,
-    gzipBytes: 20000,
-    brotliBytes: 18000,
-  }),
-  desktopStyle: Object.freeze({
-    bytes: 40000,
-    gzipBytes: 10000,
-    brotliBytes: 8000,
-  }),
+  'mobile.script': Object.freeze({ bytes: 380000, gzipBytes: 120000, brotliBytes: 100000 }),
+  'mobile.style': Object.freeze({ bytes: 60000, gzipBytes: 12000, brotliBytes: 10000 }),
+  'desktop.script': Object.freeze({ bytes: 470000, gzipBytes: 145000, brotliBytes: 120000 }),
+  'desktop.style': Object.freeze({ bytes: 90000, gzipBytes: 17000, brotliBytes: 15000 }),
+  loader: Object.freeze({ bytes: 4000, gzipBytes: 2000, brotliBytes: 1800 }),
 });
+
+function assetRecord(manifest, kind) {
+  return kind.split('.').reduce((value, segment) => value?.[segment], manifest?.assets);
+}
 
 function evaluateFrameworkAssetBudget(manifest, budgets = FRAMEWORK_ASSET_BUDGETS) {
   const reasons = [];
   const assets = {};
   for (const [kind, limits] of Object.entries(budgets)) {
-    const record = manifest?.assets?.[kind];
+    const record = assetRecord(manifest, kind);
     if (!record || typeof record !== 'object') {
       reasons.push(`framework manifest is missing ${kind} asset metadata`);
       continue;
@@ -62,7 +53,7 @@ function verifyFrameworkAssetBudget(projectRoot) {
   const reasons = [...report.reasons];
 
   for (const kind of Object.keys(FRAMEWORK_ASSET_BUDGETS)) {
-    const record = manifest?.assets?.[kind];
+    const record = assetRecord(manifest, kind);
     if (!record || typeof record.file !== 'string') continue;
     const assetPath = path.join(frameworkDir, record.file);
     const actual = {

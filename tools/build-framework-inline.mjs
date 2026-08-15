@@ -40,7 +40,6 @@ childProcess.exec = function patchedExec(command, options, callback) {
 syncBuiltinESMExports();
 
 const { build, defineConfig } = await import("vite");
-const { build: buildStandaloneCss } = await import("esbuild");
 const react = (await import("@vitejs/plugin-react")).default;
 const postcss = (await import("postcss")).default;
 
@@ -49,34 +48,49 @@ const projectRoot = resolve(rootDir, "..");
 const frameworkDir = resolve(projectRoot, "public/assets/framework");
 const frameworkInputsBeforeBuild = computeFrameworkInputIdentity(projectRoot);
 
-await build(defineConfig({
-  root: projectRoot,
-  configFile: false,
-  plugins: [react()],
-  esbuild: false,
-  publicDir: false,
-  define: {
-    "process.env.NODE_ENV": JSON.stringify("production")
-  },
-  build: {
-    minify: "terser",
-    terserOptions: {
-      compress: { passes: 2 },
-      format: { comments: false },
-      mangle: true,
+async function buildSurface({ entry, name, script, style }) {
+  await build(defineConfig({
+    root: projectRoot,
+    configFile: false,
+    plugins: [react()],
+    esbuild: false,
+    publicDir: false,
+    define: {
+      "process.env.NODE_ENV": JSON.stringify("production")
     },
-    cssMinify: true,
-    outDir: frameworkDir,
-    emptyOutDir: false,
-    lib: {
-      entry: resolve(projectRoot, "src/panel-framework/main.tsx"),
-      name: "PanelFramework",
-      formats: ["iife"],
-      fileName: () => "panel-framework.js",
-      cssFileName: "style"
+    build: {
+      minify: "terser",
+      terserOptions: {
+        compress: { passes: 2 },
+        format: { comments: false },
+        mangle: true,
+      },
+      cssMinify: true,
+      outDir: frameworkDir,
+      emptyOutDir: false,
+      lib: {
+        entry: resolve(projectRoot, entry),
+        name,
+        formats: ["iife"],
+        fileName: () => script,
+        cssFileName: style.replace(/\.css$/, "")
+      }
     }
-  }
-}));
+  }));
+}
+
+await buildSurface({
+  entry: "src/panel-framework/mobile/main.tsx",
+  name: "PanelMobile",
+  script: "panel-mobile.js",
+  style: "mobile.css",
+});
+await buildSurface({
+  entry: "src/panel-framework/desktop/main.tsx",
+  name: "PanelDesktop",
+  script: "panel-desktop.js",
+  style: "desktop.css",
+});
 
 const frameworkInputs = computeFrameworkInputIdentity(projectRoot);
 if (frameworkInputs.digest !== frameworkInputsBeforeBuild.digest) {
@@ -85,14 +99,14 @@ if (frameworkInputs.digest !== frameworkInputsBeforeBuild.digest) {
   );
 }
 
-const stalePattern = /^(?:panel-framework\.[0-9a-f]{12}\.js|style\.[0-9a-f]{12}\.css|desktop-overview\.[0-9a-f]{12}\.css)(?:\.(?:br|gz))?$/;
+const stalePattern = /^(?:(?:panel-mobile|panel-desktop|panel-surface-loader)\.[0-9a-f]{12}\.js|(?:mobile|desktop)\.[0-9a-f]{12}\.css|panel-framework\.[0-9a-f]{12}\.js|style\.[0-9a-f]{12}\.css|desktop-overview\.[0-9a-f]{12}\.css)(?:\.(?:br|gz))?$/;
 for (const name of readdirSync(frameworkDir)) {
   if (stalePattern.test(name) || name === "manifest.json") {
     rmSync(resolve(frameworkDir, name), { force: true });
   }
 }
 
-const assets = {};
+const assets = { mobile: {}, desktop: {} };
 const preservedFrameworkCustomProperties = new Set([
   "--mdw-muted",
   "--mdw-faint",
@@ -272,10 +286,7 @@ function compactPreservedFrameworkReferences(body) {
   return compact.replace(anchor, (match) => `${match}${definitions};`);
 }
 
-for (const definition of [
-  { kind: "script", source: "panel-framework.js", prefix: "panel-framework", extension: "js" },
-  { kind: "style", source: "style.css", prefix: "style", extension: "css" },
-]) {
+function emitOwnedAsset(definition) {
   let body = readFileSync(resolve(frameworkDir, definition.source));
   if (definition.kind === "style") {
     // Vite/esbuild leaves harmless declaration-value whitespace in a few
@@ -290,10 +301,6 @@ for (const definition of [
     cssBody = compactFrameworkSelectorCombinators(cssBody);
     cssBody = compactFrameworkColorKeywords(cssBody);
     cssBody = compactFrameworkRgbaFunctions(cssBody);
-    // The desktop overview is a separately loaded stylesheet. Keep public
-    // custom-property names stable across the two assets; aliasing the main
-    // bundle would make a desktop var(--do-blue) reference resolve to a name
-    // that only exists inside the mobile asset's private compaction map.
     cssBody = compactAdjacentFrameworkBlocks(cssBody);
     cssBody = compactFrameworkTransparentBackgrounds(cssBody);
     cssBody = compactFrameworkZeroLengths(cssBody);
@@ -319,7 +326,7 @@ for (const definition of [
   if (!gunzipSync(gzip).equals(body) || !brotliDecompressSync(brotli).equals(body)) {
     throw new Error(`compressed framework asset verification failed: ${file}`);
   }
-  assets[definition.kind] = {
+  return {
     file,
     sha256,
     bytes: body.length,
@@ -328,66 +335,28 @@ for (const definition of [
   };
 }
 
-const desktopOverviewBuild = await buildStandaloneCss({
-  absWorkingDir: projectRoot,
-  entryPoints: [resolve(projectRoot, "src/panel-framework/overview/desktop-overview/styles/desktop-overview-entry.css")],
-  bundle: true,
-  minify: true,
-  outfile: resolve(frameworkDir, "desktop-overview.css"),
-  write: false,
-  logLevel: "silent",
-});
-const desktopOverviewOutput = desktopOverviewBuild.outputFiles?.find((file) => file.path.endsWith(".css"));
-if (!desktopOverviewOutput) throw new Error("desktop overview stylesheet was not emitted");
-const desktopOverviewBody = Buffer.from(desktopOverviewOutput.contents);
-const desktopOverviewSha256 = createHash("sha256").update(desktopOverviewBody).digest("hex");
-const desktopOverviewFile = `desktop-overview.${desktopOverviewSha256.slice(0, 12)}.css`;
-const desktopOverviewPath = resolve(frameworkDir, desktopOverviewFile);
-const desktopOverviewGzip = gzipSync(desktopOverviewBody, { level: 9 });
-desktopOverviewGzip[9] = 255;
-const desktopOverviewBrotli = brotliCompressSync(desktopOverviewBody, {
-  params: {
-    [zlibConstants.BROTLI_PARAM_MODE]: zlibConstants.BROTLI_MODE_TEXT,
-    [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
-  },
-});
-writeFileSync(desktopOverviewPath, desktopOverviewBody);
-writeFileSync(`${desktopOverviewPath}.gz`, desktopOverviewGzip);
-writeFileSync(`${desktopOverviewPath}.br`, desktopOverviewBrotli);
-if (!gunzipSync(desktopOverviewGzip).equals(desktopOverviewBody) || !brotliDecompressSync(desktopOverviewBrotli).equals(desktopOverviewBody)) {
-  throw new Error(`compressed desktop overview stylesheet verification failed: ${desktopOverviewFile}`);
-}
-assets.desktopStyle = {
-  file: desktopOverviewFile,
-  sha256: desktopOverviewSha256,
-  bytes: desktopOverviewBody.length,
-  gzipBytes: desktopOverviewGzip.length,
-  brotliBytes: desktopOverviewBrotli.length,
-};
+assets.mobile.script = emitOwnedAsset({ kind: "script", source: "panel-mobile.js", prefix: "panel-mobile", extension: "js" });
+assets.mobile.style = emitOwnedAsset({ kind: "style", source: "mobile.css", prefix: "mobile", extension: "css" });
+assets.desktop.script = emitOwnedAsset({ kind: "script", source: "panel-desktop.js", prefix: "panel-desktop", extension: "js" });
+assets.desktop.style = emitOwnedAsset({ kind: "style", source: "desktop.css", prefix: "desktop", extension: "css" });
+
+const loaderSource = `(()=>{const q=new URLSearchParams(location.search).get("surface");const valid=q==="mobile"||q==="desktop";let s=valid?q:null;try{if(!s){const remembered=sessionStorage.getItem("router-panel-surface");if(remembered==="mobile"||remembered==="desktop")s=remembered}}catch{}if(!s){const coarse=matchMedia("(pointer:coarse)").matches||navigator.maxTouchPoints>0;s=coarse||screen.width<=1023?"mobile":"desktop"}try{sessionStorage.setItem("router-panel-surface",s)}catch{}document.documentElement.dataset.panelSurface=s;const a=${JSON.stringify(assets)}[s];const l=document.createElement("link");l.rel="stylesheet";l.href="/assets/framework/"+a.style.file;l.dataset.panelSurfaceAsset=s+"-style";document.head.append(l);const j=document.createElement("script");j.src="/assets/framework/"+a.script.file;j.dataset.panelSurfaceAsset=s+"-script";j.async=false;document.head.append(j);window.dispatchEvent(new CustomEvent("router-panel-surface-selected",{detail:{surface:s,explicit:valid}}))})();`;
+writeFileSync(resolve(frameworkDir, "panel-surface-loader.js"), loaderSource, "utf8");
+assets.loader = emitOwnedAsset({ kind: "script", source: "panel-surface-loader.js", prefix: "panel-surface-loader", extension: "js" });
 
 writeFileSync(
   resolve(frameworkDir, "manifest.json"),
-  `${JSON.stringify({ version: 2, inputs: frameworkInputs, assets }, null, 2)}\n`,
+  `${JSON.stringify({ version: 3, inputs: frameworkInputs, assets }, null, 2)}\n`,
   "utf8",
 );
 
 const indexPath = resolve(projectRoot, "public/index.html");
 let indexSource = readFileSync(indexPath, "utf8")
+  .replace(/\s*<link rel="stylesheet"[^>]*data-overview-framework-asset="[^"]+"[^>]*>/g, "")
+  .replace(/\s*<script[^>]*data-overview-framework-asset="[^"]+"[^>]*><\/script>/g, "")
   .replace(
-    /<link rel="stylesheet"[^>]*data-overview-framework-asset="desktop-style"[^>]*>\s*/g,
-    "",
-  )
-  .replace(
-    /(<link rel="stylesheet"[^>]*data-overview-framework-asset="style"[^>]*>)/,
-    `<link rel="stylesheet" href="/assets/framework/${assets.desktopStyle.file}" media="(min-width: 1200px)" data-overview-framework-asset="desktop-style">\n  $1`,
-  )
-  .replace(
-    /\/assets\/framework\/style(?:\.[0-9a-f]{12})?\.css/g,
-    `/assets/framework/${assets.style.file}`,
-  )
-  .replace(
-    /\/assets\/framework\/panel-framework(?:\.[0-9a-f]{12})?\.js/g,
-    `/assets/framework/${assets.script.file}`,
+    /<\/head>/,
+    `  <script defer src="/assets/framework/${assets.loader.file}" data-overview-framework-asset="surface-loader"></script>\n</head>`,
   );
 writeFileSync(indexPath, indexSource, "utf8");
 
@@ -395,8 +364,12 @@ writeFileSync(indexPath, indexSource, "utf8");
 // JavaScript itself so a truncated or otherwise malformed artifact cannot pass
 // a source-only TypeScript build.
 for (const scriptPath of [
-  resolve(frameworkDir, "panel-framework.js"),
-  resolve(frameworkDir, assets.script.file),
+  resolve(frameworkDir, "panel-mobile.js"),
+  resolve(frameworkDir, "panel-desktop.js"),
+  resolve(frameworkDir, "panel-surface-loader.js"),
+  resolve(frameworkDir, assets.mobile.script.file),
+  resolve(frameworkDir, assets.desktop.script.file),
+  resolve(frameworkDir, assets.loader.file),
 ]) {
   childProcess.execFileSync(process.execPath, ["--check", scriptPath], {
     stdio: "inherit",

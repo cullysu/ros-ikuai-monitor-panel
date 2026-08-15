@@ -1,7 +1,5 @@
 import { ChevronLeft, ChevronRight, Clock3, LockKeyhole, Router } from "lucide-react";
 import type { OverviewRawSnapshot, OverviewTone } from "../overview";
-import { MobileDomainWorkspace } from "../mobile/MobileDomainWorkspace";
-import { useMobilePanelSurface } from "../mobile/useMobilePanelSurface";
 import { PANEL_ROUTES, PANEL_ROUTE_MATURITY_LABELS, type PanelNavigate, type PanelRouteId } from "../routes/panelRoutes";
 import { panelWorkspaceLabel, panelWorkspaceTabs } from "../routes/panelWorkspaceCatalog";
 import { buildSectionModel } from "./sectionModels";
@@ -68,8 +66,6 @@ function MorePage({ onNavigate }: { onNavigate: (route: PanelRouteId) => void })
 }
 
 export function OperationalSectionPage({ route, snapshot, onNavigate }: { route: PanelRouteId; snapshot: OverviewRawSnapshot; onNavigate: PanelNavigate }) {
-  const mobile = useMobilePanelSurface();
-  if (mobile) return <MobileDomainWorkspace route={route} snapshot={snapshot} onNavigate={onNavigate} />;
   if (route === "more") return <MorePage onNavigate={onNavigate} />;
   const model = buildSectionModel(route, snapshot);
   const metricColumnCount = Math.min(model.metrics.length, 4) || 1;

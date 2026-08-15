@@ -1277,9 +1277,15 @@ class SnapshotBuilderMixin:
                 }
             )
         if update_rate_history:
+            # This observation belongs to the counter delta, not to later
+            # resource/static work in this snapshot build.  Keeping its own
+            # qualified timestamp prevents any non-rate refresh from being
+            # mistaken for another traffic sample.
+            with self.lock:
+                rate_history_timestamp = _runtime.require_rfc3339_timestamp(self.last_counter_sample_at)
             self.history["trafficSamples"].append(
                 {
-                    "timestamp": snapshot_timestamp,
+                    "timestamp": rate_history_timestamp,
                     "uplink": None if rate_history_break else wan_totals["up"],
                     "downlink": None if rate_history_break else wan_totals["down"],
                     "source": "counter-delta",

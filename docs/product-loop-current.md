@@ -1,35 +1,37 @@
 - status: `current-handoff`
-- validForCommit: Step965 local veto remediation passes focused runtime; clean exact replay remains pending
-- currentHandoffForStep: `965`
+- validForCommit: false; Mobile Flow phone acceptance is green but clean-candidate release evidence is open
+- currentHandoffForStep: `1056`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
-- updated: 2026-08-14
-- latestRecordedStep: `965`
-- latestStepOutcome: `965:db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required`
-- releaseCandidate: not a release candidate; current evidence is bound to a dirty focused artifact
-- currentConclusion: **FAIL overall / local P0-P1 remediation PASS / fresh exact reviews pending / GitHub publication closed / release CLOSED.**
-- reviewBoundary: clean-SHA Product, Design, Visual, Accessibility, Engineering and external authority reviews remain required.
+- updated: 2026-08-16
+- latestRecordedStep: `1056`
+- latestStepOutcome: `1056:mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open`
+- releaseCandidate: not a release candidate
+- currentConclusion: **FAIL overall / Mobile Flow phone acceptance green / worktree evidence quarantined from release / clean exact-SHA replay and full release gates open / GitHub publication closed / release CLOSED.**
 
-## Current handoff:
+## Current handoff
 
-- Preserve evidence truth: `current | historical | unavailable`, RFC3339, visible numeric zero, missing-value withdrawal, verified-route-only logic, REST/SSH independence and trailing consecutive resource samples.
-- Preserve separate mobile and desktop render/style ownership. Do not revive rejected topology, sheet, card-stack, old `layout.css` or `desktop-overview-recovered.css`.
-- Preserve the Step965 active owners: horizontal mobile chrome, one-column short-landscape incident flow, object-bound actions, pointer-gated hover, reduced-preference fallbacks, and `desktop-overview-base.css` beneath `desktop-next.css`.
-- Preserve test truth: `matrix.complete=false` always means top-level fail; bounded route reports are never described as release evidence; desktop style must be verified through computed style and original screenshots.
-- Preserve release truth: never use normal `git push`; authorized Git Data API publication requires exact-SHA Linux, Windows and GHCR verification.
+- Preserve `src/panel-framework/mobile-flow-ui/` as the only phone presentation owner; do not restore rejected presentation JSX/CSS.
+- Keep mobile and desktop presentation trees separate while sharing lower-level truth/domain models.
+- Preserve current/historical/unavailable evidence, verified/unknown route state, RFC3339, atomic traffic, read-only security, canonical routes and history.
+- Phone flow owns one status rail, one scene-specific decisive instrument and a compact object queue; incidents must not share a generic card skeleton.
+- Fleet scale cannot outrank risk. All-offline collection reachability cannot be promoted into forwarding or business health.
+- Mobile Native and other rejected phone owners are physically absent; architecture gates prevent their return.
+- Worktree matrices prove engineering behavior only. Fresh non-worktree exact-SHA Product and Visual release review is required after clean commit.
+- Never use normal `git push`; no publication before exact-SHA Linux, Windows and GHCR verification.
 
 ## Gate boundary
 
 | Gate | Status | Meaning |
 |---|---|---|
-| Product/Design/Visual | `pending exact replay` | db5 veto roots are locally fixed; fresh clean-artifact review is required. |
-| Implementation / Architecture | `focused pass` | Build, fixed asset ceilings, focused mobile/desktop runtime and active owner gates pass. |
-| State matrix | `pending exact replay` | Required next evidence is Overview 28, complete route-responsive 532, route-state 266 and real Edge 200%. |
-| Accessibility / Security | `pending final evidence` | Reduced preferences are repaired; full exact replay and real manual AT remain open. |
-| Route maturity / RouterOS / promotion | `pending` | Real 300-second soak and trusted external promotion inputs remain open. |
-| Current product release | `fail` | Focused engineering closure does not satisfy whole-product release qualification. |
-| Release | `closed` | No authorized upload or current remote-SHA Linux/Windows/GHCR CL. |
+| Product / Design / Visual | `phone experience pass / release replay pending` | Visual P0/P1/P2=0; Product has no experience P1/P2, but worktree release eligibility is correctly vetoed. |
+| Implementation / Architecture | `pass` | Isolated Mobile Flow owns all phone surfaces; rejected owners are absent. |
+| Accessibility | `pass` | Runtime-v2 10/10 includes 200%, forced-colors, history, search and connection. |
+| State matrix | `engineering pass` | 56/56 plus four workflows on exact worktree fingerprint; not release evidence. |
+| Security truth | `focused pass / full replay pending` | Evidence and connection truth contracts are green; full release suite remains open. |
+| Current product release | `fail` | Product/Visual and broader public-product requirements remain open. |
+| Release | `closed` | GitHub untouched; no current remote-SHA CL exists. |
 
 ## One next action
 
-Commit Step965, then bind complete local gates, matrices and independent reviews to the resulting clean exact SHA. Continue all local work; do not mark the task blocked merely because external attestations or publication evidence are pending.
+Create a clean committed candidate, regenerate exact-SHA matrices, obtain release-eligible Product/Visual review, then run every release gate before publication.

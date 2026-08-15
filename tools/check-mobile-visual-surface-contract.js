@@ -1,122 +1,63 @@
 #!/usr/bin/env node
 "use strict";
 
-/**
- * Product/design write-ahead contract for the mobile Incident Split Lens.
- *
- * This gate is intentionally affirmative: retirement of Optical Patrol alone
- * is never sufficient. The active mobile owner must project typed evidence,
- * expose its two distinct DOM surfaces, and retain a readable operational
- * workspace at touch and tablet breakpoints.
- */
-
 const fs = require("node:fs");
 const path = require("node:path");
-
 const root = path.resolve(__dirname, "..");
-const overview = path.join(root, "src", "panel-framework", "overview", "mobile-overview");
-const owner = path.join(overview, "incident-lens");
-const retiredOwner = path.join(overview, "optical-patrol");
-const entry = path.join(overview, "MobileOverviewEntry.tsx");
+const owner = path.join(root, "src", "panel-framework", "mobile-flow-ui");
 const failures = [];
-
-function check(pass, name, detail) {
-  if (!pass) failures.push({ name, detail });
-}
-
-function read(file) {
-  return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
-}
-
-function walk(directory) {
-  if (!fs.existsSync(directory)) return [];
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((item) => {
-    const target = path.join(directory, item.name);
-    return item.isDirectory() ? walk(target) : [target];
-  });
-}
-
-function hasRule(source, selector, declaration) {
-  const escaped = selector.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-  return new RegExp(`${escaped}\\s*\\{[^}]*${declaration}[^}]*\\}`, "s").test(source);
-}
-
-const required = [
-  "IncidentLens.tsx",
-  "PatrolLens.tsx",
-  "IncidentWorkspace.tsx",
-  "buildIncidentLensModel.ts",
-  "types.ts",
-  "useIncidentLensSelectionHistory.ts",
-];
-const sources = walk(owner).filter((file) => /\.(?:ts|tsx|css)$/.test(file));
-const ownerSource = sources.map(read).join("\n");
-const css = sources.filter((file) => file.endsWith(".css")).map(read).join("\n");
-const entrySource = read(entry);
-const rootSource = read(path.join(owner, "IncidentLens.tsx"));
-const patrolSource = read(path.join(owner, "PatrolLens.tsx"));
-const workspaceSource = read(path.join(owner, "IncidentWorkspace.tsx"));
-const modelSource = read(path.join(owner, "buildIncidentLensModel.ts"));
-const activeSource = `${entrySource}\n${ownerSource}`;
-
-check(fs.existsSync(owner) && required.every((file) => fs.existsSync(path.join(owner, file))),
-  "Incident Split Lens owns a complete mobile render/model slice",
-  "IncidentLens, PatrolLens, IncidentWorkspace, typed model, types, and selection history must all exist");
-check(/export\s+(?:function|const)\s+buildIncidentLensModel\b/.test(modelSource)
-    && /surface\s*:\s*incident\s*\?\s*["']incident["']\s*:\s*["']patrol["']/.test(modelSource)
-    && /currentNumbersAllowed\s*:\s*evidence\.evidenceMode\s*===\s*["']current["']/.test(modelSource),
-  "model projects typed evidence into patrol or incident mode",
-  "the model must choose a surface and explicitly withdraw current values outside current evidence");
-check(/data-incident-lens-root/.test(rootSource)
-    && /data-incident-lens-mode/.test(rootSource)
-    && /data-incident-lens-evidence-mode/.test(rootSource)
-    && /data-incident-lens-forbids-current/.test(rootSource)
-    && /<PatrolLens\b/.test(rootSource)
-    && /<IncidentWorkspace\b/.test(rootSource),
-  "root DOM exposes evidence state and separate patrol/incident owners",
-  "the active root must expose stable acceptance markers and mount distinct render owners");
-check(/data-incident-lens-patrol/.test(patrolSource)
-    && /data-incident-lens-incident/.test(workspaceSource)
-    && /data-incident-lens-impact/.test(workspaceSource)
-    && /data-incident-lens-evidence/.test(workspaceSource),
-  "Incident Split Lens exposes patrol, impact, and evidence DOM boundaries",
-  "the incident surface must be a real split workspace, not recolored shared DOM");
-check(["--il-ink:", "--il-muted:", "--il-line:", "--il-surface:", "--il-blue:", "--il-warn:", "--il-danger:"].every((token) => css.includes(token))
-    && /data-incident-lens-tone=["']danger["']/.test(css)
-    && /data-incident-lens-tone=["']warn["']/.test(css),
-  "surface declares operational tokens and explicit state tones",
-  "Incident Split Lens must distinguish trust, warning, and danger without a decorative universal wash");
-check(/data-incident-lens-evidence-boundary/.test(rootSource)
-    && /role=["']status["']/.test(rootSource)
-    && /aria-live=["']polite["']/.test(rootSource),
-  "evidence boundary remains a live, semantic reading surface",
-  "command/evidence status must remain observable to assistive technology");
-check(/@media\s*\(min-width:\s*600px\)/.test(css)
-    && /\.incident-lens__incident\s*\{[^}]*grid-template-columns:\s*minmax\(0,1\.05fr\)\s+minmax\(300px,\.95fr\)/s.test(css)
-    && /\.incident-lens__impact-workspace\s*\{[^}]*grid-column:\s*1/s.test(css)
-    && /\.incident-lens__evidence-workspace\s*\{[^}]*grid-column:\s*2/s.test(css)
-    && /@media\s*\(min-width:\s*600px\)\s*and\s*\(max-height:\s*500px\)/.test(css),
-  "tablet and short-landscape layouts retain an Incident Split workspace",
-  "impact and evidence need independent columns beyond phone width");
-check(hasRule(css, ".incident-lens__chrome button", "width\\s*:\\s*44px")
-    && hasRule(css, ".incident-lens__chrome button", "height\\s*:\\s*44px")
-    && hasRule(css, ".incident-lens__nav button", "min-height\\s*:\\s*44px")
-    && hasRule(css, ".incident-lens__object-action", "min-height\\s*:\\s*(?:52px|44px)"),
-  "Incident Split Lens controls retain touch-sized targets",
-  "command, navigation, and action controls must encode at least 44px targets");
-check(!fs.existsSync(retiredOwner)
-    && !/optical-patrol|OpticalPatrol|opticalPatrol|\bop__|className\s*=\s*["'`]op\b/.test(activeSource),
-  "active mobile surface has no Optical Patrol owner",
-  "the retired owner must be absent and the active entry/Incident Lens sources must not retain its identifiers");
-
-const report = {
-  pass: failures.length === 0,
-  contract: "mobile-visual-surface-v3-incident-split-lens",
-  owner: path.relative(root, owner).replaceAll("\\", "/"),
-  checks: failures.length ? undefined : [
-    "model", "DOM", "surface tokens", "evidence boundary", "tablet workspace", "touch targets", "no retired owner",
-  ],
-  failures,
+const read = (...segments) => {
+  const file = path.join(root, ...segments);
+  if (!fs.existsSync(file)) { failures.push(`missing Mobile Flow visual surface: ${path.relative(root, file).replace(/\\/g, "/")}`); return ""; }
+  return fs.readFileSync(file, "utf8");
 };
-console.log(JSON.stringify(report, null, 2));
-if (failures.length) process.exitCode = 1;
+const check = (pass, name, detail) => { if (!pass) failures.push({ name, detail }); };
+const includesEvery = (source, expressions) => expressions.every((expression) => expression.test(source));
+const pxFontSizes = (source) => [...source.matchAll(/font-size\s*:\s*([0-9]+(?:\.[0-9]+)?)px\b/gi)].map((match) => Number(match[1]));
+const files = {
+  overview: read("src", "panel-framework", "mobile-flow-ui", "overview", "MobileFlowOverview.tsx"),
+  model: read("src", "panel-framework", "mobile-flow-ui", "overview", "mobileFlowModel.ts"),
+  navigation: read("src", "panel-framework", "mobile-flow-ui", "navigation", "MobileFlowNavigation.tsx"),
+  workspace: read("src", "panel-framework", "mobile-flow-ui", "workspace", "MobileFlowWorkspace.tsx"),
+  routes: read("src", "panel-framework", "mobile-flow-ui", "workspace", "MobileFlowRoutes.tsx"),
+  connection: read("src", "panel-framework", "mobile-flow-ui", "connection", "MobileFlowConnection.tsx"),
+  app: read("src", "panel-framework", "mobile", "MobilePanelApp.tsx"),
+  overviewCss: read("src", "panel-framework", "mobile-flow-ui", "styles", "flow-overview.css"),
+  navigationCss: read("src", "panel-framework", "mobile-flow-ui", "styles", "flow-navigation.css"),
+  workspaceCss: read("src", "panel-framework", "mobile-flow-ui", "styles", "flow-workspace.css"),
+  directoryCss: read("src", "panel-framework", "mobile-flow-ui", "styles", "flow-directory.css"),
+  connectionCss: read("src", "panel-framework", "mobile-flow-ui", "styles", "flow-connection.css"),
+};
+const presentation = Object.values(files).join("\n");
+const styles = [files.overviewCss, files.navigationCss, files.workspaceCss, files.directoryCss, files.connectionCss].join("\n");
+const rejectedMarker = /MobileNative|mobile-native-ui|data-mobile-native|\bmni-|\bmnw-|\bmnc-|MobileOps|mobile-ops-ui|data-mobile-ops|\bmou-|\bmow-|\bmop-|MobilePulse|mobile-pulse-ui|data-mobile-pulse|MobilePatrol|mobile-patrol|IkuaiMobile|mobile-ikuai4|data-ikuai-mobile|data-origin-navigation/;
+const glassSelectors = [...styles.matchAll(/([^{}]+)\{[^{}]*backdrop-filter\s*:\s*(?!none\b)[^{}]*\}/g)].map((match) => match[1]);
+const fontSizes = pxFontSizes(styles);
+
+check(fs.existsSync(owner), "Mobile Flow owns the current mobile presentation", "the isolated mobile-flow-ui owner must exist");
+for (const rejected of ["mobile-native-ui", "mobile-ops-ui", "mobile-pulse-ui", "mobile-patrol", "mobile-ikuai4"]) check(!fs.existsSync(path.join(root, "src", "panel-framework", rejected)), `Rejected ${rejected} tree is physically deleted`, "a rejected mobile tree may not remain as a fallback");
+check(includesEvery(files.overview, [/data-mobile-flow-overview/, /data-mobile-flow-scene=\{model\.scene\}/, /<EvidenceRail/, /<StatusBand/, /<ObjectStream/]), "overview exposes a flow-owned evidence rail, status band, and object stream", "the first viewport must be a phone patrol flow, not a desktop dashboard compressed into rows");
+check(includesEvery(files.overview, [/<NormalInstrument/, /<FleetInstrument/, /<ResourceInstrument/, /<InterfaceInstrument/, /<CollectionInstrument/, /<UnavailableInstrument/, /<WanInstrument/]), "normal, fleet, resource, interface, collection, unavailable, and WAN compositions are structurally distinct", "each exception scene must own a distinct task component rather than recolor a normal card stack");
+check(includesEvery(files.overview, [/viewBox=\{`0 0 \$\{width\} \$\{height\}`\}/, /preserveAspectRatio="xMidYMid meet"/, /mflow-chart__down/, /mflow-chart__up/, /traffic\.points/, /traffic\.peak/]) && /traffic\.unit/.test(files.overview), "traffic uses proportional SVG with scale, time range, separate upload/download paths, and units", "phone traffic evidence must stay interpretable under responsive sizing");
+check(/\.mflow-chart figcaption[^{}]*\{[^}]*font-size:\s*(?:1[1-9]|[2-9][0-9])px/.test(files.overviewCss) && /\.mflow-chart > div[^{}]*\{[^}]*font-size:\s*(?:1[1-9]|[2-9][0-9])px/.test(files.overviewCss), "chart labels meet the 11px operational floor", "phone charts may not shrink labels below the contract floor");
+const roots = files.navigation.match(/const ITEMS:[\s\S]*?\n\];/)?.[0] || "";
+check((roots.match(/route:\s*"/g) || []).length === 4 && /route:\s*"overview"/.test(roots) && /route:\s*"lineStatus"/.test(roots) && /route:\s*"dhcp"/.test(roots) && /route:\s*"logs"/.test(roots) && !/route:\s*"more"/.test(roots), "persistent navigation is real and has four stable roots", "navigation must expose four selected work roots rather than a decorative dock");
+check(includesEvery(files.navigation, [/data-mobile-flow-navigation/, /aria-current/]), "navigation exposes selected state", "the mobile root navigation must not be decorative");
+check(includesEvery(files.navigationCss, [/grid-template-columns:\s*repeat\(4/, /min-height:\s*(?:4[4-9]|[5-9][0-9])px/, /backdrop-filter/, /prefers-reduced-motion/, /prefers-reduced-transparency/, /forced-colors/]), "navigation is compact, touch-sized, and preference-aware", "four stable targets, 44px hit areas, scoped glass, and accessibility preferences are required");
+check(includesEvery(files.workspace, [/data-mobile-flow-workspace/, /data-mobile-flow-detail/, /useObjectHistory/, /data-mobile-flow-object-trigger/]), "object workspaces use a phone-owned list/detail path", "objects must be inspectable without a desktop surface fallback");
+check(includesEvery(files.connection, [/data-mobile-flow-connection/, /REST/, /SSH/, /TLS/]), "connection keeps a phone-owned dual-channel security boundary", "REST and SSH must remain visibly distinct in the mobile flow");
+check(!rejectedMarker.test(presentation), "Mobile Flow surface contains no rejected owner or selector", "new selectors must use data-mobile-flow and mflow semantics only");
+check(glassSelectors.length > 0 && glassSelectors.every((selector) => /\.mflow-topbar button|\.mflow-tabs|\.mflow-connection footer/.test(selector)) && !/backdrop-filter\s*:/.test([files.workspaceCss, files.directoryCss].join("\n")), "glass is limited to compact control layers", "data, evidence, workspace, and directory surfaces must stay solid and readable");
+check(!/!important\b/i.test(styles) && !/transition\s*:\s*all(?:\s|,|;|$)|transition-property\s*:\s*all\b/i.test(styles), "Mobile Flow CSS has no priority escape hatch or unbounded transition", "mobile polish may not depend on !important or transition-all");
+check(fontSizes.length > 0 && Math.min(...fontSizes) >= 11, "visible Mobile Flow text keeps the 11px operational floor", "compact density must not become illegible microcopy");
+check(/@media\s*\(max-width:\s*340px\)/.test(files.overviewCss) && /@media\s*\(orientation:\s*landscape\)/.test(files.overviewCss) && /@media\s*\(min-width:\s*600px\)/.test(files.overviewCss) && /data-panel-large-text="true"/.test(files.overviewCss), "small phone, landscape, tablet, and text-scale layouts are explicitly owned", "a mobile UI must reflow intentionally across its supported mobile contexts");
+const entryCss = read("src", "panel-framework", "mobile", "mobile-entry.css");
+for (const stylesheet of ["flow-overview", "flow-navigation", "flow-workspace", "flow-directory", "flow-connection"]) check(new RegExp(`mobile-flow-ui/styles/${stylesheet}\\.css`).test(entryCss), `mobile shell loads ${stylesheet}`, "the isolated visual surface must be the runtime stylesheet owner");
+
+if (failures.length) {
+  console.error("mobile-flow-ui visual surface gate: FAIL");
+  failures.forEach((failure) => console.error(`- ${typeof failure === "string" ? failure : `${failure.name}: ${failure.detail}`}`));
+  process.exit(1);
+}
+console.log("mobile-flow-ui visual surface gate: PASS");
+console.log("Checked flow-owned scene structure, proportional traffic, compact navigation, scoped glass controls, solid evidence surfaces, and responsive phone/tablet/text-scale ownership.");

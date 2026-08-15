@@ -15,7 +15,7 @@ function inspectOverviewDesktopLayout({
   scaleMetaOk,
   normalize,
 }) {
-  if (sectionName !== 'overview' || window.innerWidth < 1200) return {
+  if (sectionName !== 'overview' || window.innerWidth < 900) return {
     overviewBlankProbe: null,
     overviewBlankAreaOk: true,
     overviewNoSnapshotModuleFillProbe: null,
@@ -35,6 +35,41 @@ function inspectOverviewDesktopLayout({
   };
   const desktopRoot = sectionRoot?.querySelector('[data-desktop-overview]');
   if (!desktopRoot) return null;
+  if (window.innerWidth < 1200) {
+    const desktopText = normalize(desktopRoot.textContent || '');
+    const desktopStyleLink = document.querySelector('link[data-panel-surface-asset="desktop-style"]');
+    const checks = {
+      mounted: true,
+      scenario: desktopRoot.getAttribute('data-desktop-overview-scenario') === scaleScenario,
+      evidenceMode: /^(current|historical|unavailable)$/.test(desktopRoot.getAttribute('data-desktop-evidence-mode') || ''),
+      statusBus: Boolean(desktopRoot.querySelector('[data-desktop-status-bus]')),
+      taskContract: desktopRoot.getAttribute('data-overview-task-contract') === 'overview-task-v1',
+      readonly: /只读/.test(normalize(document.body?.textContent || desktopText)),
+      noHorizontalOverflow: overflowX <= 1,
+      viewport: desktopRoot.getBoundingClientRect().width > 0,
+      desktopStyleAsset: Boolean(desktopStyleLink && matchMedia(desktopStyleLink.media || 'all').matches),
+      isolatedTree: !sectionRoot?.querySelector('[data-ikuai-mobile-home], [data-mobile-ops-overview]'),
+    };
+    return {
+      pass: Boolean(app && active && (requested || active.id === sectionName) && !hasBadLiteral && scaleMetaOk && Object.values(checks).every(Boolean)),
+      surface: 'desktop-overview',
+      desktopOverviewLedgerProbe: {
+        contract: desktopRoot.getAttribute('data-overview-task-contract') || '',
+        evidenceMode: desktopRoot.getAttribute('data-desktop-evidence-mode') || '',
+        risk: desktopRoot.getAttribute('data-desktop-overview-risk') || '',
+        checks,
+      },
+      profile,
+      viewport,
+      scaleScenario,
+      requestedSection: sectionName,
+      activeSection: active ? active.id : '',
+      requestedFound: Boolean(requested),
+      title: normalize(desktopRoot.querySelector('h1')?.textContent || ''),
+      url: location.href,
+      overflowX: Math.round(overflowX),
+    };
+  }
 
   const expected = {
     single: { mode: 'current', risk: 'none', wan: 'trend', incident: false, comparison: false },
@@ -67,7 +102,7 @@ function inspectOverviewDesktopLayout({
   };
 
   const statusBus = desktopRoot.querySelector('[data-desktop-status-bus]');
-  const desktopStyleLink = document.querySelector('link[data-overview-framework-asset="desktop-style"]');
+  const desktopStyleLink = document.querySelector('link[data-panel-surface-asset="desktop-style"]');
   const desktopStyleHref = desktopStyleLink?.href || '';
   const desktopStyleSheetPresent = Array.from(document.styleSheets).some((sheet) => sheet.href === desktopStyleHref);
   const desktopStyleMediaMatches = desktopStyleLink ? matchMedia(desktopStyleLink.media || 'all').matches : false;

@@ -122,7 +122,7 @@ async function main() {
     server.listen(0, '127.0.0.1', resolve);
   });
 
-  const url = `http://127.0.0.1:${server.address().port}/`;
+  const url = `http://127.0.0.1:${server.address().port}/?surface=desktop`;
   try {
     await runOnce(url, 'desktopV1030');
     await runOnce(url, 'desktopTrafficAccumulating');

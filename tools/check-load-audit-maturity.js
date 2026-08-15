@@ -9,7 +9,8 @@ const routes = read("src/panel-framework/routes/panelRoutes.ts");
 const model = read("src/panel-framework/sections/sectionModels.ts");
 const evidenceTypes = read("src/panel-framework/sections/sectionRowEvidenceTypes.ts");
 const evidenceBuilder = read("src/panel-framework/sections/sectionRowEvidence.ts");
-const inspector = read("src/panel-framework/mobile/mobile-inspector/ResourceInspector.tsx");
+const routeSurface = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
+const routeAssembly = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx");
 
 const failures = [];
 const expect = (condition, message) => {
@@ -17,7 +18,7 @@ const expect = (condition, message) => {
 };
 
 expect(
-  /loadAudit:\s*sectionEvidence\("loadAudit",\s*"ResourceInspector\.tsx"/.test(maturity),
+  /loadAudit:\s*sectionEvidence\("loadAudit"/.test(maturity),
   "loadAudit must have its own bounded-readonly evidence record instead of fallbackEvidence",
 );
 expect(
@@ -37,8 +38,12 @@ expect(
   "resource evidence builder must preserve timestamped samples",
 );
 expect(
-  /data-resource-audit-sequence/.test(inspector) && /currentRoute\s*===\s*"loadAudit"/.test(inspector),
-  "loadAudit inspector must render a route-specific timestamped sequence",
+  /buildSectionModel\(route, snapshot\)/.test(routeAssembly)
+    && /useObjectHistory\(route\)/.test(routeSurface)
+    && /const fields = row\.columns\.map/.test(routeSurface)
+    && /row\.evidence\.sourceTable \|\| row\.table/.test(routeSurface)
+    && /对象证据/.test(routeSurface),
+  "loadAudit detail must expose the selected resource object's raw evidence without duplicating a synthetic audit summary",
 );
 
 if (failures.length) {

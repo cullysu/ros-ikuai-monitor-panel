@@ -75,9 +75,10 @@ async function inspectSectionBrowser(
     };
   };
   const app = document.querySelector('#app');
-  const active = document.querySelector('#app .section, #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const active = document.querySelector('#app .section, #app [data-mobile-pulse-workspace], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
   const requested = document.querySelector(
     '#' + CSS.escape(sectionName) +
+    ', [data-mobile-pulse-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
   );
@@ -106,17 +107,10 @@ async function inspectSectionBrowser(
   // the contract probes so stale hidden/mobile DOM cannot mask the desktop tree.
   let sectionRoot = requested || active;
   const {
-    nativeMobileInteractionOk,
-    nativeMobileInteractionProbe,
-    nativeMobileFocusKeyboardOk,
-    nativeMobileFocusKeyboardProbe,
-    nativeMobileObjectSelectionOk,
-    nativeMobileObjectSelectionProbe,
-    nativeMobileObjectNavigationOk,
-    nativeDetailSectionCount,
-    nativeDetailRawEvidenceCount,
-    nativeDetailHasNovelEvidence,
-    nativeDetailNoHomeReplay,
+    mobilePulseInteractionOk,
+    mobilePulseInteractionProbe,
+    mobilePulseObjectSelectionOk,
+    mobilePulseObjectSelectionProbe,
   } = await runOverviewMobileInteraction({
     sectionName,
     sectionRoot,
@@ -126,9 +120,10 @@ async function inspectSectionBrowser(
     viewport,
     strictResponsive,
   });
-  const refreshedActive = document.querySelector('#app .section, #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const refreshedActive = document.querySelector('#app .section, #app [data-mobile-pulse-workspace], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
   const refreshedRequested = document.querySelector(
     '#' + CSS.escape(sectionName) +
+    ', [data-mobile-pulse-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
   );
@@ -148,17 +143,10 @@ async function inspectSectionBrowser(
     hasBadLiteral,
     scaleMetaOk,
     normalize,
-    nativeMobileInteractionOk,
-    nativeMobileInteractionProbe,
-    nativeMobileFocusKeyboardOk,
-    nativeMobileFocusKeyboardProbe,
-    nativeMobileObjectSelectionOk,
-    nativeMobileObjectSelectionProbe,
-    nativeMobileObjectNavigationOk,
-    nativeDetailSectionCount,
-    nativeDetailRawEvidenceCount,
-    nativeDetailHasNovelEvidence,
-    nativeDetailNoHomeReplay,
+    mobilePulseInteractionOk,
+    mobilePulseInteractionProbe,
+    mobilePulseObjectSelectionOk,
+    mobilePulseObjectSelectionProbe,
   });
   if (mobileNativeResult) return mobileNativeResult;
   if (sectionName === 'overview' && window.innerWidth >= 900) {
@@ -178,6 +166,61 @@ async function inspectSectionBrowser(
       normalize,
     });
     if (desktopOverviewResult?.surface === 'desktop-overview') return desktopOverviewResult;
+  }
+  const pulseRouteRoot = refreshedSectionRoot?.matches('[data-mobile-pulse-workspace]')
+    ? refreshedSectionRoot
+    : null;
+  if (sectionName !== 'overview' && window.innerWidth < 900 && pulseRouteRoot) {
+    const visible = (node) => {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    };
+    const title = pulseRouteRoot.querySelector('[data-panel-route-title]');
+    const rows = Array.from(pulseRouteRoot.querySelectorAll('[data-mobile-pulse-object-trigger]')).filter(visible);
+    const empty = pulseRouteRoot.querySelector('.mpu-empty');
+    const directoryRows = Array.from(pulseRouteRoot.querySelectorAll('.mpu-directory section > button')).filter(visible);
+    const controls = Array.from(pulseRouteRoot.querySelectorAll('button, input, select')).filter(visible);
+    const targetSizes = controls.map((node) => {
+      const target = node instanceof HTMLInputElement || node instanceof HTMLSelectElement
+        ? node.closest('label') || node
+        : node;
+      const rect = target.getBoundingClientRect();
+      return { width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    const more = sectionName === 'more';
+    const checks = {
+      mounted: pulseRouteRoot.getAttribute('data-mobile-pulse-workspace') === sectionName,
+      routeContent: pulseRouteRoot.getAttribute('data-panel-route-content') === sectionName,
+      title: more ? Boolean(title) : Boolean(title && title.getAttribute('tabindex') === '-1'),
+      workspace: more
+        ? directoryRows.length >= 10
+        : Boolean(rows.length > 0 || empty),
+      pointerTargets: targetSizes.every((item) => item.width >= 44 && item.height >= 44),
+      noHorizontalOverflow: overflowX <= 1,
+      noBadLiteral: !hasBadLiteral,
+      scaleMeta: scaleMetaOk,
+      isolatedTree: document.querySelectorAll('[data-mobile-pulse-workspace]').length === 1,
+    };
+    return {
+      pass: Boolean(app && active && Object.values(checks).every(Boolean)),
+      surface: 'mobile-pulse-route',
+      contract: 'mobile-pulse-route-v1',
+      profile,
+      viewport,
+      scaleScenario,
+      requestedSection: sectionName,
+      activeSection: active?.id || sectionName,
+      requestedFound: true,
+      title: normalize(title?.textContent || ''),
+      checks,
+      rows: rows.length,
+      directoryRows: directoryRows.length,
+      targetSizes,
+      overflowX: Math.round(overflowX),
+      url: location.href,
+    };
   }
   const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
   const operationalRoute = sectionName !== 'overview';

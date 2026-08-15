@@ -226,18 +226,20 @@ function verifyBuiltAssets(resolvedRoot, manifest, reasons) {
     return;
   }
 
-  const definitions = {
-    script: { pattern: /^panel-framework\.([0-9a-f]{12})\.js$/, gzipField: 'gzipBytes', brotliField: 'brotliBytes' },
-    style: { pattern: /^style\.([0-9a-f]{12})\.css$/, gzipField: 'gzipBytes', brotliField: 'brotliBytes' },
-  };
-  // Older unit fixtures intentionally model the original two-asset contract;
-  // production manifests that contain the scoped desktop surface are fully
-  // verified below, while the production static-assets gate requires it.
-  if (manifest?.assets?.desktopStyle) {
-    definitions.desktopStyle = { pattern: /^desktop-overview\.([0-9a-f]{12})\.css$/, gzipField: 'gzipBytes', brotliField: 'brotliBytes' };
-  }
-  for (const [kind, definition] of Object.entries(definitions)) {
-    const record = assets[kind];
+  const definitions = [
+    { kind: 'mobile script', record: assets.mobile?.script, pattern: /^panel-mobile\.([0-9a-f]{12})\.js$/, type: 'script' },
+    { kind: 'mobile style', record: assets.mobile?.style, pattern: /^mobile\.([0-9a-f]{12})\.css$/, type: 'style' },
+    { kind: 'desktop script', record: assets.desktop?.script, pattern: /^panel-desktop\.([0-9a-f]{12})\.js$/, type: 'script' },
+    { kind: 'desktop style', record: assets.desktop?.style, pattern: /^desktop\.([0-9a-f]{12})\.css$/, type: 'style' },
+    { kind: 'surface loader', record: assets.loader, pattern: /^panel-surface-loader\.([0-9a-f]{12})\.js$/, type: 'loader' },
+  ];
+  const loaderRecord = assets.loader;
+  const loaderAsset = loaderRecord && typeof loaderRecord === 'object'
+    ? readOwnedAsset(outputRoot, loaderRecord.file, 'surface loader asset', reasons)
+    : null;
+  const loaderSource = loaderAsset ? loaderAsset.body.toString('utf8') : '';
+  for (const definition of definitions) {
+    const { kind, record } = definition;
     if (!record || typeof record !== 'object') {
       reasons.push(`framework manifest is missing ${kind} asset identity`);
       continue;
@@ -264,19 +266,22 @@ function verifyBuiltAssets(resolvedRoot, manifest, reasons) {
       reasons.push(`${kind} asset byte count mismatch: manifest=${String(record.bytes)} current=${asset.body.length}`);
     }
     const expectedPublicPath = `/assets/framework/${record.file}`;
-    const activeReferences = kind === 'script'
-      ? indexReferences.scriptSources
-      : indexReferences.stylesheetHrefs;
-    if (!activeReferences.includes(expectedPublicPath)) {
-      reasons.push(
-        `public index does not load the manifest ${kind} asset through ` +
-        `${kind === 'script' ? 'script src' : 'stylesheet link href'}`
-      );
+    if (definition.type === 'loader') {
+      if (!indexReferences.scriptSources.includes(expectedPublicPath)) {
+        reasons.push('public index does not load the manifest surface loader asset through script src');
+      }
+    } else {
+      if (!loaderSource.includes(record.file) || !loaderSource.includes('/assets/framework/')) {
+        reasons.push(`surface loader does not reference the manifest ${kind} asset`);
+      }
+      if (indexReferences.scriptSources.includes(expectedPublicPath) || indexReferences.stylesheetHrefs.includes(expectedPublicPath)) {
+        reasons.push(`public index must not eagerly load the ${kind} asset`);
+      }
     }
 
     const sidecars = [
-      { suffix: 'gz', field: definition.gzipField, decompress: zlib.gunzipSync },
-      { suffix: 'br', field: definition.brotliField, decompress: zlib.brotliDecompressSync },
+      { suffix: 'gz', field: 'gzipBytes', decompress: zlib.gunzipSync },
+      { suffix: 'br', field: 'brotliBytes', decompress: zlib.brotliDecompressSync },
     ];
     for (const sidecarDefinition of sidecars) {
       const sidecar = readOwnedAsset(
@@ -320,8 +325,8 @@ function verifyFrameworkAssetIdentity(projectRoot) {
   const expected = manifest && manifest.inputs && typeof manifest.inputs === 'object'
     ? manifest.inputs
     : null;
-  if (!manifest || manifest.version !== 2) {
-    reasons.push('framework manifest version 2 is required');
+  if (!manifest || manifest.version !== 3) {
+    reasons.push('framework manifest version 3 is required');
   }
   if (!expected) {
     reasons.push('framework manifest does not record build input identity');

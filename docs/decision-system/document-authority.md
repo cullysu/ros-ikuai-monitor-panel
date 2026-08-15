@@ -1,7 +1,7 @@
 # Document authority inventory
 
 - status: `current-authority-inventory`
-- validForCommit: Step965 local veto remediation; clean exact-SHA and external release evidence remain open
+- validForCommit: Step1037 current mobile 56/56, accessibility 10/10 and Product/Visual P0/P1/P2-zero signoff closed; overall release still open
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md` owns the current product conclusion; this file owns the machine-readable document registry.
 

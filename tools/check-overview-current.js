@@ -5,22 +5,15 @@ const root = path.resolve(__dirname, "..");
 const gates = [
   "check-overview-architecture.js",
   "check-overview-ikuai-static.js",
-  "check-incident-lens-contract.js",
-  "check-incident-lens-model.js",
-  "check-incident-lens-architecture.js",
-  "check-incident-lens-accessibility-static.js",
+  "check-mobile-ikuai4-model.js",
+  "check-overview-investigation-actions.js",
+  "check-mobile-ikuai4-architecture.js",
   "check-normal-verdict-contract.js",
   "check-verdict-truth-contract.js",
   "check-atomic-traffic-history.js",
   "check-locale-invariant-normalization.js",
-  "check-load-audit-maturity.js",
-  "check-balance-maturity.js",
-  "check-traffic-audit-maturity.js",
   "check-desktop-information-efficiency.js",
   "check-desktop-overview-focus-context.js",
-  "check-inspector-value-typography.js",
-  "check-mobile-domain-evidence-workspace.js",
-  "check-mobile-log-detail-surface.js",
   "check-wan-axis-label-integrity-v1.js",
 ];
 
@@ -47,5 +40,5 @@ for (const gate of gates) {
 }
 
 console.log(`\noverview current contract: PASS (${gates.length} gates)`);
-console.log("Incident Split Lens model, isolated semantic ownership, accessibility structure, truth, desktop continuity, and source-built WAN geometry are all required.");
-console.log("LIMITATION: Incident Split Lens runtime, original-image Product/Visual sign-off, and full release matrices remain separate release gates.");
+console.log("mobile-telemetry model, isolated semantic ownership, accessibility structure, truth, desktop continuity, and source-built WAN geometry are all required.");
+console.log("LIMITATION: mobile telemetry runtime, original-image Product/Visual sign-off, and full release matrices remain separate release gates.");

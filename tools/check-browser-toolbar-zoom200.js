@@ -43,6 +43,12 @@ const TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS = Object.freeze([
 const KEYBOARD_ZOOM_ACTIONS = Object.freeze(["oem-plus", "numpad-plus"]);
 const OWNED_LIFECYCLE_DIAGNOSTIC = "tools/acceptance/browser-lifecycle-v2/.artifacts/latest-report.json";
 const OWNED_TOOLBAR_ARTIFACT_PREFIX = "_acceptance/edge-toolbar-zoom200/";
+const TOOLBAR_CONTRACT = "edge-toolbar-zoom200-windows-v7-mobile-ikuai4";
+const MOBILE_ORIGIN_OWNER = Object.freeze({
+  overview: "main[data-ikuai-mobile-home]",
+  route: "main[data-ikuai4-mobile-route=\"interfaces\"]",
+  navigation: "[data-ikuai4-mobile=\"navigation\"]",
+});
 
 // The browser is opened at double the target CSS viewport.  After the real
 // Edge toolbar operation (Ctrl+0, then five Ctrl++ commands), Edge reports
@@ -74,6 +80,28 @@ function toolbarScenarioConfig(scenario) {
     return { fixtureScenario: scenario, route: "overview", surface: "overview", runtimePhase: scenario === "no-snapshot" ? "error" : "current" };
   }
   throw new Error(`Unsupported real Edge toolbar scenario: ${scenario}`);
+}
+
+function toolbarReportReadiness(report) {
+  const actionable = "Run: node tools/check-browser-toolbar-zoom200.js (headed Microsoft Edge; bounded v7 matrix).";
+  if (!report || typeof report !== "object") return { pass: false, code: "V7_REPORT_MISSING", reason: `Current-owner real Edge 200% evidence is missing. ${actionable}` };
+  if (report.contract !== TOOLBAR_CONTRACT) return { pass: false, code: "V7_CONTRACT_STALE", reason: `Toolbar report contract is ${report.contract || "missing"}, expected ${TOOLBAR_CONTRACT}. ${actionable}` };
+  const owner = report.ownerContract || {};
+  if (owner.overview !== MOBILE_ORIGIN_OWNER.overview || owner.route !== MOBILE_ORIGIN_OWNER.route || owner.navigation !== MOBILE_ORIGIN_OWNER.navigation) {
+    return { pass: false, code: "V7_OWNER_MISMATCH", reason: `Toolbar report is not bound to the current iKuai 4 mobile owner. ${actionable}` };
+  }
+  if (report.pass !== true || report.matrix?.complete !== true || !Array.isArray(report.cells) || report.cells.length !== TOOLBAR_200_REQUIRED_CELLS.length) {
+    return { pass: false, code: "V7_MATRIX_INCOMPLETE", reason: `Current-owner real Edge 200% matrix is failed or incomplete. ${actionable}` };
+  }
+  const failedCell = report.cells.find((cell) => cell?.surface?.main?.maxLeft !== 0 || cell?.surface?.keyboardTraversal?.complete !== true || cell?.surface?.keyboardTraversal?.visitedCount !== cell?.surface?.keyboardTraversal?.expectedCount);
+  if (failedCell) return { pass: false, code: "V7_CELL_ACCESSIBILITY_FAILED", reason: `A current-owner 200% cell lacks zero-horizontal-overflow or complete keyboard evidence. ${actionable}`, cell: `${failedCell?.viewport?.id || "unknown"}::${failedCell?.scenario || "unknown"}` };
+  return { pass: true, code: "V7_CURRENT_OWNER_READY", reason: "Current-owner real Edge 200% evidence is complete." };
+}
+
+function currentToolbarReportStatus() {
+  if (!fs.existsSync(reportPath)) return toolbarReportReadiness(null);
+  try { return toolbarReportReadiness(JSON.parse(fs.readFileSync(reportPath, "utf8"))); }
+  catch (error) { return { pass: false, code: "V7_REPORT_INVALID", reason: `Current-owner toolbar report is invalid JSON: ${String(error?.message || error)}. Run: node tools/check-browser-toolbar-zoom200.js.` }; }
 }
 
 function assert(condition, message, detail = null) {
@@ -342,9 +370,28 @@ function toolbarZoomEvidence({ baseline, zoomed, automation, targetCssViewport }
   };
 }
 
-async function keyboardFocus(page, mainSelector) {
+async function keyboardTraversal(page, mainSelector) {
+  const expected = await page.evaluate((selector) => {
+    const main = document.querySelector(selector);
+    if (!(main instanceof HTMLElement)) return [];
+    return [...main.querySelectorAll("button, a[href], input, select, textarea, summary, [tabindex]:not([tabindex='-1'])")]
+      .filter((node) => {
+        if (!(node instanceof HTMLElement) || node.tabIndex < 0 || ("disabled" in node && node.disabled)) return false;
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0.5 && rect.height > 0.5;
+      })
+      .map((node, index) => {
+        const id = node.getAttribute("data-ikuai4-toolbar-control") || `toolbar-control-${index}`;
+        node.setAttribute("data-ikuai4-toolbar-control", id);
+        return id;
+      });
+  }, mainSelector);
   await page.evaluate(() => { document.body.tabIndex = -1; document.body.focus(); });
-  for (let index = 0; index < 24; index += 1) {
+  const sequence = [];
+  const visited = new Set();
+  const maxSteps = Math.max(96, expected.length * 4 + 24);
+  for (let index = 0; index < maxSteps && visited.size < expected.length; index += 1) {
     await page.keyboard.press("Tab");
     const evidence = await page.evaluate((selector) => {
        const main = document.querySelector(selector);
@@ -355,12 +402,13 @@ async function keyboardFocus(page, mainSelector) {
        const style = getComputedStyle(active);
        const viewportWidth = window.visualViewport?.width || document.documentElement.clientWidth;
        const viewportHeight = window.visualViewport?.height || document.documentElement.clientHeight;
-       const navigation = document.querySelector(".panel-task-navigation");
+       const navigation = document.querySelector('[data-ikuai4-mobile="navigation"]');
        const navigationRect = navigation instanceof HTMLElement ? navigation.getBoundingClientRect() : null;
        const obscuredByNavigation = Boolean(navigationRect &&
          rect.left < navigationRect.right && rect.right > navigationRect.left &&
          rect.top < navigationRect.bottom && rect.bottom > navigationRect.top);
        return {
+         id: active.getAttribute("data-ikuai4-toolbar-control"),
          label: (active.getAttribute("aria-label") || active.textContent || "").replace(/\s+/g, " ").trim().slice(0, 120),
          focusVisible: active.matches(":focus-visible"),
          outlineWidth: Number.parseFloat(style.outlineWidth || "0"),
@@ -370,9 +418,13 @@ async function keyboardFocus(page, mainSelector) {
          obscuredByNavigation,
        };
     }, mainSelector);
-    if (evidence) return evidence;
+    if (evidence?.id && expected.includes(evidence.id) && !visited.has(evidence.id)) {
+      visited.add(evidence.id);
+      sequence.push({ order: sequence.length + 1, ...evidence });
+    }
   }
-  throw new Error("keyboard Tab traversal did not reach a control inside main");
+  const missingIds = expected.filter((id) => !visited.has(id));
+  return { complete: missingIds.length === 0, expectedCount: expected.length, visitedCount: visited.size, missingIds, sequence };
 }
 
 async function inspectSurface(page, { label, mainSelector, primarySelector, screenshotName, windowTitle, windowHandle, identity, viewport }) {
@@ -394,14 +446,19 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
       return computed.display !== "none" && computed.visibility !== "hidden" && box.width > 0 && box.height > 0 &&
         box.bottom > 0 && box.right > 0 && box.top < viewportHeight && box.left < viewportWidth;
     };
-      const intentionallyManaged = (node) => {
-        for (let current = node; current instanceof HTMLElement && current !== main.parentElement; current = current.parentElement) {
-          const computed = getComputedStyle(current);
-          if (/(auto|scroll)/.test(computed.overflowX) && current.matches(".mdw-route-switcher")) return true;
-        }
-        return false;
-      };
       const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim();
+      const intentionallyManaged = (owner) => {
+        if (!(owner instanceof HTMLElement)) return false;
+        const computed = getComputedStyle(owner);
+        const explicitlyTruncated = computed.textOverflow === "ellipsis" &&
+          /(hidden|clip)/.test(computed.overflowX) &&
+          computed.whiteSpace === "nowrap";
+        if (!explicitlyTruncated) return false;
+        const control = owner.closest("button, a[href], summary") || owner;
+        const fullText = normalize(owner.textContent);
+        const accessibleText = normalize(control.getAttribute("aria-label") || control.textContent);
+        return Boolean(fullText && accessibleText.includes(fullText));
+      };
       const rendered = (node) => {
         if (!(node instanceof HTMLElement)) return false;
         const computed = getComputedStyle(node);
@@ -411,6 +468,8 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
           box.width > 0 && box.height > 0;
       };
       const visuallyHidden = (owner, boundary) => {
+        const closedDetails = owner.closest("details:not([open])");
+        if (closedDetails instanceof HTMLDetailsElement && !owner.closest("summary")) return true;
         for (let current = owner; current instanceof HTMLElement; current = current.parentElement) {
           const computed = getComputedStyle(current);
           const box = current.getBoundingClientRect();
@@ -418,7 +477,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
             (computed.clip && computed.clip !== "auto");
           const screenReaderGeometry = /^(absolute|fixed)$/.test(computed.position) && box.width <= 2 && box.height <= 2 && clipped &&
             /(hidden|clip)/.test(computed.overflowX) && /(hidden|clip)/.test(computed.overflowY);
-          if (current.matches(".incident-lens__sr-only, [data-visually-hidden='true'], [hidden]") || !rendered(current) || screenReaderGeometry) return true;
+          if (current.matches("[data-visually-hidden='true'], [hidden]") || !rendered(current) || screenReaderGeometry) return true;
           if (current === boundary) break;
         }
         return false;
@@ -432,16 +491,14 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
       const containsFragment = (boundary, fragment, axis) => axis === "x"
         ? fragment.left >= boundary.left - 1 && fragment.right <= boundary.right + 1
         : fragment.top >= boundary.top - 1 && fragment.bottom <= boundary.bottom + 1;
-      const incidentLens = main instanceof HTMLElement && main.matches("[data-incident-lens-root]") ? main : null;
-      const scopeCandidates = incidentLens ? [
-        document.querySelector('[data-panel-runtime-toolbar="mobile"]'),
-        incidentLens.querySelector(':scope > [data-incident-lens-command-chrome]'),
-        incidentLens.querySelector('[data-incident-lens-evidence-boundary]'),
-        incidentLens.querySelector('[data-incident-lens-action]'),
-        ...incidentLens.querySelectorAll('[data-incident-lens-claim-control]'),
-        incidentLens.querySelector('[data-incident-lens-evidence-deck]'),
-        incidentLens.querySelector('[data-incident-lens-expanded-claim]'),
-      ] : [main];
+       const mobileOriginOverview = main instanceof HTMLElement && main.matches("[data-ikuai-mobile-home]") ? main : null;
+       const scopeCandidates = mobileOriginOverview ? [
+         mobileOriginOverview.querySelector('.ikm-status'),
+         mobileOriginOverview.querySelector('.ikm-wan'),
+         mobileOriginOverview.querySelector('.ikm-alerts'),
+         mobileOriginOverview.querySelector('.ikm-pressure'),
+         mobileOriginOverview.querySelector('.ikm-list'),
+       ] : [main];
       const operationalScopes = [...new Set(scopeCandidates.filter((node) => node instanceof HTMLElement && rendered(node)))];
       const seenTextNodes = new Set();
       const clippedOperationalText = [];
@@ -449,7 +506,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
       const operationalTextScopes = [];
       for (const scope of operationalScopes) {
         const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
-        const scopeLabel = normalize(scope.getAttribute("data-incident-lens-expanded-claim") || scope.getAttribute("class") || scope.tagName).slice(0, 80);
+         const scopeLabel = normalize(scope.getAttribute("data-origin-scene") || scope.getAttribute("class") || scope.tagName).slice(0, 80);
         const rootBoundary = main instanceof HTMLElement && main.contains(scope) ? main : scope;
         let textNodes = 0;
         let fragments = 0;
@@ -514,33 +571,25 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
         operationalTextScopes.push({ scope: scopeLabel, textNodes, fragments });
       }
      const rectsOverlap = (left, right) => left.left < right.right && left.right > right.left && left.top < right.bottom && left.bottom > right.top;
-     const navigation = document.querySelector(".panel-task-navigation");
+    const navigation = document.querySelector('[data-ikuai4-mobile="navigation"]');
      const navigationRect = navigation instanceof HTMLElement && isVisible(navigation)
        ? navigation.getBoundingClientRect()
        : null;
      const primaryObscuredByNavigation = Boolean(rect && navigationRect && rectsOverlap(rect, navigationRect));
-    const trafficYAxis = main instanceof HTMLElement
-      ? Array.from(main.querySelectorAll("[data-mobile-traffic-y-axis-label]"))
-      : [];
-    const trafficXAxis = main instanceof HTMLElement
-      ? Array.from(main.querySelectorAll("[data-mobile-traffic-x-axis-label]"))
-      : [];
-    const trafficAxisOverlaps = trafficYAxis.flatMap((yAxis) => trafficXAxis.map((xAxis) => {
-      const yRect = yAxis.getBoundingClientRect();
-      const xRect = xAxis.getBoundingClientRect();
-      return rectsOverlap(yRect, xRect) ? {
-        y: yAxis.getAttribute("data-mobile-traffic-y-axis-label"),
-        x: xAxis.getAttribute("data-mobile-traffic-x-axis-label"),
-        yRect: { left: yRect.left, right: yRect.right, top: yRect.top, bottom: yRect.bottom },
-        xRect: { left: xRect.left, right: xRect.right, top: xRect.top, bottom: xRect.bottom },
-      } : null;
-    }).filter(Boolean));
+    const trafficChart = mobileOriginOverview?.querySelector('.ikm-chart') || null;
+    const trafficLegend = trafficChart ? Array.from(trafficChart.querySelectorAll('.ikm-chart-axis')) : [];
+    const trafficTimeLabels = mobileOriginOverview ? Array.from(mobileOriginOverview.querySelectorAll('.ikm-chart-scale span')) : [];
+    const trafficLegendOutsideChart = trafficLegend.filter((label) => {
+      const labelRect = label.getBoundingClientRect();
+      return labelRect.left < -1 || labelRect.right > viewportWidth + 1 || labelRect.top < -1 || labelRect.bottom > viewportHeight + 1;
+    }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON() }));
     return {
       mainCount: document.querySelectorAll("main").length,
        expectedMain: main instanceof HTMLElement,
        main: {
          overflowY: mainStyle?.overflowY || "",
          horizontalOverflow: main instanceof HTMLElement ? Math.max(0, main.scrollWidth - main.clientWidth) : null,
+         maxLeft: main instanceof HTMLElement ? Math.max(0, main.scrollWidth - main.clientWidth) : null,
          scrollHeight: main instanceof HTMLElement ? main.scrollHeight : null,
          clientHeight: main instanceof HTMLElement ? main.clientHeight : null,
          scrollTop: main instanceof HTMLElement ? main.scrollTop : null,
@@ -552,7 +601,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
        clippedOperationalText,
        unreadableOperationalText,
        operationalTextScopes,
-      trafficAxis: { present: trafficYAxis.length > 0 || trafficXAxis.length > 0, yLabels: trafficYAxis.length, xLabels: trafficXAxis.length, overlaps: trafficAxisOverlaps },
+      trafficAxis: { present: Boolean(trafficChart), yLabels: trafficLegend.length, xLabels: trafficTimeLabels.length, overlaps: trafficLegendOutsideChart },
       primary: {
          present: primary instanceof HTMLElement,
          visible: Boolean(rect && style && style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0),
@@ -565,13 +614,13 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   }, { mainSelector, primarySelector });
   assert(surface.mainCount === 1 && surface.expectedMain, `${label} must expose exactly one expected main landmark`, surface);
   assert(surface.overflowX <= 1, `${label} has horizontal page overflow at actual Edge toolbar zoom`, surface);
-  assert(surface.main.horizontalOverflow <= 1, `${label} main scroll root has horizontal overflow at actual Edge toolbar zoom`, surface.main);
+  assert(surface.main.horizontalOverflow === 0 && surface.main.maxLeft === 0, `${label} main scroll root has horizontal overflow at actual Edge toolbar zoom`, surface.main);
   assert(surface.clippedOperationalText.length === 0, `${label} has visible operational text clipped by a non-scroll container at actual Edge toolbar zoom`, surface);
   assert(surface.unreadableOperationalText.length === 0, `${label} has operational text below the 12px readability floor at actual Edge toolbar zoom`, surface);
-  assert(!surface.trafficAxis.present || (surface.trafficAxis.yLabels >= 2 && surface.trafficAxis.xLabels >= 2 && surface.trafficAxis.overlaps.length === 0), `${label} traffic SVG axis labels overlap at actual Edge toolbar zoom`, surface.trafficAxis);
+  assert(!surface.trafficAxis.present || (surface.trafficAxis.yLabels >= 2 && surface.trafficAxis.xLabels >= 2 && surface.trafficAxis.overlaps.length === 0), `${label} traffic chart legend is incomplete or clipped at actual Edge toolbar zoom`, surface.trafficAxis);
   assert(surface.primary.present && surface.primary.visible && surface.primary.reachable && surface.primary.withinMain && !surface.primary.obscuredByNavigation, `${label} primary task is not reachable inside main or is obscured by navigation at actual Edge toolbar zoom`, surface);
-  const focus = await keyboardFocus(page, mainSelector);
-  assert(focus.focusVisible && focus.outlineWidth >= 2 && focus.outlineStyle !== "none" && focus.fullyVisible && focus.withinMain && !focus.obscuredByNavigation, `${label} keyboard focus is not visible inside main, reachable, and clear of navigation`, focus);
+  const keyboard = await keyboardTraversal(page, mainSelector);
+  assert(keyboard.complete && keyboard.expectedCount > 0 && keyboard.visitedCount === keyboard.expectedCount && keyboard.sequence.every((item) => item.focusVisible && item.outlineWidth >= 2 && item.outlineStyle !== "none" && item.fullyVisible && item.withinMain && !item.obscuredByNavigation), `${label} keyboard traversal did not reach every control with visible focus clear of navigation`, keyboard);
   await page.evaluate((title) => {
     window.scrollTo(0, 0);
     document.title = title;
@@ -587,7 +636,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
     viewport,
     identity,
     ...surface,
-    keyboardFocus: focus,
+    keyboardTraversal: keyboard,
     screenshot: pngEvidence(windowsFile),
     windowsCapture,
     playwrightDiagnosticScreenshot: pngEvidence(diagnosticFile),
@@ -628,10 +677,10 @@ async function runCell(viewport, scenario) {
     });
     const surface = await inspectSurface(runtime.page, {
       label: `${viewport.id}-${scenario}-${scenarioConfig.surface}`,
-      mainSelector: scenarioConfig.surface === "overview" ? "main[data-incident-lens-root]" : "main[data-mobile-domain-workspace=\"interfaces\"]",
+      mainSelector: scenarioConfig.surface === "overview" ? "main[data-ikuai-mobile-home]" : "main[data-ikuai4-mobile-route=\"interfaces\"]",
       primarySelector: scenarioConfig.surface === "overview"
-        ? "[data-incident-lens-root] [data-incident-lens-action]"
-        : "[data-mobile-domain-workspace=\"interfaces\"] [data-mobile-row-id]",
+        ? "main[data-ikuai-mobile-home] button"
+        : "main[data-ikuai4-mobile-route=\"interfaces\"] .ikuai4-object-row",
       screenshotName: `${viewport.id}-${scenario}-edge-toolbar-zoom200.png`,
       windowTitle: title,
       windowHandle: windowsAutomation.reset.windowHandle,
@@ -690,7 +739,8 @@ async function runMatrix() {
   });
   const report = {
     pass: true,
-    contract: "edge-toolbar-zoom200-windows-v5",
+    contract: TOOLBAR_CONTRACT,
+    ownerContract: MOBILE_ORIGIN_OWNER,
     generatedAt: new Date().toISOString(),
     identity: identityAfter,
     identityBefore,
@@ -705,7 +755,7 @@ async function runMatrix() {
       complete: cells.length === TOOLBAR_200_REQUIRED_CELLS.length && cells.every((cell) => cell.surface),
     },
     proofBoundary: {
-      proves: "For each independent viewport/scenario cell, actual Microsoft Edge browser-toolbar 200% zoom: a headed owned Edge window was focused through Windows UI Automation, reset to 100%, and each of five increments was accepted only after the page reported a real DPR or layout change. Ctrl+Shift+OEM_PLUS and Ctrl+Numpad Add fall back to Edge's real menu Zoom in button when they do not change geometry. The page then verified DPR≈2, 2x layout ratios, the target CSS viewport, worktree identity, horizontal overflow, visible operational-text clipping, main-scroll-root reachability, fixed-navigation clearance, keyboard focus, and Windows-owned visual evidence. The visual proof is an unobscured full-window screen grab when physically possible, an owner-rendered Windows DC image when supported, or a substantial unobscured physical monitor segment plus a separately hashed full Edge renderer screenshot for an oversized window.",
+      proves: "For each independent viewport/scenario cell, actual Microsoft Edge browser-toolbar 200% zoom: a headed owned Edge window was focused through Windows UI Automation, reset to 100%, and each of five increments was accepted only after the page reported a real DPR or layout change. Ctrl+Shift+OEM_PLUS and Ctrl+Numpad Add fall back to Edge's real menu Zoom in button when they do not change geometry. The page then verified DPR≈2, 2x layout ratios, the target CSS viewport, worktree identity, zero horizontal scroll range, visible operational-text clipping, main-scroll-root reachability, fixed-navigation clearance, complete ordered keyboard traversal, and Windows-owned visual evidence. The visual proof is an unobscured full-window screen grab when physically possible, an owner-rendered Windows DC image when supported, or a substantial unobscured physical monitor segment plus a separately hashed full Edge renderer screenshot for an oversized window.",
       doesNotProve: "iOS Dynamic Type, Android system font size, Windows OS font size, CSS-injected text resize, CDP pageScale, or behavior on a physical mobile device. A screen-visible-segment cell does not claim that the entire oversized OS window was simultaneously visible on one physical monitor; full-viewport geometry and the separately hashed Edge renderer screenshot provide the complementary evidence.",
     },
     timeout: { globalMs: GLOBAL_TIMEOUT_MS, perCellMs: CELL_TIMEOUT_MS, uiAutomationActionMs: UI_ACTION_TIMEOUT_MS, geometryTransitionMs: GEOMETRY_TRANSITION_TIMEOUT_MS },
@@ -716,13 +766,20 @@ async function runMatrix() {
 }
 
 async function main() {
+  if (process.argv.includes("--status-only")) {
+    const status = currentToolbarReportStatus();
+    process.stdout.write(`${JSON.stringify(status, null, 2)}\n`);
+    if (!status.pass) process.exitCode = 1;
+    return;
+  }
   await withTimeout("edge-toolbar-zoom200.matrix", runMatrix, GLOBAL_TIMEOUT_MS);
 }
 
 if (require.main === module) main().catch((error) => {
   const report = {
     pass: false,
-    contract: "edge-toolbar-zoom200-windows-v5",
+    contract: TOOLBAR_CONTRACT,
+    ownerContract: MOBILE_ORIGIN_OWNER,
     generatedAt: new Date().toISOString(),
     identity: gitWorktreeIdentity(root),
     platform: process.platform,
@@ -745,6 +802,8 @@ module.exports = {
   TOOLBAR_INCREMENTS,
   GLOBAL_TIMEOUT_MS,
   CELL_TIMEOUT_MS,
+  TOOLBAR_CONTRACT,
+  MOBILE_ORIGIN_OWNER,
   baselineViewportFor,
   isExpectedViewport,
   validWindowsCapture,
@@ -753,5 +812,7 @@ module.exports = {
   toolbarZoomEvidence,
   stableEvidenceIdentity,
   toolbarScenarioConfig,
+  toolbarReportReadiness,
+  currentToolbarReportStatus,
   runCell,
 };

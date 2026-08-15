@@ -6,12 +6,18 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const desktopCss = fs.readFileSync(path.join(root, 'src/panel-framework/sections/section-console.css'), 'utf8');
-const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/incident-lens/styles/shell-next.css'), 'utf8');
-const mobileSource = fs.readFileSync(path.join(root, 'src/panel-framework/overview/mobile-overview/incident-lens/IncidentLens.tsx'), 'utf8');
+const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/mobile-flow-ui/styles/flow-overview.css'), 'utf8');
+const mobileSource = [
+  fs.readFileSync(path.join(root, 'src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx'), 'utf8'),
+  fs.readFileSync(path.join(root, 'src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx'), 'utf8'),
+].join('\n');
 const routeSource = fs.readFileSync(path.join(root, 'src/panel-framework/routes/usePanelRoute.ts'), 'utf8');
 
 function block(source, selector) {
-  const start = source.indexOf(`${selector} {`);
+  let start = source.indexOf(selector);
+  while (start >= 0 && !/[\s,{]/.test(source[start + selector.length] || '')) {
+    start = source.indexOf(selector, start + selector.length);
+  }
   if (start < 0) return '';
   const open = source.indexOf('{', start);
   let depth = 0;
@@ -54,18 +60,20 @@ function hasVisibleFocusRing(source, selector) {
 
 const checks = {
   'route changes intentionally move focus to the route title':
-    /querySelector<HTMLElement>\(\s*["']\[data-panel-route-title\]["']\s*\)/.test(routeSource) &&
-    /title(?:\?)?\.focus\(\{\s*preventScroll:\s*true\s*\}\)/.test(routeSource),
+    /:\s*"\[data-panel-route-title\]"/.test(routeSource) &&
+    /target\.focus\(\{\s*preventScroll:\s*true\s*\}\)/.test(routeSource),
   'desktop route title has a visible keyboard focus ring':
     hasVisibleFocusRing(desktopCss, '.panel-section-heading [data-panel-route-title]'),
   'desktop route title does not show a ring for every programmatic focus':
     block(desktopCss, '.panel-section-heading [data-panel-route-title]:focus') === '',
-  'Incident Split Lens title participates in the shared route-focus contract':
-    /<h1\b[^>]*\bdata-panel-route-title\b[^>]*\bdata-incident-lens-route-title\b|<h1\b[^>]*\bdata-incident-lens-route-title\b[^>]*\bdata-panel-route-title\b/.test(mobileSource),
-  'mobile route title has a visible keyboard focus ring':
-    hasVisibleFocusRing(mobileCss, '.incident-lens__route-title'),
+  'Mobile Flow route title participates in the shared route-focus contract':
+    /data-mobile-flow-workspace=\{route\}/.test(mobileSource) && /<h1\b[^>]*\bdata-panel-route-title\b/.test(mobileSource),
+  'Mobile Flow keyboard-operable route controls have a visible focus ring':
+    hasVisibleFocusRing(mobileCss, '.mflow button'),
+  'Mobile Flow route title does not show a ring for every programmatic focus':
+    block(mobileCss, '.mflow [data-panel-route-title]:focus') === '',
 };
 const failures = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
-const report = { pass: failures.length === 0, contract: 'route-title-focus-visible-v1', checks, failures };
+const report = { pass: failures.length === 0, contract: 'route-title-focus-visible-v2', checks, failures };
 console.log(JSON.stringify(report, null, 2));
 if (failures.length) process.exitCode = 1;
