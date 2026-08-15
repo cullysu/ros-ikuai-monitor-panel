@@ -163,7 +163,7 @@
   .mflow-stream { margin-top: 0; border-top: 0; }
   .mflow-route__traffic { min-height: 92px; grid-template-columns: 104px minmax(0, 1fr); }
   .mflow-chart svg { height: 41px; }
-  .mflow-resource > div button { min-height: 40px; }
+  .mflow-resource > div button { min-height: 44px; }
 }
 
 @media (min-width: 600px) and (min-height: 600px) {
