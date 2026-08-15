@@ -1,24 +1,25 @@
 - status: `current`
-- validForCommit: false; clean candidate 62a8358 exists, but exact-SHA release replay and Product release signoff remain open
+- validForCommit: false; deterministic clean candidate 6aae922 exists, but full exact-SHA release replay and Product release signoff remain open
 - supersededBy: `null`
-- currentConclusionForStep: `1057`
-- latestRecordedStep: `1057`
-- latestStepOutcome: `1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active`
+- currentConclusionForStep: `1058`
+- latestRecordedStep: `1058`
+- latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
 
 ## Current conclusion
 
-**FAIL overall / Mobile Flow phone acceptance green / clean candidate `62a8358` created / exact-SHA replay and release signoff active / GitHub untouched / release CLOSED.**
+**FAIL overall / Mobile Flow phone acceptance green / deterministic clean candidate `6aae922` created / complete exact-SHA release replay and release signoff active / GitHub untouched / release CLOSED.**
 
-## Current decision record: Step 1057
+## Current decision record: Step 1058
 
 - `src/panel-framework/mobile-flow-ui/` is now the only phone presentation owner; rejected presentation trees are absent.
 - The current exact worktree fingerprint has 56/56 runtime cells, four interaction workflows, accessibility-v2 10/10 and overview 12/12.
 - Product experience has no remaining P1/P2; Visual / Interaction independently passed P0/P1/P2=0.
 - Review remediation removed collection, Fleet and resource signal/object repetition and fixed tablet navigation/workspace overlap.
-- Local commit `62a8358` is the first clean code candidate; an isolated detached worktree was created for non-worktree exact-SHA replay.
+- Candidate `48e731c` passed exact 56/56 and accessibility 10/10, then correctly failed before public matrices because Windows CRLF checkout changed the framework input digest.
+- `.gitattributes` now normalizes repository text to LF while preserving Windows scripts as CRLF. LF clean candidate `6aae922` passes asset identity and a complete production rebuild leaves public framework assets and index byte-identical.
 - Stale validators that referenced deleted Mobile Pulse/iKuai owners now bind to Mobile Flow without weakening route, rate, time or matrix truth.
 - Build, overview 12/12, package-reference, release-blocker, RFC3339/backend security and dual-surface asset gates pass before the exact-SHA browser replay.
 
@@ -30,15 +31,15 @@
 | Design / Visual | pass | Independent Visual / Interaction P0/P1/P2=0 on the exact 60 originals. |
 | Accessibility | pass | Runtime-v2 10/10 including 200% text-only and adaptive media. |
 | Implementation / Architecture | pass | Isolated Mobile Flow owner is mounted; rejected owners are physically absent. |
-| State matrix | prior engineering pass / exact replay active | 56/56 plus four workflows passed before commit; candidate `62a8358` must regenerate them. |
+| State matrix | exact mobile pass / public replay active | Candidate predecessor passed 56/56 plus four workflows and accessibility 10/10; final `6aae922` must regenerate all 56/10/28/76/266 evidence. |
 | Security / evidence truth | focused pass / full replay pending | Route/rate/time/readonly/connection contracts pass; full release suite remains pending. |
-| Release hygiene / clean candidate | candidate created | `62a8358` exists in an isolated clean worktree; final evidence is not complete. |
+| Release hygiene / clean candidate | deterministic candidate created | `6aae922` clean checkout passes asset identity and rebuild-zero-diff; final matrices are not complete. |
 | Current product release | fail | Fresh Product/Visual and broader public-product requirements remain open. |
 | R14 Release | closed | No GitHub upload and no exact-SHA Linux/Windows/GHCR CL. |
 
 ## One next action
 
-Regenerate non-worktree exact-SHA evidence for `62a8358`, obtain fresh release-eligible Product signoff, then run every release gate before any GitHub upload.
+Regenerate exact-SHA 56/10/28/76/266 evidence for `6aae922`, obtain fresh release-eligible Product signoff, then run every release gate before any GitHub upload.
 
 ## Authority links
 

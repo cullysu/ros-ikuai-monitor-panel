@@ -29414,3 +29414,14 @@ Product、Design、Visual 继续保持 failed；工程矩阵和 Accessibility �
 - 当前结论仍是 FAIL overall：候选存在，但 exact-SHA 56 格、可访问性、完整公开矩阵、Product release signoff 和 Linux/Windows/GHCR CL 尚未闭环；GitHub 未上传，任务 active，blocked=false。
 
 - latestStepOutcome: `1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active`
+
+## 第 1058 步：关闭跨平台换行与构建身份不确定性（2026-08-16）
+
+- outcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
+- 候选 `48e731c` 已在独立 detached worktree 中通过 Mobile Flow 56/56 与 accessibility-v2 10/10，但公开 28/76/266 矩阵在浏览器启动前被 framework input identity 拒绝；这不是允许绕过的“环境误差”，而是 Windows `core.autocrlf` 将文本检出为 CRLF、而 Linux 检出为 LF，导致同一 Git SHA 的输入字节和 manifest 不一致。
+- 根因修复不是放宽 identity gate：仓库新增 `* text=auto eol=lf`，仅为 `*.ps1`、`*.cmd`、`*.bat` 保留 CRLF；随后在 LF 干净检出中重新生成 manifest 输入指纹。最终本地候选为 `6aae922c2221299cae75fb51f8d4bb54b25cd497`。
+- 独立 clean worktree 证据：所有 framework CSS/JS/JSON 为 LF，gzip/brotli sidecar 保持 Git binary；`check:asset-identity` 全绿；完整 production build 后 `git diff --exit-code -- public/assets/framework public/index.html` 为零，证明提交资产可重建且字节确定。
+- `_design`、`_research`、三个本地 capture 脚本和 `.agents/skills/router-panel-product-loop/agents/openai.yaml` 继续排除在提交之外。
+- 当前仍是 FAIL overall：候选字节确定性已关闭，但 6aae922 的完整 56/10/28/76/266 证据、release readiness、独立 release signoff 和 Linux/Windows/GHCR CL 尚未全部闭环；GitHub 未上传，任务 active，blocked=false。
+
+- latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`

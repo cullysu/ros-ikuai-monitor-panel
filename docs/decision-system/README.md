@@ -1,11 +1,11 @@
 # Decision Repository Index
 
-- validForCommit: false; clean candidate 62a8358 exists, exact-SHA release evidence is still open
+- validForCommit: false; deterministic candidate 6aae922 exists, complete exact-SHA release evidence is still open
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `1057`
-- latestRecordedStep: `1057`
-- latestStepOutcome: `1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active`
+- currentBoundaryForStep: `1058`
+- latestRecordedStep: `1058`
+- latestStepOutcome: `1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.
@@ -18,4 +18,4 @@ The current conclusion is owned only by `current-state.md`; this page is navigat
 - Full historical journal: `../panel-redesign-decision-log.md`
 - Historical index: `historical-index.md`
 
-Task is active and `blocked=false`. Step1057 records clean candidate `62a8358` after Mobile Flow 56/56, accessibility 10/10, exact-original Visual P0/P1/P2=0 and Product experience with no P1/P2. Exact-SHA replay and full release gates remain open. GitHub is untouched; release is CLOSED.
+Task is active and `blocked=false`. Step1058 records deterministic clean candidate `6aae922` after identifying and fixing Windows/Linux checkout-byte drift without weakening asset identity. Full exact-SHA matrices and release gates remain open. GitHub is untouched; release is CLOSED.
