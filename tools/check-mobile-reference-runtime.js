@@ -30,7 +30,9 @@ const smokeCells = [
 ];
 const sha256 = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
-const sameIdentity = (a, b) => a.commit === b.commit && a.artifactKey === b.artifactKey && a.worktreeFingerprint === b.worktreeFingerprint;
+const sameIdentity = (a, b) => a.commit === b.commit && a.artifactKey === b.artifactKey &&
+  a.worktreeFingerprint === b.worktreeFingerprint &&
+  a.reviewContentFingerprint === b.reviewContentFingerprint;
 
 function cpuSnapshot() {
   return os.cpus().reduce((total, cpu) => {
@@ -394,7 +396,9 @@ async function main() {
       pass, smokePass, complete, releasePass: false, releaseEvidenceEligible: false,
       contract: "mobile-reference-runtime-v1", source: "mobile-reference-runtime",
       generatedAt: new Date().toISOString(),
-      commit: identityEnd.commit, artifactKey: identityEnd.artifactKey, worktreeFingerprint: identityEnd.worktreeFingerprint,
+      commit: identityEnd.commit, artifactKey: identityEnd.artifactKey,
+      worktreeFingerprint: identityEnd.worktreeFingerprint,
+      reviewContentFingerprint: identityEnd.reviewContentFingerprint,
       freshness: sameIdentity(identityStart, identityEnd),
       matrix: {
         required: requiredTargets.length,

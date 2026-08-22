@@ -124,7 +124,10 @@ function inspectIndependentReviewRecords(options = {}) {
     if (!artifact || typeof artifact !== 'object') {
       failures.push(`${relativePath} must declare reviewedArtifact`);
     } else {
-      for (const key of ['artifactKey', 'worktreeFingerprint', 'generatedAt', 'commit']) {
+      const requiredArtifactKeys = historicalRecord
+        ? ['artifactKey', 'worktreeFingerprint', 'generatedAt', 'commit']
+        : ['artifactKey', 'worktreeFingerprint', 'reviewContentFingerprint', 'generatedAt', 'commit'];
+      for (const key of requiredArtifactKeys) {
         if (typeof artifact[key] !== 'string' || !artifact[key]) failures.push(`${relativePath} reviewedArtifact.${key} must be a non-empty string`);
       }
       if (artifact.pass !== true) failures.push(`${relativePath} reviewedArtifact.pass must be true`);
@@ -134,7 +137,7 @@ function inspectIndependentReviewRecords(options = {}) {
   if (records.length === REVIEW_SPECS.length) {
     const reviewerIds = records.map(({ record }) => record.reviewerAgentId);
     if (new Set(reviewerIds).size !== REVIEW_SPECS.length) failures.push(`Step${step} reviewerAgentId values must be four distinct agents`);
-    const artifactKeys = ['artifactKey', 'worktreeFingerprint', 'generatedAt', 'commit', 'pass'];
+    const artifactKeys = ['artifactKey', 'worktreeFingerprint', 'reviewContentFingerprint', 'generatedAt', 'commit', 'pass'];
     for (const key of artifactKeys) {
       const values = records.map(({ record }) => record.reviewedArtifact?.[key]);
       if (values.some((value) => value !== values[0])) failures.push(`Step${step} reviewedArtifact.${key} must match across all four records`);
@@ -164,20 +167,18 @@ function inspectIndependentReviewRecords(options = {}) {
       if (runtimeReport.releaseEvidenceEligible !== false) failures.push(`${runtimeReportPath} must remain ineligible for release evidence`);
       const reviewedArtifact = records[0]?.record?.reviewedArtifact || {};
       runtimeReportMatchesReviewedArtifact =
-        reviewedArtifact.artifactKey === artifactKeyFor(runtimeReport) &&
-        ['worktreeFingerprint', 'generatedAt', 'commit'].every((key) => reviewedArtifact[key] === runtimeReport[key]) &&
+        reviewedArtifact.reviewContentFingerprint === runtimeReport.reviewContentFingerprint &&
         reviewedArtifact.pass === reviewedRuntimePass;
       if (!historicalRecord && records.length === REVIEW_SPECS.length && !runtimeReportMatchesReviewedArtifact) {
-        failures.push(`current Step${step} reviewedArtifact must exactly match ${runtimeReportPath}`);
+        failures.push(`current Step${step} reviewedArtifact must match the reviewed product-content fingerprint in ${runtimeReportPath}`);
       }
       for (const { relativePath, record } of records) {
         const artifact = record.reviewedArtifact || {};
-        if (runtimeReportMatchesReviewedArtifact) {
-          if (artifact.artifactKey !== artifactKeyFor(runtimeReport)) failures.push(`${relativePath} reviewedArtifact.artifactKey must match ${runtimeReportPath}`);
-          for (const key of ['worktreeFingerprint', 'generatedAt', 'commit']) {
-            if (artifact[key] !== runtimeReport[key]) failures.push(`${relativePath} reviewedArtifact.${key} must exactly match ${runtimeReportPath}`);
-          }
-          if (artifact.pass !== reviewedRuntimePass) failures.push(`${relativePath} reviewedArtifact.pass must match ${runtimeReportPath} ${historicalRecord ? 'pass' : 'runtimePass'}`);
+        if (runtimeReportMatchesReviewedArtifact && artifact.reviewContentFingerprint !== runtimeReport.reviewContentFingerprint) {
+          failures.push(`${relativePath} reviewedArtifact.reviewContentFingerprint must match ${runtimeReportPath}`);
+        }
+        if (runtimeReportMatchesReviewedArtifact && artifact.pass !== reviewedRuntimePass) {
+          failures.push(`${relativePath} reviewedArtifact.pass must match ${runtimeReportPath} ${historicalRecord ? 'pass' : 'runtimePass'}`);
         }
         for (const evidencePath of evidencePaths(record.evidence)) {
           if (isSafeRelativePath(evidencePath) && !fs.existsSync(path.join(root, evidencePath))) {
