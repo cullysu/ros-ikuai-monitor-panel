@@ -1,62 +1,45 @@
 #!/usr/bin/env node
+'use strict';
 
-/**
- * Current geometry contract for the desktop normal-state task surface.
- *
- * The normal top band now owns the route focus and its immediate investigation
- * rail on the left, with WAN signal evidence on the right. The band is allowed
- * to be taller than the historical v1 cap only when that height is explained by
- * those real task surfaces; unexplained filler and fold loss remain failures.
- */
-const fs = require("node:fs");
-const path = require("node:path");
-const { readRuntimeReport, runtimeIdentityDetail } = require("./runtime-report-identity");
+const fs = require('node:fs');
+const path = require('node:path');
 
-const root = path.resolve(__dirname, "..");
-const screenPath = path.join(root, "src", "panel-framework", "overview", "desktop-overview", "DesktopOverviewScreen.tsx");
-const screen = fs.readFileSync(screenPath, "utf8");
-const runtimeBinding = readRuntimeReport(root);
-const requireRuntime = process.argv.includes("--require-current-runtime");
-const runtimeSkipped = !runtimeBinding.current && !requireRuntime;
-const runtime = runtimeBinding.current ? runtimeBinding.report : null;
-const runtimeCheck = runtime?.checks?.find((check) => check.name === "1200/1366/1440 normal desktop follows Focus-left Signal-right then full-width current decisions");
-const normal = runtimeCheck?.detail?.normal1366 || null;
+const root = path.resolve(__dirname, '..');
+const ownerPath = path.join(root, 'src', 'panel-framework', 'overview', 'desktop-overview', 'LegacyDesktopOverview.tsx');
+const cssPath = path.join(root, 'src', 'panel-framework', 'overview', 'desktop-overview', 'styles', 'legacy-desktop.css');
+const reportPath = path.join(root, '_acceptance', 'desktop-ipad-baseline', 'report.json');
+const owner = fs.readFileSync(ownerPath, 'utf8');
+const css = fs.readFileSync(cssPath, 'utf8');
+const report = fs.existsSync(reportPath) ? JSON.parse(fs.readFileSync(reportPath, 'utf8')) : null;
+const captures = Array.isArray(report?.captures) ? report.captures : [];
+const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+const requiredViewports = ['1366x768', '1440x900'];
+const capturedCells = new Set(captures.filter((cell) => cell.pass).map((cell) => `${cell.scenario}:${cell.width}x${cell.height}`));
 
-const topBandHeight = normal?.normalTopBandRect?.height ?? null;
-const signalHeight = normal?.signalRect?.height ?? null;
-const focusHeight = normal?.focusObjectRect?.height ?? null;
-const investigationHeight = normal?.investigationRect?.height ?? null;
-const followUpTop = normal?.firstInvestigationActionRect?.top ?? null;
-const followUpBottom = normal?.firstInvestigationActionRect?.bottom ?? null;
-const viewportBottom = normal?.viewportBottom ?? null;
-const explainedTaskHeight = typeof focusHeight === "number" && typeof investigationHeight === "number"
-  ? focusHeight + investigationHeight + 24
-  : null;
-const signalBudgetHeight = typeof signalHeight === "number" ? signalHeight + 24 : null;
 const checks = {
-  sourceDeclaresNormalDensityOwner: /data-desktop-normal-density="compact"/.test(screen),
-  sourceDeclaresFocusBandActionOwner: /has-focus-task/.test(screen),
-  runtimeIdentityIsCurrentWhenRequired: !requireRuntime || runtimeBinding.current,
-  freshRuntimeIsBound: runtimeSkipped || Boolean(normal),
-  normalTopBandHasBoundedContent: runtimeSkipped || (typeof topBandHeight === "number" && typeof explainedTaskHeight === "number" && typeof signalBudgetHeight === "number" &&
-    topBandHeight <= Math.max(explainedTaskHeight, signalBudgetHeight)),
-  normalTopBandStaysWithinTaskBudget: runtimeSkipped || (typeof topBandHeight === "number" && topBandHeight <= 336),
-  normalFocusObjectStaysCompact: runtimeSkipped || (typeof focusHeight === "number" && focusHeight <= 260),
-  followUpRailBelongsToFocusBand: runtimeSkipped || normal?.investigationNestedInNormalFocusBand === true,
-  firstFollowUpActionFitsFirstViewport: runtimeSkipped || (typeof followUpTop === "number" && typeof followUpBottom === "number" && typeof viewportBottom === "number" && followUpTop <= viewportBottom - 8 && followUpBottom <= viewportBottom),
+  acceptedOwnerDeclared: /data-overview-task-contract="legacy-desktop-task-v1"/.test(owner),
+  acceptedVisualGrammarDeclared: /data-visual-grammar="ikuai-4-ipad"/.test(owner),
+  wideSummaryRetainsEightCompactFacts: /\.legacy-summary-strip\s*\{[\s\S]*?repeat\(8/.test(css),
+  normalVerdictDoesNotConsumeFirstViewport: /\.legacy-verdict\s*\{[\s\S]*?display:\s*none/.test(css),
+  mainColumnsAlignAtTop: /\.legacy-main-grid\s*\{[\s\S]*?align-items:\s*start/.test(css),
+  narrowDesktopReflowsWithoutOverlappingWanGrid: /@media \(max-width:\s*1040px\)[\s\S]*?\.legacy-wan-column\s*\{\s*display:\s*block/.test(css),
+  requiredMatrixComplete: requiredScenarios.every((scenario) => requiredViewports.every((viewport) => capturedCells.has(`${scenario}:${viewport}`))),
+  requiredMatrixPasses: report?.pass === true && captures.length === requiredScenarios.length * requiredViewports.length,
+  rejectedDesktopOwnersRemainAbsent: !/DesktopLedger|DesktopOverviewTask|DesktopIncidentDocket|data-desktop-normal-top-band|has-focus-task/.test(owner),
 };
 
 const failed = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
 const result = {
   pass: failed.length === 0,
-  contract: "desktop-normal-density-v2",
-  implementationState: failed.length === 0 ? runtimeSkipped ? "static-pending" : "focused-engineering-green" : "expected-red",
-  scope: "desktop normal overview at 1366x768",
-  geometry: { topBandHeight, signalHeight, focusHeight, investigationHeight, explainedTaskHeight, signalBudgetHeight, followUpTop, followUpBottom, viewportBottom },
+  contract: 'desktop-normal-density-v3-legacy-ipad',
+  implementationState: failed.length ? 'expected-red' : 'desktop-matrix-green',
+  scope: 'accepted 192.168.3.5 desktop owner at 1366x768 and 1440x900',
+  reportPath,
+  captureCount: captures.length,
   checks,
-  runtimeIdentity: runtimeIdentityDetail(runtimeBinding),
   failed,
   releaseEvidenceEligible: false,
 };
+
 console.log(JSON.stringify(result, null, 2));
 process.exitCode = result.pass ? 0 : 1;

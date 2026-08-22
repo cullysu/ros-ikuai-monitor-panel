@@ -410,10 +410,10 @@ class PublicTimestampContractTest(unittest.TestCase):
         self.assertEqual((protocol_by_name["UDP 活跃流量"]["upRate"], protocol_by_name["UDP 活跃流量"]["downRate"], protocol_by_name["UDP 活跃流量"]["totalRate"]), (0, 0, 0))
 
     def test_mobile_object_inspector_keeps_missing_values_unavailable(self) -> None:
-        inspector = (ROOT / "src" / "panel-framework" / "mobile-flow-ui" / "workspace" / "MobileFlowWorkspace.tsx").read_text(encoding="utf-8")
+        inspector = (ROOT / "src" / "panel-framework" / "mobile-reference-ui" / "MobileReferenceSurface.tsx").read_text(encoding="utf-8")
 
-        self.assertIn('row.values[column.key] || "未取得"', inspector)
-        self.assertIn("<dd>{value}</dd>", inspector)
+        self.assertIn('value === null || value === undefined || !Number.isFinite(value)', inspector)
+        self.assertIn('value || "—"', inspector)
         self.assertNotIn('value || 0', inspector)
 
     def test_production_history_exposes_atomic_timezone_qualified_evidence_only(self) -> None:

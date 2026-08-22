@@ -107,29 +107,35 @@ async function main() {
     await page.waitForFunction(() => document.querySelector("[data-chart-peak-label]"));
     await page.waitForTimeout(120);
     const geometry = await page.evaluate(() => {
-      const label = document.querySelector("[data-chart-peak-label]");
-      const svg = label?.ownerSVGElement;
-      const wan = label?.closest(".do-wan");
       const toRect = (value) => value ? Object.fromEntries(["left", "top", "right", "bottom", "width", "height"].map((key) => [key, value[key]])) : null;
-      const bbox = label?.getBBox();
-      const viewBox = svg?.viewBox.baseVal;
-      return {
-        label: label?.textContent?.trim() || "",
-        bbox: bbox ? { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height } : null,
-        viewBox: viewBox ? { x: viewBox.x, y: viewBox.y, width: viewBox.width, height: viewBox.height } : null,
-        labelRect: toRect(label?.getBoundingClientRect()), svgRect: toRect(svg?.getBoundingClientRect()), wanRect: toRect(wan?.getBoundingClientRect()),
-        axisLeft: Number(svg?.getAttribute("data-axis-left") || 0), axisLabelGap: Number(svg?.getAttribute("data-axis-label-gap") || 0),
-      };
+      return [...document.querySelectorAll("[data-chart-peak-label]")].map((label) => {
+        const svg = label.ownerSVGElement;
+        const chart = label.closest(".legacy-chart");
+        const bbox = label.getBBox();
+        const viewBox = svg?.viewBox.baseVal;
+        return {
+          direction: chart?.getAttribute("data-chart-direction") || "",
+          label: label.textContent?.trim() || "",
+          bbox: bbox ? { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height } : null,
+          viewBox: viewBox ? { x: viewBox.x, y: viewBox.y, width: viewBox.width, height: viewBox.height } : null,
+          labelRect: toRect(label.getBoundingClientRect()), svgRect: toRect(svg?.getBoundingClientRect()), chartRect: toRect(chart?.getBoundingClientRect()),
+          axisLeft: Number(svg?.getAttribute("data-axis-left") || 0), axisLabelGap: Number(svg?.getAttribute("data-axis-label-gap") || 0),
+        };
+      });
     });
     await page.screenshot({ path: path.join(outputDirectory, "wan-31.25-mbps-1366x768.png"), fullPage: false, animations: "disabled" });
+    const byDirection = (direction) => geometry.filter((item) => item.direction === direction);
+    const everyGeometry = (predicate) => geometry.length >= 2 && geometry.every(predicate);
     const checks = {
-      peakLabelIsExact: geometry.label === "31.25 Mbps",
-      bboxInsideViewBox: Boolean(geometry.bbox && geometry.viewBox && geometry.bbox.x >= -0.5 && geometry.bbox.x + geometry.bbox.width <= geometry.viewBox.width + 0.5),
-      domRectInsideSvg: Boolean(geometry.labelRect && geometry.svgRect && geometry.labelRect.left >= geometry.svgRect.left - 0.5 && geometry.labelRect.right <= geometry.svgRect.right + 0.5),
-      domRectInsideWanContainer: Boolean(geometry.labelRect && geometry.wanRect && geometry.labelRect.left >= geometry.wanRect.left - 0.5 && geometry.labelRect.right <= geometry.wanRect.right + 0.5),
-      labelHasPositiveAxisGap: geometry.axisLeft > geometry.axisLabelGap && geometry.axisLabelGap >= 12,
+      directionPeaksAreExact: byDirection("up").length >= 1 && byDirection("up").every((item) => item.label === "6.25 Mbps")
+        && byDirection("down").length >= 1 && byDirection("down").every((item) => item.label === "31.25 Mbps"),
+      leftWanUsesCurrentEvidence: await page.locator(".legacy-wan-rate-summary .legacy-wan-rate-card").count() === 2,
+      bboxInsideViewBox: everyGeometry((item) => Boolean(item.bbox && item.viewBox && item.bbox.x >= -0.5 && item.bbox.x + item.bbox.width <= item.viewBox.width + 0.5)),
+      domRectInsideSvg: everyGeometry((item) => Boolean(item.labelRect && item.svgRect && item.labelRect.left >= item.svgRect.left - 0.5 && item.labelRect.right <= item.svgRect.right + 0.5)),
+      domRectInsideChartContainer: everyGeometry((item) => Boolean(item.labelRect && item.chartRect && item.labelRect.left >= item.chartRect.left - 0.5 && item.labelRect.right <= item.chartRect.right + 0.5)),
+      labelHasPositiveAxisGap: everyGeometry((item) => item.axisLeft > item.axisLabelGap && item.axisLabelGap >= 12),
     };
-    const report = { pass: Object.values(checks).every(Boolean), contract: "wan-axis-label-integrity-v1", runtime: "vite-source-playwright", geometry, checks };
+    const report = { pass: Object.values(checks).every(Boolean), contract: "wan-axis-label-integrity-v2-legacy-ipad", runtime: "vite-source-playwright", geometry, checks };
     await fsp.writeFile(path.join(outputDirectory, "report.json"), JSON.stringify(report, null, 2), "utf8");
     console.log(JSON.stringify(report, null, 2));
     if (!report.pass) process.exitCode = 1;

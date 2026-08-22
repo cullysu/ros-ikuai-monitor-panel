@@ -62,7 +62,7 @@ const base = (scenario: OverviewScenarioKey): OverviewRawSnapshot => ({
   wan: [{ name: "pppoe-out10", parent: "ether1", running: true, upRate: 1200, downRate: 3400 }],
   pppoe: [{ name: "pppoe-out10", parent: "ether1", running: true, upRate: 1200, downRate: 3400 }],
   interfaces: [{ name: "ether1", type: "ether", running: true, bridge: "bridge-lan" }],
-  routes: { defaultRoutes: [{ table: "main", gateway: "1.1.1.1", distance: 1, active: true, disabled: false }] },
+  routes: { defaultRoutes: [{ table: "main", gateway: "pppoe-out10", distance: 1, active: true, disabled: false }] },
   connections: { total: 1234, active: [{}, {}], topIps: [{}] },
   terminals: [{ name: "client-1", ip: "192.168.88.10", status: "online" }],
 });

@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step1003 current decision boundary; historical entries remain immutable
+- validForCommit: Step1185 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `1003`
-- latestRecordedStep: `1003`
+- coveredStepMax: `1185`
+- latestRecordedStep: `1185`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 
@@ -93,6 +93,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 970 - 986 | mobile-next and telemetry iterations, repeated four-role vetoes, clean-sheet adjudication and final rejection of ledger/grid plus fake adaptive workspace | current-state.md |
 | 987 - 995 | scenario-owned phone and tablet task surfaces, truthful navigation/report contracts, independent mobile/desktop source and asset closures, regenerated focused runtime evidence | current-state.md |
 | 996 - 1000 | Mobile Patrol List implementation, exact evidence replay, explicit owner veto, and restart into three independent iOS/OriginOS/iKuai phone directions | current-state.md |
+| 1001 - 1185 | repeated phone-direction adjudication, final owner selection of the accepted four-screen mobile baseline, isolated `mobile-reference-ui` ownership, tablet/Fleet/all-offline/no-snapshot/collection corrections, focused/full responsive and accessibility adjudication, Edge 200% evidence, current-owner regression migration, current-identity four-role signoff and fail-closed release boundary | current-state.md |
 
 ## Reading rule
 

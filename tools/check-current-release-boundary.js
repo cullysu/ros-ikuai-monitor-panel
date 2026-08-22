@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { assertIndependentReviewRecords } = require('./check-independent-review-records');
+const { inspectIndependentReviewRecords } = require('./check-independent-review-records');
 
 const root = path.resolve(__dirname, '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -17,9 +17,9 @@ const decisionIndex = read('docs/decision-system/README.md');
 const handoff = read('docs/product-loop-current.md');
 const journal = read('docs/panel-redesign-decision-log.md');
 const fullContract = read('docs/full-console-product-contract.md');
-const mobileContract = read('docs/mobile-product-contract.md');
+const mobileContract = read('docs/mobile-reference-baseline.md');
 const machine = readJson('.product-loop/state.json');
-const independentReview = assertIndependentReviewRecords({ root });
+const independentReview = inspectIndependentReviewRecords({ root });
 
 const latestStep = Number(machine.latest_decision_step);
 const latestOutcome = String(machine.latest_decision_outcome || '');
@@ -30,10 +30,8 @@ const reviewGateStatuses = ['product', 'design', 'visual-qa'].map(gate);
 const reviewGatesPass = reviewGateStatuses.every((status) => status === 'pass');
 const reviewGatesFail = reviewGateStatuses.every((status) => status === 'failed');
 const reviewGatesPending = reviewGateStatuses.every((status) => status === 'pending');
-const localReviewIsHistorical = independentReview.pass === true &&
-  independentReview.releaseEligible === false &&
-  independentReview.step < latestStep &&
-  independentReview.runtimeReportMatchesReviewedArtifact === false;
+const currentReviewIsValid = independentReview.pass === true && independentReview.step === latestStep;
+const localReviewIsHistorical = independentReview.step < latestStep;
 const currentReviewFailureDeclared = /\| R07 Product \| fail \|/.test(currentState) &&
   /\| R09 Design \/ Visual \| fail \|/.test(currentState);
 
@@ -61,9 +59,9 @@ expect(/当前权威来源：`docs\/decision-system\/current-state\.md`/.test(jo
 
 expect(reviewGatesPass || reviewGatesFail || reviewGatesPending, 'machine Product/Design/Visual gates must resolve coherently');
 expect(
-  localReviewIsHistorical
-    ? reviewGatesPending || (reviewGatesFail && currentReviewFailureDeclared)
-    : reviewGatesPass === independentReview.pass,
+  currentReviewIsValid
+    ? reviewGatesPass
+    : reviewGatesPending || (reviewGatesFail && currentReviewFailureDeclared),
   'machine Product/Design/Visual gates must match the current or historical scope of structured independent review records'
 );
 expect(gate('state-matrix') === 'pending', 'machine State Matrix gate must remain pending');
@@ -73,7 +71,7 @@ expect(/status:\s*`current-contract\s*\/\s*acceptance-failed`/.test(fullContract
 expect(/Product release gate:\s*\*\*FAIL/.test(fullContract), 'full product contract must keep product release FAIL');
 expect(/status:\s*`current-contract\s*\/\s*acceptance-failed`/.test(mobileContract), 'mobile product contract must remain acceptance-failed');
 expect(
-  localReviewIsHistorical
+  !currentReviewIsValid
     ? /Product\/design\/visual gate:\s*\*\*FAIL[\s\S]*final external product\/visual acceptance is not closed/.test(mobileContract)
     : /Product\/design\/visual gate:\s*\*\*PASS[\s\S]*public release remains FAIL/.test(mobileContract),
   'mobile contract must distinguish historical local review evidence from current product acceptance'
@@ -95,6 +93,7 @@ const report = {
     historicalBoundary: /historical-journal/.test(journalTop) && /supersededBy/.test(journalTop),
     productDesignVisualCoherent: reviewGatesPass || reviewGatesFail || reviewGatesPending,
     independentReviewRecords: independentReview.pass,
+    currentIndependentReview: currentReviewIsValid,
     contractsFailClosed: /acceptance-failed/.test(fullContract) && /acceptance-failed/.test(mobileContract),
     candidateClosed: /not a release candidate/i.test(top(handoff, 12)),
   },

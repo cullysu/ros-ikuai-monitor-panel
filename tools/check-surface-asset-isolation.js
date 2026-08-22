@@ -21,14 +21,14 @@ const desktopScript = read(manifest.assets?.desktop?.script, 'desktop script');
 const desktopStyle = read(manifest.assets?.desktop?.style, 'desktop style');
 const loader = read(manifest.assets?.loader, 'surface loader');
 
-requireMarkers(mobileScript, 'mobile script', ['data-mobile-flow-overview', 'data-mobile-flow-navigation', 'data-panel-surface', 'mobile']);
+requireMarkers(mobileScript, 'mobile script', ['data-mobile-reference-home', 'data-mobile-reference-navigation', 'data-mobile-reference-network-directory', 'data-panel-surface', 'mobile']);
 forbidMarkers(mobileScript, 'mobile script', ['data-mobile-ops-overview', 'data-mobile-ops-navigation', 'data-mobile-ops-detail', 'data-desktop-overview', 'data-desktop-domain-workspace', 'ro-desktop-console']);
 requireMarkers(desktopScript, 'desktop script', ['data-desktop-overview', 'data-desktop-domain-workspace', 'data-panel-surface', 'desktop']);
-forbidMarkers(desktopScript, 'desktop script', ['data-mobile-flow-overview', 'data-mobile-flow-navigation', 'data-mobile-flow-detail']);
-requireMarkers(mobileStyle, 'mobile style', ['.mflow', '.mflow-tabs', '.panel-runtime-live']);
-forbidMarkers(mobileStyle, 'mobile style', ['.mop-overview', '.mop-tabbar', '.do-shell', '.desktop-domain-workspace', '.panel-runtime-bar-desktop']);
-requireMarkers(desktopStyle, 'desktop style', ['.do-shell', '.panel-runtime-bar-desktop']);
-forbidMarkers(desktopStyle, 'desktop style', ['.mflow', '.mflow-tabs', '.mflow-detail']);
+forbidMarkers(desktopScript, 'desktop script', ['data-mobile-reference-home', 'data-mobile-reference-navigation', 'data-mobile-reference-network-directory', 'data-mobile-inspection-overview', 'data-mobile-inspection-navigation', 'data-inspection-detail']);
+requireMarkers(mobileStyle, 'mobile style', ['.ref-mobile', '.ref-navigation', '.ref-card', '.panel-runtime-live']);
+forbidMarkers(mobileStyle, 'mobile style', ['.mop-overview', '.mop-tabbar', '.legacy-desktop-shell', '.desktop-domain-workspace', '.panel-runtime-bar-desktop']);
+requireMarkers(desktopStyle, 'desktop style', ['.legacy-desktop-shell', '.panel-runtime-bar-desktop']);
+forbidMarkers(desktopStyle, 'desktop style', ['.ref-mobile', '.ref-navigation', '.inspection-topbar', '.minspection-navigation', '.inspection-detail']);
 requireMarkers(loader, 'surface loader', [manifest.assets?.mobile?.script?.file, manifest.assets?.mobile?.style?.file, manifest.assets?.desktop?.script?.file, manifest.assets?.desktop?.style?.file, 'URLSearchParams', 'sessionStorage', 'pointer:coarse']);
 forbidMarkers(loader, 'surface loader', ['addEventListener("resize"', "addEventListener('resize'", 'panel-framework.js', 'style.css']);
 

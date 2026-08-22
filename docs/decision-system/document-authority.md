@@ -26,7 +26,7 @@ This registry prevents historical design, migration, breakpoint, score, and rele
     {"path":"docs/decision-system/architecture-adr.md","authorityStatus":"current","validForCommit":"local remediation","supersededBy":null,"role":"architecture decision authority"},
     {"path":"docs/decision-system/responsive-capabilities.md","authorityStatus":"current","validForCommit":"local remediation","supersededBy":null,"role":"only responsive capability authority"},
     {"path":"docs/decision-system/route-maturity.md","authorityStatus":"current","validForCommit":"local remediation","supersededBy":null,"role":"route maturity authority"},
-    {"path":"docs/mobile-product-contract.md","authorityStatus":"current-contract","validForCommit":"local remediation","supersededBy":null,"role":"mobile acceptance contract"},
+    {"path":"docs/mobile-reference-baseline.md","authorityStatus":"current-contract","validForCommit":"local remediation","supersededBy":null,"role":"sole accepted mobile visual baseline"},
     {"path":"docs/full-console-product-contract.md","authorityStatus":"current-contract","validForCommit":"local remediation","supersededBy":null,"role":"full console acceptance contract"},
     {"path":"docs/decision-system/README.md","authorityStatus":"reference","validForCommit":"local remediation","supersededBy":null,"role":"decision repository index"},
     {"path":"docs/decision-system/current-index.md","authorityStatus":"reference","validForCommit":"local remediation","supersededBy":null,"role":"compact current discovery index; cannot override current-state"},
@@ -36,14 +36,9 @@ This registry prevents historical design, migration, breakpoint, score, and rele
     {"path":"docs/product-loop-current.md","authorityStatus":"reference","validForCommit":"local remediation","supersededBy":"docs/decision-system/current-state.md","role":"loop handoff"},
     {"path":"docs/panel-redesign-decision-log.md","authorityStatus":"reference","validForCommit":"local remediation","supersededBy":"docs/decision-system/current-state.md","role":"chronological decision log"},
     {"path":"docs/README.md","authorityStatus":"reference","validForCommit":"local remediation","supersededBy":null,"role":"documentation index"},
-    {"path":"docs/mobile-v3-challenge.md","authorityStatus":"reference","validForCommit":"historical review","supersededBy":"docs/decision-system/current-state.md","role":"historical challenge review"},
     {"path":"docs/desktop-overview-redesign-directions.md","authorityStatus":"superseded","validForCommit":"historical design exploration","supersededBy":"docs/decision-system/responsive-capabilities.md","role":"legacy desktop direction"},
-    {"path":"docs/mobile-overview-redesign-directions.md","authorityStatus":"superseded","validForCommit":"historical design exploration","supersededBy":"docs/decision-system/product-pdr.md","role":"legacy mobile direction"},
     {"path":"docs/overview-framework-migration.md","authorityStatus":"superseded","validForCommit":"historical migration bridge","supersededBy":"docs/decision-system/architecture-adr.md","role":"legacy DOM migration direction"},
-    {"path":"docs/overview-ikuai40-completion-audit.md","authorityStatus":"superseded","validForCommit":"historical visual audit","supersededBy":"docs/decision-system/current-state.md","role":"legacy completion audit"},
-    {"path":"docs/mobile-design-decision.md","authorityStatus":"superseded","validForCommit":"historical design selection","supersededBy":"docs/decision-system/product-pdr.md","role":"legacy mobile design decision"},
-    {"path":"docs/mobile-risk-focus-design-decision.md","authorityStatus":"superseded","validForCommit":"historical design exploration","supersededBy":"docs/decision-system/product-pdr.md","role":"legacy risk-focus direction"},
-    {"path":"docs/mobile-v3-corrections.md","authorityStatus":"superseded","validForCommit":"historical working tree","supersededBy":"docs/decision-system/current-state.md","role":"legacy correction record"}
+    {"path":"docs/overview-ikuai40-completion-audit.md","authorityStatus":"superseded","validForCommit":"historical visual audit","supersededBy":"docs/decision-system/current-state.md","role":"legacy completion audit"}
   ]
 }
 ```

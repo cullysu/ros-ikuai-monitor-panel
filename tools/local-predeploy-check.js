@@ -21,6 +21,15 @@ const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
 const { gitWorktreeIdentity, matrixArtifactKey } = require('./worktree-runtime-identity');
 
 const ROOT = path.resolve(__dirname, '..');
+const configuredServerStartupTimeout = Number(
+  process.env.CODEX_LOW_LOAD_SERVER_STARTUP_TIMEOUT_MS || process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0,
+);
+// A CPU-capped acceptance process may need more than the ordinary 16s Python
+// startup budget. This only extends the bounded health wait when explicitly
+// requested by the low-load launcher; it does not change product timeouts.
+const SERVER_STARTUP_TIMEOUT_MS = Number.isFinite(configuredServerStartupTimeout) && configuredServerStartupTimeout > 0
+  ? Math.min(120_000, Math.max(16_000, configuredServerStartupTimeout))
+  : 16_000;
 const DEFAULT_VIEWPORTS = [
   { name: 'desktop', width: 1600, height: 1000 },
   { name: 'laptop', width: 1366, height: 900 },
@@ -64,6 +73,13 @@ const OVERVIEW_RELEASE_VIEWPORTS = [
   { name: 'wide', width: 844, height: 390 },
   { name: 'narrow', width: 390, height: 844 },
 ];
+
+// A wide landscape tablet is a browser/workbench surface, not a stretched
+// phone page. Keep this boundary shared by navigation, semantic probes, and
+// screenshot anchors so the matrix cannot silently validate the wrong owner.
+function isWideLandscapeViewport(viewport) {
+  return Boolean(viewport && viewport.width >= 600 && viewport.width > viewport.height);
+}
 const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet', ...EDGE_SCALE_SCENARIOS, ...DIAGNOSTIC_SCALE_SCENARIOS]);
 
 function requestsRequiredOverviewMatrix(args = {}) {
@@ -99,6 +115,72 @@ function viewportCellKey(viewport = {}) {
   return viewport.name;
 }
 
+function browserResumeCellKey(check = {}) {
+  return [
+    check.profile || '',
+    check.scaleScenario || '',
+    check.requestedSection || '',
+    viewportCellKey(check.viewport || {}),
+  ].join('::');
+}
+
+function pendingBrowserSections(
+  completedChecks = [],
+  profile,
+  scaleScenario,
+  viewport,
+  sections = [],
+) {
+  const passed = new Set(
+    completedChecks
+      .filter((check) => check && check.pass === true)
+      .map((check) => browserResumeCellKey(check)),
+  );
+  return sections.filter((section) => !passed.has(browserResumeCellKey({
+    profile,
+    scaleScenario,
+    viewport,
+    requestedSection: section,
+  })));
+}
+
+function buildBrowserResumeKey(args = {}, worktreeIdentity = {}) {
+  return JSON.stringify({
+    version: 1,
+    artifactKey: matrixArtifactKey(worktreeIdentity),
+    profile: args.profile || '',
+    viewports: (args.viewports || []).map((viewport) => viewportCellKey(viewport)),
+    sections: args.sections || [],
+    scaleScenarios: args.scaleScenarios || [],
+    strictResponsive: args.strictResponsive === true,
+    screenshotAllSections: args.screenshotAllSections === true,
+    boundedMatrix: args.boundedMatrix === true,
+  });
+}
+
+function requestedBrowserResumeCellKeys(args = {}) {
+  const profiles = args.profile === 'both' ? ['public', 'private'] : [args.profile];
+  const keys = [];
+  for (const profile of profiles) {
+    const sections = args.sections || (
+      profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS
+    );
+    for (const scaleScenario of args.scaleScenarios || []) {
+      for (const viewport of args.viewports || []) {
+        for (const requestedSection of sections) {
+          keys.push(browserResumeCellKey({
+            profile,
+            scaleScenario,
+            viewport,
+            requestedSection,
+          }));
+        }
+      }
+    }
+  }
+  return new Set(keys);
+}
+
 function usage() {
   return `
 Local smoke, responsive, and predeploy checks for the RouterOS triage panel.
@@ -122,6 +204,8 @@ Options:
   --strict-responsive         Treat narrow horizontal overflow as a failure.
   --screenshot-all-sections   Capture every requested route, not only overview or failures.
   --bounded-matrix            Treat explicit sections/scenarios/viewports as a capability shard, not a release-matrix claim.
+  --resume                    Reuse exact passing cells from partial-report.json when worktree and run shape match.
+  --max-browser-cells <n>     Stop cleanly after n newly inspected cells; 0 runs all remaining cells.
   --help                      Show this help.
 
 Safety:
@@ -169,6 +253,8 @@ function parseArgs(argv) {
     strictResponsive: false,
     screenshotAllSections: false,
     boundedMatrix: false,
+    resume: false,
+    maxBrowserCells: 0,
     scaleScenarios: DEFAULT_SCALE_SCENARIOS,
     scaleScenariosExplicit: false,
     viewportsExplicit: false,
@@ -191,6 +277,10 @@ function parseArgs(argv) {
     else if (item === '--strict-responsive') args.strictResponsive = true;
     else if (item === '--screenshot-all-sections') args.screenshotAllSections = true;
     else if (item === '--bounded-matrix') args.boundedMatrix = true;
+    else if (item === '--resume') args.resume = true;
+    else if (item === '--max-browser-cells' || item.startsWith('--max-browser-cells=')) {
+      args.maxBrowserCells = Number(readValue('--max-browser-cells'));
+    }
     else if (item === '--url' || item.startsWith('--url=')) args.url = readValue('--url');
     else if (item === '--port' || item.startsWith('--port=')) args.port = Number(readValue('--port'));
     else if (item === '--python' || item.startsWith('--python=')) args.python = readValue('--python');
@@ -226,6 +316,9 @@ function parseArgs(argv) {
   }
   if (args.boundedMatrix && (!args.sectionsExplicit || !args.scaleScenariosExplicit || !args.viewportsExplicit)) {
     throw new Error('--bounded-matrix requires explicit --sections, --scale-scenarios, and --viewports');
+  }
+  if (!Number.isInteger(args.maxBrowserCells) || args.maxBrowserCells < 0) {
+    throw new Error('--max-browser-cells must be a non-negative integer');
   }
   if (!args.out) {
     args.out = path.join(ROOT, '_acceptance', `local-predeploy-${timestamp()}`);
@@ -323,6 +416,19 @@ async function writeJson(filePath, payload) {
   await fs.writeFile(filePath, `${jsonStringifyAscii(payload, 2)}\n`, 'utf8');
 }
 
+async function writeJsonAtomic(filePath, payload) {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const temporaryPath = `${filePath}.tmp-${process.pid}`;
+  await fs.writeFile(temporaryPath, `${jsonStringifyAscii(payload, 2)}\n`, 'utf8');
+  try {
+    await fs.rename(temporaryPath, filePath);
+  } catch (error) {
+    if (!error || !['EEXIST', 'EPERM'].includes(error.code)) throw error;
+    await fs.rm(filePath, { force: true });
+    await fs.rename(temporaryPath, filePath);
+  }
+}
+
 async function readJsonIfAny(filePath) {
   try {
     const text = await fs.readFile(filePath, 'utf8');
@@ -330,6 +436,55 @@ async function readJsonIfAny(filePath) {
   } catch {
     return null;
   }
+}
+
+function browserResumePath(args = {}) {
+  return path.join(args.out, 'partial-report.json');
+}
+
+function browserResumeCellDirectory(args = {}) {
+  return path.join(args.out, '.partial-browser-cells');
+}
+
+function browserResumeCellPath(args, check) {
+  const safeCell = browserResumeCellKey(check).replace(/[^A-Za-z0-9_.-]+/g, '-');
+  return path.join(browserResumeCellDirectory(args), `${safeCell}.json`);
+}
+
+async function writeBrowserResumeProgress(args, report, check) {
+  await writeJsonAtomic(browserResumeCellPath(args, check), {
+    version: 1,
+    resumeKey: report.browserResumeKey,
+    updatedAt: new Date().toISOString(),
+    check,
+  });
+}
+
+async function readBrowserResumeChecks(args, resumeKey) {
+  const candidates = [];
+  const summary = await readJsonIfAny(browserResumePath(args));
+  if (summary && summary.resumeKey === resumeKey) {
+    candidates.push(...(summary.browserChecks || []));
+  }
+
+  try {
+    const directory = browserResumeCellDirectory(args);
+    const names = (await fs.readdir(directory)).filter((name) => name.endsWith('.json'));
+    for (const name of names) {
+      const payload = await readJsonIfAny(path.join(directory, name));
+      if (payload && payload.resumeKey === resumeKey && payload.check) {
+        candidates.push(payload.check);
+      }
+    }
+  } catch (error) {
+    if (error && error.code !== 'ENOENT') throw error;
+  }
+
+  const unique = new Map();
+  for (const check of candidates) {
+    if (check && check.pass === true) unique.set(browserResumeCellKey(check), check);
+  }
+  return [...unique.values()];
 }
 
 function matrixSessionKey() {
@@ -597,7 +752,7 @@ async function startSafeAppServer(args, report) {
   });
 
   try {
-    await waitForJson(`${baseUrl}api/health`, 16000);
+    await waitForJson(`${baseUrl}api/health`, SERVER_STARTUP_TIMEOUT_MS);
   } catch (error) {
     child.kill('SIGKILL');
     const stdoutArtifact = await writeLogArtifact(args.out, 'server-start-failure.stdout.log', stdout);
@@ -926,8 +1081,8 @@ function gitFullHead() {
   return result.status === 0 ? String(result.stdout || '').trim() : '';
 }
 
-function buildMatrixSummary(browserChecks = [], args = {}) {
-  const worktree = gitWorktreeIdentity(ROOT);
+function buildMatrixSummary(browserChecks = [], args = {}, worktreeIdentity = null) {
+  const worktree = worktreeIdentity || gitWorktreeIdentity(ROOT);
   const requiredScenarios = OVERVIEW_RELEASE_SCALE_SCENARIOS;
   const scenarioOrder = new Map([
     ['single', 0],
@@ -1269,7 +1424,7 @@ class PlaywrightSession {
     if (method === 'Page.navigate') {
       await this.page.goto(String(params.url || 'about:blank'), {
         waitUntil: 'domcontentloaded',
-        timeout: 15000,
+        timeout: configuredBrowserTimeoutMs(15_000),
       });
       return { frameId: 'playwright' };
     }
@@ -1344,15 +1499,23 @@ class PlaywrightSession {
   }
 }
 
+function configuredBrowserTimeoutMs(fallback = 15_000) {
+  const configuredLowLoadTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS);
+  return Number.isFinite(configuredLowLoadTimeout)
+    ? Math.min(Math.max(configuredLowLoadTimeout, fallback), 120_000)
+    : fallback;
+}
+
 async function launchBrowser(args, report) {
   const browserPath = await findBrowser();
   if (!browserPath) {
     throw new Error('Edge/Chrome executable not found. Set BROWSER or CHROME_PATH.');
   }
+  const browserTimeoutMs = configuredBrowserTimeoutMs();
   const managedBrowser = (await lifecycleBounded('matrix.browser.managed.launch', () => launchManagedBrowser({
     executablePath: browserExecutable(browserPath),
-    launchTimeoutMs: 15_000,
-    cleanupTimeoutMs: 8_000,
+    launchTimeoutMs: browserTimeoutMs,
+    cleanupTimeoutMs: Math.min(configuredBrowserTimeoutMs(8_000), 30_000),
     args: [
       '--disable-background-networking',
       '--disable-dev-shm-usage',
@@ -1364,7 +1527,7 @@ async function launchBrowser(args, report) {
       '--metrics-recording-only',
       ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
     ],
-  }), 15_000, async (lateManagedBrowser) => {
+  }), browserTimeoutMs, async (lateManagedBrowser) => {
     if (lateManagedBrowser) await lateManagedBrowser.close();
   })).value;
   const browser = managedBrowser.browser;
@@ -1387,7 +1550,7 @@ async function launchBrowser(args, report) {
             colorScheme: 'light',
             reducedMotion: 'reduce',
           }),
-          15_000,
+          browserTimeoutMs,
           async (lateContext) => {
             if (lateContext) await lateContext.close();
           },
@@ -1395,13 +1558,13 @@ async function launchBrowser(args, report) {
         const page = (await lifecycleBounded(
           'matrix.page.create',
           () => context.newPage(),
-          15_000,
+          browserTimeoutMs,
           async (latePage) => {
             if (latePage && !latePage.isClosed()) await latePage.close({ runBeforeUnload: false });
           },
         )).value;
-        page.setDefaultTimeout(15000);
-        page.setDefaultNavigationTimeout(15000);
+        page.setDefaultTimeout(browserTimeoutMs);
+        page.setDefaultNavigationTimeout(browserTimeoutMs);
         return new PlaywrightSession(context, page);
       } catch (error) {
         if (context) {
@@ -1430,17 +1593,20 @@ async function waitForApp(cdp, timeoutMs = 8000) {
       expression: `(() => {
         const app = document.querySelector('#app');
         const section = document.querySelector('#app .section');
+        const surfaceStyle = document.querySelector('link[data-panel-surface-asset$="-style"]');
         return {
           readyState: document.readyState,
           app: Boolean(app),
           section: section ? section.id : '',
-          contentMounted: Boolean(section?.firstElementChild && section.getBoundingClientRect().height > 0)
+          contentMounted: Boolean(section?.firstElementChild && section.getBoundingClientRect().height > 0),
+          surfaceStyleReady: Boolean(surfaceStyle && surfaceStyle.sheet),
+          fontsReady: !document.fonts || document.fonts.status === 'loaded'
         };
       })()`,
       returnByValue: true,
     });
     last = result.result && result.result.value;
-    if (last && last.app && last.section && last.contentMounted) return last;
+    if (last && last.app && last.section && last.contentMounted && last.surfaceStyleReady && last.fontsReady) return last;
     await delay(250);
   }
   throw new Error(`Timed out waiting for app render: ${JSON.stringify(last)}`);
@@ -1468,7 +1634,7 @@ async function collectBootDiagnostics(cdp) {
   }
 }
 
-async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario) {
+async function navigateWithFixture(cdp, baseUrl, profile, viewport, scaleScenario) {
   const snapshot = buildSnapshot(profile, scaleScenario);
   const fixtureSource = `window.__PANEL_TEST_SNAPSHOT__ = ${JSON.stringify(snapshot)};`;
   await cdp.send('Runtime.enable');
@@ -1482,14 +1648,14 @@ async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scal
   });
   await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: fixtureSource });
   await cdp.send('Page.navigate', {
-    url: `${baseUrl}?section=overview&surface=${viewport.width >= 900 ? 'desktop' : 'mobile'}&predeploy=${Date.now()}#overview`,
+    url: `${baseUrl}?section=overview&surface=${viewport.width >= 900 || isWideLandscapeViewport(viewport) ? 'desktop' : 'mobile'}&predeploy=${Date.now()}#overview`,
   });
-  await waitForApp(cdp);
-  record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, {
+  await waitForApp(cdp, configuredBrowserTimeoutMs(8_000));
+  return {
     viewport,
     profile,
     scaleScenario,
-  });
+  };
 }
 
 async function setSection(cdp, section) {
@@ -1510,8 +1676,10 @@ async function setSection(cdp, section) {
       }) || null;
       const link = visible || candidates[0] || null;
       let directNavigation = false;
+      let clickScheduled = false;
       if (link) {
-        link.click();
+        setTimeout(() => link.click(), 0);
+        clickScheduled = true;
       } else {
         const target = new URL(location.href);
         target.searchParams.set('section', section);
@@ -1528,6 +1696,7 @@ async function setSection(cdp, section) {
         linkVisible: Boolean(visible),
         linkCount: candidates.length,
         linkText: normalize((visible || link) ? (visible || link).textContent : ''),
+        clickScheduled,
         directNavigation,
       };
     })()`,
@@ -1540,6 +1709,7 @@ async function setSection(cdp, section) {
     linkVisible: false,
     linkCount: 0,
     linkText: '',
+    clickScheduled: false,
     directNavigation: false,
   };
 }
@@ -1575,31 +1745,41 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
   }
   const inspection = result.result && result.result.value;
   if (section !== 'overview' || !inspection) return inspection;
-  if (viewport.width < 900) {
-    const pulseProbeResult = await cdp.send('Runtime.evaluate', {
+  if (viewport.width < 900 && !isWideLandscapeViewport(viewport)) {
+    const referenceProbeResult = await cdp.send('Runtime.evaluate', {
       expression: `(() => {
-        const root = document.querySelector('[data-mobile-flow-overview]');
-        const nav = document.querySelector('[data-mobile-flow-navigation]');
+        const root = document.querySelector('[data-mobile-reference-home]');
+        const nav = document.querySelector('[data-mobile-reference-navigation]');
         const navLabels = [...(nav?.querySelectorAll('button') || [])]
-          .map((node) => String(node.textContent || '').replace(/\s+/g, ' ').trim());
+          .map((node) => String(node.textContent || '').replace(/\\s+/g, ' ').trim());
         const evidenceMode = root?.getAttribute('data-evidence-mode') || '';
-        const scene = root?.getAttribute('data-mobile-flow-scene') || '';
-        const normal = scene === 'normal';
-        const sceneSelectors = { normal: '.mflow-route', fleet: '.mflow-fleet', wan: '.mflow-wan', unavailable: '.mflow-withdrawn', collection: '.mflow-channels', resource: '.mflow-resource', interfaces: '.mflow-chain' };
-        const expectedInstrument = sceneSelectors[scene];
+        const scene = root?.getAttribute('data-mobile-reference-scene') || '';
+        const wan = root?.querySelector('.ref-wan');
+        const chart = root?.querySelector('.ref-chart svg');
+        const metrics = wan?.querySelectorAll('.ref-rate-grid .ref-rate').length || 0;
+        const resourceMeters = root?.querySelectorAll('.ref-resource').length || 0;
+        const interfaceRows = root?.querySelectorAll('.ref-interfaces > button').length || 0;
+        const knownScene = ['normal', 'outage', 'unavailable', 'collection', 'resource', 'interfaces', 'route'].includes(scene);
         const checks = {
-          flowRoot: Boolean(root?.matches('main.mflow')),
+          ikuai4Root: Boolean(root?.matches('main.ref-mobile')),
           evidenceMode: /^(current|historical|unavailable)$/.test(evidenceMode),
-          scene: Boolean(expectedInstrument),
-          decisiveInstrument: Boolean(expectedInstrument && root?.querySelector(expectedInstrument) && root?.querySelectorAll('.mflow-instrument').length === 1),
-          sceneContract: normal ? evidenceMode === 'current' && Boolean(root?.querySelector('.mflow-route__traffic')) : !root?.querySelector('.mflow-route__traffic'),
-          fourNavigationRoots: navLabels.length === 4 && ['概览', '网络', '终端', '日志'].every((item) => navLabels.includes(item)),
-          moreDirectory: Boolean(root?.querySelector('button[aria-label="更多模块"]')),
-          statusVerdict: Boolean(root?.querySelector('.mflow-status[aria-label="当前结论"]')),
-          evidenceAction: Boolean(root?.querySelector('.mflow-instrument button, .mflow-stream button')),
+          scene: knownScene,
+          currentOnlyRates: scene !== 'normal' || (evidenceMode === 'current' && metrics === 2 && Boolean(chart)),
+          fourNavigationRoots: navLabels.length === 4 && ['概览', '网络', '设备', '日志'].every((item) => navLabels.includes(item)),
+          moreDirectory: Boolean(root?.querySelector('button[aria-label="打开更多工具"]')),
+          objectDetail: scene === 'normal'
+            ? Boolean(root?.querySelector('.ref-card-link'))
+            : scene === 'interfaces'
+              ? Boolean(root?.querySelector('.ref-interfaces > button'))
+              : true,
+          noRejectedOwner: document.querySelectorAll('[data-mobile-reference-home]').length === 1 &&
+            document.querySelectorAll('[data-mobile-reference-home]').length === 1,
+          interfaceRows: scene !== 'interfaces' || interfaceRows > 0,
+          resourceRows: scene !== 'resource' || resourceMeters === 3,
+          noFalseCurrentData: scene !== 'unavailable' || !root?.querySelector('.ref-wan'),
         };
         return {
-          contract: 'mobile-flow-runtime-v1',
+          contract: 'mobile-reference-runtime-v1',
           appHomePass: Object.values(checks).every(Boolean),
           truthMode: evidenceMode,
           risk: scene === 'unavailable' ? 'evidence' : scene === 'normal' ? 'none' : scene,
@@ -1609,9 +1789,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       })()`,
       returnByValue: true,
     });
-    const mobilePulseGateProbe = pulseProbeResult.result?.value || null;
-    inspection.mobilePulseGateProbe = mobilePulseGateProbe;
-    inspection.pass = Boolean(inspection.pass && mobilePulseGateProbe?.appHomePass === true);
+    const mobileReferenceGateProbe = referenceProbeResult.result?.value || null;
+    inspection.mobileReferenceGateProbe = mobileReferenceGateProbe;
+    inspection.pass = Boolean(inspection.pass && mobileReferenceGateProbe?.appHomePass === true);
   }
   const canonicalRouteProbeCell = scaleScenario === 'single' && viewport.width === 390 && viewport.height === 844;
   if (!canonicalRouteProbeCell) {
@@ -1761,20 +1941,21 @@ async function inspectScreenshotPixels(cdp, screenshotData, { section = null } =
           if (pixels[index] < 8 && pixels[index + 1] < 8 && pixels[index + 2] < 8) blackPixels += 1;
         }
         const requireOverviewAnchors = ${JSON.stringify(section === 'overview')};
-        const requireDesktopOverviewAnchors = requireOverviewAnchors && window.innerWidth >= 1200;
-        const requireMobileOverviewAnchors = requireOverviewAnchors && window.innerWidth < 900;
+        const wideLandscapeBrowserOwner = window.innerWidth >= 600 && window.innerWidth > window.innerHeight;
+        const requireDesktopOverviewAnchors = requireOverviewAnchors && (window.innerWidth >= 1200 || wideLandscapeBrowserOwner);
+        const requireMobileOverviewAnchors = requireOverviewAnchors && window.innerWidth < 900 && !wideLandscapeBrowserOwner;
         const specs = requireDesktopOverviewAnchors ? [
           {
             name: 'desktop-toolbar',
             selector: '[data-panel-runtime-toolbar="desktop"], [data-desktop-fixture-toolbar]',
           },
-          { name: 'task-navigation', selector: '.panel-task-navigation' },
+          { name: 'task-navigation', selector: '.panel-task-navigation', minForegroundRatio: 0.004 },
           { name: 'status-bus', selector: '[data-desktop-status-bus]' },
         ] : requireMobileOverviewAnchors ? [
-          { name: 'mobile-flow-root', selector: '[data-mobile-flow-overview]' },
-          { name: 'mobile-flow-evidence', selector: '[data-mobile-flow-overview] .mflow-evidence' },
-          { name: 'mobile-flow-status', selector: '[data-mobile-flow-overview] .mflow-status' },
-          { name: 'mobile-flow-navigation', selector: '[data-mobile-flow-navigation]' },
+          { name: 'mobile-reference-root', selector: '[data-mobile-reference-home]' },
+          { name: 'mobile-reference-lead', selector: '[data-mobile-reference-home] .ref-card, [data-mobile-reference-home] .ref-status' },
+          { name: 'mobile-reference-status', selector: '[data-mobile-reference-home] .ref-status' },
+          { name: 'mobile-reference-navigation', selector: '[data-mobile-reference-navigation]' },
         ] : [];
         const scaleX = width / Math.max(1, window.innerWidth);
         const scaleY = height / Math.max(1, window.innerHeight);
@@ -1969,7 +2150,7 @@ async function captureScreenshot(cdp, filePath, options = {}) {
           fromSurface: true,
           captureBeyondViewport: false,
         }),
-        7500,
+        configuredBrowserTimeoutMs(7_500),
         `capture screenshot first sample attempt ${attempt}`,
       );
       await new Promise((resolve) => setTimeout(resolve, 80));
@@ -1979,7 +2160,7 @@ async function captureScreenshot(cdp, filePath, options = {}) {
           fromSurface: true,
           captureBeyondViewport: false,
         }),
-        7500,
+        configuredBrowserTimeoutMs(7_500),
         `capture screenshot second sample attempt ${attempt}`,
       );
       if (firstShot.data !== secondShot.data) {
@@ -1988,7 +2169,7 @@ async function captureScreenshot(cdp, filePath, options = {}) {
       shot = secondShot;
       visualCheck = await withTimeout(
         inspectScreenshotPixels(cdp, shot.data, options),
-        5000,
+        configuredBrowserTimeoutMs(5_000),
         `inspect screenshot pixels attempt ${attempt}`,
       );
       visualCheck.captureMode = shot.captureMode || 'unknown';
@@ -2043,12 +2224,22 @@ async function captureScreenshot(cdp, filePath, options = {}) {
 
 async function runBrowserChecks(args, report, baseUrl) {
   const profiles = args.profile === 'both' ? ['public', 'private'] : [args.profile];
+  const browserTimeoutMs = configuredBrowserTimeoutMs();
+  let newBrowserChecks = 0;
   const browser = await launchBrowser(args, report);
   try {
     for (const profile of profiles) {
     const sections = args.sections || (profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS);
     for (const scaleScenario of args.scaleScenarios) {
       for (const viewport of args.viewports) {
+        const pendingSections = pendingBrowserSections(
+          report.browserChecks,
+          profile,
+          scaleScenario,
+          viewport,
+          sections,
+        );
+        if (!pendingSections.length) continue;
         let cdp = null;
         const runtimeErrors = [];
         const consoleErrors = [];
@@ -2056,7 +2247,7 @@ async function runBrowserChecks(args, report, baseUrl) {
           try {
             cdp = await withTimeout(
               browser.connect(),
-              15000,
+              browserTimeoutMs,
               `browser connect ${profile}/${scaleScenario}/${viewport.name}`,
             );
           } catch (error) {
@@ -2079,15 +2270,38 @@ async function runBrowserChecks(args, report, baseUrl) {
             if (params.entry && params.entry.level === 'error') consoleErrors.push(params.entry);
           });
           try {
-            await withTimeout(
-              navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario),
-              25000,
+            const bootDetail = await withTimeout(
+              navigateWithFixture(cdp, baseUrl, profile, viewport, scaleScenario),
+              configuredBrowserTimeoutMs(25_000),
               `browser navigate ${profile}/${scaleScenario}/${viewport.name}`,
             );
+            record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, bootDetail);
           } catch (error) {
+            // Under a severely CPU-capped headed Edge launch, Chromium can
+            // abort the first navigation while the target is still about:blank.
+            // Retry only that narrow infrastructure race once; real page
+            // errors and repeated aborts remain failures.
+            let navigationRetry = null;
+            if (/ERR_ABORTED/.test(String(error?.message || error))) {
+              await delay(500);
+              try {
+                const retryDetail = await withTimeout(
+                  navigateWithFixture(cdp, baseUrl, profile, viewport, scaleScenario),
+                  configuredBrowserTimeoutMs(25_000),
+                  `browser navigate retry ${profile}/${scaleScenario}/${viewport.name}`,
+                );
+                record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, {
+                  ...retryDetail,
+                  navigationRetry: 1,
+                });
+                continue;
+              } catch (retryError) {
+                navigationRetry = retryError.stack || retryError.message || String(retryError);
+              }
+            }
             const bootDiag = await withTimeout(
               collectBootDiagnostics(cdp),
-              5000,
+              configuredBrowserTimeoutMs(5_000),
               `boot diagnostics ${profile}/${scaleScenario}/${viewport.name}`,
             ).catch((diagError) => ({ error: diagError.message }));
             const detail = {
@@ -2099,17 +2313,18 @@ async function runBrowserChecks(args, report, baseUrl) {
               consoleErrorCount: consoleErrors.length,
               runtimeErrors: runtimeErrors.slice(0, 3),
               consoleErrors: consoleErrors.slice(0, 3),
+              navigationRetry,
               bootDiag,
             };
             record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, false, detail);
             await withTimeout(
               captureScreenshot(cdp, path.join(args.out, `${profile}-${scaleScenario}-${viewport.name}-boot-failure.png`)),
-              8000,
+              configuredBrowserTimeoutMs(8_000),
               `boot failure screenshot ${profile}/${scaleScenario}/${viewport.name}`,
             ).catch(() => {});
             continue;
           }
-          for (const section of sections) {
+          for (const section of pendingSections) {
             const runtimeErrorStart = runtimeErrors.length;
             const consoleErrorStart = consoleErrors.length;
             let sectionActivation = null;
@@ -2117,12 +2332,12 @@ async function runBrowserChecks(args, report, baseUrl) {
             try {
               sectionActivation = await withTimeout(
                 setSection(cdp, section),
-                8000,
+                configuredBrowserTimeoutMs(8_000),
                 `set section ${profile}/${scaleScenario}/${viewport.name}/${section}`,
               );
               inspection = await withTimeout(
                 inspectSection(cdp, profile, viewport, section, args, scaleScenario),
-                18000,
+                configuredBrowserTimeoutMs(18_000),
                 `inspect section ${profile}/${scaleScenario}/${viewport.name}/${section}`,
               );
             } catch (error) {
@@ -2166,7 +2381,7 @@ async function runBrowserChecks(args, report, baseUrl) {
               const screenshotPath = path.join(args.out, fileName);
               await withTimeout(
                 captureScreenshot(cdp, screenshotPath, { section }),
-                20000,
+                configuredBrowserTimeoutMs(20_000),
                 `screenshot ${profile}/${scaleScenario}/${viewport.name}/${section}`,
               )
                 .then((screenshotResult) => {
@@ -2194,11 +2409,16 @@ async function runBrowserChecks(args, report, baseUrl) {
             const hardPass = inspection.pass;
             report.browserChecks.push(inspection);
             record(report, `responsive ${profile}/${scaleScenario}/${viewport.name}/${section}`, hardPass, inspection);
+            newBrowserChecks += 1;
+            await writeBrowserResumeProgress(args, report, inspection);
             if (inspection.overflowX > 24 && viewport.width < 768 && !args.strictResponsive) {
               warn(report, `narrow overflow observed ${profile}/${viewport.name}/${section}`, {
                 overflowX: inspection.overflowX,
                 note: 'Current shell keeps desktop layout on narrow viewports; use --strict-responsive to fail this.',
               });
+            }
+            if (args.maxBrowserCells > 0 && newBrowserChecks >= args.maxBrowserCells) {
+              return;
             }
           }
         } finally {
@@ -2207,7 +2427,7 @@ async function runBrowserChecks(args, report, baseUrl) {
             if (typeof cdp.closeTarget === 'function') {
               const targetLabel = `close browser target ${profile}/${scaleScenario}/${viewport.name}`;
               try {
-                await withTimeout(cdp.closeTarget(), 12_000, targetLabel);
+                await withTimeout(cdp.closeTarget(), configuredBrowserTimeoutMs(12_000), targetLabel);
                 record(report, targetLabel, true, { lifecycle: 'managed-context-and-page-close' });
               } catch (error) {
                 record(report, targetLabel, false, {
@@ -2223,7 +2443,11 @@ async function runBrowserChecks(args, report, baseUrl) {
   }
   } finally {
     try {
-      const lifecycle = await withTimeout(browser.stop(), 30_000, 'browser stop');
+      const lifecycle = await withTimeout(
+        browser.stop(),
+        configuredBrowserTimeoutMs(30_000),
+        'browser stop',
+      );
       const cleanup = Array.isArray(lifecycle?.cleanup) ? lifecycle.cleanup : [];
       const cleanupOk = cleanup.length > 0 && cleanup.every((entry) => entry.status === 'ok');
       record(report, 'browser managed lifecycle closes owned process tree', cleanupOk, {
@@ -3324,6 +3548,8 @@ async function main() {
     return;
   }
   const frameworkAssetIdentity = args.url ? null : assertFrameworkAssetIdentity(ROOT);
+  const worktreeIdentity = gitWorktreeIdentity(ROOT);
+  const browserResumeKey = buildBrowserResumeKey(args, worktreeIdentity);
   await fs.mkdir(args.out, { recursive: true });
   const report = {
     startedAt: new Date().toISOString(),
@@ -3336,7 +3562,23 @@ async function main() {
     serverExit: null,
     browser: null,
     frameworkAssetIdentity,
+    browserResumeKey,
   };
+
+  if (args.resume) {
+    const requestedCells = requestedBrowserResumeCellKeys(args);
+    const resumableChecks = await readBrowserResumeChecks(args, browserResumeKey);
+    report.browserChecks = resumableChecks.filter((check) => (
+      requestedCells.has(browserResumeCellKey(check))
+    ));
+    if (report.browserChecks.length) {
+      record(report, 'browser matrix resumed exact passing cells', true, {
+        resumedCells: report.browserChecks.length,
+        partialPath: browserResumePath(args),
+        partialCellDirectory: browserResumeCellDirectory(args),
+      });
+    }
+  }
 
   let server = null;
   const startedByScript = !args.url;
@@ -3370,7 +3612,7 @@ async function main() {
     const serverNoise = serverLogNoiseProbe(report);
     record(report, 'local server logs stay free of socket reset noise', serverNoise.ok, serverNoise);
     report.finishedAt = new Date().toISOString();
-    report.matrix = buildMatrixSummary(report.browserChecks, args);
+    report.matrix = buildMatrixSummary(report.browserChecks, args, worktreeIdentity);
     const matrixSession = matrixSessionKey();
     const matrixStateFile = matrixStatePath(
       report.matrix.artifactKey || report.matrix.commit,
@@ -3478,6 +3720,13 @@ async function main() {
     finalizeReportTruth(report, matrixBlocksTopLevelPass);
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
+    await writeJsonAtomic(browserResumePath(args), {
+      version: 1,
+      resumeKey: browserResumeKey,
+      updatedAt: report.finishedAt,
+      complete: report.matrix.requestedComplete === true,
+      browserChecks: report.browserChecks.filter((check) => check && check.pass === true),
+    });
   }
 
   console.log(`[INFO] report: ${path.join(args.out, 'report.json')}`);
@@ -3496,16 +3745,22 @@ module.exports = {
   OVERVIEW_RELEASE_SCALE_SCENARIOS,
   PlaywrightSession,
   analyzeScreenshotAnchorPixels,
+  browserResumeCellKey,
+  buildBrowserResumeKey,
   buildSnapshot,
   finalizeReportTruth,
   buildMatrixSummary,
   isMergeableScenarioSubset,
   matrixArtifactKey,
   matrixStatePath,
+  pendingBrowserSections,
+  readBrowserResumeChecks,
   recordNotApplicable,
   requestsRequiredOverviewMatrix,
   refreshOverviewWanRates,
   setSnapshotFresh,
   scenarioMatrixGate,
   reportNestedPassFalsePaths,
+  setSection,
+  writeBrowserResumeProgress,
 };

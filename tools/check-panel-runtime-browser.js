@@ -17,7 +17,10 @@ const publicDir = path.join(root, 'public');
 const outDir = path.join(root, '_acceptance', 'panel-runtime-browser');
 const fingerprint = 'SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 const sshTrustToken = 'mock-session-bound-ssh-trust-token';
-const actionTimeout = 8000;
+const configuredLowLoadTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);
+const actionTimeout = Number.isFinite(configuredLowLoadTimeout) && configuredLowLoadTimeout > 0
+  ? Math.min(120000, Math.max(8000, configuredLowLoadTimeout))
+  : 8000;
 const configuredTestTimeout = Number(process.env.PANEL_RUNTIME_BROWSER_TIMEOUT_MS);
 const testTimeout = Number.isFinite(configuredTestTimeout)
   ? Math.min(Math.max(configuredTestTimeout, 30000), 480000)
@@ -112,7 +115,7 @@ function listenServer(server, port, host) {
   });
 }
 
-async function listenMockServer(server) {
+async function listenMockServer(server, { preferIpv4 = false } = {}) {
   if (process.platform !== 'win32') {
     await listenServer(server, 0, '127.0.0.1');
     return '127.0.0.1';
@@ -123,7 +126,8 @@ async function listenMockServer(server) {
   // unrelated process must not prevent a bounded browser acceptance server
   // from starting. Windows 11 and GitHub Windows runners expose ::1; IPv4 is a
   // compatibility fallback when the IPv6 stack is unavailable.
-  for (const host of ['::1', '127.0.0.1']) {
+  const hosts = preferIpv4 ? ['127.0.0.1', '::1'] : ['::1', '127.0.0.1'];
+  for (const host of hosts) {
     for (let attempt = 0; attempt < WINDOWS_MOCK_PORT_ATTEMPTS; attempt += 1) {
       const port = nextWindowsMockPort();
       try {
@@ -200,7 +204,7 @@ function requestPipeResponse(socketPath, browserRequest) {
       });
     });
     request.once('error', reject);
-    request.setTimeout(8_000, () => request.destroy(new Error('mock pipe request timed out')));
+    request.setTimeout(actionTimeout, () => request.destroy(new Error('mock pipe request timed out')));
     request.end(body || undefined);
   });
 }
@@ -650,7 +654,7 @@ async function respondSupplemental(response, state, kind, requestData, source) {
   sendJson(response, 200, body);
 }
 
-async function startMock({ transport = 'tcp' } = {}) {
+async function startMock({ transport = 'tcp', preferIpv4 = false } = {}) {
   const state = {
     configured: false,
     loginAttempts: 0,
@@ -1090,6 +1094,8 @@ async function startMock({ transport = 'tcp' } = {}) {
   let mockUrl = '';
   let installRoute = null;
   let socketPath = null;
+  let stopping = false;
+  let stopped = false;
   if (transport === 'pipe') {
     if (process.platform !== 'win32') throw new Error('mock pipe transport is only supported on Windows');
     const pipe = nextWindowsMockPipeIdentity();
@@ -1098,8 +1104,23 @@ async function startMock({ transport = 'tcp' } = {}) {
     socketPath = pipe.path;
     installRoute = async (context) => {
       await context.route(`${pipe.url}**`, async (route) => {
-        const response = await requestPipeResponse(pipe.path, route.request());
-        await route.fulfill(response);
+        try {
+          const response = await requestPipeResponse(pipe.path, route.request());
+          await route.fulfill(response);
+        } catch (error) {
+          const resetCodes = ['ECONNRESET', 'ECONNREFUSED', 'EPIPE', 'ERR_STREAM_DESTROYED'];
+          if (!resetCodes.includes(error?.code)) throw error;
+          const browserFailure = route.request().failure();
+          state.pipeResets = Array.isArray(state.pipeResets) ? state.pipeResets : [];
+          state.pipeResets.push({
+            code: error.code,
+            stopping,
+            browserFailure: browserFailure || null,
+            accepted: stopping || Boolean(browserFailure),
+            url: route.request().url(),
+          });
+          await route.abort('aborted').catch(() => {});
+        }
       });
     };
   } else if (transport === 'tcp') {
@@ -1108,7 +1129,7 @@ async function startMock({ transport = 'tcp' } = {}) {
     // allocated inside that range with ERR_ADDRESS_IN_USE. Other platforms let
     // the OS allocate the real listener directly. Neither path probes then
     // rebinds a released port.
-    const listenHost = await listenMockServer(server);
+    const listenHost = await listenMockServer(server, { preferIpv4 });
     const address = server.address();
     if (!address || typeof address === 'string') {
       await new Promise((resolve) => server.close(resolve));
@@ -1119,15 +1140,18 @@ async function startMock({ transport = 'tcp' } = {}) {
     throw new Error(`unsupported mock transport: ${transport}`);
   }
 
-  let stopped = false;
   return {
     state,
     url: mockUrl,
     transport,
     installRoute,
     socketPath,
+    beginStop: () => {
+      stopping = true;
+    },
     stop: () => {
       if (stopped) return Promise.resolve();
+      stopping = true;
       stopped = true;
       return new Promise((resolve, reject) => {
         server.close((error) => {
@@ -1371,22 +1395,22 @@ async function inspectCompositeRiskSurface(page) {
     const root = mobileRoot || desktopRoot;
     const tasks = [...document.querySelectorAll(mobile
       ? '[data-mobile-secondary-risk]'
-      : '.do-incident > .do-task-focus .do-task-focus-grid > button')];
+      : '[data-desktop-object-list] .legacy-object-row button')];
     const queue = mobile
       ? document.querySelector('[data-mobile-secondary-risks]')
-      : document.querySelector('.do-incident > .do-task-focus');
-    const desktopSignalBand = mobile ? null : document.querySelector('.do-status-bus.has-proof');
-    const desktopWorkspace = mobile ? null : document.querySelector('.do-incident > [data-overview-task-landmark="risk-objects"]');
-    const desktopActions = mobile ? null : document.querySelector('.do-incident > [data-overview-task-landmark="investigation"]');
+      : document.querySelector('[data-desktop-object-list]');
+    const desktopSignalBand = mobile ? null : document.querySelector('[data-desktop-incident-verdict]');
+    const desktopWorkspace = mobile ? null : document.querySelector('[data-desktop-object-list]');
+    const desktopActions = mobile ? null : document.querySelector('.legacy-focus-link');
     const resource = document.querySelector(mobile ? '[data-mobile-resource-signal]' : '[data-desktop-resource-evidence]');
     const signal = mobile
       ? document.querySelector('[data-mobile-resource-signal], [data-mobile-traffic-signal]')
-      : document.querySelector('.do-status-bus.has-proof, [data-desktop-resource-evidence]');
+      : document.querySelector('[data-desktop-incident-verdict], [data-desktop-resource-evidence]');
     const resourceHistory = mobile ? document.querySelector('[data-mobile-resource-history]') : null;
     const trafficChart = mobile ? document.querySelector('[data-mobile-traffic-signal] .mp-chart svg') : null;
     const proof = mobile ? document.querySelector('[data-mobile-core-facts]') : null;
     const primaryRisk = mobile ? document.querySelector('[data-mobile-incident-task-role="primary-risk"]') : null;
-    const primaryRiskContract = mobile ? primaryRisk : document.querySelector('.do-incident[data-desktop-primary-risk]');
+    const primaryRiskContract = mobile ? primaryRisk : document.querySelector('[data-desktop-overview]:not([data-desktop-overview-risk="none"]) [data-desktop-incident-verdict]');
     const secondaryRisk = mobile ? document.querySelector('[data-mobile-incident-task-role="secondary-risk"]') : null;
     const investigation = mobile ? document.querySelector('[data-mobile-incident-task-role="follow-up"]') : null;
     const primaryObject = mobile ? document.querySelector('[data-mobile-incident-center]') : null;
@@ -1415,7 +1439,7 @@ async function inspectCompositeRiskSurface(page) {
       : null;
     const primary = document.querySelector(mobile
       ? (innerWidth >= 600 ? '.mp-tablet-master-detail' : '[data-mobile-incident-center]')
-      : '.do-status-bus.has-proof');
+      : '[data-desktop-incident-verdict]');
     const lower = document.querySelector(mobile
       ? '[data-mobile-resource-signal], [data-mobile-traffic-signal], [data-mobile-evidence-ledger]'
       : '[data-overview-task-landmark="risk-objects"]');
@@ -5324,13 +5348,13 @@ async function main() {
           ? [...document.querySelectorAll('[data-mobile-focus-evidence-time]')].filter(isVisible).length
           : null;
         const runtimeToolbar = document.querySelector('[data-panel-runtime-toolbar]');
-        const verdictSurface = firstVisible(mobile ? '.mp-status-bus' : '.do-status-bus');
+        const verdictSurface = firstVisible(mobile ? '.mp-status-bus' : '[data-desktop-status-bus]');
         const verdictPanel = firstVisible(mobile ? '.mp-command' : '.do-verdict');
-        const proofSurface = firstVisible(mobile ? '.mp-proof' : '.do-status-items');
+        const proofSurface = firstVisible(mobile ? '.mp-proof' : '[data-desktop-status-bus]');
         const verdictTitle = firstVisible(mobile ? '.mp-command h1' : '.do-verdict h1');
         const taskSurface = document.querySelector(mobile
           ? '.mp-workspace'
-          : root?.getAttribute('data-desktop-overview-risk') === 'none' ? '[data-desktop-normal-workspace], .do-main-grid' : '.do-incident');
+          : root?.getAttribute('data-desktop-overview-risk') === 'none' ? '.legacy-main-grid' : '[data-desktop-object-list]');
          const signal = document.querySelector('[data-overview-task-landmark="signal"]');
          const currentRate = document.querySelector('[data-overview-task-landmark="current-rate"]');
         const investigation = document.querySelector('[data-overview-task-landmark="investigation"]');
@@ -5585,7 +5609,7 @@ async function main() {
           comparisonParent: taskParent(comparison),
           comparisonRows: comparison?.querySelectorAll(mobile ? 'button' : '[data-desktop-ledger-row]').length || 0,
           comparisonObjects: comparisonObjectRows.map((row) => {
-            const name = row.querySelector(mobile ? 'b' : '.do-ledger-object b');
+            const name = row.querySelector(mobile ? 'b' : 'button b');
             return {
               id: mobile ? row.id : row.getAttribute('data-overview-object-detail') || '',
               name: name?.textContent?.trim() || '',
@@ -5992,7 +6016,7 @@ async function main() {
     check(
       checks,
       '1199/1200 normal Overview preserves the same evidence-first task landmarks',
-      normal1199.contract === 'overview-task-v1' && normal1200.contract === 'overview-task-v1' &&
+      normal1199.contract === 'legacy-desktop-task-v1' && normal1200.contract === 'legacy-desktop-task-v1' &&
         normal1199.scenario === 'single' && normal1200.scenario === 'single' &&
         includesEvery(normal1199.landmarks, normalLandmarks) && includesEvery(normal1200.landmarks, normalLandmarks) &&
         normal1199.focusObject && normal1199.focusObject === normal1200.focusObject &&
@@ -6201,7 +6225,7 @@ async function main() {
     check(
       checks,
       '1199/1200 collection incident preserves scenario focus and opens the highest-risk inspector',
-       collection1199.contract === 'overview-task-v1' && collection1200.contract === 'overview-task-v1' &&
+       collection1199.contract === 'legacy-desktop-task-v1' && collection1200.contract === 'legacy-desktop-task-v1' &&
          collection1199.scenario === 'collection-down' && collection1200.scenario === 'collection-down' &&
        includesEvery(collection1199.landmarks, collectionLandmarks) && includesEvery(collection1200.landmarks, collectionLandmarks) &&
        collection1199.surface === 'mobile' && collection1200.surface === 'desktop' &&
@@ -8406,7 +8430,7 @@ async function main() {
       if (!verifyContext) return;
 
       const taskSelector = surface === 'desktop'
-        ? '.do-incident > .do-task-focus .do-task-focus-grid > button'
+        ? '[data-desktop-object-list] .legacy-object-row button'
         : '[data-mobile-secondary-risk="resource"]';
       const contextSelector = '[data-investigation-risk="resource"]';
       await adaptivePage.locator(taskSelector).click();
@@ -9178,4 +9202,4 @@ if (require.main === module) {
   void runRuntimeBrowserEntry();
 }
 
-module.exports = { startMock, browserExecutable };
+module.exports = { actionTimeout, startMock, browserExecutable };

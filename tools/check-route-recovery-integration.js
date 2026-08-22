@@ -83,8 +83,7 @@ assert.equal(sectionRecoveryState(model("unavailable")), "unavailable");
 const read = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
 const component = read("src/panel-framework/sections/RouteEvidenceBoundary.tsx");
 const desktop = read("src/panel-framework/sections/DesktopDomainWorkspace.tsx");
-const mobileRoutes = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx");
-const mobileWorkspace = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
+const mobileSurface = read("src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx");
 const maturity = read("src/panel-framework/routes/panelRouteMaturity.ts");
 const css = read("src/panel-framework/sections/route-evidence-boundary.css");
 assert.match(component, /data-route-recovery=\{route\}/);
@@ -98,14 +97,12 @@ assert.match(component, /data-route-recovery-explanation=\{state === "historical
 assert.match(component, /HISTORICAL_BOUNDARY_SUMMARY = "仅说明记录时刻已采集的内容；不代表当前状态，先核对最新采集时间。"/);
 assert.match(component, /state === "historical" \? HISTORICAL_BOUNDARY_SUMMARY : copy\.body/);
 assert.match(desktop, /<RouteEvidenceBoundary route=\{route\} model=\{model\} onNavigate=\{onNavigate\} surface="desktop"/);
-assert.match(mobileRoutes, /buildSectionModel\(route, snapshot\)/);
-assert.match(mobileRoutes, /evidenceMode=\{model\.evidenceMode\}/);
-assert.match(mobileWorkspace, /data-mobile-flow-workspace=\{route\}/);
-assert.match(mobileWorkspace, /evidenceLabel\(evidenceMode\)/);
+assert.match(mobileSurface, /buildSectionModel\(route, snapshot\)/);
+assert.match(mobileSurface, /data-mobile-reference-workspace=\{route\}/);
 assert.match(maturity, /failureRecovery:\s*"route-specific"/);
 assert.match(css, /min-height:\s*44px/);
 assert.match(css, /\.is-historical \.mdw-interface-recovery-actions \{\s*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)/);
 assert.match(css, /\.is-historical \.mdw-interface-recovery-actions button \{\s*min-height:\s*44px/);
 assert.match(css, /\.is-historical \.mdw-interface-recovery-copy \{\s*padding-block:\s*7px/);
 
-console.log(`route recovery integration: PASS routes=${expectedRoutes.length} surfaces=desktop-boundary+mobile-flow-evidence-mode`);
+console.log(`route recovery integration: PASS routes=${expectedRoutes.length} surfaces=desktop-boundary+mobile-reference-workspace`);

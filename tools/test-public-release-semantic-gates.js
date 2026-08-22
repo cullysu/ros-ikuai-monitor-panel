@@ -8,7 +8,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const {
   MATRIX_REPORT_ALIAS_NAMES,
-  MOBILE_IKUAI4_REQUIRED_CHECKS,
+  MOBILE_REFERENCE_REQUIRED_CHECKS,
   assertEvidenceModeEligibility,
   assertMatrixEvidenceIdentity,
   collectGateDetailFailures,
@@ -30,8 +30,8 @@ function mobileReport(checks, requiredChecks = Object.keys(checks)) {
       pass: true,
       detail: {
         surface: 'mobile-overview',
-        mobileIkuai4GateProbe: {
-          contract: 'mobile-ikuai4-runtime-v1',
+        mobileReferenceGateProbe: {
+          contract: 'mobile-reference-runtime-v1',
           appHomePass: true,
           truthMode: 'current',
           risk: 'none',
@@ -52,6 +52,7 @@ function desktopReport(contract) {
         surface: 'desktop-overview',
         desktopOverviewLedgerProbe: {
           contract,
+          visualGrammar: 'ikuai-4-ipad',
           evidenceMode: 'current',
           risk: 'none',
           checks: { taskContract: true, firstViewport: true },
@@ -84,7 +85,7 @@ assert.equal(
 );
 
 const completeMobileChecks = Object.fromEntries(
-  MOBILE_IKUAI4_REQUIRED_CHECKS.map((name) => [name, true])
+  MOBILE_REFERENCE_REQUIRED_CHECKS.map((name) => [name, true])
 );
 const missing = collectGateDetailFailures(mobileReport({
   ...completeMobileChecks,
@@ -108,16 +109,16 @@ assert(
 );
 
 const staleProducer = mobileReport(completeMobileChecks);
-staleProducer.checks[0].detail.mobileIkuai4GateProbe.requiredChecks =
-  MOBILE_IKUAI4_REQUIRED_CHECKS.filter((field) => field !== 'ikuai4Root');
+staleProducer.checks[0].detail.mobileReferenceGateProbe.requiredChecks =
+  MOBILE_REFERENCE_REQUIRED_CHECKS.filter((field) => field !== 'ikuai4Root');
 assert(
   collectGateDetailFailures(staleProducer).mobileSemantic.some((failure) => failure.field === 'requiredChecks.missing'),
   'release evidence must fail when the producer declares a stale required-check contract'
 );
 
 const retiredProducerField = mobileReport(completeMobileChecks);
-retiredProducerField.checks[0].detail.mobileIkuai4GateProbe.requiredChecks = [
-  ...MOBILE_IKUAI4_REQUIRED_CHECKS,
+retiredProducerField.checks[0].detail.mobileReferenceGateProbe.requiredChecks = [
+  ...MOBILE_REFERENCE_REQUIRED_CHECKS,
   'decisiveEvidence',
 ];
 assert(
@@ -126,7 +127,7 @@ assert(
 );
 
 const duplicateProducerField = mobileReport(completeMobileChecks, [
-  ...MOBILE_IKUAI4_REQUIRED_CHECKS,
+  ...MOBILE_REFERENCE_REQUIRED_CHECKS,
   'ikuai4Root',
 ]);
 assert(
@@ -137,7 +138,7 @@ assert(
 const undeclaredActualField = mobileReport({
   ...completeMobileChecks,
   decisiveEvidence: true,
-}, MOBILE_IKUAI4_REQUIRED_CHECKS);
+}, MOBILE_REFERENCE_REQUIRED_CHECKS);
 assert(
   collectGateDetailFailures(undeclaredActualField).mobileSemantic.some((failure) => failure.field === 'checks.unexpected'),
   'release evidence must fail when checks contains an undeclared retired field'
@@ -145,20 +146,20 @@ assert(
 
 const missingActualChecks = { ...completeMobileChecks };
 delete missingActualChecks.ikuai4Root;
-const missingActualField = mobileReport(missingActualChecks, MOBILE_IKUAI4_REQUIRED_CHECKS);
+const missingActualField = mobileReport(missingActualChecks, MOBILE_REFERENCE_REQUIRED_CHECKS);
 assert(
   collectGateDetailFailures(missingActualField).mobileSemantic.some((failure) => failure.field === 'checks.missing'),
   'release evidence must fail when the declared producer contract omits an actual check key'
 );
 
 const retiredMobile = mobileReport(completeMobileChecks);
-retiredMobile.checks[0].detail.mobileIkuai4GateProbe.contract = 'pocket-console-v1';
+retiredMobile.checks[0].detail.mobileReferenceGateProbe.contract = 'pocket-console-v1';
 assert(
   collectGateDetailFailures(retiredMobile).mobileSemantic.some((failure) => failure.field === 'contract'),
   'the superseded Pocket Console contract must not satisfy public readiness'
 );
 const legacyLinkboard = mobileReport(completeMobileChecks);
-legacyLinkboard.checks[0].detail.mobileIkuai4GateProbe.contract = 'linkboard-overview-v1';
+legacyLinkboard.checks[0].detail.mobileReferenceGateProbe.contract = 'linkboard-overview-v1';
 assert(
   collectGateDetailFailures(legacyLinkboard).mobileSemantic.some((failure) => failure.field === 'contract'),
   'the retired Linkboard contract must not satisfy public readiness'
@@ -169,20 +170,20 @@ assert(!readinessSource.includes('src/panel-framework/mobile/MobilePatrolScreen.
 assert(!readinessSource.includes('src/panel-framework/mobile/MobileEvidenceLedger.tsx'));
 assert(!readinessSource.includes('src/panel-framework/mobile/mobile-patrol.css'));
 assert(!readinessSource.includes('optical-patrol'));
-assert(readinessSource.includes('src/panel-framework/mobile-native-ui/overview/MobileNativeOverview.tsx'));
-assert(readinessSource.includes("contract !== 'mobile-native-ui-runtime-v1'"));
+assert(readinessSource.includes('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx'));
+assert(readinessSource.includes("contract !== 'mobile-reference-runtime-v1'"));
 assert(!readinessSource.includes("contract !== 'pocket-console-v1'"));
 assert(!readinessSource.includes("contract !== 'linkboard-overview-v1'"));
 assert(readinessSource.includes("assertNotContains(asset, 'data-linkboard-root')"));
 assert(readinessSource.includes("public/assets/framework/panel-mobile.js"));
 assert(readinessSource.includes("public/assets/framework/panel-desktop.js"));
-assert(readinessSource.includes("'data-mobile-native-overview'"));
-assert(readinessSource.includes("'data-mobile-native-route'"));
+assert(readinessSource.includes("'data-mobile-reference-home'"));
+assert(readinessSource.includes("'data-mobile-reference-workspace'"));
 assert(!readinessSource.includes('src/panel-framework/mobile-patrol/'));
 assert(!readinessSource.includes('src/panel-framework/mobile-ikuai4/'));
 assert(readinessSource.includes("assertNotExists('tools/check-pocket-console-runtime.js')"));
 assert(readinessSource.includes("assertNotExists('tools/lib/pocket-console-runtime/runtime.js')"));
-assert(readinessSource.includes("assertContains('tools/check-mobile-ikuai4-runtime.js', 'contract: \"mobile-native-ui-runtime-v1\"')"));
+assert(readinessSource.includes("assertContains('tools/check-mobile-reference-runtime.js', 'contract: \"mobile-reference-runtime-v1\"')"));
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 assert.equal(packageJson.scripts['check:mobile-linkboard'], undefined);
@@ -190,12 +191,12 @@ assert.equal(packageJson.scripts['check:mobile-pocket-console'], undefined);
 assert.equal(packageJson.scripts['check:mobile-incident-lens'], undefined);
 assert.equal(typeof packageJson.scripts['check:mobile-telemetry'], 'string');
 assert(packageJson.scripts['check:mobile-telemetry'].includes('check:mobile-telemetry-model'));
-assert(packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-ikuai4-runtime.js'));
+assert(packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-reference-runtime.js'));
 assert.equal((packageJson.scripts['check:runtime-browser'].match(/check:mobile-telemetry/g) || []).length, 1);
 assert.equal(fs.existsSync(path.join(__dirname, 'check-pocket-console-runtime.js')), false);
 assert.equal(fs.existsSync(path.join(__dirname, 'lib', 'pocket-console-runtime', 'runtime.js')), false);
 assert.equal(fs.existsSync(path.join(__dirname, 'check-mobile-next-runtime.js')), false);
-assert.equal(fs.existsSync(path.join(__dirname, 'check-mobile-ikuai4-runtime.js')), true);
+assert.equal(fs.existsSync(path.join(__dirname, 'check-mobile-reference-runtime.js')), true);
 
 const supersededPocketReview = inspectIndependentReviewRecords({ step: 932 });
 assert.equal(supersededPocketReview.pass, true, 'the historical Step932 review record must remain readable without becoming current evidence');
@@ -205,7 +206,7 @@ assert.equal(supersededPocketReview.historicalEvidenceOnly, true);
 assert.equal(supersededPocketReview.supersededPocketReview, true);
 assert.equal(supersededPocketReview.runtimeReport, '_acceptance/pocket-console-runtime/report.json');
 
-const currentDesktop = collectGateDetailFailures(desktopReport('overview-task-v1'));
+const currentDesktop = collectGateDetailFailures(desktopReport('legacy-desktop-task-v1'));
 assert.deepEqual(
   currentDesktop.desktopSemantic,
   [],

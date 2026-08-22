@@ -1,49 +1,28 @@
-const fs = require("fs");
-const path = require("path");
+#!/usr/bin/env node
+'use strict';
 
-const ROOT = path.resolve(__dirname, "..");
-const screen = fs.readFileSync(path.join(ROOT, "src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx"), "utf8");
-const docket = fs.readFileSync(path.join(ROOT, "src/panel-framework/overview/desktop-overview/DesktopIncidentDocket.tsx"), "utf8");
+const fs = require('node:fs');
+const path = require('node:path');
 
-const checks = [
-  {
-    name: "normal and incident share the primary status-band grid",
-    pass: /className=\"do-status-bus has-proof\"/.test(screen),
-    detail: "incident state must not remove the shared facts column from the primary status bus",
-  },
-  {
-    name: "core facts are owned by the status bus without an incident conditional",
-    pass: /<dl className=\"do-status-items\" data-desktop-core-facts/.test(screen) &&
-      !/\{!incident\s*\?\s*\(\s*<dl className=\"do-status-items\"/.test(screen),
-    detail: "the same verdict/freshness/facts entrance must serve normal and incident desktop states",
-  },
-  {
-    name: "incident docket does not reintroduce a generic facts band",
-    pass: !/do-incident-facts/.test(docket),
-    detail: "generic facts belong to the status bus; resource/scenario evidence remains specialized",
-  },
-  {
-    name: "specialized incident evidence remains available",
-    pass: /DesktopResourceEvidence/.test(docket) && /DesktopScenarioFocus/.test(docket),
-    detail: "the slice may not hide resource or scenario-specific evidence",
-  },
-  {
-    name: "shared facts keep a primary task landmark",
-    pass: /data-desktop-core-facts/.test(screen) && /data-overview-task-focus=\"facts\"/.test(screen),
-    detail: "the shared facts must remain inspectable as primary evidence, not test-only decoration",
-  },
-];
-
-const failures = checks.filter((check) => !check.pass);
-const report = {
-  pass: failures.length === 0,
-  contract: "desktop-incident-band-v1",
-  implementationState: failures.length === 0 ? "focused-green" : "expected-red",
-  releaseEvidenceEligible: false,
-  scope: "desktop primary status-band rhythm only; not R10/Product/Design/Visual sign-off",
-  checks,
-  failures: failures.map((check) => check.name),
+const root = path.resolve(__dirname, '..');
+const source = fs.readFileSync(path.join(root, 'src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'src/panel-framework/overview/desktop-overview/styles/legacy-desktop.css'), 'utf8');
+const checks = {
+  compactIncidentVerdictExists: /data-desktop-incident-verdict/.test(source) && /\.legacy-desktop-shell\.has-risk \.legacy-verdict/.test(css),
+  normalStateDoesNotSpendHeightOnVerdict: /\.legacy-verdict\s*\{[\s\S]*?display:\s*none/.test(css),
+  incidentKeepsLegacyPageArchitecture: /legacy-summary-strip/.test(source) && /legacy-main-grid/.test(source) && /data-desktop-object-list/.test(source),
+  incidentObjectsUseCanonicalRiskOwners: /model\.riskQueue/.test(source) && /model\.priorityObjects/.test(source),
+  resourceIncidentKeepsThreeMeasuredCards: /resourceMetrics\.map/.test(source) && /data-desktop-resource-evidence/.test(source),
 };
-
+const failed = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
+const report = {
+  pass: failed.length === 0,
+  contract: 'desktop-incident-band-v2-legacy-ipad',
+  implementationState: failed.length ? 'expected-red' : 'focused-green',
+  scope: 'compact incident rhythm inside the accepted 192.168.3.5 desktop architecture',
+  checks,
+  failed,
+  releaseEvidenceEligible: false,
+};
 console.log(JSON.stringify(report, null, 2));
-if (failures.length > 0) process.exitCode = 1;
+process.exitCode = report.pass ? 0 : 1;

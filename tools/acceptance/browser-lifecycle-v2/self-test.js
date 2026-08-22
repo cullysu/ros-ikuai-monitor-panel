@@ -10,6 +10,15 @@ const {
   writeDiagnostic,
 } = require('./browser-lifecycle');
 
+const configuredLowLoadTimeoutMs = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS);
+const lowLoadTimeoutMs = Number.isFinite(configuredLowLoadTimeoutMs)
+  ? Math.min(Math.max(configuredLowLoadTimeoutMs, 8_000), 120_000)
+  : 8_000;
+const lowLoadCleanupTimeoutMs = Number.isFinite(configuredLowLoadTimeoutMs)
+  ? Math.min(lowLoadTimeoutMs, 30_000)
+  : 8_000;
+const lowLoadGlobalTimeoutMs = Number.isFinite(configuredLowLoadTimeoutMs) ? 120_000 : 24_000;
+
 const artifactPath = path.join(__dirname, '.artifacts', 'latest-report.json');
 
 async function exercise(round, name, options, task, expectation, requireForcedRecovery = false) {
@@ -53,8 +62,8 @@ async function exerciseDeferredManagedClose() {
   const cleanupTimeoutMs = 500;
   const managed = await launchManagedBrowser({
     executablePath: browserExecutable(),
-    launchTimeoutMs: 8_000,
-    cleanupTimeoutMs,
+    launchTimeoutMs: lowLoadTimeoutMs,
+    cleanupTimeoutMs: Number.isFinite(configuredLowLoadTimeoutMs) ? lowLoadCleanupTimeoutMs : cleanupTimeoutMs,
   });
   let diagnostics;
   try {
@@ -80,13 +89,18 @@ async function exerciseDeferredManagedClose() {
 }
 
 async function main() {
-  const common = { stepTimeoutMs: 8_000, cleanupTimeoutMs: 8_000 };
+  const common = {
+    launchTimeoutMs: lowLoadTimeoutMs,
+    setupTimeoutMs: lowLoadTimeoutMs,
+    stepTimeoutMs: 8_000,
+    cleanupTimeoutMs: lowLoadCleanupTimeoutMs,
+  };
   const cases = [];
   for (const round of [1, 2]) {
     cases.push(await exercise(
       round,
       'success',
-      { ...common, globalTimeoutMs: 24_000, testForceServerCloseTimeout: true },
+      { ...common, globalTimeoutMs: lowLoadGlobalTimeoutMs, testForceServerCloseTimeout: true },
       async ({ page }) => {
         await page.setContent('<main data-state="ready">browser lifecycle v2</main>');
         return page.getAttribute('main', 'data-state');
@@ -97,7 +111,7 @@ async function main() {
     cases.push(await exercise(
       round,
       'page-exception',
-      { ...common, globalTimeoutMs: 24_000 },
+      { ...common, globalTimeoutMs: lowLoadGlobalTimeoutMs },
       async ({ page, delay }) => {
         await page.setContent('<script>setTimeout(() => { throw new Error("v2 page exception"); }, 30)</script>');
         await delay(180);
@@ -107,7 +121,7 @@ async function main() {
     cases.push(await exercise(
       round,
       'timeout',
-      { ...common, globalTimeoutMs: 24_000 },
+      { ...common, globalTimeoutMs: lowLoadGlobalTimeoutMs },
       async ({ delay }) => delay(8_500),
       (outcome) => !outcome.ok && outcome.error && outcome.error.code === 'STEP_TIMEOUT'
     ));

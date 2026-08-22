@@ -15,7 +15,7 @@ const securityTest = read("tools/check-backend-security.py");
 const trustBinding = read("panel_backend/trust_binding.py");
 const app = read("app.py");
 const dispatcher = read("panel_backend/http_dispatcher.py");
-const mobileContract = read("docs/mobile-product-contract.md");
+const mobileContract = read("docs/mobile-reference-baseline.md");
 const consoleContract = read("docs/full-console-product-contract.md");
 
 check(

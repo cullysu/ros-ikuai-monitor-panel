@@ -17,6 +17,19 @@ const viewports = {
   l667: '667x375',
   l844: '844x390',
 };
+const selectedScenarios = (process.env.MOBILE_NATIVE_SCENARIOS
+  ? process.env.MOBILE_NATIVE_SCENARIOS.split(',').map((value) => value.trim()).filter(Boolean)
+  : scenarios);
+const selectedViewportIds = (process.env.MOBILE_NATIVE_VIEWPORTS
+  ? process.env.MOBILE_NATIVE_VIEWPORTS.split(',').map((value) => value.trim()).filter(Boolean)
+  : Object.keys(viewports));
+if (selectedScenarios.some((scenario) => !scenarios.includes(scenario))) {
+  throw new Error(`MOBILE_NATIVE_SCENARIOS contains an unknown scenario: ${selectedScenarios.join(',')}`);
+}
+if (selectedViewportIds.some((viewport) => !Object.hasOwn(viewports, viewport))) {
+  throw new Error(`MOBILE_NATIVE_VIEWPORTS contains an unknown viewport: ${selectedViewportIds.join(',')}`);
+}
+const selectedViewports = Object.fromEntries(selectedViewportIds.map((viewport) => [viewport, viewports[viewport]]));
 function resolvePythonExecutable() {
   const explicit = [process.env.CODEX_PYTHON_PATH, process.env.PYTHON].filter(Boolean);
   for (const candidate of explicit) {
@@ -63,9 +76,9 @@ function runMatrix() {
       'tools/local-predeploy-check.js',
       '--python', pythonExecutable,
       '--profile', 'public',
-      '--viewports', Object.entries(viewports).map(([name, dimensions]) => `${name}=${dimensions}`).join(','),
+      '--viewports', Object.entries(selectedViewports).map(([name, dimensions]) => `${name}=${dimensions}`).join(','),
       '--sections', 'overview',
-      '--scale-scenarios', scenarios.join(','),
+      '--scale-scenarios', selectedScenarios.join(','),
       '--strict-responsive',
       '--bounded-matrix',
       '--out', path.relative(root, outDir),
@@ -96,7 +109,7 @@ function runMatrix() {
 function verifyReport() {
   if (!fs.existsSync(reportFile)) throw new Error('mobile matrix did not produce report.json');
   const report = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
-  const expectedCells = scenarios.flatMap((scenario) => Object.entries(viewports).map(([viewport, dimensions]) =>
+  const expectedCells = selectedScenarios.flatMap((scenario) => Object.entries(selectedViewports).map(([viewport, dimensions]) =>
     `public::${scenario}::overview::${viewport}=${dimensions}`));
   const passedCells = new Set(report.matrix?.passedCells || []);
   const missing = expectedCells.filter((cell) => !passedCells.has(cell));

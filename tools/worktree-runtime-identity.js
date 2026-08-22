@@ -9,6 +9,7 @@ const { spawnSync } = require('child_process');
 const ARTIFACT_PREFIXES = ['_acceptance/', '.impeccable/'];
 const GOVERNANCE_PATHS = [
   '.product-loop/state.json',
+  'docs/mobile-reference-baseline.md',
   'docs/panel-redesign-decision-log.md',
   'docs/product-loop-current.md',
 ];

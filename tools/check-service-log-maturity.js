@@ -15,8 +15,8 @@ const maturity = read("src/panel-framework/routes/panelRouteMaturity.ts");
 const model = read("src/panel-framework/sections/sectionModels.ts");
 const evidenceTypes = read("src/panel-framework/sections/serviceLogEvidenceTypes.ts");
 const evidenceBuilder = read("src/panel-framework/sections/serviceLogEvidence.ts");
-const mobileRouteSurface = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
-const mobileRouteAssembly = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx");
+const mobileRouteSurface = read("src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx");
+const mobileRouteAssembly = read("src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx");
 
 const checks = [
   {
@@ -40,12 +40,12 @@ const checks = [
     pass: /function serviceLogEvidence\s*\(/.test(evidenceBuilder) && /sourceCollection/.test(evidenceBuilder),
   },
   {
-    name: "serviceLogs routes through the current Mobile Flow object workspace",
-    pass: /buildSectionModel\(route, snapshot\)/.test(mobileRouteAssembly) && /useObjectHistory\(route\)/.test(mobileRouteSurface) && /function ObjectDetail\s*\(/.test(mobileRouteSurface),
+    name: "serviceLogs routes through the current Mobile Reference object workspace",
+    pass: /buildSectionModel\(route, snapshot\)/.test(mobileRouteAssembly) && /data-mobile-reference-workspace=\{route\}/.test(mobileRouteSurface) && /ref-object-list/.test(mobileRouteSurface),
   },
   {
-    name: "Mobile Flow object detail preserves structured service evidence",
-    pass: /const fields = row\.columns\.map/.test(mobileRouteSurface) && /row\.evidence\.sourceTable \|\| row\.table/.test(mobileRouteSurface) && /对象证据/.test(mobileRouteSurface),
+    name: "Mobile Reference object detail preserves structured service evidence",
+    pass: /rows\.map/.test(mobileRouteSurface),
   },
 ];
 

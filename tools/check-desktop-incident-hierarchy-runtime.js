@@ -59,12 +59,13 @@ function runCase(item) {
         const probe = report.desktopOverviewLedgerProbe;
         if (
           report.pass !== true ||
-          probe?.checks?.incidentSubstitution !== true ||
-          probe?.checks?.firstViewport !== true
+          probe?.checks?.incidentRhythm !== true ||
+          probe?.checks?.firstViewport !== true ||
+          !(probe?.objectRows >= 1)
         ) {
           throw new Error(`${item.name} hierarchy report did not pass: ${JSON.stringify(report)}`);
         }
-        console.log(`[desktop-incident-hierarchy] PASS ${item.name} risk=${probe.risk} incidentRows=${probe.ledgerRows}`);
+        console.log(`[desktop-incident-hierarchy] PASS ${item.name} risk=${probe.risk} incidentRows=${probe.objectRows}`);
       } catch (error) {
         resultError = error;
       }

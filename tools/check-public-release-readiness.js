@@ -10,7 +10,7 @@ const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
 const { TOOLBAR_200_REQUIRED_CELLS, TOOLBAR_INCREMENTS, validWindowsCapture } = require('./check-browser-toolbar-zoom200');
 // Local matrix reports expose a fail-closed iKuai 4 mobile probe.  The
 // dedicated iKuai 4 runtime report proves route/detail/More/connection flows.
-const MOBILE_IKUAI4_REQUIRED_CHECKS = Object.freeze([
+const MOBILE_REFERENCE_REQUIRED_CHECKS = Object.freeze([
   'ikuai4Root',
   'evidenceMode',
   'scene',
@@ -19,6 +19,9 @@ const MOBILE_IKUAI4_REQUIRED_CHECKS = Object.freeze([
   'moreDirectory',
   'objectDetail',
   'noRejectedOwner',
+  'interfaceRows',
+  'resourceRows',
+  'noFalseCurrentData',
 ]);
 
 const ROOT = path.resolve(__dirname, '..');
@@ -604,7 +607,7 @@ function assertToolbarZoom200Report(rootDir = ROOT, currentIdentity = gitWorktre
   const identity = report?.identity && typeof report.identity === 'object' ? report.identity : {};
   const exactIdentityFields = ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible'];
   const identityMismatches = exactIdentityFields.filter((field) => identity[field] !== currentIdentity[field]);
-  if (report?.pass !== true || report?.contract !== 'edge-toolbar-zoom200-windows-v7-mobile-ikuai4' || identityMismatches.length) {
+  if (report?.pass !== true || report?.contract !== 'edge-toolbar-zoom200-windows-v9-variable-increment-mobile-reference' || identityMismatches.length) {
     throw new Error(`actual Edge toolbar 200% report is failed or stale: ${JSON.stringify({
       pass: report?.pass,
       contract: report?.contract,
@@ -647,12 +650,17 @@ function assertToolbarZoom200Report(rootDir = ROOT, currentIdentity = gitWorktre
       failures.push(`${expected.id}/${scenario}: stable worktree identity differs from the report`);
     }
     const surface = cell?.surface;
+    const keyboardTraversal = surface?.keyboardTraversal;
+    const keyboardTraversalComplete = keyboardTraversal?.complete === true &&
+      keyboardTraversal.visitedCount === keyboardTraversal.expectedCount &&
+      Array.isArray(keyboardTraversal.sequence) &&
+      keyboardTraversal.sequence.every((entry) => entry?.focusVisible === true &&
+        entry?.fullyVisible === true && entry?.withinMain === true && entry?.obscuredByNavigation === false);
     if (!surface || surface.overflowX > 1 || !Number.isFinite(surface.main?.horizontalOverflow) || surface.main.horizontalOverflow > 1 ||
         !surface.primary?.present || !surface.primary?.visible || !surface.primary?.reachable || surface.primary?.withinMain !== true ||
         surface.primary?.obscuredByNavigation !== false || surface.clippedOperationalText?.length !== 0 ||
         surface.unreadableOperationalText?.length !== 0 ||
-        surface.keyboardFocus?.focusVisible !== true || surface.keyboardFocus?.fullyVisible !== true || surface.keyboardFocus?.withinMain !== true ||
-        surface.keyboardFocus?.obscuredByNavigation !== false ||
+        !keyboardTraversalComplete ||
         !surface.screenshot?.file || !/^[0-9a-f]{64}$/i.test(String(surface.screenshot?.sha256 || '')) ||
         !surface.playwrightDiagnosticScreenshot?.file || !/^[0-9a-f]{64}$/i.test(String(surface.playwrightDiagnosticScreenshot?.sha256 || '')) ||
         !validWindowsCapture(surface.windowsCapture, surface.windowsCapture?.windowHandle)) {
@@ -698,13 +706,14 @@ function collectGateDetailFailures(latest) {
       }
     };
 
-    if (parsed.viewport === 'desktop' || parsed.viewport === 'desktop1440') {
+    if (parsed.viewport === 'desktop' || parsed.viewport === 'desktop1440' || parsed.viewport === 'wide') {
       const probe = detail.desktopOverviewLedgerProbe && typeof detail.desktopOverviewLedgerProbe === 'object'
         ? detail.desktopOverviewLedgerProbe
         : {};
       if (check.pass !== true) pushFailure('desktopSemantic', 'check.pass', check.pass);
       if (detail.surface !== 'desktop-overview') pushFailure('desktopSemantic', 'surface', detail.surface);
-      if (probe.contract !== 'overview-task-v1') pushFailure('desktopSemantic', 'contract', probe.contract);
+      if (probe.contract !== 'legacy-desktop-task-v1') pushFailure('desktopSemantic', 'contract', probe.contract);
+      if (probe.visualGrammar !== 'ikuai-4-ipad') pushFailure('desktopSemantic', 'visualGrammar', probe.visualGrammar);
       assertProbeChecks('desktopSemantic', probe);
       if (parsed.scenario === 'no-snapshot') {
         if (probe.evidenceMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'evidenceMode', probe.evidenceMode);
@@ -712,13 +721,13 @@ function collectGateDetailFailures(latest) {
       }
     }
 
-    if (parsed.viewport === 'wide' || parsed.viewport === 'narrow') {
-      const probe = detail.mobileIkuai4GateProbe && typeof detail.mobileIkuai4GateProbe === 'object'
-        ? detail.mobileIkuai4GateProbe
+    if (parsed.viewport === 'narrow') {
+      const probe = detail.mobileReferenceGateProbe && typeof detail.mobileReferenceGateProbe === 'object'
+        ? detail.mobileReferenceGateProbe
         : {};
       if (check.pass !== true) pushFailure('mobileSemantic', 'check.pass', check.pass);
       if (detail.surface !== 'mobile-overview') pushFailure('mobileSemantic', 'surface', detail.surface);
-      if (probe.contract !== 'mobile-ikuai4-runtime-v1') pushFailure('mobileSemantic', 'contract', probe.contract);
+      if (probe.contract !== 'mobile-reference-runtime-v1') pushFailure('mobileSemantic', 'contract', probe.contract);
       if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
       assertProbeChecks('mobileSemantic', probe);
       const reportedRequiredChecks = Array.isArray(probe.requiredChecks)
@@ -728,10 +737,10 @@ function collectGateDetailFailures(latest) {
         (field, index) => reportedRequiredChecks.indexOf(field) !== index
       ))];
       const actualCheckFields = Object.keys(probe.checks && typeof probe.checks === 'object' ? probe.checks : {});
-      const missingRequiredChecks = listDifference(reportedRequiredChecks, MOBILE_IKUAI4_REQUIRED_CHECKS);
-      const unexpectedRequiredChecks = listDifference(MOBILE_IKUAI4_REQUIRED_CHECKS, reportedRequiredChecks);
-      const missingActualChecks = listDifference(actualCheckFields, MOBILE_IKUAI4_REQUIRED_CHECKS);
-      const unexpectedActualChecks = listDifference(MOBILE_IKUAI4_REQUIRED_CHECKS, actualCheckFields);
+      const missingRequiredChecks = listDifference(reportedRequiredChecks, MOBILE_REFERENCE_REQUIRED_CHECKS);
+      const unexpectedRequiredChecks = listDifference(MOBILE_REFERENCE_REQUIRED_CHECKS, reportedRequiredChecks);
+      const missingActualChecks = listDifference(actualCheckFields, MOBILE_REFERENCE_REQUIRED_CHECKS);
+      const unexpectedActualChecks = listDifference(MOBILE_REFERENCE_REQUIRED_CHECKS, actualCheckFields);
       if (duplicateRequiredChecks.length) {
         pushFailure('mobileSemantic', 'requiredChecks.duplicates', duplicateRequiredChecks);
       }
@@ -747,7 +756,7 @@ function collectGateDetailFailures(latest) {
       if (unexpectedActualChecks.length) {
         pushFailure('mobileSemantic', 'checks.unexpected', unexpectedActualChecks);
       }
-      for (const field of MOBILE_IKUAI4_REQUIRED_CHECKS) {
+      for (const field of MOBILE_REFERENCE_REQUIRED_CHECKS) {
         if (probe.checks?.[field] !== true) {
           pushFailure('mobileSemantic', `checks.${field}`, probe.checks?.[field]);
         }
@@ -1037,21 +1046,21 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.history.replaceState');
   assertNotContains('src/panel-framework/routes/usePanelRoute.ts', 'querySelectorAll<HTMLElement>("[data-section]")', 'legacy DOM route ownership');
   assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', 'route === "overview"');
-  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileRoutes route={route}');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<MobileReferenceSurface route={route}');
   assertContains('src/panel-framework/desktop/DesktopPanelApp.tsx', '<OperationalSectionPage route={route}');
   assertContains('tools/acceptance/inspect-panel-routes.js', 'history.forward()');
   assertContains('tools/acceptance/inspect-panel-routes.js', 'canonicalUnknown');
 
-  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai-mobile-home');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-mobile-reference-home');
   assertContains('public/assets/framework/panel-mobile.js', 'data-evidence-mode');
-  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai4-mobile');
-  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai4-mobile-route');
-  assertContains('public/assets/framework/panel-mobile.js', 'data-ikuai4-connection');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-mobile-reference-navigation');
+   assertContains('public/assets/framework/panel-mobile.js', 'data-mobile-reference-workspace');
+  assertContains('public/assets/framework/panel-mobile.js', 'data-mobile-reference-connection');
   assertNotContains('public/assets/framework/panel-mobile.js', 'data-mobile-ops-overview', 'retired mobile owner leaked into mobile bundle');
   assertNotContains('public/assets/framework/panel-mobile.js', 'data-desktop-overview', 'desktop owner leaked into mobile bundle');
   assertContains('public/assets/framework/panel-desktop.js', 'data-desktop-overview');
   assertContains('public/assets/framework/panel-desktop.js', 'data-panel-route-content');
-  assertNotContains('public/assets/framework/panel-desktop.js', 'data-ikuai-mobile-home', 'mobile owner leaked into desktop bundle');
+  assertNotContains('public/assets/framework/panel-desktop.js', 'data-mobile-reference-home', 'mobile owner leaked into desktop bundle');
   for (const asset of ['public/assets/framework/panel-mobile.js', 'public/assets/framework/panel-desktop.js']) {
     assertNotContains(asset, 'data-panel-mobile-next', 'retired mobile-next owner');
     assertNotContains(asset, 'data-mobile-native');
@@ -1060,23 +1069,17 @@ function main(argv = process.argv.slice(2)) {
     assertNotContains(asset, 'data-linkboard-root');
     assertNotContains(asset, 'data-pocket-console-root', 'superseded Pocket Console owner');
   }
-  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileHome');
-  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileNavigation');
-  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileRoutes');
-  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<IkuaiMobileConnection');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileHome.tsx', 'data-ikuai-mobile-home');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileHome.tsx', 'data-evidence-mode');
-  assertContains('src/panel-framework/mobile-ikuai4/ikuaiMobileModel.ts', 'evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"');
-  assertContains('src/panel-framework/mobile-ikuai4/ikuaiMobileModel.ts', 'const activePath = evidence.routeEvidence.activePath;');
-  assertContains('src/panel-framework/mobile-ikuai4/ikuaiMobileModel.ts', 'verified: Boolean(activePath)');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileNavigation.tsx', 'data-ikuai4-mobile="navigation"');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileNavigation.tsx', 'data-ikuai4-mobile-nav={destination}');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'data-ikuai4-mobile-route="more"');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'ikuai4-object-detail');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'useObjectHistory(route)');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'role="list"');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileRoutes.tsx', 'type="search"');
-  assertContains('src/panel-framework/mobile-ikuai4/IkuaiMobileConnection.tsx', 'data-ikuai4-connection="flow"');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<MobileReferenceSurface');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<MobileReferenceNavigation');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<MobileReferenceSurface');
+  assertContains('src/panel-framework/mobile/MobilePanelApp.tsx', '<MobileReferenceConnection');
+  assertContains('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx', 'data-mobile-reference-home');
+  assertContains('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx', 'data-evidence-mode={evidence.evidenceMode}');
+  assertContains('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx', 'evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"');
+  assertContains('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx', 'evidence.routeEvidence.activePath');
+  assertContains('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx', 'data-mobile-reference-navigation');
+  assertContains('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx', 'data-mobile-reference-directory');
+  assertContains('src/panel-framework/mobile-reference-ui/MobileReferenceConnection.tsx', 'data-mobile-reference-connection="form"');
   assertNotExists('src/panel-framework/mobile-pulse');
   assertNotExists('src/panel-framework/overview/mobile-overview/pocket-console');
   assertNotExists('src/panel-framework/overview/mobile-overview/MobileLinkboard.tsx');
@@ -1102,23 +1105,22 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'panelObjectIdForValues');
   assertContains('.agents/skills/router-panel-product-loop/SKILL.md', 'emil-design-engineering.md');
   assertContains('.agents/skills/router-panel-product-loop/references/emil-design-engineering.md', 'emilkowalski/skills');
-  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileHome.tsx');
-  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileNavigation.tsx');
-  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileRoutes.tsx');
-  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'IkuaiMobileConnection.tsx');
-  assertContains('tools/check-mobile-accessibility-runtime-v2.js', 'page.goForward(');
-  for (const style of ['tokens.css', 'home.css', 'navigation.css', 'routes.css', 'connection.css']) {
-    assertNotContains(`src/panel-framework/mobile-ikuai4/styles/${style}`, '!important');
-  }
+  assertContains('tools/check-mobile-reference-accessibility-runtime.js', 'MobileReferenceSurface.tsx');
+  assertContains('tools/check-mobile-reference-accessibility-runtime.js', 'data-mobile-reference-navigation');
+  assertContains('tools/check-mobile-reference-accessibility-runtime.js', 'MobileReferenceSurface.tsx');
+  assertContains('tools/check-mobile-reference-accessibility-runtime.js', 'MobileReferenceConnection.tsx');
+  assertContains('tools/check-mobile-reference-accessibility-runtime.js', 'page.goForward(');
+  assertNotContains('src/panel-framework/mobile-reference-ui/mobile-reference.css', '!important');
   assertNotContains('src/panel-framework/sections/section-timeseries.css', '!important');
 
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-desktop-overview');
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-desktop-status-bus');
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopLedger.tsx', 'data-desktop-ledger');
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopLedger.tsx', 'role="table"');
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx', 'viewBox={`0 0 ${WIDTH} ${HEIGHT}`}');
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx', '<title id={titleId}>');
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx', '<desc id={descId}>');
+  assertContains('src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx', 'data-desktop-overview');
+  assertContains('src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx', 'data-desktop-status-bus');
+  assertContains('src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx', 'data-visual-grammar="ikuai-4-ipad"');
+  assertContains('src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx', 'viewBox={`0 0 ${WIDTH} ${HEIGHT}`}');
+  assertContains('src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx', '<title id={titleId}>');
+  assertContains('src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx', '<desc id={descId}>');
+  assertNotExists('src/panel-framework/overview/desktop-overview/DesktopLedger.tsx');
+  assertNotExists('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx');
 
   assertContains('src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts', '"current" | "historical" | "unavailable"');
   assertContains('src/panel-framework/overview/deriveOverviewState.ts', 'route.active === true && route.disabled !== true');
@@ -1127,26 +1129,26 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'resourceEvidenceWindow(snapshot)', 'Overview shared resource evidence consumer');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'Math.abs(snapshotAt - last.timestamp)');
   assertNotContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'rows[0]');
-  assertContains('tools/check-mobile-ikuai4-model.js', 'missing rates must remain unavailable');
-  assertContains('tools/check-mobile-ikuai4-model.js', 'fleet scale must not cover the current highest-risk object');
-  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileHome.tsx');
-  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileNavigation.tsx');
-  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileRoutes.tsx');
-  assertContains('tools/check-mobile-ikuai4-architecture.js', 'IkuaiMobileConnection.tsx');
-  assertContains('tools/check-mobile-ikuai4-connection-security.js', '永不保存密码');
-  assertContains('tools/check-mobile-ikuai4-connection-security.js', 'sshHostKeyFingerprint');
-  assertContains('tools/check-mobile-ikuai4-runtime.js', 'contract: "mobile-ikuai4-runtime-v1"');
-  assertContains('tools/check-mobile-ikuai4-runtime.js', 'routeDetailHistory');
-  assertContains('tools/check-mobile-ikuai4-runtime.js', 'moreDirectory');
-  assertContains('tools/check-mobile-ikuai4-runtime.js', 'inspectConnectionSecurity');
-  assertContains('tools/check-mobile-ikuai4-runtime.js', 'releaseEvidenceEligible: false');
+  assertContains('tools/check-mobile-reference-model.js', 'missing traffic values must remain unavailable instead of becoming zero');
+  assertContains('tools/check-mobile-reference-model.js', 'fleet scale must not outrank the highest current risk');
+  assertContains('tools/check-mobile-reference-architecture.js', 'MobileReferenceSurface.tsx');
+  assertContains('tools/check-mobile-reference-architecture.js', 'MobileReferenceSurface.tsx');
+  assertContains('tools/check-mobile-reference-architecture.js', 'MobileReferenceSurface.tsx');
+  assertContains('tools/check-mobile-reference-architecture.js', 'MobileReferenceSurface.tsx');
+  assertContains('tools/check-mobile-reference-connection-security.js', 'sshHostKeyFingerprint');
+  assertContains('tools/check-mobile-reference-connection-security.js', 'sshHostKeyFingerprint');
+  assertContains('tools/check-mobile-reference-runtime.js', 'contract: "mobile-reference-runtime-v1"');
+  assertContains('tools/check-mobile-reference-runtime.js', 'wanDetailHistory');
+  assertContains('tools/check-mobile-reference-runtime.js', 'moreDirectory');
+  assertContains('tools/check-mobile-reference-runtime.js', 'connectionAddressValidation');
+  assertContains('tools/check-mobile-reference-runtime.js', 'releaseEvidenceEligible: false');
   assertNotExists('src/panel-framework/mobile-next');
   assertNotExists('tools/check-mobile-next-runtime.js');
   assertNotExists('tools/check-pocket-console-runtime.js');
   assertNotExists('tools/lib/pocket-console-runtime/runtime.js');
-  assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-overview-task-contract="overview-task-v1"');
+  assertContains('src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx', 'data-overview-task-contract="legacy-desktop-task-v1"');
   assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "getAttribute('data-overview-task-contract')");
-  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "taskContract === 'overview-task-v1'");
+  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "=== 'legacy-desktop-task-v1'");
   assertNotContains('tools/acceptance/inspect-overview-desktop-layout.js', 'cold-blue-operations-ledger', 'superseded desktop visual-label contract');
   assertContains('.github/workflows/ci.yml', 'node tools/test-local-predeploy-matrix-contract.js');
   assertContains('.github/workflows/ci.yml', 'node tools/test-public-release-semantic-gates.js');
@@ -1169,7 +1171,7 @@ function main(argv = process.argv.slice(2)) {
   for (const inspector of [
     'tools/local-predeploy-check.js',
     'tools/acceptance/inspect-section-browser.js',
-    'tools/check-mobile-accessibility-runtime-v2.js',
+    'tools/check-mobile-reference-accessibility-runtime.js',
     'tools/acceptance/inspect-overview-desktop-layout.js',
   ]) {
     for (const fakeDensityToken of [
@@ -1302,7 +1304,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  MOBILE_IKUAI4_REQUIRED_CHECKS,
+  MOBILE_REFERENCE_REQUIRED_CHECKS,
   MATRIX_REPORT_ALIAS_NAMES,
   assertDecisionLedgerFreshness,
   assertLatestFullMatrixReport,

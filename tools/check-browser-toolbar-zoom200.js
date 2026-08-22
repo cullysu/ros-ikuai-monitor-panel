@@ -2,8 +2,8 @@
 "use strict";
 
 // A separate proof from CDP page-scale and injected CSS: this headed Edge run
-// uses Windows UI Automation, then verifies each physical toolbar increment
-// from the page's real DPR and layout viewport before accepting it.
+// uses Windows UI Automation, then verifies physical toolbar increments from
+// the page's real DPR and layout viewport before accepting them.
 
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -22,13 +22,23 @@ const {
 const root = path.resolve(__dirname, "..");
 const artifactDir = path.join(root, "_acceptance", "edge-toolbar-zoom200");
 const reportPath = path.join(artifactDir, "report.json");
+const partialReportPath = path.join(artifactDir, "partial-report.json");
 const pythonHelper = path.join(root, "tools", "acceptance", "accessibility-v2", "windows_browser_zoom.py");
 const RATIO_TOLERANCE = 0.12;
 const UI_TIMEOUT_MS = 60_000;
-const UI_ACTION_TIMEOUT_MS = 15_000;
-const GEOMETRY_TRANSITION_TIMEOUT_MS = 3_500;
-const CELL_TIMEOUT_MS = 100_000;
-const GLOBAL_TIMEOUT_MS = 45 * 60_000;
+// A non-responsive Windows UIA action must fail quickly.  Three bounded input
+// attempts plus the geometry settle window must fit inside one cell's budget;
+// no UIA action is accepted without an observed DPR/layout change.
+const UI_ACTION_TIMEOUT_MS = ACTION_TIMEOUT_MS;
+// Keep the physical-key probe bounded, but give the helper enough time to
+// finish its foreground hand-off and return.  A six-second parent timeout can
+// kill the helper just after it has dispatched the key, leaving a delayed
+// second key in Edge's input queue; the next fallback then overshoots 200% to
+// 250%.  This remains bounded and does not change the product surface.
+const KEYBOARD_UI_ACTION_TIMEOUT_MS = Math.min(15_000, Math.max(8_000, UI_ACTION_TIMEOUT_MS));
+const GEOMETRY_TRANSITION_TIMEOUT_MS = Math.max(3_500, Math.min(15_000, ACTION_TIMEOUT_MS));
+const CELL_TIMEOUT_MS = Math.max(180_000, ACTION_TIMEOUT_MS * 15);
+const GLOBAL_TIMEOUT_MS = 75 * 60_000;
 const TOOLBAR_INCREMENTS = 5;
 const TOOLBAR_SCENARIOS = Object.freeze(["normal", "interfaces-down"]);
 const TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS = Object.freeze([
@@ -43,17 +53,23 @@ const TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS = Object.freeze([
 const KEYBOARD_ZOOM_ACTIONS = Object.freeze(["oem-plus", "numpad-plus"]);
 const OWNED_LIFECYCLE_DIAGNOSTIC = "tools/acceptance/browser-lifecycle-v2/.artifacts/latest-report.json";
 const OWNED_TOOLBAR_ARTIFACT_PREFIX = "_acceptance/edge-toolbar-zoom200/";
-const TOOLBAR_CONTRACT = "edge-toolbar-zoom200-windows-v7-mobile-ikuai4";
+const TOOLBAR_CONTRACT = "edge-toolbar-zoom200-windows-v9-variable-increment-mobile-reference";
 const MOBILE_ORIGIN_OWNER = Object.freeze({
-  overview: "main[data-ikuai-mobile-home]",
-  route: "main[data-ikuai4-mobile-route=\"interfaces\"]",
-  navigation: "[data-ikuai4-mobile=\"navigation\"]",
+  overview: "main[data-mobile-reference-home]",
+  route: "main[data-mobile-reference-workspace=\"interfaces\"]",
+  navigation: "[data-mobile-reference-navigation]",
+});
+const DESKTOP_ORIGIN_OWNER = Object.freeze({
+  overview: "main[data-desktop-overview]",
+  route: "main[data-panel-route=\"interfaces\"]",
+  navigation: ".panel-task-navigation",
 });
 
-// The browser is opened at double the target CSS viewport.  After the real
-// Edge toolbar operation (Ctrl+0, then five Ctrl++ commands), Edge reports
-// DPR≈2 and the target CSS viewport below.  This is deliberately a bounded
-// matrix: it is not a claim about OS text-size settings or Dynamic Type.
+// The browser is opened at double the target CSS viewport. After Ctrl+0, the
+// verifier applies at most five real toolbar probes and stops as soon as the
+// page reports the requested 200% geometry. Edge's built-in zoom ladder can
+// vary by version/input path (some builds reach 200% in four increments and
+// others in five), so a fixed increment count is not a valid contract.
 const TOOLBAR_200_MATRIX = Object.freeze([
   { id: "phone-320", cssViewport: { width: 320, height: 568 }, orientation: "portrait" },
   { id: "phone-360", cssViewport: { width: 360, height: 800 }, orientation: "portrait" },
@@ -83,25 +99,26 @@ function toolbarScenarioConfig(scenario) {
 }
 
 function toolbarReportReadiness(report) {
-  const actionable = "Run: node tools/check-browser-toolbar-zoom200.js (headed Microsoft Edge; bounded v7 matrix).";
-  if (!report || typeof report !== "object") return { pass: false, code: "V7_REPORT_MISSING", reason: `Current-owner real Edge 200% evidence is missing. ${actionable}` };
-  if (report.contract !== TOOLBAR_CONTRACT) return { pass: false, code: "V7_CONTRACT_STALE", reason: `Toolbar report contract is ${report.contract || "missing"}, expected ${TOOLBAR_CONTRACT}. ${actionable}` };
+    const actionable = "Run: node tools/check-browser-toolbar-zoom200.js (headed Microsoft Edge; bounded v9 variable-increment matrix).";
+  if (!report || typeof report !== "object") return { pass: false, code: "V8_REPORT_MISSING", reason: `Current-owner real Edge 200% evidence is missing. ${actionable}` };
+  if (report.contract !== TOOLBAR_CONTRACT) return { pass: false, code: "V8_CONTRACT_STALE", reason: `Toolbar report contract is ${report.contract || "missing"}, expected ${TOOLBAR_CONTRACT}. ${actionable}` };
   const owner = report.ownerContract || {};
-  if (owner.overview !== MOBILE_ORIGIN_OWNER.overview || owner.route !== MOBILE_ORIGIN_OWNER.route || owner.navigation !== MOBILE_ORIGIN_OWNER.navigation) {
-    return { pass: false, code: "V7_OWNER_MISMATCH", reason: `Toolbar report is not bound to the current iKuai 4 mobile owner. ${actionable}` };
+  if (owner.overview !== MOBILE_ORIGIN_OWNER.overview || owner.route !== MOBILE_ORIGIN_OWNER.route || owner.navigation !== MOBILE_ORIGIN_OWNER.navigation ||
+      owner.desktopOverview !== DESKTOP_ORIGIN_OWNER.overview || owner.desktopRoute !== DESKTOP_ORIGIN_OWNER.route || owner.desktopNavigation !== DESKTOP_ORIGIN_OWNER.navigation) {
+    return { pass: false, code: "V8_OWNER_MISMATCH", reason: `Toolbar report is not bound to the accepted Mobile Reference and wide-landscape browser owners. ${actionable}` };
   }
   if (report.pass !== true || report.matrix?.complete !== true || !Array.isArray(report.cells) || report.cells.length !== TOOLBAR_200_REQUIRED_CELLS.length) {
-    return { pass: false, code: "V7_MATRIX_INCOMPLETE", reason: `Current-owner real Edge 200% matrix is failed or incomplete. ${actionable}` };
+    return { pass: false, code: "V8_MATRIX_INCOMPLETE", reason: `Current-owner real Edge 200% matrix is failed or incomplete. ${actionable}` };
   }
   const failedCell = report.cells.find((cell) => cell?.surface?.main?.maxLeft !== 0 || cell?.surface?.keyboardTraversal?.complete !== true || cell?.surface?.keyboardTraversal?.visitedCount !== cell?.surface?.keyboardTraversal?.expectedCount);
-  if (failedCell) return { pass: false, code: "V7_CELL_ACCESSIBILITY_FAILED", reason: `A current-owner 200% cell lacks zero-horizontal-overflow or complete keyboard evidence. ${actionable}`, cell: `${failedCell?.viewport?.id || "unknown"}::${failedCell?.scenario || "unknown"}` };
-  return { pass: true, code: "V7_CURRENT_OWNER_READY", reason: "Current-owner real Edge 200% evidence is complete." };
+  if (failedCell) return { pass: false, code: "V8_CELL_ACCESSIBILITY_FAILED", reason: `A current-owner 200% cell lacks zero-horizontal-overflow or complete keyboard evidence. ${actionable}`, cell: `${failedCell?.viewport?.id || "unknown"}::${failedCell?.scenario || "unknown"}` };
+  return { pass: true, code: "V8_CURRENT_OWNER_READY", reason: "Current-owner real Edge 200% evidence is complete." };
 }
 
 function currentToolbarReportStatus() {
   if (!fs.existsSync(reportPath)) return toolbarReportReadiness(null);
   try { return toolbarReportReadiness(JSON.parse(fs.readFileSync(reportPath, "utf8"))); }
-  catch (error) { return { pass: false, code: "V7_REPORT_INVALID", reason: `Current-owner toolbar report is invalid JSON: ${String(error?.message || error)}. Run: node tools/check-browser-toolbar-zoom200.js.` }; }
+  catch (error) { return { pass: false, code: "V8_REPORT_INVALID", reason: `Current-owner toolbar report is invalid JSON: ${String(error?.message || error)}. Run: node tools/check-browser-toolbar-zoom200.js.` }; }
 }
 
 function assert(condition, message, detail = null) {
@@ -166,6 +183,45 @@ function sameStableEvidenceIdentity(left, right) {
   return left && right && left.commit === right.commit && left.fingerprint === right.fingerprint;
 }
 
+function toolbarCellId(cell) {
+  return `${cell?.viewport?.id || ""}::${cell?.scenario || ""}`;
+}
+
+function pendingToolbarCells(completedCells = []) {
+  const completed = new Set(completedCells.map(toolbarCellId));
+  return TOOLBAR_200_REQUIRED_CELLS.filter((cell) => !completed.has(toolbarCellId(cell)));
+}
+
+function parseMaxCells(argv = process.argv.slice(2)) {
+  const raw = argv.find((item) => item.startsWith("--max-cells="));
+  if (!raw) return Infinity;
+  const value = Number(raw.slice("--max-cells=".length));
+  assert(Number.isInteger(value) && value > 0, "--max-cells must be a positive integer", { value });
+  return value;
+}
+
+function loadPartialCells(stableIdentity) {
+  if (!fs.existsSync(partialReportPath)) return [];
+  try {
+    const partial = JSON.parse(fs.readFileSync(partialReportPath, "utf8"));
+    if (partial.contract !== TOOLBAR_CONTRACT) return [];
+    if (!sameStableEvidenceIdentity(partial.stableIdentity, stableIdentity)) return [];
+    return Array.isArray(partial.cells) ? partial.cells : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function writePartialCells(identity, stableIdentity, cells) {
+  fs.writeFileSync(partialReportPath, `${JSON.stringify({
+    contract: TOOLBAR_CONTRACT,
+    generatedAt: new Date().toISOString(),
+    identity,
+    stableIdentity,
+    cells,
+  }, null, 2)}\n`, "utf8");
+}
+
 function pngEvidence(file) {
   const bytes = fs.readFileSync(file);
   assert(bytes.toString("ascii", 1, 4) === "PNG", "expected a PNG screenshot", { file });
@@ -198,9 +254,9 @@ function validWindowsCapture(capture, expectedHandle) {
   );
 }
 
-function runPythonToolbarZoom(title, { action = "reset", capturePath = "", captureOnly = false, windowHandle = null } = {}) {
+function runPythonToolbarZoom(title, { action = "reset", capturePath = "", captureOnly = false, windowHandle = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
   return new Promise((resolve, reject) => {
-    const args = ["-3", "-B", pythonHelper, "--title", title, "--action", action, "--timeout-seconds", "10"];
+    const args = ["-3", "-B", pythonHelper, "--title", title, "--action", action, "--timeout-seconds", String(Math.ceil(timeoutMs / 1000))];
     if (captureOnly) args.push("--capture-only");
     if (capturePath) args.push("--capture-path", capturePath);
     if (Number.isInteger(windowHandle) && windowHandle > 0) args.push("--window-handle", String(windowHandle));
@@ -225,7 +281,7 @@ function runPythonToolbarZoom(title, { action = "reset", capturePath = "", captu
       error.code = "EDGE_UI_AUTOMATION_TIMEOUT";
       error.detail = { action, title };
       reject(error);
-    }, UI_ACTION_TIMEOUT_MS);
+    }, timeoutMs);
     child.stdout.on("data", (chunk) => stdout.push(chunk));
     child.stderr.on("data", (chunk) => stderr.push(chunk));
     child.on("error", (error) => {
@@ -281,14 +337,14 @@ function geometryChanged(before, after) {
     Math.abs(after.innerHeight - before.innerHeight) > 1;
 }
 
-async function waitForGeometryChange(page, before) {
+async function waitForGeometryChange(page, before, timeout = GEOMETRY_TRANSITION_TIMEOUT_MS) {
   try {
     await page.waitForFunction(
       (previous) => Math.abs(window.devicePixelRatio - previous.devicePixelRatio) > 0.01 ||
         Math.abs(window.innerWidth - previous.innerWidth) > 1 ||
         Math.abs(window.innerHeight - previous.innerHeight) > 1,
       before,
-      { timeout: GEOMETRY_TRANSITION_TIMEOUT_MS },
+      { timeout },
     );
   } catch {
     // The caller records the no-op attempt and tries the next real Edge UI
@@ -307,6 +363,15 @@ function acceptedZoomAttempt(attempts) {
     : null;
 }
 
+function reachedTargetToolbarZoom(geometryState, baseline) {
+  return Boolean(
+    geometryState && baseline &&
+    Math.abs(geometryState.devicePixelRatio - 2) <= RATIO_TOLERANCE &&
+    Math.abs((baseline.innerWidth / geometryState.innerWidth) - 2) <= RATIO_TOLERANCE &&
+    Math.abs((baseline.innerHeight / geometryState.innerHeight) - 2) <= RATIO_TOLERANCE,
+  );
+}
+
 async function applyActualToolbarZoom(page, title, baseline) {
   const reset = await runPythonToolbarZoom(title, { action: "reset" });
   await page.waitForTimeout(150);
@@ -319,12 +384,40 @@ async function applyActualToolbarZoom(page, title, baseline) {
   );
   const steps = [];
   let current = resetGeometry;
-  for (let step = 1; step <= TOOLBAR_INCREMENTS; step += 1) {
+  for (let step = 1; step <= TOOLBAR_INCREMENTS && !reachedTargetToolbarZoom(current, baseline); step += 1) {
     const attempts = [];
     let accepted = null;
     for (const action of [...KEYBOARD_ZOOM_ACTIONS, "menu-plus"]) {
-      const input = await runPythonToolbarZoom(title, { action });
-      const transition = await waitForGeometryChange(page, current);
+      let input;
+      let transition = { before: current, after: current, changed: false };
+      try {
+        input = await runPythonToolbarZoom(title, {
+          action,
+          timeoutMs: action === "menu-plus" ? UI_ACTION_TIMEOUT_MS : KEYBOARD_UI_ACTION_TIMEOUT_MS,
+        });
+        transition = await waitForGeometryChange(page, current);
+      } catch (error) {
+        // A failed OEM/numpad dispatch is an input-path failure, not a cell
+        // failure. The Windows key may still arrive after the helper's bounded
+        // UIA timeout, so observe one short grace window before trying a
+        // fallback. Otherwise a delayed real key plus the fallback would be
+        // counted as one step while physically advancing Edge twice.
+        input = {
+          pass: false,
+          code: error?.code || "EDGE_UI_AUTOMATION_FAILED",
+          message: String(error?.message || error),
+        };
+        transition = await waitForGeometryChange(
+          page,
+          current,
+          // A timed-out UIA helper may have already dispatched the physical
+          // key while its focus/return path is still unwinding. Observe a
+          // longer bounded grace period before sending a fallback key; a
+          // shorter window can accept the fallback and the delayed original
+          // as two browser zoom increments.
+          Math.min(9_000, GEOMETRY_TRANSITION_TIMEOUT_MS),
+        );
+      }
       const attempt = { action, input, ...transition };
       attempts.push(attempt);
       const acceptedAttempt = acceptedZoomAttempt(attempts);
@@ -337,6 +430,7 @@ async function applyActualToolbarZoom(page, title, baseline) {
     assert(accepted, "real Edge toolbar input did not change page DPR or layout; UIA key dispatch is not accepted as zoom proof", { step, current, attempts });
     steps.push({ step, attempts, acceptedAction: accepted.action, before: accepted.before, after: accepted.after });
   }
+  assert(reachedTargetToolbarZoom(current, baseline), "real Edge toolbar probes did not reach the required 200% geometry within the bounded increment budget", { current, baseline, steps });
   return { pass: true, reset, steps, final: current };
 }
 
@@ -346,7 +440,7 @@ function toolbarZoomEvidence({ baseline, zoomed, automation, targetCssViewport }
   const expectedViewport = { width: targetCssViewport.width, height: targetCssViewport.height };
   const observedViewport = { width: zoomed.innerWidth, height: zoomed.innerHeight };
   const steps = Array.isArray(automation?.steps) ? automation.steps : [];
-  const verified = steps.length === TOOLBAR_INCREMENTS && steps.every((step) =>
+  const verified = steps.length > 0 && steps.length <= TOOLBAR_INCREMENTS && steps.every((step) =>
     step?.acceptedAction && step?.attempts?.some((attempt) => attempt.action === step.acceptedAction && attempt.changed === true)
   ) &&
     Math.abs(zoomed.devicePixelRatio - 2) <= RATIO_TOLERANCE &&
@@ -382,8 +476,8 @@ async function keyboardTraversal(page, mainSelector) {
         return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0.5 && rect.height > 0.5;
       })
       .map((node, index) => {
-        const id = node.getAttribute("data-ikuai4-toolbar-control") || `toolbar-control-${index}`;
-        node.setAttribute("data-ikuai4-toolbar-control", id);
+        const id = node.getAttribute("data-mobile-reference-toolbar-control") || `toolbar-control-${index}`;
+        node.setAttribute("data-mobile-reference-toolbar-control", id);
         return id;
       });
   }, mainSelector);
@@ -402,13 +496,13 @@ async function keyboardTraversal(page, mainSelector) {
        const style = getComputedStyle(active);
        const viewportWidth = window.visualViewport?.width || document.documentElement.clientWidth;
        const viewportHeight = window.visualViewport?.height || document.documentElement.clientHeight;
-       const navigation = document.querySelector('[data-ikuai4-mobile="navigation"]');
+       const navigation = document.querySelector('[data-mobile-reference-navigation]');
        const navigationRect = navigation instanceof HTMLElement ? navigation.getBoundingClientRect() : null;
        const obscuredByNavigation = Boolean(navigationRect &&
          rect.left < navigationRect.right && rect.right > navigationRect.left &&
          rect.top < navigationRect.bottom && rect.bottom > navigationRect.top);
        return {
-         id: active.getAttribute("data-ikuai4-toolbar-control"),
+         id: active.getAttribute("data-mobile-reference-toolbar-control"),
          label: (active.getAttribute("aria-label") || active.textContent || "").replace(/\s+/g, " ").trim().slice(0, 120),
          focusVisible: active.matches(":focus-visible"),
          outlineWidth: Number.parseFloat(style.outlineWidth || "0"),
@@ -491,13 +585,13 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
       const containsFragment = (boundary, fragment, axis) => axis === "x"
         ? fragment.left >= boundary.left - 1 && fragment.right <= boundary.right + 1
         : fragment.top >= boundary.top - 1 && fragment.bottom <= boundary.bottom + 1;
-       const mobileOriginOverview = main instanceof HTMLElement && main.matches("[data-ikuai-mobile-home]") ? main : null;
+       const mobileOriginOverview = main instanceof HTMLElement && main.matches("[data-mobile-reference-home]") ? main : null;
        const scopeCandidates = mobileOriginOverview ? [
-         mobileOriginOverview.querySelector('.ikm-status'),
-         mobileOriginOverview.querySelector('.ikm-wan'),
-         mobileOriginOverview.querySelector('.ikm-alerts'),
-         mobileOriginOverview.querySelector('.ikm-pressure'),
-         mobileOriginOverview.querySelector('.ikm-list'),
+         mobileOriginOverview.querySelector('.ref-status'),
+         mobileOriginOverview.querySelector('.ref-wan'),
+         mobileOriginOverview.querySelector('.ref-resources'),
+         mobileOriginOverview.querySelector('.ref-interfaces'),
+         ...mobileOriginOverview.querySelectorAll('.ref-facts'),
        ] : [main];
       const operationalScopes = [...new Set(scopeCandidates.filter((node) => node instanceof HTMLElement && rendered(node)))];
       const seenTextNodes = new Set();
@@ -571,14 +665,14 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
         operationalTextScopes.push({ scope: scopeLabel, textNodes, fragments });
       }
      const rectsOverlap = (left, right) => left.left < right.right && left.right > right.left && left.top < right.bottom && left.bottom > right.top;
-    const navigation = document.querySelector('[data-ikuai4-mobile="navigation"]');
+    const navigation = document.querySelector('[data-mobile-reference-navigation]');
      const navigationRect = navigation instanceof HTMLElement && isVisible(navigation)
        ? navigation.getBoundingClientRect()
        : null;
      const primaryObscuredByNavigation = Boolean(rect && navigationRect && rectsOverlap(rect, navigationRect));
-    const trafficChart = mobileOriginOverview?.querySelector('.ikm-chart') || null;
-    const trafficLegend = trafficChart ? Array.from(trafficChart.querySelectorAll('.ikm-chart-axis')) : [];
-    const trafficTimeLabels = mobileOriginOverview ? Array.from(mobileOriginOverview.querySelectorAll('.ikm-chart-scale span')) : [];
+    const trafficChart = mobileOriginOverview?.querySelector('.ref-chart') || null;
+    const trafficLegend = trafficChart ? Array.from(trafficChart.querySelectorAll('.ref-chart__scale span')) : [];
+    const trafficTimeLabels = trafficChart ? Array.from(trafficChart.querySelectorAll('.ref-chart__footer span')) : [];
     const trafficLegendOutsideChart = trafficLegend.filter((label) => {
       const labelRect = label.getBoundingClientRect();
       return labelRect.left < -1 || labelRect.right > viewportWidth + 1 || labelRect.top < -1 || labelRect.bottom > viewportHeight + 1;
@@ -645,11 +739,20 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
 
 async function runCell(viewport, scenario) {
   const scenarioConfig = toolbarScenarioConfig(scenario);
+  const expectedBaselineSurface = viewport.orientation === "landscape" && viewport.cssViewport.width >= 600 ? "desktop" : "mobile";
   const baselineViewport = baselineViewportFor(viewport.cssViewport);
   const identityBeforeRuntime = gitWorktreeIdentity(root);
   let runtime = null;
   try {
-    runtime = await launchRuntime({ headless: false, viewport: baselineViewport, deviceScaleFactor: 1, isMobile: false, hasTouch: false });
+    runtime = await launchRuntime({
+      headless: false,
+      mockTransport: "tcp",
+      mockPreferIpv4: true,
+      viewport: baselineViewport,
+      deviceScaleFactor: 1,
+      isMobile: false,
+      hasTouch: false,
+    });
     assert(path.basename(runtime.executablePath).toLowerCase() === "msedge.exe", "actual Microsoft Edge is required; Chrome is not accepted", { executablePath: runtime.executablePath });
     await login(runtime.page, runtime.mock.url);
     // Runtime lifecycle diagnostics may rotate their own ignored artifact while
@@ -670,6 +773,18 @@ async function runCell(viewport, scenario) {
     const zoomLevel = toolbarZoomEvidence({ baseline, zoomed, automation: windowsAutomation, targetCssViewport: viewport.cssViewport });
     assert(zoomLevel.verified, "Edge toolbar did not produce the required verified 200% browser zoom level and target CSS viewport", { viewport, baseline, zoomed, zoomLevel, windowsAutomation });
 
+    // Browser zoom changes the CSS viewport. A tablet landscape baseline is
+    // desktop at 100%, but its reflowed 200% CSS viewport may legitimately
+    // select the mobile render tree. Resolve the owner after zoom instead of
+    // forcing the pre-zoom owner onto the reflowed document.
+    const browserSurface = await runtime.page.evaluate(() => {
+      if (document.querySelector("main[data-desktop-overview], main[data-desktop-route]")) return "desktop";
+      if (document.querySelector("main[data-mobile-reference-home], main[data-mobile-reference-workspace]")) return "mobile";
+      return "unknown";
+    });
+    assert(browserSurface !== "unknown", "Edge zoomed document did not expose a recognized render owner", { viewport, expectedBaselineSurface, zoomed });
+    const owner = browserSurface === "desktop" ? DESKTOP_ORIGIN_OWNER : MOBILE_ORIGIN_OWNER;
+
     runtime.mock.state.scenario = scenarioConfig.fixtureScenario;
     await visitRoute(runtime.page, runtime.mock.url, scenarioConfig.route, {
       requireWorkspace: scenarioConfig.surface !== "overview",
@@ -677,10 +792,14 @@ async function runCell(viewport, scenario) {
     });
     const surface = await inspectSurface(runtime.page, {
       label: `${viewport.id}-${scenario}-${scenarioConfig.surface}`,
-      mainSelector: scenarioConfig.surface === "overview" ? "main[data-ikuai-mobile-home]" : "main[data-ikuai4-mobile-route=\"interfaces\"]",
+      mainSelector: scenarioConfig.surface === "overview" ? owner.overview : owner.route,
       primarySelector: scenarioConfig.surface === "overview"
-        ? "main[data-ikuai-mobile-home] button"
-        : "main[data-ikuai4-mobile-route=\"interfaces\"] .ikuai4-object-row",
+        ? browserSurface === "desktop"
+          ? `${owner.overview} [data-desktop-wan-evidence]`
+          : `${owner.overview} button`
+        : browserSurface === "desktop"
+          ? `${owner.route} button`
+          : `${owner.route} .ref-object-list > button`,
       screenshotName: `${viewport.id}-${scenario}-edge-toolbar-zoom200.png`,
       windowTitle: title,
       windowHandle: windowsAutomation.reset.windowHandle,
@@ -688,6 +807,8 @@ async function runCell(viewport, scenario) {
       viewport: viewport.cssViewport,
     });
     await closeRuntime(runtime);
+    const pipeResets = Array.isArray(runtime.mock?.state?.pipeResets) ? runtime.mock.state.pipeResets : [];
+    assert(pipeResets.every((item) => item.accepted === true), "mock pipe reset occurred outside browser cancellation or owned teardown", { pipeResets });
     const identityAfter = gitWorktreeIdentity(root);
     const stableIdentityAfter = stableEvidenceIdentity();
     assert(sameStableEvidenceIdentity(stableIdentityAtEvidenceStart, stableIdentityAfter), "product worktree changed during toolbar zoom evidence collection", {
@@ -702,6 +823,8 @@ async function runCell(viewport, scenario) {
     return {
       viewport,
       scenario,
+      expectedBaselineSurface,
+      browserSurface,
       baselineViewport,
       baseline,
       zoomed,
@@ -722,12 +845,24 @@ async function runCell(viewport, scenario) {
 async function runMatrix() {
   const identityBefore = gitWorktreeIdentity(root);
   const stableIdentityBefore = stableEvidenceIdentity();
+  const resume = process.argv.includes("--resume");
+  const maxCells = parseMaxCells();
   assert(process.platform === "win32", "actual Edge toolbar zoom acceptance is Windows-only", { platform: process.platform });
-  fs.rmSync(artifactDir, { recursive: true, force: true });
+  const resumableCells = resume ? loadPartialCells(stableIdentityBefore) : [];
+  if (!resume || resumableCells.length === 0) fs.rmSync(artifactDir, { recursive: true, force: true });
   fs.mkdirSync(artifactDir, { recursive: true });
-  const cells = [];
-  for (const { viewport, scenario } of TOOLBAR_200_REQUIRED_CELLS) {
+  const cells = [...resumableCells];
+  let collectedThisRun = 0;
+  for (const { viewport, scenario } of pendingToolbarCells(cells)) {
+    if (collectedThisRun >= maxCells) break;
+    const cellId = `${viewport.id}::${scenario}`;
+    const startedAt = Date.now();
+    const ordinal = TOOLBAR_200_REQUIRED_CELLS.findIndex((cell) => toolbarCellId(cell) === cellId) + 1;
+    process.stderr.write(`[edge-toolbar-zoom200] ${ordinal}/${TOOLBAR_200_REQUIRED_CELLS.length} start ${cellId}\n`);
     cells.push(await withTimeout(`edge-toolbar-zoom200.${viewport.id}.${scenario}`, () => runCell(viewport, scenario), CELL_TIMEOUT_MS));
+    collectedThisRun += 1;
+    writePartialCells(gitWorktreeIdentity(root), stableIdentityBefore, cells);
+    process.stderr.write(`[edge-toolbar-zoom200] ${ordinal}/${TOOLBAR_200_REQUIRED_CELLS.length} pass ${cellId} ${Date.now() - startedAt}ms\n`);
   }
   const identityAfter = gitWorktreeIdentity(root);
   const stableIdentityAfter = stableEvidenceIdentity();
@@ -737,10 +872,14 @@ async function runMatrix() {
     stableIdentityBefore,
     stableIdentityAfter,
   });
+  const orderedCells = TOOLBAR_200_REQUIRED_CELLS
+    .map((required) => cells.find((cell) => toolbarCellId(cell) === toolbarCellId(required)))
+    .filter(Boolean);
+  const matrixComplete = orderedCells.length === TOOLBAR_200_REQUIRED_CELLS.length && orderedCells.every((cell) => cell.surface);
   const report = {
-    pass: true,
+    pass: matrixComplete,
     contract: TOOLBAR_CONTRACT,
-    ownerContract: MOBILE_ORIGIN_OWNER,
+    ownerContract: { ...MOBILE_ORIGIN_OWNER, desktopOverview: DESKTOP_ORIGIN_OWNER.overview, desktopRoute: DESKTOP_ORIGIN_OWNER.route, desktopNavigation: DESKTOP_ORIGIN_OWNER.navigation },
     generatedAt: new Date().toISOString(),
     identity: identityAfter,
     identityBefore,
@@ -752,17 +891,18 @@ async function runMatrix() {
       requiredCssViewports: TOOLBAR_200_MATRIX.map((item) => item.cssViewport),
       requiredScenarios: TOOLBAR_SCENARIOS,
       requiredCanonicalOverviewScenarios: TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS,
-      complete: cells.length === TOOLBAR_200_REQUIRED_CELLS.length && cells.every((cell) => cell.surface),
+      complete: matrixComplete,
     },
     proofBoundary: {
       proves: "For each independent viewport/scenario cell, actual Microsoft Edge browser-toolbar 200% zoom: a headed owned Edge window was focused through Windows UI Automation, reset to 100%, and each of five increments was accepted only after the page reported a real DPR or layout change. Ctrl+Shift+OEM_PLUS and Ctrl+Numpad Add fall back to Edge's real menu Zoom in button when they do not change geometry. The page then verified DPR≈2, 2x layout ratios, the target CSS viewport, worktree identity, zero horizontal scroll range, visible operational-text clipping, main-scroll-root reachability, fixed-navigation clearance, complete ordered keyboard traversal, and Windows-owned visual evidence. The visual proof is an unobscured full-window screen grab when physically possible, an owner-rendered Windows DC image when supported, or a substantial unobscured physical monitor segment plus a separately hashed full Edge renderer screenshot for an oversized window.",
       doesNotProve: "iOS Dynamic Type, Android system font size, Windows OS font size, CSS-injected text resize, CDP pageScale, or behavior on a physical mobile device. A screen-visible-segment cell does not claim that the entire oversized OS window was simultaneously visible on one physical monitor; full-viewport geometry and the separately hashed Edge renderer screenshot provide the complementary evidence.",
     },
     timeout: { globalMs: GLOBAL_TIMEOUT_MS, perCellMs: CELL_TIMEOUT_MS, uiAutomationActionMs: UI_ACTION_TIMEOUT_MS, geometryTransitionMs: GEOMETRY_TRANSITION_TIMEOUT_MS },
-    cells,
+    cells: orderedCells,
   };
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
-  process.stdout.write(`${JSON.stringify({ pass: true, reportPath, artifactKey: identityAfter.artifactKey, cells: cells.map((item) => `${item.viewport.id}::${item.scenario}`) }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({ pass: matrixComplete, reportPath, artifactKey: identityAfter.artifactKey, cells: orderedCells.map(toolbarCellId), remaining: pendingToolbarCells(orderedCells).map(toolbarCellId) }, null, 2)}\n`);
+  if (!matrixComplete) process.exitCode = 1;
 }
 
 async function main() {
@@ -779,7 +919,7 @@ if (require.main === module) main().catch((error) => {
   const report = {
     pass: false,
     contract: TOOLBAR_CONTRACT,
-    ownerContract: MOBILE_ORIGIN_OWNER,
+    ownerContract: { ...MOBILE_ORIGIN_OWNER, desktopOverview: DESKTOP_ORIGIN_OWNER.overview, desktopRoute: DESKTOP_ORIGIN_OWNER.route, desktopNavigation: DESKTOP_ORIGIN_OWNER.navigation },
     generatedAt: new Date().toISOString(),
     identity: gitWorktreeIdentity(root),
     platform: process.platform,
@@ -802,8 +942,11 @@ module.exports = {
   TOOLBAR_INCREMENTS,
   GLOBAL_TIMEOUT_MS,
   CELL_TIMEOUT_MS,
+  UI_ACTION_TIMEOUT_MS,
+  GEOMETRY_TRANSITION_TIMEOUT_MS,
   TOOLBAR_CONTRACT,
   MOBILE_ORIGIN_OWNER,
+  DESKTOP_ORIGIN_OWNER,
   baselineViewportFor,
   isExpectedViewport,
   validWindowsCapture,
@@ -811,6 +954,8 @@ module.exports = {
   acceptedZoomAttempt,
   toolbarZoomEvidence,
   stableEvidenceIdentity,
+  pendingToolbarCells,
+  parseMaxCells,
   toolbarScenarioConfig,
   toolbarReportReadiness,
   currentToolbarReportStatus,

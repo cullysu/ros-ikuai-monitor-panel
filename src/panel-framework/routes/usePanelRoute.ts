@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   isPanelEvidenceTimestamp,
+  navigationContextFromLocation,
   PANEL_ROUTES,
   routeFromLocation,
   routeUrl,
@@ -10,6 +11,7 @@ import {
 } from "./panelRoutes";
 
 type MobileScrollState = { viewport: number; regions: Record<string, number> };
+const routeScrollMemory = new Map<PanelRouteId, MobileScrollState>();
 
 function syncDocumentRoute(route: PanelRouteId) {
   const definition = PANEL_ROUTES[route];
@@ -159,6 +161,8 @@ export function usePanelRoute() {
     if (!options.replace && route === "overview") overviewReturnFocusRef.current = focusId;
 
     const currentState = (window.history.state || {}) as Record<string, unknown>;
+    const currentScroll = captureMobileScroll();
+    routeScrollMemory.set(route, currentScroll);
     // A detail entry is a real history entry. Store focus and every owned scroll
     // region on the source entry so Back and Forward restore the same task state.
     if (!options.replace) window.history.replaceState(stateWithCapturedScroll({ ...currentState, panelFocus: focusId }), "", currentUrl);
@@ -169,7 +173,7 @@ export function usePanelRoute() {
       panelContextEntry: contextual,
       panelObject: objectId,
       panelFocus: null,
-      panelMobileScroll: { viewport: 0, regions: {} },
+      panelMobileScroll: routeScrollMemory.get(next) || { viewport: 0, regions: {} },
       panelReturnRoute: next === "more" && route === "overview" ? "overview" : null,
     };
     const currentCanonicalUrl = `${window.location.pathname}${window.location.search}`;
@@ -184,5 +188,8 @@ export function usePanelRoute() {
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
   }, [route]);
 
-  return { route, navigate, definition: PANEL_ROUTES[route] };
+  const context = typeof window === "undefined"
+    ? { objectId: null, query: null, risk: null, returnRoute: null, evidenceAt: null }
+    : navigationContextFromLocation(window.location);
+  return { route, navigate, context, definition: PANEL_ROUTES[route] };
 }

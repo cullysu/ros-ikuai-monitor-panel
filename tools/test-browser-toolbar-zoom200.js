@@ -24,13 +24,15 @@ const {
   validWindowsCapture,
   stableEvidenceIdentity,
   toolbarScenarioConfig,
+  pendingToolbarCells,
+  parseMaxCells,
 } = require("./check-browser-toolbar-zoom200");
 
 const runnerSource = fs.readFileSync(path.join(__dirname, "check-browser-toolbar-zoom200.js"), "utf8");
 
-assert.match(runnerSource, /main\[data-ikuai-mobile-home\]/, "the Edge runner must inspect the current iKuai 4 overview main landmark");
-assert.match(runnerSource, /main\[data-ikuai4-mobile-route/, "the Edge runner must inspect the current iKuai 4 route owner");
-assert.match(runnerSource, /\.ikuai4-object-row/, "the Edge runner must focus a real iKuai 4 route object");
+assert.match(runnerSource, /main\[data-mobile-reference-home\]/, "the Edge runner must inspect the accepted Mobile Reference overview main landmark");
+assert.match(runnerSource, /main\[data-mobile-reference-workspace/, "the Edge runner must inspect the accepted Mobile Reference route owner");
+assert.match(runnerSource, /\.ref-object-list > button/, "the Edge runner must focus a real Mobile Reference route object");
 assert.doesNotMatch(runnerSource, /data-mobile-pulse|data-mobile-ops-overview|mop-route-row|\.oc-objects/, "the Edge runner must not retain retired mobile selector fallbacks");
 
 assert.equal(TOOLBAR_INCREMENTS, 5, "real Edge toolbar flow must remain Ctrl+0 + five Ctrl++ commands");
@@ -47,6 +49,13 @@ assert.deepEqual(
 );
 assert.equal(toolbarScenarioConfig("resource-full").runtimePhase, "current");
 assert.equal(TOOLBAR_200_REQUIRED_CELLS.length, 22, "v5 must require 16 base viewport/scenario cells plus six additional canonical Overview states at 390px");
+assert.equal(parseMaxCells(["--resume", "--max-cells=4"]), 4, "bounded real-Edge batches must accept an explicit positive cell limit");
+assert.equal(parseMaxCells(["--resume"]), Infinity, "an omitted batch limit must retain the complete matrix behavior");
+assert.deepEqual(
+  pendingToolbarCells(TOOLBAR_200_REQUIRED_CELLS.slice(0, 2).map(({ viewport, scenario }) => ({ viewport, scenario }))).map(({ viewport, scenario }) => `${viewport.id}::${scenario}`),
+  TOOLBAR_200_REQUIRED_CELLS.slice(2).map(({ viewport, scenario }) => `${viewport.id}::${scenario}`),
+  "resume must skip only exact completed cell identities and retain required order",
+);
 const phone390Cells = TOOLBAR_200_REQUIRED_CELLS
   .filter(({ viewport }) => viewport.id === "phone-390")
   .map(({ scenario }) => scenario)
@@ -159,4 +168,4 @@ assert.match(
   "the Windows-owned capture must expose bounded foreground stabilization diagnostics",
 );
 
-process.stdout.write(`${JSON.stringify({ pass: true, contract: "edge-toolbar-zoom200-offline-v7-ikuai4", cells: TOOLBAR_200_REQUIRED_CELLS.length }, null, 2)}\n`);
+process.stdout.write(`${JSON.stringify({ pass: true, contract: "edge-toolbar-zoom200-offline-v8-mobile-reference", cells: TOOLBAR_200_REQUIRED_CELLS.length }, null, 2)}\n`);

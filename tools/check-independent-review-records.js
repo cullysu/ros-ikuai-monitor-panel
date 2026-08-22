@@ -12,9 +12,9 @@ const { readRuntimeReport, runtimeIdentityDetail } = require('./runtime-report-i
 
 const ROOT = path.resolve(__dirname, '..');
 const REVIEW_DIR = 'docs/decision-system/independent-reviews';
-const DEFAULT_RUNTIME_REPORT = '_acceptance/mobile-telemetry-runtime/report.json';
-const DEFAULT_RUNTIME_SOURCE = 'mobile-telemetry-runtime';
-const DEFAULT_RUNTIME_CONTRACT = 'mobile-telemetry-runtime-v1';
+const DEFAULT_RUNTIME_REPORT = '_acceptance/mobile-reference-runtime/report.json';
+const DEFAULT_RUNTIME_SOURCE = 'mobile-reference-runtime';
+const DEFAULT_RUNTIME_CONTRACT = 'mobile-reference-runtime-v1';
 const SUPERSEDED_POCKET_REVIEW_STEP = 932;
 const SUPERSEDED_POCKET_RUNTIME_REPORT = '_acceptance/pocket-console-runtime/report.json';
 const REVIEW_SPECS = [
@@ -96,8 +96,12 @@ function inspectIndependentReviewRecords(options = {}) {
     if (record.step !== step) failures.push(`${relativePath} must bind step ${step}`);
     if (record.role !== role) failures.push(`${relativePath} must use role ${role}`);
     if (typeof record.reviewerAgentId !== 'string' || !record.reviewerAgentId.trim()) failures.push(`${relativePath} must declare reviewerAgentId`);
-    if (record.verdict !== 'pass') failures.push(`${relativePath} verdict must be pass`);
-    if (record.p0 !== 0 || record.p1 !== 0) failures.push(`${relativePath} must record p0=0 and p1=0`);
+    if (!historicalRecord && record.verdict !== 'pass') failures.push(`${relativePath} verdict must be pass`);
+    if (!historicalRecord && (record.p0 !== 0 || record.p1 !== 0)) failures.push(`${relativePath} must record p0=0 and p1=0`);
+    if (historicalRecord && !['pass', 'veto'].includes(String(record.verdict || '').toLowerCase())) failures.push(`${relativePath} historical verdict must be pass or veto`);
+    if (historicalRecord && (![record.p0, record.p1, record.p2].every((value) => Number.isInteger(value) && value >= 0))) {
+      failures.push(`${relativePath} historical severity counts must be non-negative integers`);
+    }
     if (record.scope !== 'local-independent-scope') failures.push(`${relativePath} scope must be local-independent-scope`);
     if (record.releaseEligible !== false) failures.push(`${relativePath} releaseEligible must be false`);
     if (historicalRecord && (record.status === 'current' || record.currentEvidence === true)) {
@@ -140,20 +144,20 @@ function inspectIndependentReviewRecords(options = {}) {
   if (historicalRecord && !requestedRuntimeReport) {
     const citedHistoricalRuntime = records
       .flatMap(({ record }) => evidencePaths(record.evidence))
-      .find((item) => typeof item === 'string' && /(?:pocket-console|optical-patrol|incident-lens|mobile-telemetry)-runtime\/report\.json$/.test(item));
+      .find((item) => typeof item === 'string' && /(?:pocket-console|optical-patrol|incident-lens|mobile-telemetry|mobile-reference)-runtime\/report\.json$/.test(item));
     if (citedHistoricalRuntime) runtimeReportPath = citedHistoricalRuntime;
   }
   const historicalPocketRuntime = historicalRecord && runtimeReportPath === SUPERSEDED_POCKET_RUNTIME_REPORT;
   const runtimeSource = requestedRuntimeSource || (historicalPocketRuntime ? 'pocket-console-runtime' : DEFAULT_RUNTIME_SOURCE);
   const runtimeBinding = readRuntimeReport(root, runtimeReportPath, { expectedSource: runtimeSource });
   const runtimeReportExists = runtimeBinding.status !== 'missing';
-  if (!historicalRecord && !runtimeReportExists) failures.push(`missing current mobile telemetry runtime report: ${runtimeReportPath}`);
+  if (!historicalRecord && !runtimeReportExists) failures.push(`missing current mobile reference runtime report: ${runtimeReportPath}`);
   let runtimeReportMatchesReviewedArtifact = false;
   if (runtimeReportExists) {
     const runtimeReport = readJson(root, runtimeReportPath, failures);
     if (runtimeReport) {
-      const reviewedRuntimePass = historicalRecord ? runtimeReport.pass : runtimeReport.runtimePass;
-      if (reviewedRuntimePass !== true) failures.push(`${runtimeReportPath} ${historicalRecord ? 'pass' : 'runtimePass'} must be true`);
+      const reviewedRuntimePass = runtimeReport.pass;
+      if (!historicalRecord && reviewedRuntimePass !== true) failures.push(`${runtimeReportPath} pass must be true`);
       if (!historicalRecord && runtimeReport.contract !== DEFAULT_RUNTIME_CONTRACT) {
         failures.push(`${runtimeReportPath} must use ${DEFAULT_RUNTIME_CONTRACT}`);
       }

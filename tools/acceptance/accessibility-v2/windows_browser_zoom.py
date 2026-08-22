@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import ctypes
 from ctypes import wintypes
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -90,6 +91,11 @@ def send_chord(*virtual_keys: int) -> None:
     user32 = ctypes.windll.user32
     for key in virtual_keys:
         user32.keybd_event(key, 0, 0, 0)
+    # A zero-duration key chord is intermittently dropped by headed Edge when
+    # the foreground token has just crossed from Playwright to this helper.
+    # Keep the input physical and bounded, but give Edge one small key-hold
+    # interval so the chord is not lost under normal desktop contention.
+    time.sleep(0.04)
     for key in reversed(virtual_keys):
         user32.keybd_event(key, 0, 0x0002, 0)
 
@@ -379,44 +385,58 @@ def capture_owned_edge(handle: int, target: Path, focus_timeout_seconds: float) 
     # Edge can lose the foreground token while the caller waits for toolbar and
     # layout settling. Reclaim only the uniquely owned HWND at the last possible
     # moment, then fail closed if another process repeatedly takes it back.
-    deadline = time.time() + min(max(focus_timeout_seconds, 0.1), 3.0)
-    foreground_stabilization_attempts = 0
-    while True:
-        foreground_stabilization_attempts += 1
-        focus_owned_window(handle, max(0.1, deadline - time.time()))
-        try:
-            state = inspect_edge_visibility(handle)
-            break
-        except RuntimeError as error:
-            if "not foreground immediately before screen capture" not in str(error) or time.time() >= deadline:
-                raise
-            time.sleep(0.02)
-    state["foregroundStabilizationAttempts"] = foreground_stabilization_attempts
-    rect = state["windowRect"]
-    width = int(rect["right"] - rect["left"])
-    height = int(rect["bottom"] - rect["top"])
-    if state["unobscured"]:
-        image = ImageGrab.grab(
-            bbox=(int(rect["left"]), int(rect["top"]), int(rect["right"]), int(rect["bottom"])),
-            all_screens=True,
-        )
-        state["captureMode"] = "screen-unobscured"
-        state["ownedWindowRender"] = None
-        state["visibleSegment"] = None
-    else:
-        try:
-            image, render = print_owned_window(handle, width, height)
-            state["captureMode"] = "owned-window-render"
-            state["ownedWindowRender"] = render
+    user32 = ctypes.windll.user32
+    get_window_long = getattr(user32, "GetWindowLongW", user32.GetWindowLongA)
+    set_window_pos = user32.SetWindowPos
+    set_window_pos.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.UINT]
+    set_window_pos.restype = wintypes.BOOL
+    original_topmost = bool(get_window_long(handle, -20) & 0x00000008)  # WS_EX_TOPMOST
+    z_flags = 0x0001 | 0x0002 | 0x0010 | 0x0040  # NOSIZE | NOMOVE | NOACTIVATE | SHOWWINDOW
+    if not original_topmost and not set_window_pos(ctypes.c_void_p(handle), ctypes.c_void_p(-1), 0, 0, 0, 0, z_flags):  # HWND_TOPMOST
+        raise RuntimeError("could not temporarily prioritize the owned Edge window for capture")
+    try:
+        deadline = time.time() + min(max(focus_timeout_seconds, 0.1), 3.0)
+        foreground_stabilization_attempts = 0
+        while True:
+            foreground_stabilization_attempts += 1
+            focus_owned_window(handle, max(0.1, deadline - time.time()))
+            try:
+                state = inspect_edge_visibility(handle)
+                break
+            except RuntimeError as error:
+                if "not foreground immediately before screen capture" not in str(error) or time.time() >= deadline:
+                    raise
+                time.sleep(0.02)
+        state["foregroundStabilizationAttempts"] = foreground_stabilization_attempts
+        state["capturePriority"] = "temporary-topmost" if not original_topmost else "preexisting-topmost"
+        rect = state["windowRect"]
+        width = int(rect["right"] - rect["left"])
+        height = int(rect["bottom"] - rect["top"])
+        if state["unobscured"]:
+            image = ImageGrab.grab(
+                bbox=(int(rect["left"]), int(rect["top"]), int(rect["right"] ), int(rect["bottom"])),
+                all_screens=True,
+            )
+            state["captureMode"] = "screen-unobscured"
+            state["ownedWindowRender"] = None
             state["visibleSegment"] = None
-        except Exception as error:
-            image, segment = capture_visible_edge_segment(handle, rect)
-            state["captureMode"] = "screen-visible-segment"
-            state["ownedWindowRender"] = {"success": False, "error": str(error)}
-            state["visibleSegment"] = segment
-    target.parent.mkdir(parents=True, exist_ok=True)
-    image.save(target, format="PNG")
-    return state, {"path": str(target), "width": int(image.width), "height": int(image.height)}
+        else:
+            try:
+                image, render = print_owned_window(handle, width, height)
+                state["captureMode"] = "owned-window-render"
+                state["ownedWindowRender"] = render
+                state["visibleSegment"] = None
+            except Exception as error:
+                image, segment = capture_visible_edge_segment(handle, rect)
+                state["captureMode"] = "screen-visible-segment"
+                state["ownedWindowRender"] = {"success": False, "error": str(error)}
+                state["visibleSegment"] = segment
+        target.parent.mkdir(parents=True, exist_ok=True)
+        image.save(target, format="PNG")
+        return state, {"path": str(target), "width": int(image.width), "height": int(image.height)}
+    finally:
+        if not original_topmost:
+            set_window_pos(ctypes.c_void_p(handle), ctypes.c_void_p(-2), 0, 0, 0, 0, z_flags)  # HWND_NOTOPMOST
 
 
 def main() -> None:
@@ -470,12 +490,10 @@ def main() -> None:
                 "elapsedMs": round((time.time() - started_at) * 1000),
             }, 1)
 
-    try:
-        from pywinauto import Desktop, keyboard  # type: ignore
-        from PIL import ImageGrab  # type: ignore
-    except Exception as error:
-        # No protocol/CDP fallback: pywinauto is the proof mechanism.
-        emit({"pass": False, "code": "PYWINAUTO_REQUIRED", "message": str(error)}, 2)
+    if importlib.util.find_spec("pywinauto") is None:
+        # No protocol/CDP fallback: the real Edge menu path remains a required
+        # capability even when the physical key path works for a given step.
+        emit({"pass": False, "code": "PYWINAUTO_REQUIRED", "message": "pywinauto is not installed"}, 2)
 
     started_at = time.time()
     try:
@@ -486,7 +504,7 @@ def main() -> None:
             # Node gate observes page DPR/layout after every invocation; a UIA
             # success result alone is never treated as browser-zoom proof.
             if args.action == "reset":
-                keyboard.send_keys("^0")
+                send_chord(0x11, 0x30)  # Ctrl + 0
             elif args.action == "oem-plus":
                 # The physical '=' key needs Shift to become '+'.  Ctrl+Plus
                 # is not equivalent to Ctrl+=' on layouts where '+' is shifted.
@@ -494,11 +512,16 @@ def main() -> None:
             elif args.action == "numpad-plus":
                 send_chord(0x11, 0x6B)  # Ctrl + Numpad Add
             elif args.action == "menu-plus":
+                from pywinauto import Desktop  # type: ignore
+
                 # UIA is deliberately only used once a verified key path did
                 # not change page geometry; handle lookup/focus stay bounded
                 # Win32 operations rather than a global UIA desktop scan.
                 desktop = Desktop(backend="uia")
                 window = desktop.window(handle=handle)
+                process_id = ctypes.c_ulong(0)
+                ctypes.windll.user32.GetWindowThreadProcessId(handle, ctypes.byref(process_id))
+                owned_process_id = int(process_id.value)
                 more_tokens = ("settings and more", "settings", "设置及更多", "设置和更多", "更多")
                 zoom_in_tokens = ("zoom in", "放大", "增大")
 
@@ -545,7 +568,15 @@ def main() -> None:
                     raise RuntimeError("could not locate the real Edge Settings and more button for menu zoom fallback; observed=" + json.dumps(observed[:30], ensure_ascii=False))
                 more.click_input()
                 time.sleep(args.settle_milliseconds / 1000)
-                zoom_in = find_button((window, *desktop.windows()), zoom_in_tokens)
+                # Do not scan every visible UIA window on the desktop here.
+                # A headed Edge run can coexist with many unrelated Edge
+                # windows/processes, and a global UIA enumeration can stall
+                # long enough for the Node owner to misclassify the tool as a
+                # product failure.  The menu popup is owned by the same Edge
+                # process, so keep the search bounded to that process and the
+                # already-owned window.
+                owned_windows = desktop.windows(process=owned_process_id, visible_only=True)
+                zoom_in = find_button((window, *owned_windows), zoom_in_tokens)
                 if zoom_in is None:
                     raise RuntimeError("could not locate the real Edge Zoom in menu button for menu zoom fallback")
                 zoom_in.click_input()

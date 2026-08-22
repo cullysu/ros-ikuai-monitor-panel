@@ -826,7 +826,7 @@ def assert_frontend_charts_skip_missing_values():
     evidence_model_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
     instrument_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewInstruments.ts").read_text(encoding="utf-8")
     evidence_source = evidence_model_source + "\n" + instrument_source
-    chart_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "DesktopWanEvidence.tsx").read_text(encoding="utf-8")
+    chart_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "LegacyDesktopOverview.tsx").read_text(encoding="utf-8")
     assert 'data-overview-framework-asset="surface-loader"' in index_source
     assert 'if (value === null || value === undefined || value === "") return null;' in evidence_source
     assert "if (rowDown === null || rowUp === null) return null;" in evidence_source
@@ -855,7 +855,7 @@ def assert_frontend_wan_aggregate_default():
     evidence_model_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
     instrument_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewInstruments.ts").read_text(encoding="utf-8")
     evidence_source = evidence_model_source + "\n" + instrument_source
-    screen_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "DesktopOverviewScreen.tsx").read_text(encoding="utf-8")
+    screen_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "LegacyDesktopOverview.tsx").read_text(encoding="utf-8")
     assert "const rows = wanRows(snapshot).filter" in evidence_source
     assert "down += rowDown;" in evidence_source
     assert "up += rowUp;" in evidence_source
@@ -865,8 +865,8 @@ def assert_frontend_wan_aggregate_default():
     assert "接口依赖异常期间的 WAN 吞吐" in evidence_source
     assert "接口待确认期间的 WAN 吞吐" in evidence_source
     assert "该趋势不证明未运行接口已经影响或没有影响业务" in evidence_source
-    assert "const showTraffic = !incident && state.scale !== \"fleet\" && Boolean(model.traffic);" in screen_source
-    assert '<DesktopWanEvidence traffic={model.traffic}' in screen_source
+    assert "const traffic = model.traffic;" in screen_source
+    assert '<TrafficChart traffic={traffic}' in screen_source
     assert "WAN 趋势证据未形成" in screen_source
     assert "scale-adaptive-patch" not in index_source
     assert "panel-professional-redesign" not in index_source

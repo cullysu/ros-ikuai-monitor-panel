@@ -5,7 +5,7 @@
 > validForCommit: `false`；本文件是历史流水，不拥有当前产品或发布结论
 > supersededBy: `docs/decision-system/current-state.md`
 > 历史工程发行事实：远端曾有 `main=a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3`，tree `0b4193be8c25573296a27433175181629d2996d6`；该不可变 SHA 的 Linux、Windows、GHCR 曾全部通过，不能替代当前工作树产品结论
-> 当前产品结论：不在本历史日志维护；唯一当前结论见 `docs/decision-system/current-state.md`
+> 当前产品结论：**FAIL**；本历史日志不维护细节，唯一当前结论见 `docs/decision-system/current-state.md`
 > 当前权威来源：`docs/decision-system/current-state.md`；本文件只保存按时间排序的历史判断，后写步骤可撤回前文，但不得充当当前状态页
 > D 盘关系：`D:\想法\面板\面板重做决策日志.md` 是本历史日志的逐字镜像，不是第二真相源
 
@@ -29436,3 +29436,862 @@ Product、Design、Visual 继续保持 failed；工程矩阵和 Accessibility �
 - 当前仍是 FAIL overall：最终 exact-SHA 56/10/28/76/266、release readiness、独立 release signoff 和远端 Linux/Windows/GHCR CL 尚未闭环；GitHub 未上传，任务 active，blocked=false。
 
 - latestStepOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
+
+## 第 1063 步：否决巡检回执视觉，重建原生 WAN 驾驶舱（2026-08-16）
+
+- outcome: `1063:inspection-rejected-native-wan-cockpit-smoke-green-product-release-failed`
+- 用户与主所有者复核确认 Mobile Flow、Situation 和第一版 Inspection 均未达到手机产品审美：它们把桌面诊断表格缩排到手机，具有大标题、同构白卡、弱图表和无效留白。所有旧视觉签收作废，Product、Design、Visual 重新置为 pending，State matrix 重新置为 pending。
+- 重新依据爱快 4.0 的 WAN/对象/状态密度和 Apple 最新 HIG 的内容层/控件层分离原则选定原生 WAN 驾驶舱：内容使用标准材质；仅顶部控件与四栏导航使用低强度 Liquid Glass；正常态以已核实默认路由、原子上下行样本和双序列 15 分钟趋势为中心；资源、接口、采集和无快照使用独立结构。
+- `src/panel-framework/mobile-inspection-ui/` 仍是唯一手机呈现所有者，但 Overview 的旧“巡检回执”结构已经删除并重建。资源态展示 CPU/内存/磁盘当前值、阈值和末尾相邻样本；接口态展示责任接口、路由依赖和证据来源；缺失/历史证据继续撤回当前流量。
+- model、architecture、TypeScript、production build 与 8 格真实运行时 smoke 通过；normal 图表门禁要求两个命名序列且 `preserveAspectRatio` 不得为 `none`，异常态禁止继续显示当前趋势。smoke 只证明实现切片，不能升级为完整矩阵或视觉签收。
+- GitHub 未上传；独立 Product/Visual、完整 56 格、200% 文本、全公开矩阵、RouterOS soak、clean candidate 和 exact-SHA Linux/Windows/GHCR CL 全部仍未关闭，发布保持 CLOSED。
+
+- latestStepOutcome: `1063:inspection-rejected-native-wan-cockpit-smoke-green-product-release-failed`
+
+## 第 1064 步：旧卡片首页物理删除，连续式手机工作台完成 56 格与 200% 验证（2026-08-16）
+
+- outcome: `1064:edge-to-edge-native-mobile-56of56-a11y10of10-product-visual-pending-release-closed`
+- 本轮没有继续给 Step1063 的浅蓝卡片页打补丁：旧 `MobileInspectionOverview.tsx` 与 `inspection-overview.css` 已物理删除，入口改为全新 `MobileInspectionHome.tsx` 与 `inspection-home.css`。共享证据模型保留，因为它负责事实正确性；旧呈现结构不再保留。
+- 手机正常态改为连续、边到边的任务流：顶部只保留小型 Liquid Glass 控件；内容依次为精确结论、已核实默认出口、原子上下行、带峰值纵轴与起止时间的双序列趋势、三列路由/采集/WAN 比较条，以及不复读的接口、资源和连接对象状态。
+- 事故态继续使用独立布局：资源场景显示当前值、阈值与末尾相邻样本；接口场景显示责任接口及默认路由依赖；采集/无快照撤回当前速率与趋势。底部四根导航改为紧凑单层玻璃材质，不再给选中项叠加第二个胶囊。
+- 平板在右侧增加真实证据边界与对象状态，不再仅把两个手机模块机械并排。手机和桌面仍保持独立渲染树，但共享验证后的 evidence/domain model。
+- 精确工作树 fingerprint `10677a8a9dec7174c1226fd8aee894e5f3ff87ccef0f8f24b74e415431437ebc`：生产构建通过；手机运行时 `56/56` 且四个真实工作流通过；Accessibility-v2 `10/10`，覆盖 text-only 200%、Back/Forward、焦点、搜索、底部导航、连接控件、reduced motion/transparency 与 forced colors。
+- 这些证据关闭的是 Implementation、Mobile state matrix 和 Accessibility，不关闭 Product 或 Design/Visual。两名新独立 reviewer 因外部额度耗尽未形成评审结果，因此不能伪造签收，也不构成停止本地工程工作的 blocker。
+- GitHub 未上传；完整公开矩阵、RouterOS soak、clean candidate、独立 Product/Visual P0/P1=0 和上传后精确 SHA 的 Linux/Windows/GHCR CL 均未关闭，发布继续 `CLOSED`。
+
+- latestStepOutcome: `1064:edge-to-edge-native-mobile-56of56-a11y10of10-product-visual-pending-release-closed`
+
+## 第 1066 步：出口判词 + 对象差分视觉修正（2026-08-16）
+
+- outcome: `1066:mobile-brief-grouped-ios-ikuai-visual-remediation-runtime56-a11y10-release-closed`
+- 当前手机 owner 保持为 `src/panel-framework/mobile-inspection-ui/overview/MobileInspectionBrief.tsx` 与 `styles/inspection-brief.css`；没有恢复旧 presentation。
+- 根据独立评审，把正常态出口区从桌面式四列压缩行改成“默认出口眉题 → WAN 主对象 → 路由次信息 → 核实状态 → 双速率 → 双序列趋势 → 本轮状态回执”的单任务主线。
+- 正常态不再额外渲染重复的“本轮巡检”卡；未发现优先事项并入出口主模块底部。上传趋势改为蓝/青蓝双序列，绿色只表示已核实/运行成功；待确认状态不再显示绿色。
+- 底部四根入口保留为巡检 / 网络 / 终端 / 日志，去掉选中项的第二层胶囊，玻璃只承担导航层。内容层继续使用不透明分组列表和轻阴影。
+- 真实验证：`check:types`、`check-mobile-visual-surface-contract`、`check-overview-ikuai-static`、`check-release-blockers`、`check-mobile-ikuai4-runtime --full` 56/56、`check-mobile-accessibility-runtime-v2` 10/10、production build 均通过。
+- Product / Design / Visual 仍未由主 Agent 自签；GitHub 未上传，发布与 exact-SHA Linux / Windows / GHCR CL 继续关闭。
+
+- latestStepOutcome: `1066:mobile-brief-grouped-ios-ikuai-visual-remediation-runtime56-a11y10-release-closed`
+
+## 第 1067 步：补强 200% 文本与窄屏底部导航覆盖（2026-08-16）
+
+- outcome: `1067:mobile-brief-runtime56-a11y-expanded-text200-320-375-390-navigation-reachability-release-closed`
+- Accessibility runtime-v2 的 text-only 200% 覆盖从 320/390 两个宽度扩展到 320/375/390，并加入 collection-down；底部导航几何检查覆盖 320、375、390、横屏与 768 平板。
+- 当前结果仍为 10/10 stage PASS、200% 文本无裁切、窄屏无横向溢出、四根入口保持可达。该补强没有改变产品代码，只收紧了验收证据。
+- 静态 snapshot 入口的独立 200% 矩阵、完整 route/detail/connection 窄屏异常态矩阵仍是后续 QA 边界，不用当前 live-runtime 结果冒充已覆盖。
+- Product / Design / Visual 仍未由主 Agent 自签；GitHub 未上传，发布与 exact-SHA Linux / Windows / GHCR CL 继续关闭。
+
+- latestStepOutcome: `1067:mobile-brief-runtime56-a11y-expanded-text200-320-375-390-navigation-reachability-release-closed`
+
+## 第 1068 步 · 采用用户提供的四屏手机参考，重画 Mobile Inspection Brief（2026-08-16）
+
+- outcome: `1068:mobile-inspection-brief-supplied-reference-redraw-engineering-green-product-visual-pending`
+- 用户提供的四屏参考明确了真正的手机方向：设备选择器式顶部栏、紧凑状态行、单一 WAN 监控面、对象化分组列表、细分隔线、克制蓝色数据语义和四个稳定底部入口。它比当前的大标题账本更接近 iOS 与爱快移动端的共同使用节奏。
+- 前一轮错误在于把“不要回到旧垃圾 UI”误读成“不要保留用户已经认可的手机视觉语言”，导致重新做成了偏桌面化的证据账本。本步明确撤销该误读：不恢复旧代码，但恢复用户认可的视觉结构与信息密度原则。
+- `MobileInspectionBrief.tsx` 与 `inspection-brief.css` 已按该参考重新组织：设备名与下拉入口回到顶部，状态不再占用大型标题空间，WAN 卡片展示对象、状态、双向速率、时间窗、双系列曲线和证据入口，辅助证据保持紧凑分组。
+- 工程证据：`check:types`、`check-mobile-visual-surface-contract`、`check-mobile-ikuai4-architecture`、`check-mobile-ikuai4-model`、`check-overview-ikuai-static`、`check-release-blockers`、production build、`check-mobile-ikuai4-runtime --full` 56/56 均通过；该结果仍不是独立 Product/Visual 签收。
+- Product、Design/Visual、完整公开矩阵、clean exact-SHA、GitHub 上传及 Linux/Windows/GHCR CL 继续保持 pending/CLOSED；不得将本地工程绿灯写成公开发布资格。
+
+- latestStepOutcome: `1068:mobile-inspection-brief-supplied-reference-redraw-engineering-green-product-visual-pending`
+
+## 第 1070 步：桌面方向以 192.168.3.5 实际版本为唯一基线（2026-08-16）
+
+- outcome: `1070:desktop-192-168-3-5-live-baseline-selected-later-directions-rejected`
+- 产品所有者明确确认 `192.168.3.5` 的旧桌面版本已经具备所需的 iPad 式工作台气质：紧凑左侧导航、八项设备摘要、左侧 WAN 主面板、右侧实时趋势与资源三联图。
+- 后续 evidence-ledger、incident docket 和大块深色结论式桌面方向全部撤销，不再作为美术或布局参考。
+- 本轮允许保留共享证据模型和只读安全边界，但桌面 JSX、CSS、信息节奏与视觉层级必须回到该实际版本的产品语法。
+
+## 第 1071 步：后续桌面表现层物理删除，旧版语法由单一 owner 接管（2026-08-16）
+
+- outcome: `1071:later-desktop-presentation-owners-physically-removed-legacy-owner-mounted`
+- 新的唯一桌面 owner 为 `src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx` 与 `styles/legacy-desktop.css`。
+- `DesktopIncidentDocket.tsx`、`DesktopLedger.tsx`、`DesktopOverviewTask.tsx`、`DesktopResourceEvidence.tsx`、`DesktopWanEvidence.tsx` 及其后续样式层已物理删除；稳定入口只委托给 Legacy owner。
+- 删除表现层不等于回退事实边界：活动 WAN 不允许首行兜底，缺失速率保持不可用，异常对象继续使用共享风险队列和证据模式。
+
+## 第 1072 步：按旧版主体结构完成 iPad 化美术收束（2026-08-16）
+
+- outcome: `1072:legacy-desktop-ipad-art-direction-restored-with-truth-bound-evidence`
+- 正常态恢复八项紧凑摘要、WAN 左栏、双实时趋势、CPU/内存/磁盘三联图和八项宽带状态摘要，不再使用大型结论块或账本式字段墙。
+- 表面统一为冷白和克制浅蓝，圆角收束到 8–10px，使用细边框、轻阴影、紧凑字重与有限状态色；美术优化只增强层级，不改变 192.168.3.5 的主体构图。
+- 异常态使用同一桌面骨架，但以紧凑事故条、资源证据和风险对象列表替换正常摘要，避免只是换颜色或标题。
+- 图表使用真实时间位置、明确单位、零值和峰值，SVG 保持等比缩放并提供 title/desc。
+
+## 第 1073 步：桌面可读性与资源首屏门禁重写（2026-08-16）
+
+- outcome: `1073:desktop-readable-density-and-resource-priority-gates-green`
+- 活跃桌面样式不再使用 7–9px 运维正文；正文最小 10px，图轴 9px 仅作为非操作性标注。
+- 资源满载门禁不再强迫低优先级 Top5 模块挤进首屏，而是要求风险优先条、三项资源证据和首个风险对象可见。
+- `!important` 预算继续收紧，删除后续 owner 的补丁层，避免为了截图密度重新制造 10 万行 CSS 地层。
+
+## 第 1074 步：桌面七场景双视口初次闭环（2026-08-16）
+
+- outcome: `1074:desktop-ipad-legacy-matrix-14of14-focused-runtimes-green`
+- `single / fleet / all-offline / no-snapshot / collection-down / resource-full / interfaces-down` 在 1366×768 与 1440×900 共 14 格全部通过。
+- `desktop-v1030`、`desktop-no-snapshot`、`desktop-incident-hierarchy` 和资源密度运行时门禁通过。
+- 此结果证明桌面工程和响应式契约成立，不自动等于整体公众发布资格。
+
+## 第 1075 步：路由成熟度门禁移除退役手机 owner 引用（2026-08-16）
+
+- outcome: `1075:route-maturity-current-owner-references-zero-violations`
+- `panelRouteMaturity.ts` 中所有 `mobile-pulse`、`mobile-native` 和旧 `data-ikuai*` 引用迁移到当前 `mobile-inspection-ui` 的 overview、workspace、detail 与 directory 标记。
+- 结构检查为零违规；没有为了让门禁通过而恢复任何已删除的旧 UI。
+
+## 第 1076 步：当前桌面 owner 的静态发布契约通过（2026-08-16）
+
+- outcome: `1076:legacy-desktop-static-engineering-readiness-green`
+- production build 通过：mobile JS 344.11 kB，desktop JS 425.42 kB；framework 输入身份与构建产物一致。
+- `check-public-release-readiness --static-only` 输出 `engineeringReadinessPass=true`。
+- 静态绿灯只表示当前代码、资源和门禁引用一致；GitHub 未上传，远端 CL 未开始。
+
+## 第 1077 步：最终桌面 iPad 矩阵重新生成并人工抽查（2026-08-16）
+
+- outcome: `1077:final-desktop-ipad-matrix-14of14-current-artifact-green-release-closed`
+- 在最后的无快照提示避让修复后重新生成全部 14 张桌面原图，没有复用旧截图。
+- 14/14 均通过：八项摘要、三项资源、场景工作区、图表真值、10px 正文下限、可点击对象高度与横向溢出检查全部为真。
+- 人工抽查 normal、no-snapshot、resource-full、interfaces-down：主体构图保持 192.168.3.5 的 iPad 化桌面语言；无快照提示不再被固定侧栏遮挡，异常态没有伪造当前速率。
+- 当前桌面实现与桌面工程矩阵已闭环。整体产品仍因手机独立 Product/Visual 签收、完整公众矩阵、clean exact-SHA 与 Linux/Windows/GHCR CL 尚未闭环而保持发布关闭；GitHub 未上传。
+
+- latestStepOutcome: `1077:final-desktop-ipad-matrix-14of14-current-artifact-green-release-closed`
+
+## 第 1078 步：决策仓库恢复为唯一当前真相并完成 D 盘镜像（2026-08-16）
+
+- outcome: `1078:decision-authority-and-D-mirror-current-step-1077-green`
+- `check:decision-system` 完整通过，当前状态、当前索引、发布日志、Product Loop handoff 和独立评审历史边界保持一致；Step995 的旧评审被明确标为历史证据，不再冒充当前签收。
+- `D:\想法\面板` 的 23 个镜像文件与项目决策仓库逐字节一致。自动 hooks 仍未达到 ready，因此继续使用手工 checkpoint；这不构成停止产品工作的 blocker。
+
+## 第 1079 步：按 Emil / Product Loop 做桌面独立复核并修复真实 P1（2026-08-16）
+
+- outcome: `1079:legacy-desktop-p1-review-fixes-and-stale-gate-retirement-green`
+- 三路独立只读审查分别覆盖视觉、工程/可访问性和验收架构。对“改成六卡、五五分栏”等偏离 192.168.3.5 的建议予以拒绝，因为产品所有者指定的八卡、WAN 左栏和 32/68 主构图是基准，不应被审美代理擅自改写。
+- 采纳并修复了不改变基准构图的真实问题：空 `pppoe=[]` 不再吞掉 `wan` 数据；同向重复图表使用唯一 SVG title/desc ID；上传和下载分别按自身峰值缩放；缺失资源不再画成 0% 进度；1040px 以下取消会重叠的 WAN 双列布局；820/520px 增加 2 列/1 列 reflow；状态与辅助文字色加深以提高可读性。
+- 桌面左轨恢复为更接近旧版的 52px 图标轨，文字标签转为 `aria-label`，保留键盘可访问名称；运行时只读栏保留，因为它承载真实安全模式和快照状态，不为了像旧截图而删除安全边界。
+- `check-overview-architecture.js` 现在验证稳定入口确实只委托 `LegacyDesktopOverview`，并阻止 Ledger/Docket/Task 等被否决 owner 回流。旧 normal-focus/density v1 验证器被物理删除；当前 density gate 改为绑定 Legacy owner 与 14 格桌面矩阵。
+
+## 第 1080 步：桌面美术收束后重新构建、截图并闭合当前 14 格（2026-08-16）
+
+- outcome: `1080:desktop-ipad-art-refinement-final14-static-readiness-green-release-closed`
+- `check:types`、`check:overview` 12/12、production build、asset identity、backend security、connection/backend contracts、route maturity、release blockers、package-script references 与 static public readiness 全部通过。
+- WAN 轴门禁从错误的上下行共享峰值改为分别验证上传 `6.25 Mbps` 与下载 `31.25 Mbps`，同时继续验证四张图的 SVG 边界和轴间距；门禁不再奖励把上传曲线压平的错误图表。
+- 在最终 CSS/TSX 上重新生成七场景 × 1366×768/1440×900，共 14 张原图，14/14 通过；normal、resource-full、no-snapshot 原图再次人工复核。结果更贴近产品所有者认可的旧版：图标轨更紧凑、主内容左缘回到约 70px、八卡和 32/68 骨架保持不变，异常条与证据真实性继续保留。
+- 当前桌面方向、代码、静态契约和桌面矩阵闭合。整体发布仍关闭：手机 Product/Design/Visual、完整公众矩阵、clean exact-SHA、RouterOS soak 以及上传后 Linux/Windows/GHCR CL 尚未完成；GitHub 未上传。
+
+- latestStepOutcome: `1080:desktop-ipad-art-refinement-final14-static-readiness-green-release-closed`
+
+## 第 1093 步：锁定用户指定四屏手机基线并完成第一轮独立手机实现（2026-08-17）
+
+- 触发/问题：产品所有者明确要求只保留最新提供的四屏手机参考图，删除其它手机 UI 方向，不得再以旧手机实现、桌面压缩版或旧合同作为基线。
+- 观察事实：仓库中仍有旧手机 presentation owner、旧验收命名和 D 盘旧手机合同；它们会让后续 Loop 在“手机应该长什么样”上发生基线漂移。旧手机实现也把告警、资源、接口和详情混成一套不同的信息模型，不能直接修补后冒充当前方向。
+- 决策：物理删除旧手机 presentation 树、旧手机截图/验收工件和 D 盘旧手机合同；只保留 `_design/accepted-mobile-reference/accepted-four-screen.png`，并新建 `src/panel-framework/mobile-reference-ui/` 作为唯一手机 presentation owner。
+- 视觉原则：沿用户四屏保留浅灰系统画布、白色浅卡片、紧凑分组、浅阴影、系统蓝、语义绿/红、双下载/上传折线、资源条目、接口列表、证据来源和四入口导航。手机是独立的信息结构，不是桌面 UI 缩放。
+- 证据原则：默认路由只在显式 route/WAN 关系成立时标记为已核实；缺失速率不改写成 0；资源受影响对象不能逐字复读 CPU/内存/磁盘证明行；资源趋势线只使用真实采样点。
+- 第一轮实现：新 owner 完成正常概览、资源告警、接口告警、WAN 详情四种 archetype；修正告警标题继承状态色、资源顺序、资源趋势标记、资源影响对象复读和未记录运营商导致的详情标题截断。
+- 验证：`check:types` PASS；production build PASS；重新捕获 `normal-390x844.png`、`resource-390x844.png`、`interfaces-390x844.png`、`wan-detail-390x844.png` 并人工逐张检查；新手机 CSS 无 `!important`、无 `transition: all`。当前证据是 focused visual smoke，不是公众发布签收。
+- 拒绝项：不恢复旧手机树、不复制旧手机合同、不以桌面截图作为手机视觉证据、不把四张截图的通过扩大解释成完整场景矩阵通过。
+- 心得/边界：用户说“只保留这个版本”时，最重要的不是继续调颜色，而是先消除所有竞争基线和所有权歧义。只有一个参考图、一个 presentation owner、一个证据入口，后续的审美评审才不会再次漂移。这里记录可审计决策，不记录模型私有逐字思维链。
+
+## 第 1094 步：迁移剩余门禁到唯一手机 owner，并完成当前工作树回归（2026-08-17）
+
+- latestStepOutcome: `1094:mobile-reference-validator-migration-and-full-matrix-green-release-closed`
+- 触发/问题：Step1093 之后，部分路由、后端契约、视觉表面和 canonical route 门禁仍引用已经物理删除的旧手机 owner；readiness 因决策机器状态停留在 Step1080 而无法读取当前结论。
+- 观察事实：旧引用集中在 `check-canonical-route.js`、`test_backend_public_contract.py` 和 `check-mobile-visual-surface-contract.js`；当前唯一手机 owner 是 `src/panel-framework/mobile-reference-ui/`，其四屏运行时矩阵为 7 场景 × 8 视口共 56/56，移动无障碍回归 9/9 阶段通过，连接/时间/后端公开契约通过，路由成熟度和发布阻断器通过。
+- 决策：所有仍有业务意义的门禁改为验证 `mobile-reference-ui` 的真实标记、当前缺失值语义、四入口导航、WAN 双线图、资源/接口场景、连接身份边界和 bounded object workspace；只保留旧 owner 名称作为“已删除/历史证据不可回流”的负向断言。canonical route 测试不再要求已删除的旧对象历史 API，而验证当前 workspace、目录、WAN detail 和导航 surface。
+- 理由与拒绝项：不能为了让旧测试变绿而恢复旧手机树、复制旧合同或在新 owner 中伪造不存在的交互。门禁必须跟随当前产品所有权，否则会把已经被用户否决的基线重新注入 Loop。
+- 验证：`check:types`、production build、`check-mobile-reference-runtime --full`（56/56）、`check-mobile-reference-accessibility-runtime`（9/9）、`check-mobile-reference-model`、`check-mobile-reference-architecture`、`check-mobile-reference-connection-security`、`check-mobile-visual-surface-contract`、`check-canonical-route`（9/9）、`check:route-maturity`、`check:connection-backend-contracts`、`check-release-blockers`、locale/time/route-focus 和 semantic gates 均通过。`check-public-release-readiness --static-only` 在决策账本机器状态同步前被正确阻断，不得把阻断误写成发布通过。
+- 边界：当前工作树仍未形成 clean exact-SHA release candidate；未上传 GitHub，未开始上传后 Linux/Windows/GHCR CL；独立 Product/Visual 签收仍未完成，公众发布继续关闭。
+- 心得/Loop 修正：当实现 owner 已切换，旧门禁失败首先应判断为契约漂移，而不是回滚产品实现。先迁移门禁并回归真实行为，再同步 current-state、D 盘镜像和机器状态，避免 readiness 使用过期文件路径或过期步骤作出错误结论。这里记录可审计决策，不记录模型私有逐字思维链。
+- outcome: `1093:accepted-four-screen-mobile-owner-screenshots-green-release-closed`
+- next action: 把剩余手机架构、无障碍和运行时门禁迁移到新 owner，完成 7 场景 × 8 视口矩阵和独立 Product/Visual receipt；在此之前 GitHub 与发布均保持关闭。
+
+## 第 1095 步：唯一手机基线的路由迁移与全场景证据复核（2026-08-17）
+
+- outcome: `1095:accepted-four-screen-owner-route-and-scenario-regression-green-release-closed`
+- 继续执行用户指定的唯一手机基线：`_design/accepted-mobile-reference/accepted-four-screen.png` 仍是唯一视觉参考，`src/panel-framework/mobile-reference-ui/` 仍是唯一手机 presentation owner；没有恢复或引用已删除的其它手机 presentation 树。
+- 路由门禁迁移完成：移动路由 wrapper 暴露当前 route contract；小于 900px 的非概览路由由 accepted owner 的 workspace/directory/WAN detail contract 验证；无对象路由显示“当前没有可核实的对象”，不以空白壳伪装完成度；WAN 操作目标提升到 44px。
+- 证据：手机概览运行时 7 场景 × 8 视口 `56/56`；路由状态矩阵 7 场景 × 19 路由 × 桌面/手机 `266/266`；完整概览发布矩阵 7 场景 × 4 视口 `28/28`；手机无障碍运行时 `9/9`；静态发布门禁、矩阵契约、时间契约、发布阻断器均通过。
+- 人工抽查：正常、资源满载、接口 Down 三张 390×844 原图均保持四屏参考的紧凑白卡、浅灰画布、蓝色主操作、绿/红语义状态、双 WAN 折线和四入口导航；异常态改变内容层级但不改美术基线。
+- 当前阻断：`check-public-release-readiness --engineering-worktree` 只剩 `_acceptance/edge-toolbar-zoom200/report.json` 的提交身份、工作树指纹和 artifact key 过期；不得伪造 200% Edge 证据。该阻断不影响上述本地矩阵通过，但公众发布、GitHub 上传和上传后 CL 仍保持关闭。
+- Loop 修正：矩阵通过只能证明工程行为和当前截图证据，不等于完成独立 Product/Visual 签收；当前继续以 accepted reference 做视觉验收，并把 stale external-browser artifact 单独隔离，不再让旧截图或旧 owner 重新成为基线。
+- next action: 在不改动 accepted art direction 的前提下，刷新或取得与当前工作树身份一致的 Edge 200% 真实证据；若环境无法真实刷新，则保留该阻断并报告，禁止以静态或旧报告冒充发布资格。
+- latestStepOutcome: `1095:accepted-four-screen-owner-route-and-scenario-regression-green-release-closed`
+
+## 第 1096 步：修复当前手机细节并重新绑定完整矩阵证据（2026-08-17）
+
+- outcome: `1096:accepted-four-screen-detail-truth-and-current-matrix-evidence-green-release-closed`
+- 继续以用户提供的四屏图作为唯一手机基线。它只是“像正常手机 UI 的最低方向”，不是完稿；本步没有恢复任何旧手机 presentation，也没有把桌面结构压缩到手机。
+- 修复两个真实细节问题：WAN 缺少在线时长时不再渲染“在线 在线时长未记录”的重复语义；非默认 WAN 详情不再借用默认路由的网关证据，只有被明确验证的默认 WAN 才使用活动路径网关。
+- 当前 owner 保持不变：`src/panel-framework/mobile-reference-ui/`。视觉语言保持浅灰画布、白色紧凑分组、蓝色主操作、绿/红语义状态、双线 WAN 图、资源/接口异常列表和四入口导航；本步只修事实和细节，不改美术方向。
+- 验证：`check:types`、production build、mobile model、architecture、visual surface、connection security 全部 PASS；手机运行时 7 场景 × 8 视口 `56/56`；手机无障碍/交互运行时 `10/10`；当前工作树公共概览矩阵 `28/28`、路由状态矩阵 `266/266`、路由响应式矩阵 `76/76` 均已重新生成并绑定当前身份。
+- 当前发布边界：`check-public-release-readiness --engineering-worktree` 只剩真实 Edge 工具栏 200% 报告的 commit/worktreeFingerprint/artifactKey 过期；不伪造该证据。工作树仍脏、独立 Product/Visual receipt 未完成、GitHub 未上传、Linux/Windows/GHCR CL 未开始，发布继续 CLOSED。
+- Loop 修正：矩阵报告必须随当前源码身份重新生成；局部手机回归通过不能替代公共矩阵，公共矩阵通过也不能替代独立视觉签收。决策日志记录可审计事实与边界，不记录模型私有逐字思维链。
+- next action: 取得真实当前身份的 Edge 200% 证据；若环境无法提供，则保留阻断，同时完成独立 Product/Visual receipt 和 clean exact-SHA 候选准备。
+- latestStepOutcome: `1096:accepted-four-screen-detail-truth-and-current-matrix-evidence-green-release-closed`
+
+## 第 1097 步：按独立评审修复手机信息效率、异常证据与响应式边界（2026-08-17）
+
+- 触发：独立 Product / Visual 复核虽然确认四屏参考方向应保持，但仍指出三类 P1：固定底部导航遮挡小屏内容、非默认 WAN 详情可能借用默认实时流量、平板/横屏只是换导航而没有形成手机任务工作区；Product 另指出异常页过空、当前状态被误写成“最近变更”、对象详情缺少领域证据。
+- 基线与拒绝项：`_design/accepted-mobile-reference/accepted-four-screen.png` 仍是唯一手机视觉基线；本步没有恢复任何已删除手机树，没有把桌面 DOM 或桌面分栏压缩到手机，也没有改变浅灰画布、紧凑白色分组、蓝色主操作、绿/红/橙语义状态、双 WAN 折线和四入口导航。
+- 根因修复：手机滚动视口为固定底部导航预留安全高度；只有同一条被验证的 WAN 才能显示当前流量，非默认 WAN 没有完整当前样本时明确显示不可核实；平板肖像与宽横屏采用 WAN 主任务 + 路由/采集/当前状态的双列工作区，小横屏保留紧凑单列；异常页新增影响范围、REST/SSH/业务数据和当前边界证据；正常态“最近变更”改为“当前状态”；对象详情按接口、路由、终端、资源提供新的领域证据，不再复读主页 proof；图表补充时间窗/采样点数、资源趋势语义，接口列表提供“查看全部”入口。
+- 验证：`check:types`、production build、mobile model、architecture、visual surface、connection security 均 PASS；手机运行时 7 场景 × 8 视口 `56/56`；手机无障碍/交互运行时 `11/11`；当前工作树路由状态矩阵 `266/266`。公共概览 `28/28` 与路由响应式 `76/76` 必须在本步文档同步后再次按当前身份生成，不能沿用旧报告。
+- 当前边界：`check-public-release-readiness --engineering-worktree` 仍只剩真实 Edge 工具栏 200% 证据的身份过期问题；当前环境没有可用的浏览器工具，不能伪造刷新结果。独立 Product / Visual receipt 尚未完成，工作树仍脏，GitHub 未上传，Linux/Windows/GHCR exact-SHA CL 未开始，公众发布继续 CLOSED。
+- Loop 修正：P1 评审指出的是手机任务流与证据组织，不是换回旧审美的理由。以后先把“导航遮挡、对象事实、异常优先级、平板任务结构”作为独立验收维度，再运行完整矩阵；工程矩阵通过也不自动关闭独立产品/视觉签收。
+- outcome: `1097:accepted-four-screen-mobile-p1-remediation-runtime-and-route-state-green-independent-receipt-pending-release-closed`
+- next action: 同步 D 盘决策镜像后，重新生成当前身份的 28 格概览矩阵与 76 格路由响应式矩阵，再进行新一轮只读 Product / Visual 独立签收；保留 Edge 200% 与 exact-SHA 发布边界。
+- latestStepOutcome: `1097:accepted-four-screen-mobile-p1-remediation-runtime-and-route-state-green-independent-receipt-pending-release-closed`
+
+## 第 1098 步：独立 Product / Visual 复核通过，关闭手机产品与视觉签收（2026-08-17）
+
+- 复核范围：只使用 `_design/accepted-mobile-reference/accepted-four-screen.png` 作为唯一手机基线，只读检查当前 `src/panel-framework/mobile-reference-ui/`、当前 56 张手机截图、当前 28 格概览矩阵和当前无障碍报告；没有恢复任何旧手机 owner，也没有以桌面压缩方案替代手机设计。
+- 独立 Product 结果：`PASS`，P0=0、P1=0、P2=2。全离线已清楚区分 WAN 线路、未运行接口和受影响 WAN 线路；采集异常已明确“历史快照可见，当前业务不可核实”；当前状态、异常优先级、对象领域证据和列表溢出承接成立。Product gate 可关闭。
+- 独立 Visual / Interaction 结果：`PASS`，P0=0、P1=0、P2=1。320/375 导航安全区、非默认 WAN 流量真值、768 平板双列、844/667 横屏侧栏 + 双区工作区、图表语义和触控反馈均通过。Visual gate 可关闭。四屏美术方向保持不变。
+- 当前工程证据：手机运行时 7 场景 × 8 视口 `56/56`；无障碍/交互运行时 `11/11`；公共概览 `28/28`；路由状态 `266/266`；路由响应式为 bounded 单场景 `76` 格，顶层按门禁规则保持 incomplete，不把聚焦 shard 冒充完整跨场景发布矩阵；types、build、mobile model/architecture/visual contract、release blocker、time/backend contracts 均通过。
+- P2 保留：后续可补充接口/资源/路由/终端详情截图工件；768 平板下方合法留白不应用重复指标填充；全离线 `0 bps / 0 bps` 可进一步标注为最后观测值。这些不阻断 Product / Visual gate。
+- 发布边界：工程与独立手机产品/视觉签收已通过，但 `check-public-release-readiness --engineering-worktree` 仍被真实 Edge 工具栏 200% 报告的 commit/worktreeFingerprint/artifactKey 过期阻断；工作树仍脏，GitHub 未上传，Linux/Windows/GHCR exact-SHA CL 未开始，公众发布继续 CLOSED。
+- Loop 修正：独立评审必须基于修复后的当前截图重新签收；旧 VETO 不能继续作为当前阻断，新的 P2 也不能被夸大成 P1。与此同时，签收通过不等于 release pass，外部浏览器证据和 exact-SHA 发布链仍单独保持关闭。
+- outcome: `1098:accepted-four-screen-independent-product-visual-pass-release-closed`
+- next action: 同步 Step1098 到 D 盘镜像和机器状态，重跑当前静态/身份检查；保留 Edge 200%、dirty worktree、exact-SHA 和上传后 CL 边界，不上传 GitHub。
+- latestStepOutcome: `1098:accepted-four-screen-independent-product-visual-pass-release-closed`
+
+## 第 1108 步：完成手机 P2 证据补齐并维持唯一四屏基线（2026-08-17）
+
+- 设计边界不变：`_design/accepted-mobile-reference/accepted-four-screen.png` 仍是唯一手机视觉基线，`src/panel-framework/mobile-reference-ui/` 仍是唯一手机 presentation owner；没有恢复任何已删除手机方案，也没有把桌面 DOM 或桌面布局压缩进手机。
+- 补齐四类独立对象详情证据：接口、路由、资源、终端均从真实对象列表进入详情页，并分别生成 390×844 原始截图；详情展示本领域新增证据，不再机械复读首页三项事实。
+- 修正全离线速率语义：离线 WAN 行明确显示“最后观测 0 bps / 0 bps”，不再让历史零值看起来像当前实时测量；受影响 WAN 线路与未运行接口继续分开计数。
+- 当前验证：production build PASS；mobile model/architecture/connection/visual contracts PASS；手机 7 场景 × 8 视口 `56/56` PASS；公开 overview `28/28` PASS；完整 route-state 单报告 `266/266` PASS。Product 与 Visual 的 P0/P1 继续为 0。
+- 路由响应式复跑曾出现一次 `ERR_NO_BUFFER_SPACE`，属于 Windows 浏览器资源耗尽导致的加载失败；这次失败没有被改写成通过。需要在稳定浏览器资源下重新生成当前 76 格单报告。
+- 发布边界继续关闭：真实 Edge 工具栏 200% 当前身份报告仍缺失，工作树未形成 clean exact-SHA，GitHub 未上传，Linux/Windows/GHCR CL 未开始。
+- outcome: `1108:accepted-four-screen-p2-evidence-and-current-runtime-green-release-closed`
+- next action: 在稳定浏览器资源下重跑当前身份的 76 格 route-responsive 单报告，完成决策仓库/D 盘镜像同步；随后只保留 Edge 200%、clean exact-SHA 与上传后三端 CL 发布边界。
+- latestStepOutcome: `1108:accepted-four-screen-p2-evidence-and-current-runtime-green-release-closed`
+
+## 第 1109 步：完成手机 P2 证据补齐并维持唯一四屏基线（2026-08-17）
+
+- Trigger and observation: the previous record still described route-responsive and Edge 200% evidence as pending, while the actual fixes and fresh reports now exist. The decision sources must be synchronized before the next release step so stale wording does not become a false blocker.
+- Decision: accept the current-identity engineering evidence as green, but do not promote it to independent Product/Visual signoff or release eligibility. The user-supplied four-screen reference remains the sole mobile baseline; desktop remains a separate iPad/192.168.3.5 direction.
+- Evidence: mobile reference runtime `56/56`, mobile accessibility `11/11`, public overview `28/28`, route-state `266/266`, bounded route-responsive `76/76` with `boundedPass=true`, and real Windows Edge toolbar 200% `22/22`. `check-public-release-readiness --require-matrix --engineering-worktree` reports engineering matrix readiness while keeping release ineligible because the worktree is dirty.
+- Identity: reports bind commit `c35df77de8aced51a4f5a9cd84daf2129a4246b1`, worktree fingerprint `d1404b625f1b9802a3276aa827d86e15bb1b41d9ed12dde99cdd06126c5bf4a6`, and artifact key `worktree-c35df77de8ac-d1404b625f1b`. Edge 200% is real evidence, but `releaseEvidenceEligible=false` is preserved.
+- Rejections: do not fabricate four-role independent review records; do not relabel Step1098 records as current; do not claim public readiness; do not upload GitHub or trigger Linux/Windows/GHCR CL.
+- Reflection: the important fix here is not another matrix run; it is making the decision source, machine state, D-drive mirror and evidence identity state the same thing. Engineering evidence is not product signoff and is not release eligibility.
+- Boundary: task active, `blocked=false`; current independent signoff, dirty-worktree cleanup, clean exact-SHA, GitHub atomic upload and post-upload CL remain open. `releaseEligible=false / releaseComplete=false`.
+- outcome: `1109:current-identity-runtime-and-edge-evidence-green-release-closed`
+- next action: obtain current-identity four-role independent review records, then prepare a clean exact-SHA candidate without uploading GitHub.
+- latestStepOutcome: `1109:current-identity-runtime-and-edge-evidence-green-release-closed`
+
+## 第 1110 步：按唯一四屏基线完成手机视觉修复并迁移失真的旧门禁（2026-08-19）
+
+- Trigger and observation: current screenshots confirmed two concrete defects without changing the accepted art direction: the fleet `查看全部` action inherited the interface-row grid and wrapped vertically at 390px; portrait tablet layout mechanically reserved a narrow right column and left the lower workspace empty. Two auxiliary validators were also stale: one referenced deleted mobile components, and one waited for a retired login form even though the public overview is intentionally accessible without login.
+- Decision: preserve `_design/accepted-mobile-reference/accepted-four-screen.png` as the only mobile visual baseline. Fix content ownership and responsive geometry, not the palette, card grammar, navigation language or overall iOS/iKuai visual direction. Keep short landscape as a two-zone task workspace; make portrait tablet follow status → WAN → paired evidence → current state.
+- Implementation: exclude `.ref-card-link` from the interface row grid and enforce a single horizontal overflow action; add a portrait-tablet composition with full-width status/WAN, paired route/collection evidence, and full-width current state; migrate interface evidence dedup to `mobile-reference-ui`; replace the stale tablet continuity check with a public-overview runtime check that uses the current reference owner and no login-form assumption.
+- Evidence: production build and TypeScript pass; mobile reference runtime `56/56` across seven scenarios and eight viewports with all interaction workflows; mobile accessibility `11/11`; overview current contract `12` gates; visual surface, model, architecture, connection security and online-hint recovery pass; interface evidence dedup `6/6`; tablet continuity `2/2` viewports; current detail captures regenerated from real interface, route, resource and terminal rows. The fleet 390px screenshot now keeps `查看全部 12 项` on one horizontal row; portrait tablet screenshots show the corrected task order.
+- Rejections: do not restore deleted mobile presentation owners; do not convert the accepted style into a desktop-compressed layout; do not turn the green engineering/runtime evidence into independent Product/Visual signoff; do not open GitHub or claim CL.
+- Reflection: the useful improvement was structural rather than decorative. A small selector bug could make a valid mobile action look broken, and a two-column tablet rule could make a complete evidence model feel empty. The accepted visual language is now carrying more content without changing identity.
+- Boundary: task active, `blocked=false`; independent current-identity Product/Visual/Accessibility/Engineering signoff, clean exact-SHA, GitHub atomic upload and post-upload Linux/Windows/GHCR CL remain open. `releaseEligible=false / releaseComplete=false`.
+- outcome: `1110:reference-mobile-visual-remediation-and-stale-gates-green-release-closed`
+- next action: complete current-identity independent signoff and then prepare a clean exact-SHA candidate without uploading GitHub.
+- latestStepOutcome: `1110:reference-mobile-visual-remediation-and-stale-gates-green-release-closed`
+
+## 第 1111 步：当前身份矩阵与真实 Edge 200% 证据重新闭环（2026-08-19）
+
+- 触发/观察：上一轮为读取报告临时增加的诊断脚本改变了工作树指纹，导致已经通过的截图报告被门禁判定为过期。临时脚本已删除，不能继续复用旧身份报告。
+- 决策：在不改变用户指定四屏手机美术方向的前提下，重新生成所有要求当前身份的证据；工程证据可以关闭，独立 Product/Visual/Accessibility/Engineering 签收和发布资格仍必须保持关闭。
+- 验证：当前身份下 public overview `28/28`、route-responsive `76/76`、route-state `266/266`、真实 Edge toolbar 200% `22/22`，手机 runtime `56/56`、mobile accessibility `11/11`；`check-public-release-readiness --require-matrix --engineering-worktree` 输出 `engineeringReadinessPass=true`。
+- 视觉复核：正常、资源告警、接口告警与桌面截图均保持用户选定的手机参考语法和独立桌面 iPad 语法；没有恢复任何已删除手机 owner，也没有把桌面布局压缩到手机。
+- 拒绝项：不把 dirty-worktree engineering pass 写成 release pass；不伪造独立复核记录；不上传 GitHub；不声称 Linux/Windows/GHCR CL 已通过。
+- 心得/边界：矩阵身份是证据的一部分，不是报告旁边的元数据。任何一次临时工具、文档或源码变化都必须让相关报告重新绑定当前身份；同时，工程绿色只能说明可运行和可验收，不能替代产品与视觉签收。
+- Boundary: task active, `blocked=false`; current independent signoff, clean exact-SHA, GitHub atomic upload and post-upload Linux/Windows/GHCR CL remain open. `releaseEligible=false / releaseComplete=false`.
+- outcome: `1111:current-identity-matrix-and-edge-evidence-closed-release-remains-closed`
+- next action: obtain current-identity independent signoff through the permitted review process, then prepare a clean exact-SHA candidate without uploading GitHub.
+- latestStepOutcome: `1111:current-identity-matrix-and-edge-evidence-closed-release-remains-closed`
+
+## 第 1112 步：修正手机图表语义与资源趋势缩放，保持四屏美术基线不变（2026-08-19）
+
+- 触发/观察：用户要求把评估建议全部落实，同时明确手机整体美术风格不得再改。复核当前唯一手机 owner 后发现两项仍可验证的细节缺口：WAN SVG 只有外层 `aria-label`，没有图内标题与说明；资源趋势图使用 `preserveAspectRatio="none"`，会在不同宽度下非等比拉伸曲线。
+- 决策：只修图表语义和缩放真实性，不改浅灰画布、紧凑白卡、状态横幅、四色语义、信息密度、四入口导航和页面组成。WAN 图增加真实 `<title>/<desc>`；资源 sparkline 改为等比缩放，避免把趋势形状拉变。
+- 实现：`MobileReferenceSurface.tsx` 的 WAN 图现在向读屏明确说明时间窗、采样数以及蓝/绿曲线含义；资源 sparkline 使用 `xMidYMid meet`，不再横向强行变形。
+- 验证：TypeScript PASS；production build PASS；手机 7 场景 × 8 视口 `56/56`；手机无障碍 `11/11`；手机 owner 架构门禁 PASS；public overview `28/28`；route-responsive `76/76` bounded scope；route-state `266/266`；真实 Edge toolbar 200% `22/22`；工程工作树 readiness PASS，但 `releaseEligible=false`。
+- 拒绝项：不改变用户选定的四屏美术方向；不恢复旧手机 owner；不把 SVG 细节修复扩张成视觉重做；不伪造独立四角色签收；不上载 GitHub，不声称 Linux/Windows/GHCR CL 已完成。
+- 心得/边界：视觉稳定不等于冻结语义错误。图表外观可以不变，但曲线几何和辅助技术描述必须准确；这种修复提高可信度而不改变产品身份。工作树仍脏，当前身份独立四角色复核、clean exact-SHA 与上传后三端 CL 仍未完成。
+- Boundary: task active, `blocked=false`; `releaseEligible=false / releaseComplete=false`.
+- outcome: `1112:mobile-chart-semantics-and-uniform-scaling-green-release-closed`
+- next action: obtain current-identity independent four-role review records through the permitted process, then prepare a clean exact-SHA candidate without uploading GitHub.
+- latestStepOutcome: `1112:mobile-chart-semantics-and-uniform-scaling-green-release-closed`
+
+## 第 1116 步 — current Edge toolbar UIA scope fix and final engineering evidence green; release remains closed (2026-08-19)
+
+- Observation: one Edge toolbar 200% cell timed out in the menu fallback because the acceptance helper scanned unrelated desktop UIA windows; this was an acceptance-tool failure, not a product failure.
+- Decision: bound the menu fallback to visible UIA windows owned by the current Edge process. This does not change the accepted four-screen mobile visual baseline or mobile product code.
+- Implementation: `tools/acceptance/accessibility-v2/windows_browser_zoom.py` now resolves the owned Edge process and limits post-menu UIA enumeration to that process, preventing global desktop scans from consuming the bounded timeout.
+- Evidence: real Edge toolbar 200% `22/22`; mobile reference runtime `56/56`; mobile accessibility `11/11`; public overview `28/28`; bounded route-responsive `76/76`; route-state `266/266`; engineering readiness PASS; decision repository/D-drive mirror `16/16` byte-identical.
+- Rejection: engineering evidence is not independent Product/Visual/Accessibility/Engineering signoff. Do not fabricate review records, clean-SHA eligibility, GitHub upload or Linux/Windows/GHCR CL.
+- Boundary: task active, `blocked=false`; current independent re-signoff, clean exact-SHA and post-upload CL remain open; `releaseEligible=false / releaseComplete=false`.
+- outcome: `1116:current-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed`
+- next action: preserve the current mobile baseline, obtain permitted current-identity independent review records, then prepare a clean exact-SHA candidate without uploading GitHub.
+- latestStepOutcome: `1116:current-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed`
+
+## 第 1118 步 — 移动端证据深度与真实工作区控件；发布仍关闭 (2026-08-19)
+
+- Trigger: the accepted four-screen mobile art direction is locked, but the current product slice still needed object-specific evidence and actual workspace controls rather than repeated proof rows or display-only shells.
+- Decision: keep the accepted reference as the sole mobile baseline and make only content/evidence improvements inside the existing owner. Do not restore any retired phone direction and do not use desktop layout as a mobile design source.
+- Implementation: interface detail now exposes typed operational reason, default-route relation, address/rate/latency/loss facts and source evidence; resource detail now renders a real time-window percentage chart with threshold reference and sample count; mobile workspaces now support visible-row search, domain filter, sort and bounded pagination.
+- Verification: `check:types`, production build, mobile model, mobile architecture, mobile runtime `56/56`, mobile accessibility `11/11`, public overview `28/28`, route-responsive `76/76` and route-state `266/266` pass.
+- Edge boundary: the current-identity Edge toolbar 200% replay did not pass. After the focus-visible fix, the `phone-390::normal` cell exceeded the bounded `180000ms` timeout and cleanup also timed out. The older `22/22` report is not reused as current evidence.
+- Release boundary: current independent Product/Visual/Accessibility/Engineering re-signoff is absent; worktree is dirty; clean exact-SHA, GitHub upload and post-upload Linux/Windows/GHCR CL are not started. Release remains CLOSED and task remains active.
+- Reflection: the useful distinction is between a visual baseline and the evidence/action depth rendered inside it. We preserved the former while repairing the latter, and we did not turn engineering matrix success into product signoff.
+- outcome: `1118:mobile-reference-evidence-depth-and-workspace-tools-green-edge-200-refresh-timeout-release-closed`
+- next action: reproduce the current-identity Edge 200% run with bounded global timeout/cleanup, then obtain current four-role independent re-signoff without changing the accepted mobile visual baseline.
+- latestStepOutcome: `1118:mobile-reference-evidence-depth-and-workspace-tools-green-edge-200-refresh-timeout-release-closed`
+
+## 第 1119 步 — Edge UIA 单动作超时预算收紧；发布仍关闭（2026-08-19）
+
+- Trigger: the current Edge 200% replay exceeded the cell budget because each non-responsive UIA action could wait 30 seconds, multiplied across keyboard and menu fallbacks.
+- Decision: preserve the accepted mobile visual baseline and change only the acceptance runner. Reduce one UIA action timeout to 8 seconds; never accept an action without a real page DPR/layout transition.
+- Verification: Node syntax check and offline toolbar contract test pass. No headed browser replay was run in this step because the workstation CPU-safety boundary remains active.
+- Release boundary: current independent Product/Visual/Accessibility/Engineering review is absent, worktree is dirty, current Edge evidence is not regenerated, GitHub and exact-SHA CL remain untouched.
+- outcome: `1119:edge-uia-action-timeout-budget-static-green-release-closed`
+- next action: run one low-load Edge smoke cell before considering the complete toolbar matrix.
+- latestStepOutcome: `1119:edge-uia-action-timeout-budget-static-green-release-closed`
+
+
+
+## 第 1121 步：bounded Edge 200% smoke passed；release remains closed（2026-08-19）
+
+- The accepted four-screen mobile visual baseline remains the sole reference and the isolated `mobile-reference-ui` tree remains the sole mobile owner. No visual direction, typography, layout grammar or retired presentation tree was changed.
+- After the UIA action timeout was reduced to 8 seconds, one real Windows Edge toolbar-200% smoke cell (`phone-320::normal`) passed in about 35 seconds. It verified five zoom increments, real DPR/layout transitions, the target CSS viewport, no horizontal overflow, readable operational text, fixed-navigation clearance, complete keyboard traversal and an unobscured Windows capture.
+- This is a bounded smoke result, not a complete 22-cell matrix. The full Edge replay was not started to respect the workstation CPU-safety boundary. The historical 22/22 report is not reused as current proof.
+- The current worktree remains dirty and current Product/Design/Visual/Accessibility independent re-signoff is still absent. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL validation remain closed.
+- outcome: `1121:edge-uia-single-smoke-pass-release-closed`
+- latestStepOutcome: `1121:edge-uia-single-smoke-pass-release-closed`
+
+
+## 第 1124 步：mobile feedback and correction audit green；release remains closed（2026-08-19）
+
+- The accepted four-screen mobile visual baseline remains the sole reference. Existing mobile buttons now have subtle 140ms press response with reduced-motion cancellation; this does not alter the locked visual direction.
+- Static correction audit reconfirmed RFC3339 backend timestamps, absence of browser-online request blocking, absence of invalid `#dns` links and non-stretched responsive SVG behavior.
+- Verification: mobile architecture, mobile model and canonical route checks pass; `git diff --check` has no whitespace errors. No browser matrix or `rg.exe` scan was run.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1124:mobile-feedback-and-correction-audit-green-release-closed`
+- latestStepOutcome: `1124:mobile-feedback-and-correction-audit-green-release-closed`
+
+
+## 第 1125 步：surface isolation gate migrated to current mobile owner；release remains closed（2026-08-19）
+
+- The accepted four-screen mobile visual baseline remains the sole reference.
+- The stale surface-isolation validator was migrated from deleted `mobile-inspection`/`.inspection` markers to the real `mobile-reference-ui` markers, while retaining foreign-surface leak prohibitions.
+- Verification: `check-surface-asset-isolation.js` passes on manifest v3. No browser matrix or `rg.exe` scan was run.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1125:surface-isolation-gate-migrated-to-mobile-reference-owner-release-closed`
+- latestStepOutcome: `1125:surface-isolation-gate-migrated-to-mobile-reference-owner-release-closed`
+
+
+## 第 1126 步：remove empty normal-status shell；release remains closed（2026-08-19）
+
+- The accepted four-screen mobile visual baseline remains the sole reference.
+- Normal overview omits the empty `当前状态` card when no independent secondary decisions exist; real decisions still render the same grouped card.
+- Verification: `check:types`, mobile architecture, mobile model and `git diff --check` pass. No browser matrix or `rg.exe` scan was run; fresh runtime evidence is still required.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1126:remove-empty-normal-status-shell-release-closed`
+- latestStepOutcome: `1126:remove-empty-normal-status-shell-release-closed`
+
+
+## 第 1127 步：normal mobile smoke rebound after current build；release remains closed（2026-08-19）
+
+- The accepted four-screen mobile visual baseline remains the sole reference.
+- The Step1126 source change was rebuilt before runtime verification, eliminating stale public-bundle evidence.
+- Fresh mobile smoke passed with `smokePass=true`, 8 captured cells and all listed workflows green. The report remains intentionally incomplete (`complete=false`, top-level `pass=false`) because it is not the full 56-cell matrix.
+- The normal 390×844 capture confirms real secondary decisions still render their status card; empty-card suppression applies only to absent evidence.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1127:normal-mobile-smoke-rebound-after-build-release-closed`
+- latestStepOutcome: `1127:normal-mobile-smoke-rebound-after-build-release-closed`
+
+
+## 第 1128 步：decision-system full static suite green；release remains closed（2026-08-19）
+
+- The accepted four-screen mobile visual baseline remains the sole reference.
+- The full decision-system static suite passes after the mobile smoke rebound. The archive pointer was advanced to cover the latest recorded step, removing a stale historical-boundary failure; D-drive mirror remains byte-identical.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1128:decision-system-full-static-check-green-release-closed`
+- latestStepOutcome: `1128:decision-system-full-static-check-green-release-closed`
+
+## 第 1129 步：锁定视觉基线下压缩正常态图表垂直占用；发布仍关闭（2026-08-19）
+
+- The accepted four-screen mobile visual baseline remains the sole reference. No color, typography, radius, navigation grammar or component ownership was changed.
+- To improve first-screen content efficiency without turning the mobile surface into a desktop layout, the normal WAN chart SVG height was reduced from 132px to 124px and its scale from 95px to 87px; the compact-phone and landscape overrides were reduced proportionally. Detail/resource evidence charts were left unchanged so diagnostic readability is preserved.
+- Verification: production build passed for mobile and desktop; mobile model and architecture checks passed; bounded mobile smoke passed with `smokePass=true`, 8 captured cells and all listed workflows green. The smoke report remains intentionally incomplete (`complete=false`, top-level `pass=false`) and is not a release matrix.
+- The fresh 390×844 capture shows the existing `当前状态` evidence row entering the viewport instead of only its header, while retaining the accepted white-card / restrained status-color / bottom-navigation visual grammar. No `rg.exe` scan or full browser matrix was run.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1129:normal-wan-chart-spacing-reduction-smoke-green-release-closed`
+- latestStepOutcome: `1129:normal-wan-chart-spacing-reduction-smoke-green-release-closed`
+
+## 第 1130 步：平板竖屏恢复主对象与证据栏并列；发布仍关闭（2026-08-19）
+
+- Trigger: the 768×1024 portrait smoke capture still placed the WAN instrument and all supporting evidence in one vertical stream, leaving the lower half of the tablet viewport unused even though the current route, collection and status facts were already available.
+- Decision: preserve the accepted four-screen mobile visual grammar and make only the tablet portrait composition more task-oriented. The status banner remains full width; the WAN object owns the primary left column; route/link, collection and current-status facts form a compact evidence rail in the right column. This is not a desktop surface copied into a phone: it retains the mobile cards, touch targets, navigation rail and evidence wording.
+- Implementation: changed only the `600–899px` portrait `ref-home-content` grid from full-width stacking to a `1.2fr / .8fr` primary-object/evidence-rail layout; no color, typography, radius, chart semantics or mobile phone breakpoints changed.
+- Verification: production build passed for mobile and desktop; bounded mobile smoke passed with `smokePass=true`, 8 captured cells and all listed workflows green. The fresh 768×1024 capture shows the WAN card and three evidence groups side by side with no content overlap; the 390×844 capture retains the accepted phone composition. No `rg.exe` scan or full browser matrix was run.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1130:tablet-portrait-evidence-rail-smoke-green-release-closed`
+- latestStepOutcome: `1130:tablet-portrait-evidence-rail-smoke-green-release-closed`
+
+## 第 1131 步：320px 窄屏保留并列证据分类；发布仍关闭（2026-08-19）
+
+- Trigger: the fresh 320×568 normal capture showed only the `路由与链路` group header before the fixed navigation because the narrow-phone breakpoint forced the two evidence groups into a one-column stack. The screen therefore hid the existence of the collection evidence until scrolling, even though both groups fit as compact phone cards.
+- Decision: retain the accepted phone visual grammar and restore two-column evidence grouping at `≤360px`; use a 6px inter-card gap rather than changing typography, touch targets, colors, radii or navigation.
+- Implementation: changed only the narrow-phone `.ref-pair` grid from one column to two columns. Large-text mode still forces one column, preserving text-resize accessibility.
+- Verification: production build passed for mobile and desktop; bounded mobile smoke passed with `smokePass=true`, 8 captured cells and all listed workflows green. The fresh 320×568 capture now exposes both `路由与链路` and `数据采集` categories before the fixed navigation without overlap; the 390×844 and 768×1024 layouts remain unchanged. No `rg.exe` scan or full browser matrix was run.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1131:narrow-phone-paired-evidence-smoke-green-release-closed`
+- latestStepOutcome: `1131:narrow-phone-paired-evidence-smoke-green-release-closed`
+
+## 第 1132 步：路由与终端详情移除重复摘要卡；发布仍关闭（2026-08-19）
+
+- Trigger: fresh route and terminal detail captures repeated the object name in the navigation title and immediately repeated it in a summary card, while the following object-evidence rows already contained the same route/terminal identity fields. This consumed vertical space without adding evidence.
+- Decision: keep the accepted mobile visual grammar and remove only the redundant summary card for route and terminal detail objects. Resource details retain their summary card because it carries the threshold/continuity explanation; interface and WAN details retain their status/evidence composition.
+- Implementation: `WorkspaceDetail` now skips the repeated summary card only for `route` and `terminal` evidence kinds. Object evidence and evidence-source ledgers remain unchanged.
+- Verification: production build passed; fresh route, terminal and resource detail captures were generated. Route and terminal details now begin with their unique evidence ledger, while resource detail still retains its diagnostic summary and trend chart. Mobile model, architecture, canonical-route and diff checks pass. No `rg.exe` scan or full browser matrix was run.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1132:route-terminal-detail-dedup-capture-green-release-closed`
+- latestStepOutcome: `1132:route-terminal-detail-dedup-capture-green-release-closed`
+
+## 第 1133 步：异常来源卡改为证据模式；发布仍关闭（2026-08-19）
+
+- Trigger: the collection-down capture already listed REST and SSH separately in the primary collection evidence card, then repeated a generic `采集通道` row in the lower source card. That second row did not tell the user whether the displayed evidence was current, historical or unavailable.
+- Decision: preserve the accepted mobile visual grammar and replace only the lower exception-source row with `证据模式`, using the existing typed `current | historical | unavailable` evidence state. Normal overview collection facts remain unchanged because their channel row is the first summary of that information.
+- Implementation: exception home scenes now show data source, last report and evidence mode in the lower source ledger; no new colors, controls, cards or layout direction were introduced.
+- Verification: production build passed; bounded mobile smoke passed with `smokePass=true`, 8 captured cells and all listed workflows green. The fresh collection-down capture now shows `证据模式 / 历史` rather than repeating channel status. Mobile model, architecture and diff checks pass. No `rg.exe` scan or full browser matrix was run.
+- Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open. GitHub upload, exact-SHA publication and Linux/Windows/GHCR CL remain closed.
+- outcome: `1133:exception-source-evidence-mode-smoke-green-release-closed`
+- latestStepOutcome: `1133:exception-source-evidence-mode-smoke-green-release-closed`
+
+## 第 1134 步：发布边界审计确认剩余为证据与独立签收缺口；发布仍关闭（2026-08-19）
+
+- Trigger: after the focused mobile fixes, the current release-readiness audit was rerun against the actual worktree identity.
+- Observation: mobile visual-surface, model, architecture, security and route-maturity contracts pass. Route maturity honestly remains `0 complete / 18 bounded-readonly / 1 unavailable`, with independent acceptance pending. The release-readiness command rejects the candidate because the current full overview/route/route-state matrices and Edge toolbar report are stale, incomplete or identity-mismatched; it does not identify a new product-code failure in the Step1133 change.
+- Decision: do not fabricate or reuse historical matrices, do not run a full browser matrix under the active CPU-safety boundary, and do not mark release or product acceptance green. Preserve the accepted mobile visual baseline and keep the release fail-closed until a clean current-identity matrix and independent Product/Design/Visual/Accessibility evidence exist.
+- Verification: `check-current-release-boundary`, `check-mobile-visual-surface-contract`, `check-security-boundary-contract` and `check-route-maturity-report` pass structurally; `check-public-release-readiness --engineering-worktree` fails closed with explicit stale/missing current matrix evidence. No `rg.exe` scan, no full browser matrix, no GitHub upload and no CL run.
+- Boundary: this is an evidence-boundary result, not a product completion claim. Current independent Product/Design/Visual/Accessibility records remain absent; R07/R09/R10/R14 remain open.
+- outcome: `1134:release-evidence-boundary-audit-fail-closed-release-closed`
+- latestStepOutcome: `1134:release-evidence-boundary-audit-fail-closed-release-closed`
+
+## 第 1135 步：WAN 详情返回来源路由闭环；锁定美术基线不变（2026-08-20）
+
+- Trigger: a focused inspection of the current accepted mobile surface found that WAN detail always returned to overview even when the user entered from the Network directory.
+- Decision: preserve the accepted four-screen art direction exactly and correct only the mobile navigation state. WAN detail now derives its back destination from `navigationContext.returnRoute`, falls back to overview for direct entry, clears the selected object and uses a replace navigation when returning.
+- Product effect: entering a WAN from Overview returns to Overview; entering the same WAN from Network returns to Network. No color, typography, card, spacing, chart or navigation-bar visual rule changed.
+- Verification: the mobile model contract now asserts both source-route preservation and selected-object clearing. `check:mobile-telemetry-model` passes across all seven scenarios, retired owners remain absent, connection/security and online-hint contracts pass, and `check:types` passes. No browser matrix, `rg.exe`, GitHub upload or CL run was performed.
+- Boundary: this closes one evidence-backed mobile application-flow defect only. Current full identity-bound matrices and independent Product/Design/Visual/Accessibility signoff are still absent; release remains closed.
+- outcome: `1135:wan-detail-origin-return-contract-green-art-locked-release-closed`
+- latestStepOutcome: `1135:wan-detail-origin-return-contract-green-art-locked-release-closed`
+
+## 第 1136 步：当前矩阵与 Edge 证据口径收紧；历史绿灯不得冒充当前签收（2026-08-20）
+
+- Trigger: the current authority correctly said the complete matrices and Edge replay were stale or identity-mismatched, but two current gate tables still labelled the mobile matrix and Edge 200% evidence as passing.
+- Decision: change those current gates to `pending current identity`. Retain 56/56, 28/28, 76/76, 266/266 and 22/22 only as historical engineering evidence until a complete report is regenerated against the exact Step1135-or-later worktree identity.
+- Product boundary: this is a report-truth correction only. It does not change the accepted mobile UI, visual tokens, implementation, runtime behavior or historical reports.
+- Verification: the current-state and product-loop tables now agree with the fail-closed release conclusion. Decision-system and D-drive mirror checks must remain green after pointer advancement.
+- Boundary: no browser matrix, `rg.exe`, GitHub upload or CL run was performed. Independent Product/Design/Visual/Accessibility signoff and exact-identity release evidence remain open.
+- outcome: `1136:current-matrix-edge-evidence-truth-tightened-release-closed`
+- latestStepOutcome: `1136:current-matrix-edge-evidence-truth-tightened-release-closed`
+
+## 第 1137 步：手机证据时间改为跨日感知；拒绝无时区输入（2026-08-20）
+
+- Trigger: the accepted mobile header labelled every valid evidence time as `今日 HH:mm:ss`. A still-fresh sample that crossed local midnight could therefore be shown under the wrong calendar day.
+- Decision: keep the visual grammar unchanged and make the label calendar-aware. Same-day evidence uses `今日`, prior-local-day evidence uses `昨日`, older evidence shows the full local date and time, and a timezone-less timestamp remains `时间未记录`.
+- Evidence boundary: parsing continues through the strict RFC 3339 time contract; the mobile formatter does not call `Date.parse` on ambiguous values.
+- Verification: four deterministic model assertions cover today, cross-midnight yesterday, older dates and rejection of `YYYY-MM-DD HH:mm:ss`. The seven-scenario mobile model, architecture, security, online-hint contracts and TypeScript pass.
+- Boundary: no color, typography, spacing, card, chart or navigation layout changed. No browser matrix, `rg.exe`, GitHub upload or CL run was performed; release remains closed.
+- outcome: `1137:mobile-calendar-aware-evidence-time-contract-green-release-closed`
+- latestStepOutcome: `1137:mobile-calendar-aware-evidence-time-contract-green-release-closed`
+
+## 第 1138 步：手机矩阵支持单格低负载续跑；子集禁止冒充完整通过（2026-08-20）
+
+- Trigger: `check-mobile-reference-runtime.js` could filter by scenario but then redefined the required matrix to that subset, allowing an eight-cell run to look complete. It also lacked a viewport filter and could not safely accumulate one-cell evidence under the CPU boundary.
+- Decision: keep the global requirement fixed at seven scenarios × eight viewports (`56` cells), add `MOBILE_VIEWPORT`, `--append` and `--skip-interactions`, merge cells only when commit/artifact/fingerprint identities match, and expose completed/remaining counts. A partial batch may exit successfully through `runPass`, but top-level `pass` remains exactly `complete`.
+- Low-load workflow: run one scenario×viewport at a time with append and skipped interactions; on the final identity-matched batch, run the bounded interaction workflow. Only all 56 unique cells plus all 14 workflows may set `complete=true` and `pass=true`.
+- Verification: `node --check` passes and the new `mobile-reference-runtime-batching-v1` contract asserts global completeness, viewport filtering, identity rejection, remaining counts and fail-closed top-level pass. The full focused mobile model/architecture/security/online-hint suite passes.
+- Boundary: no browser was launched in this step, no `rg.exe`, GitHub upload or CL run occurred, and the accepted mobile visual baseline was untouched. Current matrices remain pending until the incremental replay is actually executed.
+- outcome: `1138:mobile-runtime-low-load-batching-contract-green-release-closed`
+- latestStepOutcome: `1138:mobile-runtime-low-load-batching-contract-green-release-closed`
+
+## 第 1139 步：手机浏览器验收增加整机 CPU 硬门禁与低优先级执行（2026-08-20）
+
+- Trigger: incremental one-cell replay reduces work, but it still needed an explicit system-load boundary before starting Edge or continuing to another cell.
+- Decision: cap the configurable CPU threshold at `65%`, sample whole-system CPU before runtime launch, before every selected cell and before interaction workflows, retry only three bounded times, then fail closed without continuing. The Node acceptance coordinator also requests Windows below-normal process priority.
+- Contract: CPU load calculation is exported as a pure function for deterministic tests; requiring the runtime module no longer launches the browser because `main()` is guarded by `require.main === module`.
+- Verification: syntax passes; the batching contract verifies the 65% hard ceiling, launch/cell guards, low-priority request and deterministic 70%/60% load calculations. The complete focused mobile model/architecture/security/online-hint suite passes.
+- Boundary: the guard prevents work from starting when sampled load is high; it does not claim control over unrelated applications. No browser was launched, no `rg.exe`, GitHub upload or CL run occurred, and the accepted mobile visual baseline was untouched.
+- outcome: `1139:mobile-runtime-cpu-budget-contract-green-release-closed`
+- latestStepOutcome: `1139:mobile-runtime-cpu-budget-contract-green-release-closed`
+
+## 第 1140 步：单核低负载包装器落地；当前身份矩阵完成首格（2026-08-20）
+
+- Trigger: the first guarded browser attempt proved that launch-time Edge work could still raise whole-system samples to `68.2%`, `73.6%`, then `67.3%` after a safe pre-launch sample. The gate failed before capture and cleanup left zero Playwright Edge processes, but the 73.6% sample violated the intended headroom.
+- Root correction: local Windows browser acceptance now refuses direct invocation and requires `run-mobile-reference-cell-low-load.cmd`. The wrapper verifies at least eight logical processors, constrains the Node/Edge descendant tree to one logical processor with `/affinity 1`, requests below-normal priority, fixes whole-system admission at `55%`, and keeps runtime/thread memory bounds.
+- Verification: syntax and the batching contract pass with `maxCpuPercent=55` and `localWindowsAffinityCores=1`. On this 32-logical-processor host, the official wrapper admitted at `47.8%`, then admitted the selected cell at `52.2%`; no sample crossed 55%.
+- Matrix progress: current identity `worktree-c35df77de8ac-1afc564c2741` captured `single × phone320` successfully. The report remains truthfully `pass=false`, `complete=false`, `completed=1`, `remaining=55`, with `affinityEnforced=true` and no interaction workflow claimed.
+- Visual inspection: the 320×568 capture preserves the accepted compact header, shallow status banner, grouped WAN card, two-series chart and four-root dock without horizontal overflow. No visual token changed.
+- Boundary: this is one current-identity cell, not a matrix pass or independent signoff. No `rg.exe`, GitHub upload or CL run occurred; release remains closed.
+- outcome: `1140:mobile-low-load-first-current-cell-green-55-remaining-release-closed`
+- latestStepOutcome: `1140:mobile-low-load-first-current-cell-green-55-remaining-release-closed`
+
+## 第 1141 步：当前身份矩阵串行追加第二格（2026-08-20）
+
+- Execution boundary: only `single × phone360` was selected, through `tools/run-mobile-reference-cell-low-load.cmd`; no parallel browser, broad scan or `rg.exe` was used.
+- CPU evidence: whole-system admission sampled 42.3% before runtime launch and 43.6% before capture, both below the fixed 55% admission ceiling. The Node/Edge descendant tree remained constrained to one logical processor and below-normal priority.
+- Matrix progress: the current identity now has 2/56 required mobile cells, with 54 remaining. The subset run is internally green but the report truthfully remains `pass=false`, `complete=false`; no interaction workflow is claimed.
+- Visual inspection: the 360×800 capture preserves the user-approved compact header, shallow status band, grouped WAN instrument, two-series chart, paired evidence groups and four-root dock. No visual token or presentation ownership changed.
+- Boundary: this is incremental engineering evidence only. Independent visual/product signoff, the remaining matrix and workflows, clean exact-SHA and remote Linux/Windows/GHCR CL remain pending. GitHub remains untouched and release CLOSED.
+- outcome: `1141:mobile-low-load-second-current-cell-green-54-remaining-release-closed`
+- latestStepOutcome: `1141:mobile-low-load-second-current-cell-green-54-remaining-release-closed`
+
+## 第 1142 步：当前身份矩阵串行追加第三格（2026-08-20）
+
+- Execution boundary: only `single × phone375` was appended through the permanent one-core, below-normal wrapper. No parallel browser, broad repository scan or `rg.exe` was used.
+- CPU evidence: whole-system samples were 39.4% before runtime launch and 43.8% before capture, both below the fixed 55% admission ceiling.
+- Matrix progress: the current identity now has 3/56 required cells and 53 remaining. The selected cell passed, while the top-level report remains truthfully `pass=false`, `complete=false`; interaction workflows remain absent.
+- Visual inspection: the 375×667 capture retains the accepted compact iOS/iKuai grammar without horizontal overflow. Lower evidence continues in the scrollable content region above the fixed four-root dock; no visual token changed.
+- Boundary: independent signoff, the remaining matrix/workflows, clean exact-SHA and remote Linux/Windows/GHCR CL are still pending. GitHub remains untouched and release CLOSED.
+- outcome: `1142:mobile-low-load-third-current-cell-green-53-remaining-release-closed`
+- latestStepOutcome: `1142:mobile-low-load-third-current-cell-green-53-remaining-release-closed`
+
+## 第 1143 步：拒绝平板机械分栏假绿，建立真实对象巡检工作区（2026-08-20）
+
+- Visual adjudication: the first current `single × tablet768` screenshot passed the existing runtime gate but ended after a shallow two-column summary, leaving most of the lower iPad viewport empty. This directly contradicted the accepted recommendation that tablet must not be “two columns plus an empty lower half”. Continuing the remaining matrix would only accumulate evidence for a known product defect, so replay stopped.
+- TDD evidence: `check-mobile-reference-architecture.js` was extended first and failed on three missing contracts: no tablet workspace marker, no phone-isolation rule and no tablet-visible layout rule.
+- Product correction: normal tablet overview now adds a real “对象巡检” workspace with four touch destinations—network objects, route/link evidence, terminal objects and log evidence. Every row exposes a live count or verification state and navigates to the real operational route; it does not repeat the WAN proof card.
+- Visual boundary: the workspace is `display:none` for phone composition, preserving the user-approved four-screen art direction. It appears only in tablet/roomy landscape layouts using the same cards, dividers, typography and restrained semantic colors. Large-text mode reflows the task grid to one column.
+- Runtime gate: `tablet768` now requires a lower first-screen task workspace at least 190px high, at least 500px wide, occupying at least 72% of the viewport depth, with four non-empty 44px touch destinations. The gate passes.
+- Verification: architecture red-to-green, TypeScript `--noEmit` passes, production mobile/desktop Vite builds pass, and fresh current-identity `single × tablet768` plus `single × phone390` both pass. The tablet screenshot now uses the lower work area; the phone screenshot remains visually unchanged.
+- CPU evidence: builds were constrained to one logical processor and below-normal priority after a 39.9% admission sample. Browser samples remained within the 55% gate; the highest admitted sample was 53.4%. One earlier 57.9% sample was correctly rejected before launch and retried only after the load fell to 52.3%.
+- Evidence reset: because product CSS/TSX and public assets changed, all previous identity cells were discarded rather than reused. The new identity is truthfully `2/56`, `remaining=54`, `pass=false`, `complete=false`; all interaction workflows and independent signoff remain pending.
+- Boundary: no `rg.exe`, parallel browser, GitHub upload or CL run occurred. Release remains CLOSED.
+- outcome: `1143:tablet-task-workspace-red-green-current-matrix2of56-release-closed`
+- latestStepOutcome: `1143:tablet-task-workspace-red-green-current-matrix2of56-release-closed`
+
+## 第 1144 步：新身份 single 场景八视口完整（2026-08-20）
+
+- Scope: after the tablet workspace correction, the remaining six `single` viewports were appended one at a time through the one-core, below-normal wrapper: phone320, phone360, phone375, phone430, landscape667 and landscape844. Together with the fresh tablet768 and phone390 cells, the current identity now owns all eight required `single` cells.
+- CPU behavior: no capture started above the 55% admission ceiling. A 62.5% cell sample and 59.0%/62.0% launch samples were rejected and retried only after samples fell to 50.8% and 49.1%. The highest admitted capture sample was 52.4%; no sample reached the user’s 70% hard ceiling.
+- Visual inspection: phone320 retains the accepted compact phone composition and does not expose the tablet task workspace. The fixed four-root dock has protected scroll space and no horizontal overflow.
+- Matrix truth: current identity is `8/56`, `remaining=48`, `pass=false`, `complete=false`; the `single` scenario is complete but six other scenarios and all 14 interaction workflows remain.
+- Boundary: no code or visual token changed in this step. No `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1144:current-single-eight-viewports-green-48-remaining-release-closed`
+- latestStepOutcome: `1144:current-single-eight-viewports-green-48-remaining-release-closed`
+
+## 第 1145 步：修正 Fleet 混合接口被整体误标为“受影响”（2026-08-20）
+
+- Visual finding: the current Fleet screenshot correctly prioritized the three failed interfaces over fleet scale, but the section heading claimed “受影响接口 12 项” while nine rows were healthy context. The runtime gate had passed because it counted rows, not the truth of the label.
+- TDD: model and runtime contracts were changed first. The model contract failed on the old source, proving the label defect was observable before implementation.
+- Correction: the mixed abnormal/healthy comparison list is now titled “接口状态”. The top incident conclusion continues to state the actual abnormal count (`3 项`), while the list preserves healthy WAN context for comparison without calling every row affected.
+- Verification: model contract red-to-green, TypeScript passes, production mobile/desktop builds pass, and the current-identity `fleet × phone390` runtime cell passes the new semantic assertion. Visual inspection confirms the screen now reads “接口状态 12 项” while the alert card alone states three affected objects.
+- Regression guard: fresh `single × tablet768` also passes, preserving the tablet object patrol workspace.
+- CPU evidence: build started after a 44.8% sample under one-core/below-normal constraints; browser admission samples remained at or below 50.9%.
+- Evidence reset: because source, runtime gate and public assets changed, the previous 16 cells were discarded. Current identity is truthfully `2/56`, `remaining=54`, `pass=false`, `complete=false`.
+- Process correction: before another full responsive replay, each remaining scenario will first receive one focused 390px visual adjudication. This prevents repeated 56-cell resets when a semantic visual defect can be caught in one cell.
+- Boundary: no `rg.exe`, parallel browser, GitHub upload or CL run occurred. Release remains CLOSED.
+- outcome: `1145:fleet-interface-label-truth-red-green-focused-adjudication-active-release-closed`
+- latestStepOutcome: `1145:fleet-interface-label-truth-red-green-focused-adjudication-active-release-closed`
+
+## 第 1146 步：修正全离线页 WAN 与“未运行接口 0 项”的口径冲突（2026-08-20）
+
+- Visual finding: `all-offline × phone390` correctly showed `0 / 8 WAN 在线`, but the adjacent row said `未运行接口 0 项`. The number represented non-WAN interfaces, yet the unqualified label contradicted the eight offline WAN rows in ordinary reading.
+- TDD: model and runtime truth contracts were added first; the model contract failed on the ambiguous source.
+- Correction: the row is now `其他接口未运行`, making the scope explicit while preserving the truthful zero and the separate `受影响 WAN 线路 8 项` evidence list.
+- Verification: model contract red-to-green, TypeScript and production mobile/desktop builds pass, and fresh current-identity `all-offline × phone390` passes the runtime semantic assertion. Visual inspection confirms the page now reads `0 / 8 在线` plus `其他接口未运行 0 项` without contradiction.
+- CPU evidence: build began after a 41.7% sample under one-core/below-normal constraints; browser samples were 43.6% and 45.8%.
+- Evidence reset: the source/runtime/public identity changed, so prior focused cells were discarded. Current identity is `1/56`, `remaining=55`, `pass=false`, `complete=false`.
+- Boundary: focused 390px adjudication continues before full replay. No `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1146:all-offline-interface-scope-truth-red-green-focused-adjudication-active`
+- latestStepOutcome: `1146:all-offline-interface-scope-truth-red-green-focused-adjudication-active`
+
+## 第 1147 步：无快照页使用已有恢复任务，不再把可用空间解释为空白（2026-08-20）
+
+- Visual finding: `no-snapshot × phone390` correctly withdrew every untrusted business number and exposed a real refresh action, but the page ended after the source ledger with nearly one third of the first screen unused. RouterOS connection, service logs and read-only diagnostics already existed as real routes, so the whitespace was an information-architecture omission rather than honest lack of evidence.
+- TDD: model/runtime contracts were added first and failed because the recovery-task marker and actions did not exist.
+- Correction: the no-snapshot incident now keeps the compact refresh command and adds a grouped `可用的恢复任务` section with real destinations: RouterOS connection, service logs and read-only diagnostics. It still renders no traffic, route, resource or terminal number as current evidence.
+- Verification: model contract red-to-green, TypeScript and production mobile/desktop builds pass, and fresh current-identity `no-snapshot × phone390` passes the new runtime action-count gate. Visual inspection shows the first screen is usefully occupied through the evidence/source ledger without changing the accepted card, divider, color or navigation grammar.
+- CPU evidence: build began after a 42.7% sample under one-core/below-normal constraints; browser samples were 35.5% and 51.5%.
+- Evidence reset: source/runtime/public identity changed, so prior focused cells were discarded. Current identity is `1/56`, `remaining=55`, `pass=false`, `complete=false`.
+- Boundary: focused scenario adjudication continues before full replay. No `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1147:no-snapshot-recovery-workspace-red-green-focused-adjudication-active`
+- latestStepOutcome: `1147:no-snapshot-recovery-workspace-red-green-focused-adjudication-active`
+
+## 第 1148 步：采集失败明确标注转发面“未测量”（2026-08-20）
+
+- Visual finding: `collection-down × phone390` correctly separated REST, SSH and current business-data trust, but did not state the forwarding-plane boundary. A user could still infer that failed management collection meant packet forwarding was down.
+- TDD: model/runtime contracts were added first and failed because no forwarding-plane fact existed.
+- Correction: the collection ledger now contains `转发状态 / 未测量` between the REST/SSH management channels and business-data row. This makes the three planes explicit: management collection failed, forwarding was not measured, and current business data is not verifiable.
+- Verification: model contract red-to-green, TypeScript and production mobile/desktop builds pass, and fresh current-identity `collection-down × phone390` passes the runtime semantic assertion. Visual inspection confirms the new row is readable without changing the accepted visual hierarchy.
+- CPU evidence: build began after a 48.7% sample under one-core/below-normal constraints. A 63.3% cell sample was rejected; capture began only after the sample fell to 46.5%.
+- Evidence reset: source/runtime/public identity changed, so prior focused cells were discarded. Current identity is `1/56`, `remaining=55`, `pass=false`, `complete=false`.
+- Boundary: focused scenario adjudication continues before full replay. No `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1148:collection-forwarding-boundary-red-green-focused-adjudication-active`
+- latestStepOutcome: `1148:collection-forwarding-boundary-red-green-focused-adjudication-active`
+
+## 第 1149 步：资源满载 390px 视觉与证据语义通过聚焦裁决（2026-08-20）
+
+- Visual adjudication: fresh current-identity `resource-full × phone390` preserves the accepted four-screen mobile grammar and gives the first screen to the actual incident: CPU, memory and disk appear in the required order with current percentage, configured threshold, sample count, direction and compact trend marks.
+- Evidence separation: the lower `受影响对象` section does not repeat CPU/memory/disk. It explicitly leaves forwarding, behavior-control and VPN impact unmeasured instead of inventing business consequences.
+- Detail depth: opening a resource object is backed by a separate resource evidence model containing current value, threshold, threshold delta, trailing consecutive samples and a real time-window SVG; the home proof is therefore not the terminal detail.
+- Verification: the one-core below-normal wrapper admitted runtime launch at 44.6% whole-system CPU and the cell at 49.4%. The appended cell passed, producing a current-identity report of `2/56`, `remaining=54`, `pass=false`, `complete=false`.
+- Decision: no product or visual correction is needed for this scene. The accepted typography, spacing, card, color, chart and navigation grammar remain unchanged.
+- Boundary: focused scenario adjudication continues with `interfaces-down × phone390` before full replay. No `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1149:resource-full-phone390-visual-and-semantics-pass-focused-adjudication-active`
+- latestStepOutcome: `1149:resource-full-phone390-visual-and-semantics-pass-focused-adjudication-active`
+
+## 第 1150 步：接口异常 390px 视觉与证据语义通过，聚焦场景裁决关闭（2026-08-20）
+
+- Visual adjudication: fresh current-identity `interfaces-down × phone390` shows the three failed objects first, followed by two healthy comparison objects. The list is truthfully titled `接口状态 5 项`; only the incident banner claims `3 项` affected.
+- Risk alignment: the banner names the first highest-risk object (`ether9`) and the first actionable row is the same object. Offline rows keep rate, latency and loss unavailable rather than substituting measured zeros; healthy rows retain current rates for comparison.
+- Detail depth: every interface row opens the dedicated mobile interface detail with running state, default-route relation, address, rates, latency/loss, operational reason and source evidence. The home list is not a dead-end summary.
+- Verification: the one-core below-normal wrapper admitted runtime launch at 42.2% whole-system CPU and the cell at 44.3%. The appended cell passed, producing `3/56`, `remaining=53`, `pass=false`, `complete=false` on the current identity.
+- Decision: no product or visual correction is needed for this scene. All seven required scenarios have now received a focused 390px adjudication; current-identity full responsive replay may begin serially.
+- Boundary: no `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1150:interfaces-down-phone390-pass-focused-adjudication-closed-full-replay-next`
+- latestStepOutcome: `1150:interfaces-down-phone390-pass-focused-adjudication-closed-full-replay-next`
+
+## 第 1151 步：场景批次完成 56/56 与 14/14，但平板异常态视觉裁决否决（2026-08-20）
+
+- Acceleration: a permanent scenario-batch wrapper was added to run one scenario's eight viewports inside one one-core, below-normal Edge tree. It retains the 55% whole-system admission check before launch and every cell, supports clean-first/identity-bound append, and defers interactions until all cells exist.
+- Engineering result: the stabilized identity reached `56/56`, then all 14 real workflows passed and top-level `pass=true`, `complete=true`. High samples at 56.1%, 61.7%, 55.3%, 55.4%, 59.6%, 64.8%, 60.9%, 57.4% and 58.6% were rejected before capture; no parallel browser was used.
+- Visual veto: manual inspection of current tablet originals found that normal tablet was improved, but no-snapshot, collection, resource and interface incident pages still ended after a mechanical two-column shell, leaving most of the lower iPad work area unused.
+- Decision: engineering green is not product signoff. The complete report was invalidated rather than promoted, and a tablet-wide task-workspace gate was added first; the old incident layout failed red on `no-snapshot × tablet768`.
+- Boundary: no `rg.exe`, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1151:scenario-batched-56of56-interactions-green-tablet-incident-visual-veto`
+- latestStepOutcome: `1151:scenario-batched-56of56-interactions-green-tablet-incident-visual-veto`
+
+## 第 1152 步：异常态平板建立真实对象巡检工作区（2026-08-20）
+
+- Root correction: `TabletTaskBoard` is now owned by every overview scene rather than only normal. Phone CSS still keeps it hidden, so the accepted 320–430px art and information rhythm do not change.
+- Tablet architecture: every 768px incident scene now ends with four real operational destinations—network objects, route/link evidence, terminal objects and logs—below the scene-specific proof. This replaces the empty mechanical shell with a task workspace without repeating the incident metrics.
+- Evidence truth: current scenes show current counts/status; historical collection labels the four task domains `历史待核实`; unavailable snapshots label them `不可核实`. Missing evidence is never rewritten as zero.
+- TDD/runtime: the generalized tablet gate failed red on the previous no-snapshot composition, then passed after implementation. Collection required a compact 88px incident-task row to reach the lower first-screen region without enlarging type. The scenario-wrapper batching contract now verifies one-core, 55%, first/append and deferred-interaction behavior.
+- Verification: mobile model, architecture, TypeScript and production mobile/desktop builds pass. Fresh current-identity `collection-down × tablet768` passes at 51.1%/50.9% CPU; the report is truthfully `1/56`, `remaining=55`, `pass=false`, `complete=false`.
+- Visual boundary: no font, color, radius, icon, chart or phone composition changed. No `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1152:tablet-incident-task-workspace-red-green-current1of56-full-replay-next`
+- latestStepOutcome: `1152:tablet-incident-task-workspace-red-green-current1of56-full-replay-next`
+
+## 第 1153 步：异常态平板从底部补板升级为主从巡检工作区（2026-08-20）
+
+- Second visual adjudication: the first all-scene task-board correction removed the completely empty lower shell, but Fleet/interfaces still left a tall empty right rail and all-offline left a tall empty left rail. A full-width board placed after the longest column was not yet a real iPad task architecture.
+- TDD: the tablet runtime contract was tightened first to require a scene-appropriate workspace width. The old full-width interface board failed red at `656px` wide and `top=574`.
+- Interface/Fleet correction: the interface object list remains the left master column; source evidence and a one-column four-task patrol rail now occupy the right column. The task rail starts immediately below source evidence instead of waiting below the long interface list.
+- Outage correction: the left column now owns `影响范围 + 对象巡检`; the right column owns the affected WAN list and source ledger. The phone tree uses `display:contents`, so the accepted phone sequence and art remain unchanged.
+- Verification: TypeScript, mobile model and production mobile/desktop builds pass. Fresh current-identity `interfaces-down × tablet768`, `all-offline × tablet768` and `all-offline × phone390` pass the tightened runtime gate and visual inspection. CPU admissions were 43.2%/43.9%, 48.4%/44.5% and 39.7%/47.3%.
+- Evidence state: current identity is `3/56`, `remaining=53`, `pass=false`, `complete=false`; full scenario-batched replay is next.
+- Boundary: no font, color, radius, icon, chart or phone composition changed. No `rg.exe`, parallel browser, GitHub upload or CL run occurred; release remains CLOSED.
+- outcome: `1153:tablet-incident-master-detail-rails-red-green-current3of56-full-replay-next`
+- latestStepOutcome: `1153:tablet-incident-master-detail-rails-red-green-current3of56-full-replay-next`
+
+## 第 1154 步：当前手机身份 56/56、14/14 与 200% 无障碍闭环（2026-08-20）
+
+- Current identity replay: all seven scenarios × eight required viewports completed through the one-core, below-normal scenario wrapper. The final report is `56/56`, `remaining=0`, `pass=true`, `complete=true`.
+- Real workflows: all 14 interaction contracts pass, including Back/Forward WAN history, four-root navigation, Network/WAN return context, More/connection validation, resource and interface details, workspace search/filter/sort, collection recovery, no-snapshot refresh and bounded refresh feedback.
+- Accessibility/large text: the current one-core runtime passed all 11 stages, including actual `text-only-scale-200`, 320/390/667/768 geometry, adaptive media, touch navigation, object detail, connection controls and cleanup. `pass=true`, `complete=true`, elapsed 40.385s.
+- Visual inspection: final current originals confirm the accepted phone art remains unchanged, while normal, no-snapshot, collection, resource, interface/Fleet and outage tablets use their corrected task workspaces. No phone-native surface was replaced with desktop UI.
+- CPU evidence: all work ran below the 55% admission ceiling; samples at 59.2%, 57.4%, 55.1%, 58.1%, 55.6%, 57.8% and 56.3% were rejected before capture/workflows and retried only after load fell below the gate.
+- Hygiene: no temporary helper remains and `git diff --check` has no whitespace error (line-ending warnings only). No `rg.exe`, parallel browser, GitHub upload or CL run occurred.
+- Boundary: mobile engineering and focused visual evidence are current. Cross-surface/public matrices, current independent signoff, clean exact-SHA and post-upload Linux/Windows/GHCR CL remain pending; release stays CLOSED.
+- outcome: `1154:mobile-current-56of56-14of14-a11y11of11-green-cross-surface-next`
+- latestStepOutcome: `1154:mobile-current-56of56-14of14-a11y11of11-green-cross-surface-next`
+
+## 第 1155 步：整机 CPU 硬门禁落地（2026-08-20）
+
+- 用户明确禁止任何可能拖死电脑的无边界扫描或高负载运行，并要求整机 CPU 始终低于 70%。本任务确认未调用 `rg.exe`，同时承认此前有一次 Node 门禁未使用单核/低优先级入口。
+- 新增 `tools/run-low-load.py`：整机 CPU ≥55% 时拒绝启动；运行时每秒采样，达到 70% 即终止本任务启动的整个进程树；Node 固定 2GB、单核、below-normal，子进程持续继承约束。
+- 轻量自检在 41.1% 入场、38.4% 运行时通过。后续所有浏览器、构建及大型门禁只允许经此入口执行。
+- outcome: `1155:whole-system-cpu-hard-envelope-verified`
+- latestStepOutcome: `1155:whole-system-cpu-hard-envelope-verified`
+
+## 第 1156 步：公众概览矩阵 28/28（2026-08-20）
+
+- 当前工作树完成 7 场景 × 4 视口公众概览矩阵，`28/28`、零浏览器失败、顶层 `pass=true`。
+- 全程单核、低优先级；最高观测 64.8%，未触及 70% 硬上限。
+- outcome: `1156:public-overview-28of28-low-load-green`
+- latestStepOutcome: `1156:public-overview-28of28-low-load-green`
+
+## 第 1157 步：路由响应式矩阵 76/76（2026-08-20）
+
+- 单场景 19 个真实路由 × 4 视口全部通过，`76/76`、零浏览器失败。
+- 顶层保持 false 是该分片不声称七场景发布完整性的预期 fail-closed 行为，不是路由单元失败。
+- outcome: `1157:route-responsive-76of76-low-load-green-shard`
+- latestStepOutcome: `1157:route-responsive-76of76-low-load-green-shard`
+
+## 第 1158 步：页面切换 CDP 阻塞红转绿（2026-08-20）
+
+- 首次 266 格路由状态矩阵发现 `fleet / desktop / interfaces` 唯一失败：真实链接点击的同步 React 工作占住 CDP `Runtime.evaluate`，8 秒后超时；其余 265 格通过。
+- 单格复现表明产品路由可达。修复保留真实链接点击，但用零延时任务调度点击，让 CDP 立即返回；后续 18 秒结构检查继续负责验证路由真正完成，未放宽语义门禁。
+- TDD：矩阵合同先因 `setSection` 不可测而红，随后 `15/15` 通过；修复后焦点单格通过。
+- outcome: `1158:route-section-cdp-blocking-red-to-green`
+- latestStepOutcome: `1158:route-section-cdp-blocking-red-to-green`
+
+## 第 1159 步：跨表面 28/76/266 全绿（2026-08-20）
+
+- 修复后重新生成当前工作树证据：公众概览 `28/28`、路由响应式 `76/76`、七场景路由状态 `266/266`，浏览器失败均为 0。
+- 全程通过低负载入口，最高整机 CPU 65.4%，低于 70% 硬上限。
+- outcome: `1159:current-public28-route76-state266-green-low-load`
+- latestStepOutcome: `1159:current-public28-route76-state266-green-low-load`
+
+## 第 1160 步：真实 Edge 200% 门禁可恢复批次化（2026-08-20）
+
+- 真实 Edge 工具栏 200% 首次长跑在完成 20/22 后采样到整机 CPU 83.4%；低负载启动器按合同立即终止 Edge/Node 进程树，证明硬上限不是文案。
+- 原门禁只在 22 格全部结束后写报告，硬停会丢失已完成工作。新增同一稳定工作树身份下的逐格 partial report、`--resume` 与 `--max-cells=N`；每批重新执行 55% 入场检查，已完成格按精确 viewport/scenario 身份跳过。
+- 离线合同先红后绿，22 格定义保持不变；第一批 4 格真实 Edge 证据成功持久化。
+- outcome: `1160:edge200-resumable-batches-red-to-green-first4`
+- latestStepOutcome: `1160:edge200-resumable-batches-red-to-green-first4`
+
+## 第 1161 步：真实 Edge 工具栏 200% 22/22（2026-08-20）
+
+- 通过 4/4/4/4/4/2 的单核低优先级批次完成全部 22 个真实 Edge 工具栏 200% 单元；最终报告 `pass=true`、`complete=true`、`remaining=[]`。
+- 覆盖 320/360/375/390/430、768 平板、667×375 与 844×390 横屏，以及 390px 七个正式 Overview 场景；每格均由真实 Windows Edge 工具栏缩放、几何变化、裁切/滚动/导航与视觉证据共同证明。
+- 手机美术基线、字体、颜色、圆角与组件结构均未改动；本步只增强发布门禁的资源安全和可恢复性。
+- 边界：工具变更改变当前工作树身份，三个 `*-matrix-current` 必须最后重放，再运行 readiness 与当前身份独立签收；GitHub 与 CL 仍未开始。
+- outcome: `1161:edge-toolbar-real200-22of22-resumable-green`
+- latestStepOutcome: `1161:edge-toolbar-real200-22of22-resumable-green`
+
+### Step 1161 后安全运行附记（2026-08-21，尚未晋升为新决策步骤）
+
+- 用户报告机器卡顿并要求全系统 CPU 始终低于 70%。本任务命令记录没有调用 `rg.exe`，现场复查也没有活动 `rg.exe`；但旧的一秒采样、70% 才终止策略无法阻止瞬时越线，因此不能继续沿用。
+- 新的低负载启动器采用：普通命令连续三次低于 45% 才准入并保留暂停机制；浏览器命令检测到一次低于 50% 的安全窗口才准入，Windows 挂起创建后先施加单逻辑 CPU、低优先级与全机 4% Job Object 硬配额，再等待两个连续低于 50% 的挂起复核样本。浏览器运行中不再暂停整棵测试树，因为暂停会让 Node/Python 的墙钟超时继续流逝并制造 `fetch failed`；浏览器档位在 58% 直接终止，依靠逐格日志续跑。任务最大增量仍被硬限定为全机约 4%，用户 70% 硬上限保留至少 12 个百分点。
+- 为避免安全终止反复丢失长矩阵进度，`local-predeploy-check.js` 已实现按精确工作树身份和运行形状绑定的逐格原子日志、仅复用已通过格、失败格必重跑、`--resume` 与 `--max-browser-cells`。Windows 原子替换、精确身份拒绝、通过格恢复和失败格失效均已进入契约测试；当前 Node 语法检查与矩阵契约 `18/18` 通过。
+- 浏览器档位进一步使用 Windows Job Object 为整棵受管进程树施加全机 4% CPU 硬配额；配额绑定失败时命令拒绝启动，独立 `cmd.exe` 冒烟已证明配额成功绑定。真实浏览器冒烟在配额已生效、受管树已暂停时，仍因外部系统负载升至 60.2% 被安全终止，尚未产生首个浏览器格。因此该改造仍处于“契约与配额绿色、真实浏览器分批续跑待安全 CPU 窗口”状态；正式 Step 1162 只能在分批续跑和最终完整矩阵全部真实通过后记录。
+- 后续安全准入阶段在 Node/浏览器完全未启动时观测到全系统 CPU 连续 70–94.1%；独立 0.5 秒只读采样为 70.1%，主要来源是用户现有 Edge、Codex/ChatGPT、微信小程序、Wallpaper Engine、DWM、Office 协作与 WebView 进程，未发现本任务 Node、受管 Edge 或矩阵残留。根据用户“整体 CPU 必须低于 70%”的明确硬边界，真实浏览器首格不能在该外部负载下继续启动；恢复条件是系统自然回落到浏览器门禁可准入范围，而不是放宽或绕过保护。
+- 诊断同时发现守卫自身每 250ms 输出一次会持续触发 Codex/ChatGPT 终端重排，可能放大 renderer 负载。采样频率保持 250ms，但准入日志改为首次、每十次、稳定样本和末次才输出；运行日志改为约每两秒或阈值事件才输出。节流冒烟证明 120 次准入只产生约 12 行，保护语义不变且不再用高频终端输出制造反馈环。
+- 一次 49.1% 准入后，外部负载在浏览器首条指令前反弹，首个运行样本达到 67.5% 并被终止。启动器因此增加二阶段竞态防护：Windows 子进程保持挂起，完成 4% Job Object 配额绑定后再次采样；复核不低于准入线时销毁从未恢复过的进程。独立冒烟已证明 48.6% 初次准入、57.7% 挂起复核会返回 73，目标命令未执行。
+
+#### 2026-08-21 持续低负载策略修订（取代上文“高负载即停止浏览器”结论）
+
+- 用户明确纠正：CPU 偏高时应降低本任务自身占用并继续推进，不能把外部系统负载当作暂停全部工作的理由，也不能反复标记任务受阻。
+- 浏览器模式不再等待所谓安全窗口，不再暂停整棵 Chromium/Node/Python 进程树，也不再因为整机 CPU 达到某个阈值而终止验收。它在 Windows 挂起创建期间绑定 Job Object，随后持续以 `IDLE` 优先级运行；常态硬配额为全机 `0.50%`，整机达到 `50%` 时降为 `0.25%`，达到 `65%` 时进一步降为 `0.05%`，连续三个样本低于 `40%` 才恢复。
+- 低负载模式会让 Edge 冷启动、连接、导航、检查与截图显著变慢。原有 `15s`/`25s` 墙钟时限曾在 CPU 配额真实生效时制造假失败，因此仅在启动器设置 `CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS` 时，将这些步骤的有界时限扩展到 `90s`；普通运行仍保持原时限。
+- 动态配额状态机聚焦测试 `10/10`、Python 语法、两份 JavaScript 语法和矩阵合同 `19/19` 通过。真实浏览器逐格验证已证明同一精确工作树下首轮持久化 Overview，次轮恢复该格并只运行 Interfaces；最终 `browserChecks=2`、`browserFailures=0`。顶层 `pass=false` 仅表示这次是有意的两格子集，不是浏览器格失败。导航函数已改为只返回结果，由仍在时限内的调用方记录成功，防止超时 Promise 晚到后追加假绿。
+- 本轮整机峰值曾出现 `76.9%`，而受管任务当时硬配额已降到全机 `0.5%`；此后进一步建立 `0.50% / 0.25% / 0.05%` 三档。本启动器只能限制本任务增量，不能也不会终止用户的 Edge、微信、Wallpaper Engine、DWM 等外部进程，因此不得把外部进程造成的总负载伪装成本任务可完全控制的指标。
+- 当前结论：低负载执行和逐格续跑已经真实成立，任务保持 `active`；下一步是在最终稳定工作树身份下按小批次重建固定矩阵，而不是等待整机空闲或再次宣告受阻。
+
+## 第 1162 步：低负载持续执行合同与当前 Edge 200% 证据起点（2026-08-21）
+
+- 用户再次明确运行原则：整机 CPU 偏高时必须继续推进，但应立即降低本任务自身占用；外部应用造成的总负载只记录，不得据此暂停任务、标记受阻或结束目标。
+- `tools/run-low-load.py` 的浏览器档位已固定为动态硬配额：常态 `1.00%`，整机达到 `50%` 降为 `0.25%`，达到 `60%` 降为 `0.05%`，连续恢复样本低于 `38%` 才升档；状态日志每 10 秒输出一次，避免终端重绘反向制造负载。聚焦合同 `15/15` 通过。
+- 低配额使真实 Edge 的冷启动、导航、截图和清理显著变慢，因此仅在低负载环境变量存在时把浏览器动作上限扩展到 `90s`，逐格上限扩展到 `1,350,000ms`；普通执行仍保留原有短时限。
+- Windows 工具栏缩放重置改为真实 Win32 `Ctrl+0`，简单键路径不再提前加载 UIA/PIL；浏览器 mock pipe 增加明确停止边界与 reset 归属记录，只有 teardown 或已确认浏览器失败产生的 reset 才可接受，禁止用连接重置掩盖运行时失败。
+- 工具变更形成新的运行时工作树身份，之前 `28/28`、`76/76`、`266/266` 只保留为前一身份的工程证据，必须在最终身份下重放。当前 Edge 工具栏 200% 报告绑定 `worktree-c35df77de8ac-953f11c88e03`，已完成 `phone-320::normal`，即 `1/22`；矩阵未完整，所以顶层继续 `pass=false`。
+- 当前整机峰值可能受用户 Edge、微信、DWM、ChatGPT、WebView 等外部进程影响而超过 70%；本任务只能约束自己的进程树，不能把外部负载伪装为可控指标，也不会终止用户进程。真实约束是本任务在高负载时降到 `0.05%` 并串行逐格续跑。
+- 执行纪律保持不变：不运行 `rg.exe`，不启动子 Agent，不并行浏览器，不上传 GitHub。待当前身份 Edge `22/22`、跨表面 `28/76/266`、readiness、聚焦回归和独立签收全部闭环后，才进入 clean exact-SHA 与远端 Linux/Windows/GHCR CL；任一 CL 失败必须修复后再声称发布。
+- outcome: `1162:low-load-continue-contract-current-edge1of22-release-closed`
+- latestStepOutcome: `1162:low-load-continue-contract-current-edge1of22-release-closed`
+
+## 第 1163 步：宽横屏平板转浏览器工作台（2026-08-21）
+
+- 重新确认响应式产品边界：手机 UI 不是把电脑 UI 缩小，也不是把平板横屏继续当手机页面。窄手机（含窄手机横屏）保留 `Mobile Reference`；宽横屏平板（当前验收 `667×375`、`844×390`）直接进入桌面/浏览器工作台；平板竖屏仍由现有平板工作区能力决定。
+- 生产断点已从单一 `max-width:1199px` 改为“竖屏小于 1200px 或窄于 600px 才是 mobile owner”。宽横屏平板不再挂载手机底部导航和手机卡片树。
+- 新增运行时证据 `wide-landscape-browser-owner-v1`：`667×375` 与 `844×390` 均验证概览和接口工作区挂载桌面 owner；低负载浏览器配额动态降至 `0.05%–0.25%`，未终止用户进程。
+- Edge 200% 矩阵的旧部分身份因产品断点和验收 owner 变更失效，不能复用；需按新的“手机 owner + 宽横屏浏览器 owner”合同重新生成。此前响应式整套运行时曾因外部 CPU 竞争长挂，已停止无界等待，保留静态契约和宽横屏定向运行时证据，不把环境挂起误报为产品断言失败。
+- 低负载启动器修复为保留调用方显式浏览器超时（默认仍为 90 秒），`run-low-load` 策略测试保持 `15/15`；CPU 策略只压低本任务，不暂停整个目标。
+- outcome: `1163:wide-landscape-tablet-browser-owner-runtime-green-edge-matrix-rebased`
+- latestStepOutcome: `1163:wide-landscape-tablet-browser-owner-runtime-green-edge-matrix-rebased`
+
+## 第 1164 步：宽横屏浏览器工作台压缩与导航占位修正（2026-08-21）
+
+- 需求裁决：宽横屏平板不再使用手机视窗或手机卡片树，直接使用浏览器/桌面工作台；手机 owner 只负责竖屏与窄横屏。
+- 首次真实 667×375 检查发现桌面内容虽然已进入首屏，但窄宽度回退规则把摘要堆成四行，且 WAN 事实与速率说明出现可读文字裁切。没有放宽门禁，而是新增短横屏浏览器工作台规则：压缩顶部壳层、摘要为四列两行、WAN 与实时趋势保持双工作列，并允许事实说明自然换行。
+- 真实截图又发现 600–1199px 的旧平板导航规则没有为桌面 owner 预留侧栏，内容被垂直导航覆盖。修复为桌面 surface 专属 64px 浏览器 rail；顶部工具条仍横跨视窗，工作区从 rail 右侧开始。
+- 验证：生产 TypeScript/build 通过；真实 Edge `public/single` 的 `667×375` 与 `844×390` 概览均通过 desktop-overview owner、首屏、可读字号、无裁切、无横向溢出、图表证据与运行时错误检查；截图显示侧栏与工作区已分离。桌面 v1030 核心概览探针通过，但其附带趋势子检查随后因外部整机 CPU 峰值 94.1% 发生导航超时，不能把该次包装命令写成完整通过。
+- 边界：只修正宽横屏浏览器 surface 的布局与 rail，不改变用户确认的手机视觉基线；未运行 `rg.exe`、未启动子代理、未上传 GitHub、未运行远端 CL；发布资格继续关闭，下一步重跑低负载桌面聚焦回归与当前身份完整矩阵。
+- outcome: `1164:wide-landscape-browser-workbench-compact-and-rail-corrected-focused-green-release-closed`
+- latestStepOutcome: `1164:wide-landscape-browser-workbench-compact-and-rail-corrected-focused-green-release-closed`
+
+## 第 1165 步：构建负载边界复核与资产身份保持红（2026-08-21）
+
+- 为避免一直等待而尝试过一次更宽的普通构建负载窗口，但真实采样仍达到 `70.0%–72.9%`，立即终止了本任务拥有的构建树，并恢复原来的 `45% admission / 55% pause / 60% hard` 保守护栏。低负载策略回归保持 `15/15` 通过。
+- 资产身份检查正确拒绝当前工作树：`manifest` 的输入摘要仍是旧值，而桌面 owner class 与横屏 rail 源码已经变化。这个红灯是诚实的，不能拿中断构建产生的旧 bundle 继续做发布验证。
+- 决策：不再提高 CPU 上限换取速度；等外部负载低于 admission 阈值后，完整构建一次，再验证 manifest、横屏截图和桌面矩阵。
+- outcome: `1165:cpu-envelope-kept-conservative-stale-asset-identity-red`
+- latestStepOutcome: `1165:cpu-envelope-kept-conservative-stale-asset-identity-red`
+
+## 第 1166 步：当前身份跨视图矩阵重放完成，决策仓库进入新鲜同步（2026-08-21）
+
+- 重新核对当前工作树后，低负载公众概览矩阵 `7 个场景 × 4 个视口 = 28/28` 通过；覆盖 `single / fleet / all-offline / no-snapshot / collection-down / resource-full / interfaces-down`，并同时保留桌面、宽横屏浏览器视图与窄屏手机视图截图。
+- 当前移动 owner 的工程矩阵 `7 个场景 × 8 个视口 = 56/56` 已完成，报告中的失败单元为 `0`；其顶层 `pass=false` 仅因为该报告是 bounded engineering report，不是完整公开发布报告，不能把这个包装结果误读成运行失败。
+- 宽横屏断点继续遵守产品边界：`667×375` 与 `844×390` 走独立浏览器/桌面工作台，不再挂载手机底部导航和手机卡片树；手机美术基线、颜色、圆角、图表和字体方向没有改变。
+- 当前 evidence 仍绑定脏工作树 `c35df77de8aced51a4f5a9cd84daf2129a4246b1`，因此不是 clean exact-SHA 发布证据。路由 `76`、路由状态 `266`、真实 Edge 200% 当前身份重放、独立 Product/Visual/Accessibility/Engineering 签收、clean candidate 和远端 CL 仍未关闭。
+- CPU 纪律保持低负载串行执行；没有运行 `rg.exe`、没有并行浏览器、没有启动子 Agent、没有上传 GitHub，也没有把矩阵通过冒充公众发布资格。
+- outcome: `1166:current-identity-mobile56-public28-green-decision-ledger-sync-next`
+- latestStepOutcome: `1166:current-identity-mobile56-public28-green-decision-ledger-sync-next`
+
+## 第 1167 步：发布就绪门禁正确拒绝缺失的当前身份证据（2026-08-21）
+
+- `check-public-release-readiness.js --engineering-worktree` 在决策仓库同步后继续执行，没有被旧 freshness 错误短路。
+- 门禁真实报告：当前工作树身份为 `worktree-c35df77de8ac-f42436982e69`；route responsive、route-state 和 Edge toolbar 200% 仍没有可复用的当前身份完整报告。旧报告因 fingerprint 不一致、`fleet/interfaces/desktop` 失败或 incomplete 被拒绝，不能假绿。
+- 这次失败是正确的发布阻断，不是产品通过；不得把已通过的 overview `28/28` 或 mobile `56/56` 扩大解释为跨表面发布资格。
+- 运行期间低负载 wrapper 记录到外部整机负载峰值 `80.3%`；本任务保持动态限额并未把外部峰值伪称为稳定低于 70%，后续继续串行、低负载并优先短批次。
+- outcome: `1167:readiness-fails-closed-on-current-route-state-edge-evidence`
+- latestStepOutcome: `1167:readiness-fails-closed-on-current-route-state-edge-evidence`
+
+## 第 1168 步：Fleet 接口宽桌面当前身份聚焦通过（2026-08-21）
+
+- 为确认 readiness 报告中的旧 `fleet/interfaces/desktop` 失败是否仍存在，当前身份只运行了一个低负载聚焦单元：`public / fleet / interfaces / 1366×768`。
+- 当前运行结果通过：浏览器挂载、接口工作区、截图、目标关闭、浏览器进程树清理和本地服务日志均为 PASS；这证明该历史失败不能直接复用为当前失败，但也不替代完整 route `76`。
+- 宽横屏浏览器 owner 与手机 owner 继续隔离；本次没有改动手机美术基线、字体、颜色、圆角、导航或图表。
+- outcome: `1168:current-fleet-interfaces-desktop-focus-green-route-matrix-next`
+- latestStepOutcome: `1168:current-fleet-interfaces-desktop-focus-green-route-matrix-next`
+
+## 第 1177 步：Edge 缩放后渲染 owner 解析修正（2026-08-22）
+
+- 平板横屏在 100% 浏览器视窗下继续由桌面/浏览器工作台负责；200% 浏览器缩放造成 CSS 视窗变窄时，验收器改为读取缩放后的实际渲染 owner，不再把手机树错误当成平板设计基线。
+- 未修改手机视觉基线、字体、颜色、圆角、图标或组件构成。
+- outcome: `1177:edge-owner-resolved-after-zoom-reflow`
+
+## 第 1178 步：浏览器导航异常的有限重试（2026-08-22）
+
+- Edge 运行时只对 `ERR_ABORTED` 做一次 400ms 有界重试；其他错误继续立即失败，避免把真实业务/环境错误吞掉。
+- outcome: `1178:bounded-edge-navigation-abort-retry`
+
+## 第 1180 步：真实 Edge 证据仍未形成（2026-08-22）
+
+- 当前身份 Edge 200% 重跑受到外部系统负载和 Edge 页面创建超时影响，未产生可复用的完整报告；该状态保持红色，不能用旧报告替代。
+- 未杀掉用户 Edge 进程，未上传 GitHub，发布门继续关闭。
+- outcome: `1180:edge-replay-rejected-by-a11y-page-create-timeout`
+
+## 第 1181 步：继续保护 CPU，等待安全窗口（2026-08-22）
+
+- 后续单格重试在系统负载持续尖峰时主动停止，没有把“进程被启动”冒充为验收通过。
+- 下一步仍是外部 Edge 负载稳定后，低负载串行重跑当前身份 Edge 矩阵，再继续 route/state、readiness、独立签收和精确 SHA 发布验证。
+- outcome: `1181:edge-retry-stopped-after-system-load-stall`
+- latestStepOutcome: `1181:edge-retry-stopped-after-system-load-stall`
+
+## 第 1182 步：修正 Edge 200% 证据工具的输入队列边界（2026-08-22）
+
+- outcome: `1182:edge-toolbar-helper-timeout-raised-to-prevent-queued-key-overshoot`
+- root-cause: Edge 键盘缩放探针的父进程 6 秒边界可能在辅助程序已经发出按键、但尚未返回时提前终止辅助程序；下一次 fallback 会与延迟按键叠加，把 200% 误推进到 250%。
+- change-boundary: 只提高 `tools/check-browser-toolbar-zoom200.js` 的键盘探针返回窗口到有界的 8–15 秒；没有修改手机或桌面产品代码、视觉基线或断言目标。
+- evidence-boundary: 之前 9 个 Edge 单元的证据因工作树指纹改变而全部失效，必须在此工具修正后重新生成当前身份矩阵；当前产品发布仍保持关闭。
+- latestStepOutcome: `1182:edge-toolbar-helper-timeout-raised-to-prevent-queued-key-overshoot`
+
+## 第 1183 步：按实际 Edge 缩放梯度停止在 200%（2026-08-22）
+
+- outcome: `1183:edge-toolbar-verifier-stops-on-observed-200pct-target-within-bounded-probes`
+- root-cause: Edge 不同版本/输入路径的内置缩放梯度并不保证恰好五次递增；当前失败单元在第四次已达到 200%，第五次继续递增到 250%，固定次数契约因此误报失败。
+- change-boundary: 仅把 Edge 证据工具改为“最多五次、有真实 DPR/布局变化、达到 200% 立即停止”，并把工具合同升级为 v9；不改变手机或桌面产品代码、视觉基线或 200% 目标。
+- evidence-boundary: 旧 Edge 单元和固定名报告因工具合同/工作树身份变化而不可复用；必须重新生成完整当前身份矩阵。
+- latestStepOutcome: `1183:edge-toolbar-verifier-stops-on-observed-200pct-target-within-bounded-probes`
+
+## 第 1184 步：把发布回归门禁迁回当前 Mobile Reference 所有权（2026-08-23）
+
+- outcome: `1184:current-owner-regressions-green-matrix-rebind-and-independent-signoff-next`
+- 已观察事实：本轮开始时真实 Edge toolbar 200% `22/22`、公众概览 `28/28`、route-responsive `76/76`、route-state `266/266`、mobile `56/56` 和 dirty-worktree readiness 均为绿色工程证据；发布仍因独立签收与 clean exact-SHA 缺失而关闭。
+- 问题一：`check-responsive-boundary-contract.js` 仍等待已删除的 `[data-mobile-pulse-overview]`，导致全部移动边界单元超时。门禁已改为真实 `[data-mobile-reference-home]`、`[data-mobile-reference-navigation]` 和当前平板任务工作区；新鲜 `8/8` 通过，并继续规定宽横屏平板使用浏览器 owner。
+- 问题二：旧深交互脚本仍依赖已删除的 domain-workspace selector、折叠工具条和恢复壳。该脚本已重写为 Mobile Reference 生产运行时契约，覆盖 interfaces/routes/terminals/logs/dhcp 五个真实对象路由的搜索、筛选、排序、分页、对象详情、canonical URL、Back、Forward、direct link；另覆盖只读诊断诚实空态和网络目录对象 hand-off。
+- 新鲜证据：类型、生产构建、overview 12 gates、RFC3339、后端、采集、安全、accessibility `11/11`（含真实 200% 文本缩放）、浏览器生命周期、online hint、批处理、连接安全、responsive `8/8` 与 deep-interaction v3 全部通过。
+- 取舍：没有修改 `src/panel-framework/mobile-reference-ui/` 的手机构图、配色、字体、间距、图表或导航美术；只修正验收所有权和低负载有界时间预算。测试源码变化会改变 worktree fingerprint，所以之前完整矩阵不能直接充当最终当前身份发布证据。
+- 发布边界：当前工作树仍为 dirty；独立 Product/Visual/Accessibility/Engineering 签收、clean exact-SHA、GitHub 上传与上传后 exact-SHA Linux/Windows/GHCR CL 全部未完成，发布保持 CLOSED。
+- next action: 同步并验证 D 盘决策镜像，然后统一重绑一次当前身份 Edge/public/route/state/mobile 证据并完成独立四角色签收。
+- latestStepOutcome: `1184:current-owner-regressions-green-matrix-rebind-and-independent-signoff-next`
+## 第 1185 步：最终当前身份矩阵与四角色本地签收通过，进入 clean exact-SHA
+
+- 保持用户指定四屏手机参考图与 `mobile-reference-ui` 视觉所有权不变；本步没有修改手机构图、颜色、间距、图表或导航美术。
+- 手机运行报告补齐 `generatedAt`，修复独立签收无法与运行工件逐字段绑定的证据契约缺口。
+- 最终当前身份 `worktree-c35df77de8ac-9ef6adea85fa` 的 Edge toolbar 200% `22/22`、公众概览 `28/28`、route-responsive `76/76`、route-state `266/266`、mobile `56/56`、工作流 `14/14`、accessibility `11/11` 与 dirty-worktree engineering readiness 均通过。
+- Product、Visual、Accessibility、Engineering 四个顺序隔离角色记录均为 `pass`、`P0=0`、`P1=0`，并绑定同一 artifact key、fingerprint、commit 与 generatedAt。按用户要求没有创建或恢复子代理。
+- 768 纵向继续使用侧栏任务工作区；667×375 与 844×390 横屏继续由浏览器/桌面 owner 承接。被拒绝的旧手机 presentation 没有恢复。
+- 当前仍不是发布候选：工作树为 dirty，尚无 clean exact-SHA，GitHub 未上传，也没有该 SHA 的 Linux、Windows 与 GHCR CL。
+- outcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+- next action: 同步并验证 D 盘决策镜像，随后建立严格排除无关 `.agents/skills/router-panel-product-loop/agents/openai.yaml` 的 clean exact-SHA 候选并重放发布证据。
+- latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`

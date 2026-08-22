@@ -1,71 +1,105 @@
-'use strict';
++'use strict';
 
-/** Browser-side contract for the isolated Mobile Flow owner. */
+/** Browser-side contract for the sole accepted Mobile Reference owner. */
 async function inspectOverviewMobileInteraction({ sectionName, viewport }) {
   if (sectionName !== 'overview' || Number(viewport?.width || innerWidth) >= 900) {
-    return { mobilePulseInteractionOk: true, mobilePulseInteractionProbe: { applicable: false }, mobilePulseObjectSelectionOk: true, mobilePulseObjectSelectionProbe: { applicable: false } };
+    return {
+      mobileReferenceInteractionOk: true,
+      mobileReferenceInteractionProbe: { applicable: false },
+      mobileReferenceObjectSelectionOk: true,
+      mobileReferenceObjectSelectionProbe: { applicable: false },
+    };
   }
-  const root = document.querySelector('[data-mobile-flow-overview]');
+  const root = document.querySelector('[data-mobile-reference-home]');
   const visible = (node) => {
-    const rect = node.getBoundingClientRect(); const style = getComputedStyle(node);
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
     return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
   };
-  const controls = [...(root?.querySelectorAll('button') || [])].filter(visible);
+  const controls = [...document.querySelectorAll('[data-mobile-reference-home] button, [data-mobile-reference-navigation] button')].filter(visible);
   const targetOk = controls.every((node) => {
     const rect = node.getBoundingClientRect();
     return rect.width >= 44 && rect.height >= 44 && Boolean(node.getAttribute('aria-label') || node.textContent?.trim());
   });
-  const evidenceActions = [...(root?.querySelectorAll('.mflow-instrument button, .mflow-stream button') || [])].filter(visible);
+  const scene = root?.getAttribute('data-mobile-reference-scene') || '';
+  const evidenceActions = [...(root?.querySelectorAll('.ref-card-link, .ref-interfaces > button') || [])].filter(visible);
+  const objectSelectionRequired = scene === 'normal' || scene === 'interfaces';
   return {
-    mobilePulseInteractionOk: Boolean(root && controls.length > 0 && targetOk),
-    mobilePulseInteractionProbe: { applicable: true, owner: 'mobile-flow-ui', controls: controls.length, targetOk },
-    mobilePulseObjectSelectionOk: evidenceActions.length > 0,
-    mobilePulseObjectSelectionProbe: { applicable: true, owner: 'mobile-flow-ui', objects: evidenceActions.length },
+    mobileReferenceInteractionOk: Boolean(root && controls.length > 0 && targetOk),
+    mobileReferenceInteractionProbe: { applicable: true, owner: 'mobile-reference-ui', controls: controls.length, targetOk },
+    mobileReferenceObjectSelectionOk: !objectSelectionRequired || evidenceActions.length > 0,
+    mobileReferenceObjectSelectionProbe: { applicable: objectSelectionRequired, owner: 'mobile-reference-ui', objects: evidenceActions.length, scene },
   };
 }
 
 function inspectMobileNativeOverview(context) {
   const width = Number(context.viewport?.width || innerWidth);
-  if (context.sectionName !== 'overview' || width >= 900) return null;
-  const root = document.querySelector('[data-mobile-flow-overview]');
-  const navigation = document.querySelector('[data-mobile-flow-navigation]');
+  const height = Number(context.viewport?.height || innerHeight);
+  const wideLandscapeBrowserOwner = width >= 600 && width > height;
+  if (context.sectionName !== 'overview' || width >= 900 || wideLandscapeBrowserOwner) return null;
+  const root = document.querySelector('[data-mobile-reference-home]');
+  const navigation = document.querySelector('[data-mobile-reference-navigation]');
   const evidenceMode = root?.getAttribute('data-evidence-mode') || '';
-  const scene = root?.getAttribute('data-mobile-flow-scene') || '';
+  const scene = root?.getAttribute('data-mobile-reference-scene') || '';
   const tabs = [...(navigation?.querySelectorAll('button') || [])];
   const labels = tabs.map((node) => String(node.textContent || '').replace(/\s+/g, ' ').trim());
-  const instrument = root?.querySelector('.mflow-instrument');
-  const sceneSelectors = {
-    normal: '.mflow-route', fleet: '.mflow-fleet', wan: '.mflow-wan', unavailable: '.mflow-withdrawn',
-    collection: '.mflow-channels', resource: '.mflow-resource', interfaces: '.mflow-chain',
-  };
-  const expectedInstrument = sceneSelectors[scene];
-  const normal = scene === 'normal';
-  const sceneContract = Boolean(expectedInstrument && root?.querySelector(expectedInstrument) &&
-    (normal ? evidenceMode === 'current' && root.querySelector('.mflow-route__traffic') : !root?.querySelector('.mflow-route__traffic')));
+  const wan = root?.querySelector('.ref-wan');
+  const chart = root?.querySelector('.ref-chart svg');
+  const metrics = wan?.querySelectorAll('.ref-rate-grid .ref-rate').length || 0;
+  const resourceMeters = root?.querySelectorAll('.ref-resource').length || 0;
+  const knownScene = ['normal', 'outage', 'unavailable', 'collection', 'resource', 'interfaces', 'route'].includes(scene);
+  const normalContract = scene !== 'normal' || (evidenceMode === 'current' && metrics === 2 && Boolean(chart) && chart?.getAttribute('preserveAspectRatio') !== 'none');
+  const resourceContract = scene !== 'resource' || (resourceMeters === 3 && !chart);
+  const interfaceContract = scene !== 'interfaces' || (root?.querySelectorAll('.ref-interfaces > button').length > 0 && !chart);
+  const withdrawnContract = !['outage', 'unavailable', 'collection'].includes(scene) || (metrics === 0 && !chart);
   const capabilityChecks = {
-    flowOwner: Boolean(root?.matches('main.mflow')),
+    ikuai4Root: Boolean(root?.matches('main.ref-mobile')),
     evidenceMode: /^(current|historical|unavailable)$/.test(evidenceMode),
-    knownScene: Boolean(expectedInstrument),
-    decisiveInstrument: Boolean(instrument && root?.querySelectorAll('.mflow-instrument').length === 1),
-    sceneContract,
-    statusVerdict: Boolean(root?.querySelector('.mflow-status[aria-label="当前结论"]')),
-    fourNavigationRoots: tabs.length === 4 && ['概览', '网络', '终端', '日志'].every((label) => labels.includes(label)),
-    moreDirectory: Boolean(root?.querySelector('button[aria-label="更多模块"]')),
-    evidenceAction: Boolean(root?.querySelector('.mflow-instrument button, .mflow-stream button')),
-    soleFlowOwner: document.querySelectorAll('[data-mobile-flow-overview]').length === 1,
+    scene: knownScene,
+    currentOnlyRates: normalContract && resourceContract && interfaceContract && withdrawnContract,
+    fourNavigationRoots: tabs.length === 4 && ['概览', '网络', '设备', '日志'].every((label) => labels.includes(label)),
+    moreDirectory: Boolean(root?.querySelector('button[aria-label="打开更多工具"]')),
+    objectDetail: scene === 'normal'
+      ? Boolean(root?.querySelector('.ref-card-link'))
+      : scene === 'interfaces'
+        ? Boolean(root?.querySelector('.ref-interfaces > button'))
+        : true,
+    noRejectedOwner: document.querySelectorAll('[data-mobile-reference-home]').length === 1 &&
+      document.querySelectorAll('[data-mobile-reference-home]').length === 1,
   };
   const checks = {
-    root: Boolean(root), navigation: Boolean(navigation), noHorizontalOverflow: Number(context.overflowX || 0) <= 1,
-    noBadLiteral: context.hasBadLiteral !== true, interaction: context.mobilePulseInteractionOk === true,
-    objectSelection: context.mobilePulseObjectSelectionOk === true,
+    root: Boolean(root),
+    navigation: Boolean(navigation),
+    noHorizontalOverflow: Number(context.overflowX || 0) <= 1,
+    noBadLiteral: context.hasBadLiteral !== true,
+    interaction: context.mobileReferenceInteractionOk !== false,
+    objectSelection: context.mobileReferenceObjectSelectionOk !== false,
   };
   const risk = scene === 'unavailable' ? 'evidence' : scene === 'normal' ? 'none' : scene;
   return {
-    pass: Object.values(checks).every(Boolean) && Object.values(capabilityChecks).every(Boolean), surface: 'mobile-flow-overview', contract: 'mobile-flow-runtime-v1',
-    profile: context.profile, scaleScenario: context.scaleScenario, viewport: context.viewport, requestedSection: context.sectionName,
-    requestedFound: true, activeSection: 'overview',
-    scene, evidenceMode, truthMode: evidenceMode, risk, navButtons: tabs.length, checks,
-    mobilePulseGateProbe: { contract: 'mobile-flow-runtime-v1', appHomePass: Object.values(capabilityChecks).every(Boolean), truthMode: evidenceMode, risk, requiredChecks: Object.keys(capabilityChecks), checks: capabilityChecks },
+    pass: Object.values(checks).every(Boolean) && Object.values(capabilityChecks).every(Boolean),
+    surface: 'mobile-overview',
+    contract: 'mobile-reference-runtime-v1',
+    profile: context.profile,
+    scaleScenario: context.scaleScenario,
+    viewport: context.viewport,
+    requestedSection: context.sectionName,
+    requestedFound: true,
+    activeSection: 'overview',
+    scene,
+    evidenceMode,
+    truthMode: evidenceMode,
+    risk,
+    navButtons: tabs.length,
+    checks,
+    mobileReferenceGateProbe: {
+      contract: 'mobile-reference-runtime-v1',
+      appHomePass: Object.values(capabilityChecks).every(Boolean),
+      truthMode: evidenceMode,
+      risk,
+      requiredChecks: Object.keys(capabilityChecks),
+      checks: capabilityChecks,
+    },
   };
 }
 

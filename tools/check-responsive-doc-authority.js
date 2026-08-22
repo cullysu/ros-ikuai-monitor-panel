@@ -9,10 +9,11 @@ const has = (text, pattern) => pattern.test(text);
 
 const currentPath = "docs/decision-system/responsive-capabilities.md";
 const current = read(currentPath);
+const mobileBaselinePath = "docs/mobile-reference-baseline.md";
+const mobileBaseline = read(mobileBaselinePath);
 const historicalIndex = read("docs/decision-system/historical-index.md");
 const legacyPaths = [
   "docs/desktop-overview-redesign-directions.md",
-  "docs/mobile-overview-redesign-directions.md",
   "docs/overview-framework-migration.md",
   "docs/overview-ikuai40-completion-audit.md",
 ];
@@ -34,6 +35,17 @@ check(
   "current-table-binds-boundary-continuity",
   /1199\/1200[\s\S]*1365\/1366/.test(current),
   "the live table must bind both continuity pairs",
+);
+check(
+  "mobile-baseline-is-current",
+  /^- status:\s*`current-contract\s*\/\s*acceptance-failed`/m.test(mobileBaseline),
+  mobileBaselinePath,
+);
+check(
+  "mobile-baseline-binds-the-user-reference",
+  /_design\/accepted-mobile-reference\/accepted-four-screen\.png/.test(mobileBaseline) &&
+    /不得恢复或引用已删除的其他手机设计树/.test(mobileBaseline),
+  "the live mobile contract must bind only the user-selected four-screen reference",
 );
 
 for (const relativePath of legacyPaths) {

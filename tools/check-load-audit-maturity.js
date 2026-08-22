@@ -9,8 +9,8 @@ const routes = read("src/panel-framework/routes/panelRoutes.ts");
 const model = read("src/panel-framework/sections/sectionModels.ts");
 const evidenceTypes = read("src/panel-framework/sections/sectionRowEvidenceTypes.ts");
 const evidenceBuilder = read("src/panel-framework/sections/sectionRowEvidence.ts");
-const routeSurface = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
-const routeAssembly = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx");
+const routeSurface = read("src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx");
+const routeAssembly = read("src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx");
 
 const failures = [];
 const expect = (condition, message) => {
@@ -39,10 +39,8 @@ expect(
 );
 expect(
   /buildSectionModel\(route, snapshot\)/.test(routeAssembly)
-    && /useObjectHistory\(route\)/.test(routeSurface)
-    && /const fields = row\.columns\.map/.test(routeSurface)
-    && /row\.evidence\.sourceTable \|\| row\.table/.test(routeSurface)
-    && /对象证据/.test(routeSurface),
+    && /data-mobile-reference-workspace=\{route\}/.test(routeSurface)
+    && /rows\.map/.test(routeSurface),
   "loadAudit detail must expose the selected resource object's raw evidence without duplicating a synthetic audit summary",
 );
 

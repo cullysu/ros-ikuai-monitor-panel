@@ -5,9 +5,9 @@ const root = path.resolve(__dirname, "..");
 const gates = [
   "check-overview-architecture.js",
   "check-overview-ikuai-static.js",
-  "check-mobile-ikuai4-model.js",
+  "check-mobile-reference-model.js",
   "check-overview-investigation-actions.js",
-  "check-mobile-ikuai4-architecture.js",
+  "check-mobile-reference-architecture.js",
   "check-normal-verdict-contract.js",
   "check-verdict-truth-contract.js",
   "check-atomic-traffic-history.js",

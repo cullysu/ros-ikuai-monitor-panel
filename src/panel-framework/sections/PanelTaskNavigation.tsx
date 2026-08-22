@@ -30,6 +30,8 @@ export function PanelTaskNavigation({
           <button
             type="button"
             className={active ? "is-active" : ""}
+            aria-label={item.label}
+            title={item.label}
             aria-current={active ? "page" : undefined}
             data-section={destination}
             onClick={() => onNavigate(destination)}

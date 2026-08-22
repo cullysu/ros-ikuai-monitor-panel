@@ -10,10 +10,8 @@ import { OverviewPanel } from "./overview/OverviewPanel";
 import { buildOverviewEvidenceModel } from "./overview/evidence-model/buildOverviewEvidenceModel";
 import { RouterConnectionScreen } from "./connection/RouterConnectionScreen";
 import { usePanelLargeTextMode } from "./responsive/textScale";
-import { MobileFlowConnection } from "./mobile-flow-ui/connection/MobileFlowConnection";
-import { MobileFlowNavigation } from "./mobile-flow-ui/navigation/MobileFlowNavigation";
-import { MobileFlowOverview } from "./mobile-flow-ui/overview/MobileFlowOverview";
-import { MobileFlowRoutes } from "./mobile-flow-ui/workspace/MobileFlowRoutes";
+import { MobileReferenceConnection } from "./mobile-reference-ui/MobileReferenceConnection";
+import { MobileReferenceNavigation, MobileReferenceSurface } from "./mobile-reference-ui/MobileReferenceSurface";
 import { useMobilePanelSurface } from "./responsive/panelSurface";
 import type { PanelNavigate, PanelRouteId } from "./routes/panelRoutes";
 import { usePanelRoute } from "./routes/usePanelRoute";
@@ -67,17 +65,12 @@ function SnapshotSurface({
     [snapshot, options, scenarioHint]
   );
   const evidence = useMemo(() => buildOverviewEvidenceModel(snapshot, state), [snapshot, state]);
-  const mobileOverview = <section id="overview" className="section is-mobile-surface" data-overview-scene-key={state.scenario}><MobileFlowOverview evidence={evidence} onNavigate={navigate} onRefresh={onRefresh} /></section>;
 
   return (
-    <div className={`panel-app${mobile ? " panel-app-mobile" : ""}`} data-panel-app data-panel-surface={mobile ? "mobile" : "desktop"} data-active-section={route}>
-      {route === "overview" ? (
-        mobile ? mobileOverview : <OverviewPanel snapshot={snapshot} state={state} onNavigate={navigate} runtimeManaged={runtimeManaged} />
-      ) : (
-        mobile ? <MobileFlowRoutes route={route} snapshot={snapshot} onNavigate={navigate} onShowConnection={onShowConnection} /> : <OperationalSectionPage route={route} snapshot={snapshot} onNavigate={navigate} />
-      )}
+    <div className={`panel-app${mobile ? " panel-app-mobile" : " panel-app-desktop"}`} data-panel-app data-panel-surface={mobile ? "mobile" : "desktop"} data-active-section={route}>
+      {mobile ? <section id={route === "overview" ? "overview" : undefined} className="section is-mobile-surface" data-overview-scene-key={state.scenario}><MobileReferenceSurface route={route} evidence={evidence} snapshot={snapshot} state={state} onNavigate={navigate} onRefresh={onRefresh} onShowConnection={onShowConnection} /></section> : route === "overview" ? <OverviewPanel snapshot={snapshot} state={state} onNavigate={navigate} runtimeManaged={runtimeManaged} /> : <OperationalSectionPage route={route} snapshot={snapshot} onNavigate={navigate} />}
       {mobile
-        ? <MobileFlowNavigation route={route} onNavigate={navigate} />
+        ? <MobileReferenceNavigation route={route} onNavigate={navigate} />
         : <PanelTaskNavigation route={route} onNavigate={navigate} />}
     </div>
   );
@@ -136,7 +129,7 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
     return (
       <div className="panel-runtime-live" data-panel-runtime-phase={runtime.snapshot.phase} data-panel-large-text={largeText ? "true" : "false"}>
         <span className="panel-text-scale-sentinel" aria-hidden="true" ref={textScaleSentinelRef}>M</span>
-        <MobileFlowConnection runtime={runtime} />
+        <MobileReferenceConnection runtime={runtime} />
       </div>
     );
   }

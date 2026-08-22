@@ -125,23 +125,28 @@ async function inspectViewport(page, viewport, screenshotPath) {
   await page.waitForTimeout(120);
   const geometry = await page.evaluate(() => {
     const box = (node) => node ? Object.fromEntries(["left", "top", "right", "bottom", "width", "height"].map((key) => [key, node.getBoundingClientRect()[key]])) : null;
-    const incident = document.querySelector(".do-incident");
-    const workspace = incident?.querySelector('[data-overview-task-landmark="risk-objects"]');
-    const resourceEvidence = incident?.querySelector('[data-overview-task-landmark="signal"]');
-    const firstObject = workspace?.querySelector("[data-overview-task-risk-object]");
-    const inspectAction = workspace?.querySelector("[data-desktop-inspector-action-route]");
-    const incidentChildren = incident ? [...incident.children].map((node) => ({
-      landmark: node.getAttribute("data-overview-task-landmark") || node.className,
+    const shell = document.querySelector("[data-desktop-overview]");
+    const verdict = shell?.querySelector("[data-desktop-incident-verdict]");
+    const summary = shell?.querySelector("[data-desktop-status-bus]");
+    const workspace = shell?.querySelector("[data-desktop-object-list]");
+    const resourceEvidence = shell?.querySelector("[data-desktop-resource-evidence]");
+    const firstObject = workspace?.querySelector(".legacy-object-row");
+    const inspectAction = shell?.querySelector(".legacy-focus-link");
+    const resourceCards = [...(resourceEvidence?.querySelectorAll(".legacy-resource-card") || [])];
+    const rightColumn = shell?.querySelector(".legacy-right-column");
+    const rightChildren = rightColumn ? [...rightColumn.children].map((node) => ({
+      landmark: node.getAttribute("data-desktop-resource-evidence") !== null ? "resource" : node.getAttribute("data-desktop-object-list") !== null ? "objects" : node.className,
       rect: box(node),
     })) : [];
-    const gaps = incidentChildren.slice(1).map((item, index) => Math.max(0, item.rect.top - incidentChildren[index].rect.bottom));
+    const gaps = rightChildren.slice(1).map((item, index) => Math.max(0, item.rect.top - rightChildren[index].rect.bottom));
     return {
       viewport: { width: innerWidth, height: innerHeight },
-      incident: box(incident), workspace: box(workspace), resourceEvidence: box(resourceEvidence), firstObject: box(firstObject), inspectAction: box(inspectAction),
-      workspaceBeforeResourceInDom: Boolean(
-        workspace && resourceEvidence && (workspace.compareDocumentPosition(resourceEvidence) & Node.DOCUMENT_POSITION_FOLLOWING)
+      shell: box(shell), verdict: box(verdict), summary: box(summary), workspace: box(workspace), resourceEvidence: box(resourceEvidence), firstObject: box(firstObject), inspectAction: box(inspectAction),
+      resourceCards: resourceCards.map((node) => ({ rect: box(node), preserveAspectRatio: node.querySelector("svg")?.getAttribute("preserveAspectRatio") || "", text: node.textContent || "" })),
+      resourceBeforeWorkspaceInDom: Boolean(
+        resourceEvidence && workspace && (resourceEvidence.compareDocumentPosition(workspace) & Node.DOCUMENT_POSITION_FOLLOWING)
       ),
-      incidentChildren, gaps,
+      rightChildren, gaps,
       scroll: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
     };
   });
@@ -149,12 +154,14 @@ async function inspectViewport(page, viewport, screenshotPath) {
   const viewportBottom = viewport.height;
   const checks = {
     desktopResourceScenario: await page.locator('[data-desktop-overview-scenario="resource-full"]').count() === 1,
-    workspaceVisible: Boolean(geometry.workspace && geometry.workspace.top >= 0 && geometry.workspace.top < viewportBottom),
-    firstObjectInFixedFirstViewport: Boolean(geometry.firstObject && geometry.firstObject.top >= 0 && geometry.firstObject.bottom <= viewportBottom),
-    inspectActionInFixedFirstViewport: Boolean(geometry.inspectAction && geometry.inspectAction.top >= 0 && geometry.inspectAction.bottom <= viewportBottom),
-    workspacePrecedesResourceEvidence: Boolean(
-      geometry.workspace && geometry.resourceEvidence && geometry.workspaceBeforeResourceInDom &&
-      geometry.workspace.top <= geometry.resourceEvidence.top + 1,
+    compactVerdictVisible: Boolean(geometry.verdict && geometry.verdict.top >= 0 && geometry.verdict.bottom <= viewportBottom),
+    resourceEvidenceVisible: Boolean(geometry.resourceEvidence && geometry.resourceEvidence.top >= 0 && geometry.resourceEvidence.bottom <= viewportBottom),
+    resourceTripletTruthful: geometry.resourceCards.length === 3 && geometry.resourceCards.every((card) => !/none/i.test(card.preserveAspectRatio) && /阈值/.test(card.text)),
+    workspaceStartsInFixedFirstViewport: Boolean(geometry.workspace && geometry.workspace.top >= 0 && geometry.workspace.top < viewportBottom),
+    firstObjectStartsInFixedFirstViewport: Boolean(geometry.firstObject && geometry.firstObject.top >= 0 && geometry.firstObject.top < viewportBottom),
+    resourcePrecedesWorkspace: Boolean(
+      geometry.workspace && geometry.resourceEvidence && geometry.resourceBeforeWorkspaceInDom &&
+      geometry.resourceEvidence.top <= geometry.workspace.top,
     ),
     noReorderHole: geometry.gaps.every((gap) => gap <= 16),
     noHorizontalOverflow: geometry.scroll.width <= viewport.width + 1,
@@ -199,9 +206,9 @@ async function main() {
     }
     const report = {
       pass: results.every((result) => result.pass),
-      contract: "desktop-resource-density-v2",
+      contract: "desktop-resource-density-v3-legacy-ipad",
       runtime: "vite-source-playwright",
-      source: "src/panel-framework/overview/desktop-overview/DesktopIncidentDocket.tsx",
+      source: "src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx",
       sourceBuildElapsedMs: sourceBuild.elapsedMs,
       pageErrors, consoleErrors,
       results,

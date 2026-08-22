@@ -1,17 +1,25 @@
 'use strict';
 
 const assert = require('assert/strict');
+const fs = require('fs/promises');
+const path = require('path');
 const {
   OVERVIEW_RELEASE_SCALE_SCENARIOS,
   analyzeScreenshotAnchorPixels,
+  browserResumeCellKey,
   buildSnapshot,
+  buildBrowserResumeKey,
   buildMatrixSummary,
   finalizeReportTruth,
   matrixArtifactKey,
   matrixStatePath,
+  pendingBrowserSections,
+  readBrowserResumeChecks,
   refreshOverviewWanRates,
+  setSection,
   setSnapshotFresh,
   scenarioMatrixGate,
+  writeBrowserResumeProgress,
 } = require('./local-predeploy-check');
 
 const RELEASE_SCENARIOS = [
@@ -29,6 +37,20 @@ const RELEASE_VIEWPORTS = [
   { name: 'wide', width: 844, height: 390 },
   { name: 'narrow', width: 390, height: 844 },
 ];
+const TEST_WORKTREE_IDENTITY = Object.freeze({
+  commit: '0123456789abcdef0123456789abcdef01234567',
+  worktreeClean: false,
+  worktreeFingerprint: 'a'.repeat(64),
+  artifactKey: `worktree-0123456789ab-${'a'.repeat(12)}`,
+  releaseEvidenceEligible: false,
+  untrackedFiles: 0,
+  runtimeUntrackedFiles: 0,
+  identityError: '',
+});
+
+function matrix(checks, options) {
+  return buildMatrixSummary(checks, options, TEST_WORKTREE_IDENTITY);
+}
 
 function args(overrides = {}) {
   return {
@@ -56,11 +78,11 @@ function check(scenario, viewport, pass = true) {
 
 function testMergeableShardIsExplicitlyNotApplicable() {
   const options = args();
-  const matrix = buildMatrixSummary([check('all-offline', options.viewports[0])], options);
-  const gate = scenarioMatrixGate(options, matrix);
+  const summary = matrix([check('all-offline', options.viewports[0])], options);
+  const gate = scenarioMatrixGate(options, summary);
 
-  assert.equal(matrix.requestedComplete, true);
-  assert.equal(matrix.complete, false);
+  assert.equal(summary.requestedComplete, true);
+  assert.equal(summary.complete, false);
   assert.equal(gate.applicable, false);
   assert.equal(gate.pass, null);
   assert.match(gate.reason, /bounded scenario shard/i);
@@ -68,11 +90,11 @@ function testMergeableShardIsExplicitlyNotApplicable() {
 
 function testRealShardFailureRemainsApplicableAndFalse() {
   const options = args();
-  const matrix = buildMatrixSummary([check('all-offline', options.viewports[0], false)], options);
-  const gate = scenarioMatrixGate(options, matrix);
+  const summary = matrix([check('all-offline', options.viewports[0], false)], options);
+  const gate = scenarioMatrixGate(options, summary);
 
-  assert.equal(matrix.failed, 1);
-  assert.equal(matrix.requestedComplete, false);
+  assert.equal(summary.failed, 1);
+  assert.equal(summary.requestedComplete, false);
   assert.equal(gate.applicable, true);
   assert.equal(gate.pass, false);
 }
@@ -82,14 +104,14 @@ function testClaimedRequiredMatrixMissingViewportFails() {
     scaleScenarios: RELEASE_SCENARIOS,
     viewports: [{ name: 'narrow', width: 390, height: 844 }],
   });
-  const matrix = buildMatrixSummary(
+  const summary = matrix(
     RELEASE_SCENARIOS.map((scenario) => check(scenario, options.viewports[0])),
     options,
   );
-  const gate = scenarioMatrixGate(options, matrix);
+  const gate = scenarioMatrixGate(options, summary);
 
-  assert.equal(matrix.requestedComplete, true);
-  assert.equal(matrix.complete, false);
+  assert.equal(summary.requestedComplete, true);
+  assert.equal(summary.complete, false);
   assert.equal(gate.applicable, true);
   assert.equal(gate.pass, false);
 }
@@ -102,11 +124,11 @@ function testCompleteRequiredMatrixPasses() {
   const checks = RELEASE_SCENARIOS.flatMap((scenario) => (
     RELEASE_VIEWPORTS.map((viewport) => check(scenario, viewport))
   ));
-  const matrix = buildMatrixSummary(checks, options);
-  const gate = scenarioMatrixGate(options, matrix);
+  const summary = matrix(checks, options);
+  const gate = scenarioMatrixGate(options, summary);
 
-  assert.equal(matrix.requestedComplete, true);
-  assert.equal(matrix.complete, true);
+  assert.equal(summary.requestedComplete, true);
+  assert.equal(summary.complete, true);
   assert.equal(gate.applicable, true);
   assert.equal(gate.pass, true);
 }
@@ -124,11 +146,11 @@ function testBoundedCapabilityMatrixIsExplicitlyNotApplicable() {
   const checks = RELEASE_SCENARIOS.flatMap((scenario) => (
     mobileViewports.map((viewport) => check(scenario, viewport))
   ));
-  const matrix = buildMatrixSummary(checks, options);
-  const gate = scenarioMatrixGate(options, matrix);
+  const summary = matrix(checks, options);
+  const gate = scenarioMatrixGate(options, summary);
 
-  assert.equal(matrix.requestedComplete, true);
-  assert.equal(matrix.complete, false);
+  assert.equal(summary.requestedComplete, true);
+  assert.equal(summary.complete, false);
   assert.equal(gate.applicable, false);
   assert.equal(gate.pass, null);
   assert.equal(gate.boundedMatrix, true);
@@ -144,10 +166,10 @@ function testBoundedCapabilityMatrixFailureStillBlocks() {
   const checks = RELEASE_SCENARIOS.map((scenario, index) => (
     check(scenario, options.viewports[0], index !== 0)
   ));
-  const matrix = buildMatrixSummary(checks, options);
-  const gate = scenarioMatrixGate(options, matrix);
+  const summary = matrix(checks, options);
+  const gate = scenarioMatrixGate(options, summary);
 
-  assert.equal(matrix.failed, 1);
+  assert.equal(summary.failed, 1);
   assert.equal(gate.applicable, true);
   assert.equal(gate.pass, false);
   assert.equal(gate.boundedMatrix, true);
@@ -313,11 +335,11 @@ function testRouteStateFailedCellCannotClaimCompleteMatrix() {
     ...check(scenario, viewport, !(scenario === 'fleet' && viewport.name === 'narrow')),
     requestedSection: 'public-release',
   })));
-  const matrix = buildMatrixSummary(checks, options);
-  const gate = scenarioMatrixGate(options, matrix);
+  const summary = matrix(checks, options);
+  const gate = scenarioMatrixGate(options, summary);
 
-  assert.equal(matrix.requestedComplete, false);
-  assert.equal(matrix.complete, false, 'a failed route-state cell must make the matrix incomplete');
+  assert.equal(summary.requestedComplete, false);
+  assert.equal(summary.complete, false, 'a failed route-state cell must make the matrix incomplete');
   assert.equal(gate.pass, false);
 }
 
@@ -345,19 +367,182 @@ function testMatrixAggregateFamiliesDoNotOverwriteEachOther() {
   assert.match(matrixStatePath(commit, '_acceptance/mobile-native-runtime'), /mobile-native-runtime-matrix-0123456789abcdef0123456789abcdef01234567\.json$/);
 }
 
-testMergeableShardIsExplicitlyNotApplicable();
-testRealShardFailureRemainsApplicableAndFalse();
-testClaimedRequiredMatrixMissingViewportFails();
-testCompleteRequiredMatrixPasses();
-testBoundedCapabilityMatrixIsExplicitlyNotApplicable();
-testBoundedCapabilityMatrixFailureStillBlocks();
-testRouteStateFailedCellCannotClaimCompleteMatrix();
-testReportFinalizerKeepsFailureEvidenceAndIncompleteMatrixRed();
-testReleaseScenarioDenominatorHasOneOwner();
-testBrowserFixturesUseAtomicTimezoneQualifiedTraffic();
-testTrafficAccumulatingIsDiagnosticAndAtomic();
-testMissingWanRatesRemainUnavailable();
-testScreenshotAnchorAnalyzerRejectsMissingLayers();
-testDirtyWorktreeArtifactsCannotUseCommitReleaseKey();
-testMatrixAggregateFamiliesDoNotOverwriteEachOther();
-console.log('local-predeploy matrix contract: 14/14 passed');
+async function testSectionClickDoesNotBlockCdpEvaluation() {
+  let expression = '';
+  const cdp = {
+    send: async (_method, params) => {
+      expression = params.expression;
+      return { result: { value: { linkFound: true, linkVisible: true } } };
+    },
+  };
+
+  assert.equal(typeof setSection, 'function', 'section activation must remain independently testable');
+  await setSection(cdp, 'interfaces');
+  assert.match(
+    expression,
+    /setTimeout\(\(\) => link\.click\(\), 0\)/,
+    'route activation must schedule the real click so expensive React work cannot hold the CDP evaluation open',
+  );
+}
+
+async function testTimedOutNavigationCannotRecordLatePass() {
+  const source = await fs.readFile(
+    path.join(__dirname, 'local-predeploy-check.js'),
+    'utf8',
+  );
+  assert.match(
+    source,
+    /timeout:\s*configuredBrowserTimeoutMs\(15_000\)/,
+    'the Playwright navigation primitive must honor the low-load timeout too',
+  );
+  const start = source.indexOf('async function navigateWithFixture');
+  const end = source.indexOf('async function setSection', start);
+  assert.ok(start >= 0 && end > start, 'navigation implementation must remain inspectable');
+  const navigationSource = source.slice(start, end);
+  assert.doesNotMatch(
+    navigationSource,
+    /record\s*\(/,
+    'a late navigation resolution must not write a pass after its timeout already failed',
+  );
+  assert.match(navigationSource, /return\s*\{/);
+  assert.match(
+    navigationSource,
+    /waitForApp\(cdp, configuredBrowserTimeoutMs\(8_000\)\)/,
+    'low-load navigation must extend its internal app-mount wait, not only the outer promise',
+  );
+  assert.match(
+    source.slice(source.indexOf('async function waitForApp'), start),
+    /surfaceStyleReady[\s\S]*fontsReady[\s\S]*last\.surfaceStyleReady[\s\S]*last\.fontsReady/,
+    'layout inspection must wait for the selected surface stylesheet and fonts before measuring targets',
+  );
+}
+
+function testWideLandscapeUsesDesktopOwnerAndRetriesOnlyAbortRace() {
+  const source = require('fs').readFileSync(path.join(__dirname, 'local-predeploy-check.js'), 'utf8');
+  assert.match(source, /function isWideLandscapeViewport\(viewport\)/, 'wide landscape owner boundary must be explicit');
+  assert.match(source, /viewport\.width >= 900 \|\| isWideLandscapeViewport\(viewport\)/, 'wide landscape navigation must select the desktop surface');
+  assert.match(source, /ERR_ABORTED/, 'only the known aborted navigation race may be retried');
+  assert.match(source, /navigationRetry/, 'navigation retry evidence must remain visible in the failed-cell detail');
+}
+
+function testBrowserResumeOnlySkipsExactPassingCells() {
+  const options = args({ sections: ['overview', 'interfaces'] });
+  const viewport = options.viewports[0];
+  const completed = [
+    {
+      profile: 'public',
+      scaleScenario: 'all-offline',
+      viewport,
+      requestedSection: 'overview',
+      pass: true,
+    },
+    {
+      profile: 'public',
+      scaleScenario: 'all-offline',
+      viewport,
+      requestedSection: 'interfaces',
+      pass: false,
+    },
+  ];
+
+  assert.equal(typeof browserResumeCellKey, 'function');
+  assert.equal(typeof pendingBrowserSections, 'function');
+  assert.match(browserResumeCellKey(completed[0]), /public::all-offline::overview::narrow=390x844/);
+  assert.deepEqual(
+    pendingBrowserSections(
+      completed,
+      'public',
+      'all-offline',
+      viewport,
+      options.sections,
+    ),
+    ['interfaces'],
+    'resume may skip only exact cells that already passed; failed cells must rerun',
+  );
+}
+
+function testBrowserResumeKeyBindsExactWorktreeAndRunShape() {
+  assert.equal(typeof buildBrowserResumeKey, 'function');
+  const options = args({ sections: ['overview', 'interfaces'] });
+  const key = buildBrowserResumeKey(options, TEST_WORKTREE_IDENTITY);
+  assert.equal(key, buildBrowserResumeKey({ ...options }, TEST_WORKTREE_IDENTITY));
+  assert.notEqual(
+    key,
+    buildBrowserResumeKey(options, {
+      ...TEST_WORKTREE_IDENTITY,
+      worktreeFingerprint: 'b'.repeat(64),
+      artifactKey: `worktree-0123456789ab-${'b'.repeat(12)}`,
+    }),
+    'partial evidence from another worktree identity must never be resumed',
+  );
+  assert.notEqual(
+    key,
+    buildBrowserResumeKey({ ...options, strictResponsive: true }, TEST_WORKTREE_IDENTITY),
+    'partial evidence from another gate shape must never be resumed',
+  );
+}
+
+async function testBrowserResumeJournalPersistsPassAndInvalidatesFailure() {
+  assert.equal(typeof writeBrowserResumeProgress, 'function');
+  assert.equal(typeof readBrowserResumeChecks, 'function');
+  const out = path.join(__dirname, '..', '_acceptance', `resume-contract-unit-${process.pid}`);
+  const options = { out };
+  const resumeKey = 'exact-worktree-and-shape';
+  const viewport = { name: 'narrow', width: 390, height: 844 };
+  const passing = {
+    profile: 'public',
+    scaleScenario: 'single',
+    viewport,
+    requestedSection: 'overview',
+    pass: true,
+  };
+  const failing = { ...passing, pass: false };
+
+  try {
+    await writeBrowserResumeProgress(options, { browserResumeKey: resumeKey }, passing);
+    let resumed = await readBrowserResumeChecks(options, resumeKey);
+    assert.equal(resumed.length, 1);
+    assert.equal(browserResumeCellKey(resumed[0]), browserResumeCellKey(passing));
+
+    await writeBrowserResumeProgress(options, { browserResumeKey: resumeKey }, failing);
+    resumed = await readBrowserResumeChecks(options, resumeKey);
+    assert.deepEqual(resumed, [], 'a later failed observation must invalidate a prior pass for the exact cell');
+    assert.deepEqual(
+      await readBrowserResumeChecks(options, 'another-worktree'),
+      [],
+      'journal cells from another identity must never be resumed',
+    );
+  } finally {
+    await fs.rm(out, { recursive: true, force: true });
+  }
+}
+
+async function main() {
+  testMergeableShardIsExplicitlyNotApplicable();
+  testRealShardFailureRemainsApplicableAndFalse();
+  testClaimedRequiredMatrixMissingViewportFails();
+  testCompleteRequiredMatrixPasses();
+  testBoundedCapabilityMatrixIsExplicitlyNotApplicable();
+  testBoundedCapabilityMatrixFailureStillBlocks();
+  testRouteStateFailedCellCannotClaimCompleteMatrix();
+  testReportFinalizerKeepsFailureEvidenceAndIncompleteMatrixRed();
+  testReleaseScenarioDenominatorHasOneOwner();
+  testBrowserFixturesUseAtomicTimezoneQualifiedTraffic();
+  testTrafficAccumulatingIsDiagnosticAndAtomic();
+  testMissingWanRatesRemainUnavailable();
+  testScreenshotAnchorAnalyzerRejectsMissingLayers();
+  testDirtyWorktreeArtifactsCannotUseCommitReleaseKey();
+  testMatrixAggregateFamiliesDoNotOverwriteEachOther();
+  testBrowserResumeOnlySkipsExactPassingCells();
+  testBrowserResumeKeyBindsExactWorktreeAndRunShape();
+  await testBrowserResumeJournalPersistsPassAndInvalidatesFailure();
+  await testSectionClickDoesNotBlockCdpEvaluation();
+  await testTimedOutNavigationCannotRecordLatePass();
+  testWideLandscapeUsesDesktopOwnerAndRetriesOnlyAbortRace();
+  console.log('local-predeploy matrix contract: 21/21 passed');
+}
+
+main().catch((error) => {
+  console.error(error && error.stack ? error.stack : String(error));
+  process.exitCode = 1;
+});

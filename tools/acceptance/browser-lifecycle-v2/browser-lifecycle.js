@@ -9,9 +9,16 @@ const { chromium } = require('playwright-core');
 const MIN_GLOBAL_TIMEOUT_MS = 3_000;
 const MAX_GLOBAL_TIMEOUT_MS = 120_000;
 const MIN_STEP_TIMEOUT_MS = 100;
-const MAX_STEP_TIMEOUT_MS = 25_000;
+// Low-load headed Edge acceptance may need a longer bounded step while the
+// managed browser is deliberately restricted to a tiny CPU quota. Ordinary
+// callers still use their existing defaults; this only permits an explicit
+// low-load timeout to remain effective instead of being silently clipped.
+const MAX_STEP_TIMEOUT_MS = 300_000;
 const MIN_CLEANUP_TIMEOUT_MS = 250;
-const MAX_CLEANUP_TIMEOUT_MS = 8_000;
+// Ordinary callers still request the existing 8s cleanup window. Low-load
+// acceptance runs deliberately throttle the complete browser process tree,
+// including taskkill, so they may opt into a longer bounded cleanup window.
+const MAX_CLEANUP_TIMEOUT_MS = 30_000;
 const MAX_REGISTERED_CLEANUPS = 12;
 const MANAGED_CLOSE_GRACE_MS = 1_250;
 const MIN_PROCESS_TREE_TERMINATION_BUDGET_MS = 5_000;
@@ -404,6 +411,8 @@ async function runBrowserLifecycle(options, task) {
   const settings = options || {};
   const globalTimeoutMs = clamp(settings.globalTimeoutMs, MIN_GLOBAL_TIMEOUT_MS, MAX_GLOBAL_TIMEOUT_MS, 12_000);
   const stepTimeoutMs = clamp(settings.stepTimeoutMs, MIN_STEP_TIMEOUT_MS, MAX_STEP_TIMEOUT_MS, 4_000);
+  const launchTimeoutMs = clamp(settings.launchTimeoutMs, MIN_STEP_TIMEOUT_MS, MAX_STEP_TIMEOUT_MS, stepTimeoutMs);
+  const setupTimeoutMs = clamp(settings.setupTimeoutMs, MIN_STEP_TIMEOUT_MS, MAX_STEP_TIMEOUT_MS, stepTimeoutMs);
   const cleanupTimeoutMs = clamp(settings.cleanupTimeoutMs, MIN_CLEANUP_TIMEOUT_MS, MAX_CLEANUP_TIMEOUT_MS, 1_200);
   const startedAt = Date.now();
   const deadline = startedAt + globalTimeoutMs;
@@ -417,6 +426,8 @@ async function runBrowserLifecycle(options, task) {
     startedAt: nowIso(),
     globalTimeoutMs,
     stepTimeoutMs,
+    launchTimeoutMs,
+    setupTimeoutMs,
     cleanupTimeoutMs,
     executablePath: executablePath || null,
     steps: [],
@@ -499,15 +510,15 @@ async function runBrowserLifecycle(options, task) {
     managedBrowser = await runStep('browser.managed.launch', () => launchManagedBrowser({
       executablePath,
       args: ['--disable-background-networking', '--disable-component-update'],
-      launchTimeoutMs: stepTimeoutMs,
+      launchTimeoutMs,
       cleanupTimeoutMs,
       cleanupDeadlineAt: deadline,
       testForceServerCloseTimeout: settings.testForceServerCloseTimeout === true,
-    }), stepTimeoutMs);
+    }), launchTimeoutMs);
     browser = managedBrowser.browser;
     diagnostics.ownedBrowserPid = managedBrowser.diagnostics.ownedBrowserPid;
-    context = await runStep('context.create', () => managedBrowser.openContext({ viewport: { width: 640, height: 480 } }));
-    page = await runStep('page.create', () => context.newPage());
+    context = await runStep('context.create', () => managedBrowser.openContext({ viewport: { width: 640, height: 480 } }), setupTimeoutMs);
+    page = await runStep('page.create', () => context.newPage(), setupTimeoutMs);
     page.on('pageerror', (error) => {
       diagnostics.pageErrors.push(errorDetail(error));
       resolvePageError();

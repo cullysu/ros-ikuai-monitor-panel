@@ -8,11 +8,11 @@ async function inspectPanelRouteRuntime() {
   const current = () => {
     const route = app.getAttribute('data-active-section') || document.body.dataset.panelRoute || '';
     const section = route === 'overview'
-      ? document.querySelector('[data-mobile-flow-overview], #overview')
-      : document.querySelector(`[data-mobile-flow-workspace="${CSS.escape(route)}"], [data-panel-route-content="${CSS.escape(route)}"]`);
+      ? document.querySelector('[data-mobile-inspection-overview], #overview')
+      : document.querySelector(`[data-inspection-workspace="${CSS.escape(route)}"], [data-panel-route-content="${CSS.escape(route)}"]`);
     const title = section?.querySelector('[data-panel-route-title], h1');
-    const sectionName = (section?.matches('[data-mobile-flow-overview]') ? 'overview' : '') || section?.id ||
-      section?.getAttribute('data-mobile-flow-workspace') ||
+    const sectionName = (section?.matches('[data-mobile-inspection-overview]') ? 'overview' : '') || section?.id ||
+      section?.getAttribute('data-inspection-workspace') ||
       section?.getAttribute('data-panel-route-content') || '';
     const appMount = document.getElementById('app');
     const mainLandmarks = Array.from(document.querySelectorAll('main'));
@@ -25,7 +25,7 @@ async function inspectPanelRouteRuntime() {
       route,
       section: sectionName,
       content: section?.getAttribute('data-panel-route-content') || sectionName,
-      mobileOverview: Boolean(section?.matches('[data-mobile-flow-overview]') || section?.querySelector('[data-mobile-flow-overview]')),
+      mobileOverview: Boolean(section?.matches('[data-mobile-inspection-overview], #overview') || section?.querySelector('[data-mobile-inspection-overview], [data-mobile-reference-home]')),
       title: String(title?.textContent || '').replace(/\s+/g, ' ').trim(),
       titleIsRouteTarget: Boolean(title?.hasAttribute('data-panel-route-title')),
       titleFocusable: title?.getAttribute('tabindex') === '-1',

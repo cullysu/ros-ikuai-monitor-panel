@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 
 /**
  * The presentation surface changes when the dense operations workbench can
- * actually fit, not at the old 1365/1366 visual cliff.  Domain state and URL
- * identity stay surface-neutral either side of this boundary.
+ * actually fit, not at the old 1365/1366 visual cliff.  A wide landscape
+ * tablet is deliberately treated as a browser/workbench surface: it has the
+ * horizontal task space for the desktop navigation and must not be a phone
+ * page rotated sideways.  Narrow landscape phones remain mobile. Domain
+ * state and URL identity stay surface-neutral either side of this boundary.
  */
-export const MOBILE_PANEL_QUERY = "(max-width: 1199px)";
+export const MOBILE_PANEL_QUERY = "(max-width: 1199px) and (orientation: portrait), (max-width: 599px)";
 export const NARROW_PHONE_QUERY = "(max-width: 359px)";
 /**
  * 600–767px can host the compact master/detail workbench only when it also

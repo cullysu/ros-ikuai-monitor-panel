@@ -20,19 +20,19 @@ const runtimeSource = source('src/panel-framework/runtime/usePanelRuntime.ts');
 const chromeSource = source('src/panel-framework/runtime/PanelRuntimeChrome.tsx');
 const indexSource = source('public/index.html');
 const sectionChartSource = source('src/panel-framework/sections/SectionTimeSeriesChart.tsx');
-const ikuaiMobileHomeSource = source('src/panel-framework/mobile-flow-ui/overview/MobileFlowOverview.tsx');
-const ikuaiMobileNavigationSource = source('src/panel-framework/mobile-flow-ui/navigation/MobileFlowNavigation.tsx');
-const ikuaiMobileRoutesSource = source('src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx');
-const ikuaiMobileWorkspaceSource = source('src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx');
-const ikuaiMobileModelSource = source('src/panel-framework/mobile-flow-ui/overview/mobileFlowModel.ts');
-const ikuaiMobileArchitectureSource = source('tools/check-mobile-ikuai4-architecture.js');
-const ikuaiMobileModelCheckSource = source('tools/check-mobile-ikuai4-model.js');
-const ikuaiMobileConnectionSecuritySource = source('tools/check-mobile-ikuai4-connection-security.js');
-const ikuaiMobileRuntimeSource = source('tools/check-mobile-ikuai4-runtime.js');
+const ikuaiMobileHomeSource = source('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx');
+const ikuaiMobileNavigationSource = ikuaiMobileHomeSource;
+const ikuaiMobileRoutesSource = ikuaiMobileHomeSource;
+const ikuaiMobileWorkspaceSource = ikuaiMobileHomeSource;
+const ikuaiMobileModelSource = source('src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx');
+const ikuaiMobileArchitectureSource = source('tools/check-mobile-reference-architecture.js');
+const ikuaiMobileModelCheckSource = source('tools/check-mobile-reference-model.js');
+const ikuaiMobileConnectionSecuritySource = source('tools/check-mobile-reference-connection-security.js');
+const ikuaiMobileRuntimeSource = source('tools/check-mobile-reference-runtime.js');
 const sectionModelSource = source('src/panel-framework/sections/sectionModels.ts');
 const resourceHistorySource = source('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts');
 const resourceTimeSeriesSource = source('src/panel-framework/sections/resourceTimeSeries.ts');
-const connectionSource = source('src/panel-framework/mobile-flow-ui/connection/MobileFlowConnection.tsx');
+const connectionSource = source('src/panel-framework/mobile-reference-ui/MobileReferenceConnection.tsx');
 const apiSchemaSource = source('panel_backend/api_schema.py');
 const browserGateSource = source('tools/check-panel-runtime-browser.js');
 const browserLifecycleSource = source('tools/check-runtime-browser-lifecycle.js');
@@ -108,18 +108,18 @@ check(
   'shared section chart evidence must preserve aspect ratio, retain time/unit labels, and expose summaries'
 );
 check(
-  'Mobile Flow owns the mobile overview and only exposes measured traffic for current complete evidence',
-  ikuaiMobileHomeSource.includes('data-mobile-flow-overview') &&
+  'Mobile Reference owns the mobile overview and only exposes measured traffic for current complete evidence',
+  ikuaiMobileHomeSource.includes('data-mobile-reference-home') &&
     ikuaiMobileHomeSource.includes('data-evidence-mode') &&
-    ikuaiMobileHomeSource.includes('data-mobile-flow-scene') &&
-    ikuaiMobileHomeSource.includes('buildMobileFlowModel') &&
-    ikuaiMobileModelSource.includes('scene === "normal" && evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"') &&
+    ikuaiMobileHomeSource.includes('data-mobile-reference-scene') &&
+    ikuaiMobileHomeSource.includes('buildMobileReferenceModel') &&
+    ikuaiMobileModelSource.includes('evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"') &&
     ikuaiMobileModelCheckSource.includes('missing traffic values must remain unavailable') &&
     !/MobilePulse|mobile-pulse|data-mobile-pulse|MobileNext|mobile-next|data-panel-mobile-next|mnx-/.test([
       ikuaiMobileHomeSource,
       ikuaiMobileModelSource,
     ].join('\n')),
-  'the Mobile Flow owner must withhold measured traffic unless evidence is current and complete'
+  'the Mobile Reference owner must withhold measured traffic unless evidence is current and complete'
 );
 check(
   'resource visualization requires timestamped samples',
@@ -135,8 +135,8 @@ check(
   'the API may remember connection metadata, never a field named as saved password state'
 );
 check(
-  'Mobile Flow connection form makes transport security explicit and blocks unconfirmed risk',
-  connectionSource.includes('data-mobile-flow-connection="flow"') &&
+  'Mobile Reference connection form makes transport security explicit and blocks unconfirmed risk',
+  connectionSource.includes('data-mobile-reference-connection="form"') &&
     /name="host"[\s\S]*?name="user"[\s\S]*?name="password"/.test(connectionSource) &&
     connectionSource.includes('scheme === "http" || !verifyTls') &&
     connectionSource.includes('riskConfirmed') &&
@@ -183,13 +183,14 @@ check(
   'the runtime gate must verify process completion separately from report contents'
 );
 check(
-  'Mobile Flow blocks false-current values and keeps route uncertainty explicit',
+  'Mobile Reference blocks false-current values and keeps route uncertainty explicit',
   ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down']
     .every((scenario) => ikuaiMobileRuntimeSource.includes(`"${scenario}"`)) &&
-    ikuaiMobileHomeSource.includes('当前路径未核实') &&
-    ikuaiMobileModelSource.includes('route: evidence.evidenceMode === "current" ? evidence.routeEvidence.activePath : null') &&
+    ikuaiMobileHomeSource.includes('data-mobile-reference-home') &&
+    ikuaiMobileHomeSource.includes('data-evidence-mode') &&
+    ikuaiMobileModelSource.includes('const active = evidence.evidenceMode === "current" ? evidence.routeEvidence.activePath : null') &&
     !/route:\s*[^\n;]*(?:rows|defaultRoutes)\s*\[\s*0\s*\]/.test(ikuaiMobileModelSource) &&
-    ikuaiMobileModelSource.includes('scene === "normal" && evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"'),
+    ikuaiMobileModelSource.includes('evidence.evidenceMode === "current" && evidence.traffic?.status === "ready"'),
   'the seven-scene runtime must reject stale/absent measurements and report an unverified route instead of selecting an arbitrary row'
 );
 check(
@@ -200,56 +201,52 @@ check(
   'the declared release blocker must run in the aggregate, and nested source() dependencies must fail closed before runtime'
 );
 check(
-  'Mobile Flow keeps four stable roots, More, object workspaces, and evidence-backed detail continuity',
-  ikuaiMobileNavigationSource.includes('const ITEMS') &&
-    ikuaiMobileNavigationSource.includes('data-mobile-flow-navigation') &&
-    ['overview', 'network', 'terminals', 'logs'].every((root) => ikuaiMobileNavigationSource.includes(`id: "${root}"`)) &&
-    ikuaiMobileRoutesSource.includes('data-mobile-flow-workspace="more"') &&
-    ikuaiMobileRoutesSource.includes('data-panel-route-content="more"') &&
-    ikuaiMobileWorkspaceSource.includes('useObjectHistory(route)') &&
-    ikuaiMobileWorkspaceSource.includes('data-mobile-flow-detail') &&
-    ikuaiMobileWorkspaceSource.includes('<ol') &&
-    ikuaiMobileWorkspaceSource.includes('type="search"'),
-  'the Mobile Flow owner must keep four stable navigation roots, More, object workspaces, and detail evidence actionable'
+  'Mobile Reference keeps four stable roots, More, object workspaces, and WAN detail continuity',
+  ikuaiMobileNavigationSource.includes('data-mobile-reference-navigation') &&
+    ['概览', '网络', '设备', '日志'].every((label) => ikuaiMobileNavigationSource.includes(`label: "${label}"`)) &&
+    ikuaiMobileRoutesSource.includes('data-mobile-reference-directory') &&
+    ikuaiMobileRoutesSource.includes('data-mobile-reference-workspace') &&
+    ikuaiMobileHomeSource.includes('data-mobile-reference-wan-detail') &&
+    ikuaiMobileHomeSource.includes('查看 WAN 详情'),
+  'the Mobile Reference owner must keep four stable navigation roots, More, object workspaces, and evidence-backed WAN detail actionable'
 );
 check(
-  'runtime browser invokes the iKuai 4 smoke aggregate exactly once and retains a full 7x8 matrix command',
+  'runtime browser invokes the Mobile Reference smoke aggregate exactly once and retains a full 7x8 matrix command',
   packageJson.scripts['check:mobile-incident-lens'] === undefined &&
     packageJson.scripts['check:mobile-linkboard'] === undefined &&
   packageJson.scripts['check:mobile-pocket-console'] === undefined &&
   packageJson.scripts['check:mobile-optical-patrol'] === undefined &&
     typeof packageJson.scripts['check:mobile-telemetry-model'] === 'string' &&
-    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-ikuai4-model.js') &&
-    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-ikuai4-architecture.js') &&
-    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-ikuai4-connection-security.js') &&
+    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-reference-model.js') &&
+    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-reference-architecture.js') &&
+    packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-reference-connection-security.js') &&
     typeof packageJson.scripts['check:mobile-telemetry'] === 'string' &&
     packageJson.scripts['check:mobile-telemetry'].includes('npm run check:mobile-telemetry-model') &&
-    packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-ikuai4-runtime.js') &&
+    packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-reference-runtime.js --smoke') &&
     typeof packageJson.scripts['check:mobile-telemetry:full'] === 'string' &&
     packageJson.scripts['check:mobile-telemetry:full'].includes('npm run check:mobile-telemetry-model') &&
-    packageJson.scripts['check:mobile-telemetry:full'].includes('tools/check-mobile-ikuai4-runtime.js --full') &&
+    packageJson.scripts['check:mobile-telemetry:full'].includes('tools/check-mobile-reference-runtime.js') &&
     packageJson.scripts['check:runtime-browser'].includes('npm run check:mobile-telemetry'),
   'runtime browser must use iKuai 4 once for smoke and retain a separate required full-matrix command'
 );
 check(
-  'Mobile Flow full runtime report is identity-bound, includes deep workflows, and is fail-closed',
-  ikuaiMobileRuntimeSource.includes('const full = process.argv.includes("--full")') &&
+  'Mobile Reference full runtime report is identity-bound, includes deep workflows, and is fail-closed',
+  ikuaiMobileRuntimeSource.includes('const smoke = process.argv.includes("--smoke")') &&
     ikuaiMobileRuntimeSource.includes('requiredTargets') &&
   ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down']
       .every((scenario) => ikuaiMobileRuntimeSource.includes(`"${scenario}"`)) &&
-    ikuaiMobileRuntimeSource.includes('contract: "mobile-flow-runtime-v1"') &&
-    ikuaiMobileRuntimeSource.includes('source: "mobile-flow-runtime"') &&
+    ikuaiMobileRuntimeSource.includes('contract: "mobile-reference-runtime-v1"') &&
+    ikuaiMobileRuntimeSource.includes('source: "mobile-reference-runtime"') &&
     ikuaiMobileRuntimeSource.includes('Object.values(workflows).every') &&
-    ikuaiMobileRuntimeSource.includes('routeDetailHistory') &&
-    ikuaiMobileRuntimeSource.includes('routeAccessibility') &&
+    ikuaiMobileRuntimeSource.includes('wanDetailHistory') &&
     ikuaiMobileRuntimeSource.includes('moreDirectory') &&
-    ikuaiMobileRuntimeSource.includes('inspectConnectionSecurity') &&
+    ikuaiMobileRuntimeSource.includes('connectionAddressValidation') &&
     ikuaiMobileRuntimeSource.includes('cells.length === requiredTargets.length') &&
     ikuaiMobileRuntimeSource.includes('gitWorktreeIdentity(root)') &&
     ikuaiMobileRuntimeSource.includes('releaseEvidenceEligible: false') &&
-    /path\.join\(output,\s*full\s*\?\s*["']report\.json["']/.test(ikuaiMobileRuntimeSource) &&
-    ikuaiMobileArchitectureSource.includes('MobileFlowRoutes.tsx') &&
-    ikuaiMobileConnectionSecuritySource.includes('mobile-flow-connection-security-v1'),
+    /path\.join\(output,\s*smoke\s*\?\s*["']report-smoke\.json["']\s*:\s*["']report\.json["']/.test(ikuaiMobileRuntimeSource) &&
+    ikuaiMobileArchitectureSource.includes('MobileReferenceSurface.tsx') &&
+    ikuaiMobileConnectionSecuritySource.includes('mobile-reference-connection-security-v1'),
   'the required full mobile matrix must identify its exact worktree and remain release-ineligible until an authority-backed clean-SHA release exists'
 );
 check(

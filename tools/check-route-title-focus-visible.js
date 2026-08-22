@@ -6,10 +6,9 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const desktopCss = fs.readFileSync(path.join(root, 'src/panel-framework/sections/section-console.css'), 'utf8');
-const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/mobile-flow-ui/styles/flow-overview.css'), 'utf8');
+const mobileCss = fs.readFileSync(path.join(root, 'src/panel-framework/mobile-reference-ui/mobile-reference.css'), 'utf8');
 const mobileSource = [
-  fs.readFileSync(path.join(root, 'src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx'), 'utf8'),
-  fs.readFileSync(path.join(root, 'src/panel-framework/mobile-flow-ui/workspace/MobileFlowRoutes.tsx'), 'utf8'),
+  fs.readFileSync(path.join(root, 'src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx'), 'utf8'),
 ].join('\n');
 const routeSource = fs.readFileSync(path.join(root, 'src/panel-framework/routes/usePanelRoute.ts'), 'utf8');
 
@@ -66,12 +65,12 @@ const checks = {
     hasVisibleFocusRing(desktopCss, '.panel-section-heading [data-panel-route-title]'),
   'desktop route title does not show a ring for every programmatic focus':
     block(desktopCss, '.panel-section-heading [data-panel-route-title]:focus') === '',
-  'Mobile Flow route title participates in the shared route-focus contract':
-    /data-mobile-flow-workspace=\{route\}/.test(mobileSource) && /<h1\b[^>]*\bdata-panel-route-title\b/.test(mobileSource),
-  'Mobile Flow keyboard-operable route controls have a visible focus ring':
-    hasVisibleFocusRing(mobileCss, '.mflow button'),
-  'Mobile Flow route title does not show a ring for every programmatic focus':
-    block(mobileCss, '.mflow [data-panel-route-title]:focus') === '',
+  'Mobile Reference route title participates in the shared route-focus contract':
+    /data-mobile-reference-workspace=\{route\}/.test(mobileSource) && /<h1\b[^>]*\bdata-panel-route-title\b/.test(mobileSource),
+  'Mobile Reference keyboard-operable controls have a visible focus ring':
+    hasVisibleFocusRing(mobileCss, '.ref-mobile button'),
+  'Mobile Reference route title does not show a ring for every programmatic focus':
+    block(mobileCss, '.ref-mobile [data-panel-route-title]:focus') === '',
 };
 const failures = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
 const report = { pass: failures.length === 0, contract: 'route-title-focus-visible-v2', checks, failures };

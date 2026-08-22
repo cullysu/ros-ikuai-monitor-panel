@@ -1,21 +1,19 @@
-# Decision Repository Index
-
-- validForCommit: false; deterministic candidate 6aae922 exists, complete exact-SHA release evidence is still open
-- supersededBy: null
+- validForCommit: false; current worktree is uncommitted and is not a release candidate
 - status: `current-index`
-- currentBoundaryForStep: `1059`
-- latestRecordedStep: `1059`
-- latestStepOutcome: `1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next`
+- supersededBy: `null`
+- currentBoundaryForStep: `1185`
+- latestRecordedStep: `1185`
+- latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.
 
 - Current state: `current-state.md`
 - Current pointer: `current-index.md`
-- Current mobile contract: `../mobile-flow-console-contract.md`
+- Current mobile baseline: `../mobile-reference-baseline.md`
 - Current product handoff: `../product-loop-current.md`
 - Current release boundary: `release-journal.md`
 - Full historical journal: `../panel-redesign-decision-log.md`
 - Historical index: `historical-index.md`
 
-Task is active and `blocked=false`. Step1059 binds public browser evidence to Mobile Flow, preserves 44px landscape resource controls and rebuilds deterministic assets. Final exact-SHA matrices and release gates remain open. GitHub is untouched; release is CLOSED.
+Step1185 records fresh current-identity Edge/public/route/state/mobile/accessibility evidence and four-role local signoff without changing the accepted four-screen mobile art. Engineering evidence and Product/Visual/Accessibility/Engineering review are green; clean exact-SHA, GitHub upload and exact-SHA Linux/Windows/GHCR CL remain open.

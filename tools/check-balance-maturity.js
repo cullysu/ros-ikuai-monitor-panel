@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 const routes = read("src/panel-framework/routes/panelRoutes.ts");
 const maturity = read("src/panel-framework/routes/panelRouteMaturity.ts");
-const routeSurface = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
+const routeSurface = read("src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx");
 
 const checks = [
   {
@@ -23,12 +23,12 @@ const checks = [
     pass: !/balance:\s*\{[\s\S]*?maturity:\s*"complete"/.test(routes),
   },
   {
-    name: "balance uses the Mobile Flow object destination",
-    pass: /useObjectHistory\(route\)/.test(routeSurface) && /open\(row\.id\)/.test(routeSurface) && /data-mobile-flow-detail=\{row\.id\}/.test(routeSurface),
+    name: "balance uses the Mobile Reference bounded object destination",
+    pass: /ref-object-list/.test(routeSurface) && /rows\.map/.test(routeSurface) && /data-mobile-reference-workspace=\{route\}/.test(routeSurface),
   },
   {
-    name: "bounded balance detail exposes Mobile Flow identity and complete raw fields",
-    pass: /mflow-detail__identity/.test(routeSurface) && /const fields = row\.columns\.map/.test(routeSurface) && /row\.evidence\.sourceTable \|\| row\.table/.test(routeSurface) && /对象证据/.test(routeSurface),
+    name: "bounded balance surface exposes the shared object list",
+    pass: /ref-object-list/.test(routeSurface) && /rows\.map/.test(routeSurface),
   },
 ];
 

@@ -1,42 +1,24 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
-const fs = require("node:fs");
-const path = require("node:path");
-const { readRuntimeReport, runtimeIdentityDetail } = require("./runtime-report-identity");
+const fs = require('node:fs');
+const path = require('node:path');
 
-const root = path.resolve(__dirname, "..");
-const read = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
-const css = read("src/panel-framework/overview/desktop-overview/styles/desktop-overview.css");
-const runtimeBinding = readRuntimeReport(root);
-const requireRuntime = process.argv.includes("--require-current-runtime");
-const runtimeSkipped = !runtimeBinding.current && !requireRuntime;
-const runtime = runtimeBinding.current ? runtimeBinding.report : null;
-const runtimeCheck = (runtime?.checks || []).find((check) =>
-  check?.detail?.normal1366?.surface === "desktop" &&
-  check?.detail?.normal1440?.surface === "desktop" &&
-  check.detail.normal1366.focusObjectRect &&
-  check.detail.normal1366.signalRect);
-const normal = runtimeCheck?.detail?.normal1366 || null;
-const focusTop = normal?.focusObjectRect?.top ?? null;
-const signalTop = normal?.signalRect?.top ?? null;
-const topDelta = typeof focusTop === "number" && typeof signalTop === "number"
-  ? Math.abs(focusTop - signalTop)
-  : null;
+const root = path.resolve(__dirname, '..');
+const css = fs.readFileSync(path.join(root, 'src/panel-framework/overview/desktop-overview/styles/legacy-desktop.css'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx'), 'utf8');
 const checks = {
-  sourceDeclaresNaturalTopBandAlignment: /\.do-normal-top-band\s*\{[\s\S]*?align-items:\s*start/.test(css),
-  runtimeIdentityCurrentWhenRequired: !requireRuntime || runtimeBinding.current,
-  freshRuntimeIsBound: runtimeSkipped || Boolean(normal),
-  focusAndSignalShareTopEdge: runtimeSkipped || (topDelta !== null && topDelta <= 12),
-  noSecondDesktopRenderTree: !/DesktopOverviewScreen[\s\S]*DesktopOverviewScreen/.test(css),
+  eightColumnSummaryAtWideDesktop: /\.legacy-summary-strip\s*\{[\s\S]*?grid-template-columns:\s*repeat\(8/.test(css),
+  wanAndRealtimeShareMainGrid: /\.legacy-main-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(320px, 32%\) minmax\(0, 68%\)/.test(css),
+  columnsAlignAtTop: /\.legacy-main-grid\s*\{[\s\S]*?align-items:\s*start/.test(css),
+  normalVerdictConsumesNoSpace: /\.legacy-verdict\s*\{[\s\S]*?display:\s*none/.test(css),
+  summaryPrecedesOperationalGrid: source.indexOf('legacy-summary-strip') < source.indexOf('legacy-main-grid'),
 };
 const failed = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
 const result = {
   pass: failed.length === 0,
-  contract: "desktop-normal-top-band-continuity-v2",
-  implementationState: failed.length ? "expected-red" : runtimeBinding.current ? "focused-runtime-green" : "static-green-runtime-pending",
-  runtimeEvidence: runtimeIdentityDetail(runtimeBinding),
-  geometry: { focusTop, signalTop, topDelta },
+  contract: 'desktop-normal-top-band-continuity-v3-legacy-ipad',
+  implementationState: failed.length ? 'expected-red' : 'static-green-runtime-pending',
   checks,
   failed,
 };

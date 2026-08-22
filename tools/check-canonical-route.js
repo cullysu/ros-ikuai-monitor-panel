@@ -20,7 +20,7 @@ const routes = read("src/panel-framework/routes/panelRoutes.ts");
 const hook = read("src/panel-framework/routes/usePanelRoute.ts");
 const index = read("public/index.html");
 const dispatcher = read("panel_backend/http_dispatcher.py");
-const mobileRoute = read("src/panel-framework/mobile-flow-ui/workspace/MobileFlowWorkspace.tsx");
+const mobileRoute = read("src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx");
 const routeHookPath = path.join(root, "src", "panel-framework", "routes", "usePanelRoute.ts");
 const panelRoutesPath = path.join(root, "src", "panel-framework", "routes", "panelRoutes.ts");
 const objectHistoryPath = path.join(root, "src", "panel-framework", "domain-workspace", "workspaceHistory.ts");
@@ -458,19 +458,21 @@ const checks = [
     run: objectHistoryBackForwardAndScroll,
   },
   {
-    name: "Mobile Flow object list preserves trigger focus across detail Back/Forward",
+    name: "Mobile Reference workspace renders bounded route objects",
     run: () => {
-      assert.match(mobileRoute, /useObjectHistory\(route\)/);
-      assert.match(mobileRoute, /data-mobile-flow-object-trigger=\{row\.id\}/);
-      assert.match(mobileRoute, /priorId\.current = row\.id; open\(row\.id\);/);
-      assert.match(mobileRoute, /rowTriggers\.current\.get\(previous\)\?\.focus\(\{ preventScroll: true \}\)/);
+      assert.match(mobileRoute, /data-mobile-reference-workspace=\{route\}/);
+      assert.match(mobileRoute, /ref-object-list/);
+       assert.match(mobileRoute, /(?:rows|visibleRows)\.map\(\(row\) =>/);
+      assert.doesNotMatch(mobileRoute, /data-inspection-object-trigger|useObjectHistory\(route\)/);
     },
   },
   {
-    name: "Mobile Flow route controls only point at mounted panels",
+    name: "Mobile Reference navigation targets mounted surfaces",
     run: () => {
-      assert.match(mobileRoute, /aria-controls="mflow-workspace-filters"/, "the Mobile Flow route filter must identify its controlled filter group");
-      assert.match(mobileRoute, /<div className="mflow-workspace__filters" id="mflow-workspace-filters"/, "the Mobile Flow route filter can only reference its mounted filter group");
+      assert.match(mobileRoute, /data-mobile-reference-navigation/);
+      assert.match(mobileRoute, /data-mobile-reference-directory/);
+      assert.match(mobileRoute, /data-mobile-reference-wan-detail/);
+      assert.match(mobileRoute, /onNavigate\(target\)/);
     },
   },
   {

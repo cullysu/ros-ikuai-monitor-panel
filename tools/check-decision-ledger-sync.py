@@ -204,32 +204,12 @@ def mirror_pairs(mirror: Path) -> list[tuple[Path, Path]]:
             mirror / "面板重做决策日志.md",
         ),
         (
-            ROOT / "docs" / "mobile-originos-ios-reset-contract.md",
-            mirror / "mobile-originos-ios-reset-contract.md",
+            ROOT / "docs" / "mobile-reference-baseline.md",
+            mirror / "手机界面唯一视觉基线.md",
         ),
         (
-            ROOT / "docs" / "mobile-ikuai4-design-contract.md",
-            mirror / "mobile-ikuai4-design-contract.md",
-        ),
-        (
-            ROOT / "docs" / "mobile-patrol-reset-contract.md",
-            mirror / "mobile-patrol-reset-contract.md",
-        ),
-        (
-            ROOT / "docs" / "mobile-native-ui-contract.md",
-            mirror / "mobile-native-ui-contract.md",
-        ),
-        (
-            ROOT / "docs" / "mobile-pulse-reset-contract.md",
-            mirror / "手机端重做合同-线路优先的运行脉冲.md",
-        ),
-        (
-            ROOT / "docs" / "mobile-flow-console-contract.md",
-            mirror / "mobile-flow-console-contract.md",
-        ),
-        (
-            ROOT / "docs" / "ikuai4-ui-study.md",
-            mirror / "ikuai4-ui-study.md",
+            ROOT / "docs" / "product-loop-current.md",
+            mirror / "product-loop-current.md",
         ),
     ]
     pairs.extend(
@@ -247,7 +227,6 @@ def mirror_pairs(mirror: Path) -> list[tuple[Path, Path]]:
         for source_name, target_name in MIRROR_ROOT_FILES
     )
     return pairs
-
 
 def markdown_inventory(mirror: Path) -> list[str]:
     if not mirror.exists():

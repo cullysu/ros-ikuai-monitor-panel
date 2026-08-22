@@ -10,12 +10,19 @@ const {
 const { startMock, browserExecutable } = require("../../check-panel-runtime-browser");
 
 const VIEWPORT = { width: 390, height: 844 };
-const ACTION_TIMEOUT_MS = 8_000;
+const configuredLowLoadTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);
+const LOW_LOAD_BROWSER_TIMEOUT_MS = Number.isFinite(configuredLowLoadTimeout) && configuredLowLoadTimeout > 0
+  ? Math.min(300_000, Math.max(8_000, configuredLowLoadTimeout))
+  : 0;
+// Keep ordinary acceptance failures fast, but allow the CPU-capped launcher to
+// trade wall-clock time for a much smaller machine impact. This changes only
+// infrastructure timing; every product and accessibility assertion is intact.
+const ACTION_TIMEOUT_MS = Math.max(8_000, LOW_LOAD_BROWSER_TIMEOUT_MS);
 // Windows can take longer to create a fresh Playwright pipe under sustained
 // validation load. Keep the launch bounded, but do not confuse a slow spawn
 // with a product failure.
-const LAUNCH_TIMEOUT_MS = 30_000;
-const CLEANUP_TIMEOUT_MS = 4_000;
+const LAUNCH_TIMEOUT_MS = Math.max(30_000, LOW_LOAD_BROWSER_TIMEOUT_MS);
+const CLEANUP_TIMEOUT_MS = Math.max(4_000, Math.min(30_000, LOW_LOAD_BROWSER_TIMEOUT_MS));
 const ABORT_CLEANUP_TIMEOUT_MS = 30_000;
 const activeRuntimes = new Set();
 const execFileAsync = promisify(execFile);
@@ -154,8 +161,14 @@ async function launchRuntime(options = {}) {
   };
   activeRuntimes.add(runtime);
   try {
-    const { browserArgs = [], headless = true, ...contextOptions } = options;
-    runtime.mock = (await bounded("a11y.mock.start", () => startMock({ transport: process.platform === "win32" ? "pipe" : "tcp" }), LAUNCH_TIMEOUT_MS)).value;
+    const {
+      browserArgs = [],
+      headless = true,
+      mockTransport = process.platform === "win32" ? "pipe" : "tcp",
+      mockPreferIpv4 = false,
+      ...contextOptions
+    } = options;
+    runtime.mock = (await bounded("a11y.mock.start", () => startMock({ transport: mockTransport, preferIpv4: mockPreferIpv4 }), LAUNCH_TIMEOUT_MS)).value;
     runtime.managedBrowser = (await bounded("a11y.browser.launch", () => launchManagedBrowser({
       executablePath,
       headless,
@@ -196,6 +209,7 @@ async function closeRuntime(runtime) {
   if (!runtime.closePromise) {
     runtime.closePromise = (async () => {
       const errors = [];
+      runtime.mock?.beginStop?.();
       if (runtime.context) {
         try { await cleanupStep(runtime, "context.close", () => runtime.context.close()); }
         catch (error) { errors.push(error); }
@@ -249,9 +263,23 @@ async function waitForCurrent(page) {
   await waitForPhase(page, "current");
 }
 
+async function gotoWithAbortRetry(page, url, options) {
+  let lastError = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await page.goto(url, options);
+    } catch (error) {
+      lastError = error;
+      if (!String(error?.message || error).includes("ERR_ABORTED") || attempt === 1) throw error;
+      await page.waitForTimeout(400);
+    }
+  }
+  throw lastError;
+}
+
 async function login(page, baseUrl) {
-  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
-  const form = page.locator('[data-router-login-form], [data-mobile-native-connection="flow"] form').first();
+  await gotoWithAbortRetry(page, baseUrl, { waitUntil: "domcontentloaded" });
+  const form = page.locator('[data-router-login-form], [data-mobile-native-connection="flow"] form, [data-mobile-reference-connection="form"] form').first();
   await form.waitFor();
   await page.locator('input[name="host"]').fill("192.0.2.1");
   await page.locator('input[name="user"]').fill("observer");
@@ -260,7 +288,7 @@ async function login(page, baseUrl) {
   const submitWhenReady = async () => {
     await form.locator('button[type="submit"]:not([disabled])').waitFor({ timeout: LAUNCH_TIMEOUT_MS });
     await page.waitForFunction(() => {
-      const button = document.querySelector('[data-router-login-form] button[type="submit"], [data-mobile-native-connection="flow"] button[type="submit"]');
+      const button = document.querySelector('[data-router-login-form] button[type="submit"], [data-mobile-native-connection="flow"] button[type="submit"], [data-mobile-reference-connection="form"] button[type="submit"]');
       return button instanceof HTMLButtonElement && !button.disabled;
     }, null, { timeout: LAUNCH_TIMEOUT_MS });
     // Login is test setup rather than the interaction under review. Dispatch
@@ -269,11 +297,11 @@ async function login(page, baseUrl) {
     await submit.evaluate((button) => button.click());
   };
   await submitWhenReady();
-  const hostKey = page.locator(".router-host-key-confirmation, .ikuai4-connect-fingerprint").first();
+  const hostKey = page.locator(".router-host-key-confirmation, .ikuai4-connect-fingerprint, .ref-connect__identity[data-kind=\"confirmation-required\"]").first();
   const nextStepHandle = await page.waitForFunction(() => {
     const current = document.querySelector("[data-panel-runtime-phase]")?.getAttribute("data-panel-runtime-phase") === "current";
     if (current) return "current";
-    const confirmation = document.querySelector(".router-host-key-confirmation, .ikuai4-connect-fingerprint");
+    const confirmation = document.querySelector(".router-host-key-confirmation, .ikuai4-connect-fingerprint, .ref-connect__identity[data-kind=\"confirmation-required\"]");
     if (confirmation instanceof HTMLElement) {
       const style = getComputedStyle(confirmation);
       if (style.display !== "none" && style.visibility !== "hidden") return "host-key";
@@ -292,7 +320,7 @@ async function visitRoute(page, baseUrl, route, { requireWorkspace = true, runti
   const target = new URL(baseUrl);
   target.searchParams.set("section", route);
   target.hash = "";
-  await page.goto(target.toString(), { waitUntil: "domcontentloaded" });
+  await gotoWithAbortRetry(page, target.toString(), { waitUntil: "domcontentloaded" });
   await waitForPhase(page, runtimePhase);
   const canonical = await page.evaluate(() => ({
     hash: location.hash,
