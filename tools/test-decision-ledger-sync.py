@@ -72,6 +72,22 @@ class CurrentSurfaceFreshnessTest(unittest.TestCase):
             {"gate": "security", "status": "fail", "note": "historical-not-allowed-here"},
         ])
 
+    def test_missing_local_machine_state_uses_tracked_current_authority(self) -> None:
+        self.write(
+            "docs/decision-system/current-state.md",
+            "- latestRecordedStep: `9`\n"
+            "- latestStepOutcome: `9:release-fail`\n"
+            "- currentConclusionForStep: `9`\n",
+        )
+
+        machine, available = MODULE.load_machine_state(self.root)
+
+        self.assertFalse(available)
+        self.assertEqual(machine["latest_decision_step"], 9)
+        self.assertEqual(machine["latest_decision_outcome"], "9:release-fail")
+        self.assertEqual(machine["current_surface_step"], 9)
+        self.assertEqual(machine["gates"], {})
+
     def test_authority_headers_bind_current_surfaces_and_fail_closed_gate(self) -> None:
         self.write("docs/decision-system/current-state.md", "- currentConclusionForStep: `9`\n**FAIL overall\n")
         self.write("docs/decision-system/README.md", "- latestRecordedStep: `9`\n")

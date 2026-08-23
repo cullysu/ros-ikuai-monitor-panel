@@ -63,10 +63,31 @@ def read_step(path: Path, pattern: str, *, current: bool = False) -> int:
     return int(matches[0] if current else matches[-1])
 
 
+def load_machine_state(root: Path = ROOT) -> tuple[dict[str, object], bool]:
+    state = root / ".product-loop" / "state.json"
+    try:
+        return json.loads(state.read_text(encoding="utf-8")), True
+    except FileNotFoundError:
+        current_state = root / "docs" / "decision-system" / "current-state.md"
+        return {
+            "latest_decision_step": read_step(
+                current_state,
+                r"^- latestRecordedStep:\s*`(\d+)`",
+                current=True,
+            ),
+            "latest_decision_outcome": read_outcome(current_state, current=True),
+            "current_surface_step": optional_step(
+                current_state,
+                r"^- currentConclusionForStep:\s*`(\d+)`",
+                current=True,
+            ),
+            "gates": {},
+        }, False
+
+
 def semantic_steps(root: Path = ROOT) -> dict[str, int]:
     log = root / "docs" / "panel-redesign-decision-log.md"
-    state = root / ".product-loop" / "state.json"
-    machine = json.loads(state.read_text(encoding="utf-8"))
+    machine, _ = load_machine_state(root)
     return {
         "journal": read_step(log, r"^## 第\s*(\d+)\s*步"),
         "currentState": read_step(
@@ -102,8 +123,7 @@ def read_outcome(path: Path, *, current: bool = False) -> str:
 
 
 def semantic_outcomes(root: Path = ROOT) -> dict[str, str]:
-    state_path = root / ".product-loop" / "state.json"
-    machine = json.loads(state_path.read_text(encoding="utf-8"))
+    machine, _ = load_machine_state(root)
     return {
         "journal": read_outcome(root / "docs" / "panel-redesign-decision-log.md"),
         "currentState": read_outcome(root / "docs" / "decision-system" / "current-state.md", current=True),
@@ -128,7 +148,7 @@ def current_surface_steps(root: Path = ROOT) -> dict[str, int | None]:
         )
         for key, (relative_path, pattern) in CURRENT_SURFACE_MARKERS.items()
     }
-    machine = json.loads((root / ".product-loop" / "state.json").read_text(encoding="utf-8"))
+    machine, _ = load_machine_state(root)
     value = machine.get("current_surface_step")
     steps["machineCurrentSurface"] = value if isinstance(value, int) else None
     return steps
@@ -155,7 +175,7 @@ def authority_header_state(root: Path = ROOT) -> dict[str, object]:
         .read_text(encoding="utf-8")
         .splitlines()[:80]
     )
-    machine = json.loads((root / ".product-loop" / "state.json").read_text(encoding="utf-8"))
+    machine, _ = load_machine_state(root)
     return {
         "currentStateHeader": first_header_step(
             root / "docs" / "decision-system" / "current-state.md",
@@ -287,8 +307,8 @@ def main() -> int:
     latest_step = max(steps.values())
     surfaces = current_surface_steps()
     current_surface_consistent = all(value == latest_step for value in surfaces.values())
-    machine = json.loads((ROOT / ".product-loop" / "state.json").read_text(encoding="utf-8"))
-    stale_notes = stale_gate_notes(machine, latest_step)
+    machine, machine_state_available = load_machine_state()
+    stale_notes = stale_gate_notes(machine, latest_step) if machine_state_available else []
     authority_headers = authority_header_state()
     authority_header_consistent = (
         authority_headers["currentStateHeader"] == latest_step
@@ -339,6 +359,7 @@ def main() -> int:
         "authorityHeaders": authority_headers,
         "authorityHeaderConsistent": authority_header_consistent,
         "staleGateNotes": stale_notes,
+        "machineStateAvailable": machine_state_available,
         "mirror": str(mirror) if mirror is not None else None,
         "mirrorPairs": len(rows),
         "byteIdenticalPairs": sum(bool(row["byteIdentical"]) for row in rows),
