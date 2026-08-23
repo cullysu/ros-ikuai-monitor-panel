@@ -109,13 +109,29 @@ const wrongViewport = toolbarZoomEvidence({
 });
 assert.equal(wrongViewport.verified, true, "one CSS pixel is an allowed browser rounding tolerance");
 
-const wrongZoom = toolbarZoomEvidence({
+const earlyTargetZoom = toolbarZoomEvidence({
   baseline: { innerWidth: 780, innerHeight: 1688 },
   zoomed: { innerWidth: 390, innerHeight: 844, devicePixelRatio: 2 },
   automation: { steps: Array.from({ length: 4 }, (_, index) => ({ step: index + 1, acceptedAction: "oem-plus", attempts: [{ action: "oem-plus", changed: true }] })) },
   targetCssViewport: { width: 390, height: 844 },
 });
-assert.equal(wrongZoom.verified, false, "runner must fail if the actual toolbar increment count is not five");
+assert.equal(earlyTargetZoom.verified, true, "runner may stop before the five-step safety cap once real toolbar actions and page geometry prove 200 percent");
+
+const missingToolbarInteraction = toolbarZoomEvidence({
+  baseline: { innerWidth: 780, innerHeight: 1688 },
+  zoomed: { innerWidth: 390, innerHeight: 844, devicePixelRatio: 2 },
+  automation: { steps: [] },
+  targetCssViewport: { width: 390, height: 844 },
+});
+assert.equal(missingToolbarInteraction.verified, false, "page geometry alone must never impersonate a real toolbar zoom action");
+
+const overrunToolbarInteraction = toolbarZoomEvidence({
+  baseline: { innerWidth: 780, innerHeight: 1688 },
+  zoomed: { innerWidth: 390, innerHeight: 844, devicePixelRatio: 2 },
+  automation: { steps: Array.from({ length: 6 }, (_, index) => ({ step: index + 1, acceptedAction: "oem-plus", attempts: [{ action: "oem-plus", changed: true }] })) },
+  targetCssViewport: { width: 390, height: 844 },
+});
+assert.equal(overrunToolbarInteraction.verified, false, "evidence beyond the bounded five-step safety cap must fail closed");
 
 const keyboardNoOpThenMenu = [
   { action: "oem-plus", input: { pass: true }, changed: false },

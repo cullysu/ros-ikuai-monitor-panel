@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 
-// Production-browser acceptance for every route-specific evidence-recovery
-// boundary.  It intentionally serves public/ and injects the existing shared
-// release snapshots before the bundle mounts; it never substitutes a test UI.
+// Production-browser acceptance for every desktop route-specific evidence-recovery
+// boundary. Mobile Reference owns a separate route/workspace tree and is covered by
+// its runtime, deep-interaction and accessibility gates; it must not be judged through
+// desktop-only RouteEvidenceBoundary selectors.
 
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -31,8 +32,6 @@ const routes = Object.freeze([
 ]);
 const states = Object.freeze(["partial", "historical", "unavailable"]);
 const viewports = Object.freeze([
-  { width: 390, height: 844 },
-  { width: 768, height: 1024 },
   { width: 1366, height: 768 },
 ]);
 
@@ -173,6 +172,7 @@ function partialSnapshot(route) {
 
 function routeUrl(baseUrl, route) {
   const target = new URL(baseUrl);
+  target.searchParams.set("surface", "desktop");
   target.searchParams.set("section", route);
   return target.toString();
 }
@@ -188,8 +188,8 @@ async function inspectCell(managedBrowser, baseUrl, route, state, viewport, outD
       viewport,
       screen: viewport,
       deviceScaleFactor: 1,
-      isMobile: viewport.width < 768,
-      hasTouch: true,
+      isMobile: false,
+      hasTouch: false,
     }), launchTimeoutMs)).value;
     await bounded(`${id}.fixture.inject`, () => context.addInitScript((snapshot) => {
       window.__PANEL_TEST_SNAPSHOT__ = snapshot;
@@ -200,8 +200,17 @@ async function inspectCell(managedBrowser, baseUrl, route, state, viewport, outD
     page.on("pageerror", (error) => pageErrors.push(errorDetail(error)));
 
     await bounded(`${id}.open`, () => page.goto(routeUrl(baseUrl, route), { waitUntil: "domcontentloaded" }), actionTimeoutMs);
+    await bounded(`${id}.route.ready`, () => page.locator("[data-panel-route-title]").waitFor(), actionTimeoutMs);
     const boundary = page.locator(`[data-route-recovery="${route}"]`);
-    await bounded(`${id}.boundary.wait`, () => boundary.waitFor(), actionTimeoutMs);
+    if (await boundary.count() === 0) {
+      const surface = await page.evaluate(() => ({
+        selectedSurface: document.documentElement.dataset.panelSurface || null,
+        route: document.body.dataset.panelRoute || null,
+        title: document.title,
+        text: (document.body.textContent || "").replace(/\s+/g, " ").trim().slice(0, 500),
+      }));
+      assert(false, "route recovery boundary is absent from the selected desktop route", { id, surface });
+    }
     await bounded(`${id}.boundary.visible`, () => boundary.scrollIntoViewIfNeeded(), actionTimeoutMs);
 
     const screenshotFile = `${id}--original.png`;
@@ -412,10 +421,14 @@ async function main() {
       cleanupTimeoutMs,
     }), launchTimeoutMs)).value;
 
-    for (const required of requiredCells) {
+    for (const [index, required] of requiredCells.entries()) {
+      process.stdout.write(`route-recovery ${index + 1}/${requiredCells.length} ${required.id}\n`);
       try {
-        cells.push(await inspectCell(managedBrowser, server.url, required.route, required.state, required.viewport, outDir));
+        const cell = await inspectCell(managedBrowser, server.url, required.route, required.state, required.viewport, outDir);
+        cells.push(cell);
+        if (!cell.pass) process.stdout.write(`route-recovery FAIL ${required.id}: ${JSON.stringify({ error: cell.error, detail: cell.detail })}\n`);
       } catch (error) {
+        process.stdout.write(`route-recovery FAIL ${required.id}: ${String(error?.message || error)}\n`);
         cells.push({ ...required, pass: false, error: errorDetail(error), cleanupFailure: true });
       }
     }

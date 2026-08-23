@@ -33,12 +33,15 @@ class MergeMatrixReportsTest(unittest.TestCase):
             ["git", "rev-parse", "HEAD"], cwd=WORKSPACE, text=True
         ).strip()
         acceptance_root = WORKSPACE / "_acceptance"
+        self.remove_acceptance_root = not acceptance_root.exists()
         acceptance_root.mkdir(parents=True, exist_ok=True)
         self.tempdir = tempfile.TemporaryDirectory(dir=acceptance_root)
         self.root = Path(self.tempdir.name)
 
     def tearDown(self) -> None:
         self.tempdir.cleanup()
+        if self.remove_acceptance_root:
+            (WORKSPACE / "_acceptance").rmdir()
 
     def report(
         self,

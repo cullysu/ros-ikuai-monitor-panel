@@ -236,94 +236,53 @@ const rateLimitError = new apiModel.PanelApiError("safe", 429, "connection_searc
 assert.deepEqual({ status: rateLimitError.status, code: rateLimitError.code, retryAfterSeconds: rateLimitError.retryAfterSeconds }, { status: 429, code: "connection_search_rate_limited", retryAfterSeconds: 7 });
 const unsafeError = new apiModel.PanelApiError("unsafe", 900, "bad-code!", null, 99_999);
 assert.deepEqual({ status: unsafeError.status, code: unsafeError.code, retryAfterSeconds: unsafeError.retryAfterSeconds }, { status: 0, code: "request_failed", retryAfterSeconds: null }, "unsafe error metadata must not reach the route UI");
-const mobileViewSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "sections", "MobileRouteSupplement.tsx"), "utf8");
+const mobileViewSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile-reference-ui", "MobileReferenceSurface.tsx"), "utf8");
+const mobileConnectionSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile-reference-ui", "MobileReferenceConnection.tsx"), "utf8");
 const desktopViewSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "sections", "DesktopRouteSupplement.tsx"), "utf8");
-assert.match(mobileViewSource, /className="mrs-/, "mobile supplement must own a mobile presentation tree");
-assert.doesNotMatch(mobileViewSource, /className="ddrs-|className="mdw-/, "mobile supplement must not borrow desktop or legacy mdw presentation classes");
+assert.match(mobileViewSource, /data-mobile-reference-home/, "the current mobile owner must remain the independent Mobile Reference surface");
+assert.doesNotMatch(mobileViewSource, /MobileRouteSupplement|useRouteSupplementEvidence|data-supplemental-|className="ddrs-/, "mobile must not inherit the desktop supplemental request or presentation tree");
+assert.doesNotMatch(mobileConnectionSource, /MobileRouteSupplement|useRouteSupplementEvidence|data-supplemental-|className="ddrs-/, "mobile connection must remain independent from desktop route supplements");
 assert.match(desktopViewSource, /className="ddrs-/, "desktop supplement must own a desktop presentation tree");
-assert.doesNotMatch(desktopViewSource, /className="mdw-|className="mrs-/, "desktop supplement must not borrow mobile presentation classes");
-assert.match(mobileViewSource, /"data-supplemental-surface": route/, "mobile runtime surface must be the semantic route, not the presentation type");
+assert.doesNotMatch(desktopViewSource, /className="mdw-|className="mrs-/, "desktop supplement must not borrow mobile workspace classes");
 assert.match(desktopViewSource, /"data-supplemental-surface": route/, "desktop runtime surface must be the semantic route, not the presentation type");
-assert.match(mobileViewSource, /"data-supplemental-presentation": "mobile"/, "mobile presentation identity must remain separately queryable");
 assert.match(desktopViewSource, /"data-supplemental-presentation": "desktop"/, "desktop presentation identity must remain separately queryable");
-assert.match(mobileViewSource, /data-supplemental-submit="connections"/);
 assert.match(desktopViewSource, /data-supplemental-submit="connections"/);
-assert.match(mobileViewSource, /data-supplemental-target-input="connections"/);
 assert.match(desktopViewSource, /data-supplemental-target-input="connections"/);
-assert.match(mobileViewSource, /data-supplemental-retry/);
 assert.match(desktopViewSource, /data-supplemental-retry/);
-assert.match(mobileViewSource, /data-supplemental-row-id=/, "mobile connection rows must expose an actionable row selector");
 assert.match(desktopViewSource, /data-supplemental-row-id=/, "desktop connection rows must expose an actionable row selector");
-assert.equal((mobileViewSource.match(/data-supplemental-object-detail=/g) || []).length, 1, "mobile object-detail hook must belong only to the selected detail surface");
 assert.equal((desktopViewSource.match(/data-supplemental-object-detail=/g) || []).length, 1, "desktop object-detail hook must belong only to the selected detail surface");
-assert.match(mobileViewSource, /supplementalRateOrigin\([^)]*origRateBps\)/, "mobile rate origin must describe evidence semantics rather than a field name");
 assert.match(desktopViewSource, /supplementalRateOrigin\([^)]*origRateBps\)/, "desktop rate origin must describe evidence semantics rather than a field name");
-assert.match(mobileViewSource, /state\.openConnection/, "mobile row activation must push a selected detail state");
 assert.match(desktopViewSource, /state\.openConnection/, "desktop row activation must push a selected detail state");
-assert.match(mobileViewSource, /state\.closeConnection/, "mobile detail must expose a history-backed close action");
 assert.match(desktopViewSource, /state\.closeConnection/, "desktop detail must expose a history-backed close action");
-assert.match(mobileViewSource, /aria-controls=/);
 assert.match(desktopViewSource, /aria-controls=/);
-assert.match(mobileViewSource, /setInput\(state\.query \|\| ""\)/, "mobile Back/Forward must also clear a restored empty query");
 assert.match(desktopViewSource, /setInput\(state\.query \|\| ""\)/, "desktop Back/Forward must also clear a restored empty query");
-assert.match(mobileViewSource, /state\.uiState \|\| "unavailable"/, "mobile idle state must not pretend supplemental evidence is ready");
 assert.match(desktopViewSource, /state\.uiState \|\| "unavailable"/, "desktop idle state must not pretend supplemental evidence is ready");
-assert.match(mobileViewSource, /disabled=\{state\.retryBlocked\}/, "mobile rate-limit retry must be disabled until its delay expires");
 assert.match(desktopViewSource, /disabled=\{state\.retryBlocked\}/, "desktop rate-limit retry must be disabled until its delay expires");
-assert.match(mobileViewSource, /data\.capture\.incompleteTransport/, "mobile capture summary must disclose an incomplete transport");
 assert.match(desktopViewSource, /data\.capture\.incompleteTransport/, "desktop capture summary must disclose an incomplete transport");
-assert.equal((mobileViewSource.match(/aria-live=/g) || []).length, 1, "mobile success results must not be one large live region");
 assert.equal((desktopViewSource.match(/aria-live=/g) || []).length, 1, "desktop success results must not be one large live region");
-assert.match(mobileViewSource, /data-supplemental-live-status[^>]*>\{liveStatus\}/, "mobile supplement must expose one stable success/error announcement owner");
 assert.match(desktopViewSource, /data-supplemental-live-status[^>]*>\{liveStatus\}/, "desktop supplement must expose one stable success/error announcement owner");
-assert.match(mobileViewSource, /aria-atomic="true"/, "mobile supplemental completion announcement must be atomic");
 assert.match(desktopViewSource, /aria-atomic="true"/, "desktop supplemental completion announcement must be atomic");
-assert.match(mobileViewSource, /aria-busy=\{state\.requestStatus === "loading"\}/, "mobile results must disclose the in-flight state without making the full result a live region");
 assert.match(desktopViewSource, /aria-busy=\{state\.requestStatus === "loading"\}/, "desktop results must disclose the in-flight state without making the full result a live region");
-assert.equal((mobileViewSource.match(/\{pager\}/g) || []).length, 1, "mobile DNS pagination must have one unambiguous reachable owner");
 assert.equal((desktopViewSource.match(/\{pager\}/g) || []).length, 1, "desktop DNS pagination must have one unambiguous reachable owner");
-assert.match(mobileViewSource, /mrs-dns-list[\s\S]*?<header>[\s\S]*?\{pager\}<\/header>/, "mobile DNS pagination must be reachable from the initial result heading rather than only after the final row");
-assert.match(mobileViewSource, /<time dateTime=\{result\?\.observedAt \|\| undefined\}>\{evidenceTime\}<\/time>/, "mobile evidence boundary must carry a visible localized time and raw RFC3339 datetime");
 assert.match(desktopViewSource, /ddrs-evidencebar[\s\S]*?<time dateTime=\{result\?\.observedAt \|\| undefined\}>\{evidenceTime\}<\/time>/, "desktop default results must carry a visible localized time and raw RFC3339 datetime");
-assert.match(mobileViewSource, /className="mrs-connection-rate"/, "tablet and landscape connection rows must expose one comparable rate field");
-assert.match(mobileViewSource, />全局健康发现</, "mobile security supplement must distinguish global health from the security object collection");
 assert.match(desktopViewSource, />全局健康发现</, "desktop security supplement must distinguish global health from the security object collection");
-for (const source of [mobileViewSource, desktopViewSource]) {
-  for (const selector of ["data-supplemental-surface", "data-supplemental-request", "data-supplemental-state", "data-supplemental-evidence", "data-supplemental-source", "data-supplemental-coverage", "data-supplemental-observed-at", "data-supplemental-target", "data-supplemental-offset", "data-supplemental-page-size", "data-supplemental-total", "data-supplemental-connection-row", "data-supplemental-rate-origin", "data-supplemental-object-detail"]) {
-    assert.match(source, new RegExp(selector), `${selector} must be exposed by both presentation owners`);
-  }
+for (const selector of ["data-supplemental-surface", "data-supplemental-request", "data-supplemental-state", "data-supplemental-evidence", "data-supplemental-source", "data-supplemental-coverage", "data-supplemental-observed-at", "data-supplemental-target", "data-supplemental-offset", "data-supplemental-page-size", "data-supplemental-total", "data-supplemental-connection-row", "data-supplemental-rate-origin", "data-supplemental-object-detail"]) {
+  assert.match(desktopViewSource, new RegExp(selector), `${selector} must be exposed by the desktop supplement owner`);
 }
-for (const source of [mobileViewSource, desktopViewSource]) {
-  for (const selector of ["data-supplemental-state", "data-supplemental-evidence", "data-supplemental-query", "data-supplemental-kind", "data-supplemental-source", "data-supplemental-coverage", "data-supplemental-page", "data-supplemental-total"]) {
-    assert.match(source, new RegExp(selector), `${selector} must be stable on both presentation owners`);
-  }
+for (const selector of ["data-supplemental-state", "data-supplemental-evidence", "data-supplemental-query", "data-supplemental-kind", "data-supplemental-source", "data-supplemental-coverage", "data-supplemental-page", "data-supplemental-total"]) {
+  assert.match(desktopViewSource, new RegExp(selector), `${selector} must be stable on the desktop supplement owner`);
 }
-const mobileCss = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile-pulse", "styles", "mobilePulseRoute.css"), "utf8");
 const desktopCss = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "sections", "desktop-domain.css"), "utf8");
-const mobileOwnerSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile", "MobilePanelApp.tsx"), "utf8");
-const mobileRouteSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "mobile-pulse", "MobilePulseRouteSurface.tsx"), "utf8");
 const desktopOwnerSource = require("node:fs").readFileSync(path.join(__dirname, "..", "src", "panel-framework", "sections", "DesktopDomainWorkspace.tsx"), "utf8");
-assert.match(mobileOwnerSource, /<MobileRouteSupplement\b/, "current mobile app must mount its dedicated supplement owner");
-assert.match(mobileOwnerSource, /useRouteSupplementEvidence/, "current mobile app must own supplemental request state");
-assert.doesNotMatch(mobileOwnerSource, /<RouteSupplementEvidence\b|\/RouteSupplementEvidence["']/, "current mobile app must not mount a shared supplemental presentation tree");
 assert.match(desktopOwnerSource, /DesktopRouteSupplement/, "desktop workspace must mount its dedicated owner");
 assert.doesNotMatch(desktopOwnerSource, /<RouteSupplementEvidence\b|\/RouteSupplementEvidence["']/, "desktop workspace must not mount a shared supplemental presentation tree");
-for (const [surface, source] of [["mobile", mobileOwnerSource], ["desktop", desktopOwnerSource]]) {
-  assert.match(source, /supplementOwnsDnsList/, `${surface} accepted DNS supplement must own its one visible collection`);
-  assert.match(source, /supplementOwnsConnectionList/, `${surface} accepted connection query must own its one visible collection`);
-}
-assert.match(mobileRouteSource, /data-origin-route/, "current Origin route surface must expose its dedicated owner marker");
-assert.match(mobileRouteSource, /!supplementOwnsCollection/, "current Origin route surface must hide the snapshot collection while an accepted supplement owns it");
+assert.match(desktopOwnerSource, /supplementOwnsDnsList/, "desktop accepted DNS supplement must own its one visible collection");
+assert.match(desktopOwnerSource, /supplementOwnsConnectionList/, "desktop accepted connection query must own its one visible collection");
 assert.match(desktopOwnerSource, /!supplementOwnsCollection/, "desktop snapshot collection must remain fallback-only while an accepted supplement owns it");
-assert.match(mobileCss, /\.origin-route\b/, "Origin route surface must have an owned visual system");
-assert.doesNotMatch(mobileCss, /mobile-ops|mop-/, "Origin route stylesheet must not retain mobile-ops presentation selectors");
-assert.match(mobileCss, /min-height:\s*44px/, "Origin route controls must preserve a 44px target");
-assert.match(mobileCss, /\.origin-search button\s*\{[^}]*\bheight:\s*44px/, "Origin clear-query control must not regress below the 44px touch target");
-assert.match(mobileCss, /@media[^{}]*min-width:\s*600px[\s\S]*?\.origin-route/, "Origin tablet route layout must be capability-specific");
 assert.match(desktopCss, /\.ddrs-shell\b/, "desktop supplement must have an owned visual system");
 assert.doesNotMatch(desktopCss, /\.mdw-/, "desktop supplement stylesheet must not borrow mobile workspace classes");
 assert.match(desktopCss, /\.ddrs-query input[\s\S]*?min-height:\s*44px/, "desktop target input must keep a 44px effective hit area");
 assert.match(desktopCss, /\.ddrs-query button,[\s\S]*?min-height:\s*44px/, "desktop query, pager and retry controls must keep a 44px effective hit area");
 assert.match(desktopCss, /\.ddrs-query \.ddrs-clear-query\s*\{[\s\S]*?min-height:\s*44px/, "desktop clear-query control must not regress below the 44px target");
 assert.match(desktopCss, /\.ddrs-findings summary[\s\S]*?min-height:\s*44px/, "desktop finding disclosure must keep a 44px effective hit area");
-console.log("route supplement contract PASS: strict REST generations/409 replace, health freshness, canonical connection submit, 429/race state, history-backed detail, semantic rate origins and split presentation ownership");
+console.log("route supplement contract PASS: strict REST generations/409 replace, health freshness, canonical connection submit, 429/race state, history-backed desktop detail, semantic rate origins, and independent Mobile Reference ownership");

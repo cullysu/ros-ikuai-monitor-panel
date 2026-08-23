@@ -9,6 +9,9 @@ const root = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "tools", "check-mobile-reference-runtime.js"), "utf8");
 const wrapper = fs.readFileSync(path.join(root, "tools", "run-mobile-reference-cell-low-load.cmd"), "utf8");
 const scenarioWrapper = fs.readFileSync(path.join(root, "tools", "run-mobile-reference-scenario-low-load.cmd"), "utf8");
+const runtimeLauncher = fs.readFileSync(path.join(root, "tools", "run-mobile-reference-runtime.js"), "utf8");
+const runtimeWrapper = fs.readFileSync(path.join(root, "tools", "run-mobile-reference-runtime-low-load.cmd"), "utf8");
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const { cpuLoadBetween } = require(path.join(root, "tools", "check-mobile-reference-runtime.js"));
 
 assert.match(source, /process\.env\.MOBILE_SCENARIO/);
@@ -37,6 +40,14 @@ assert.match(scenarioWrapper, /\/affinity 1 \/belownormal \/wait \/b node/, "the
 assert.match(scenarioWrapper, /set MOBILE_MAX_CPU_PERCENT=55/, "the serial scenario wrapper must preserve the whole-system headroom gate");
 assert.match(scenarioWrapper, /--skip-interactions/, "scenario batches must defer interaction workflows until the complete cell set exists");
 assert.match(scenarioWrapper, /MOBILE_BATCH_MODE%"=="first"/, "the serial scenario wrapper must support a clean identity-bound first batch");
+assert.match(runtimeLauncher, /process\.platform === "win32" && process\.env\.CI !== "true"/, "the portable launcher must route only local Windows runs through the affinity wrapper");
+assert.match(runtimeLauncher, /run-mobile-reference-runtime-low-load\.cmd/, "the portable launcher must own the local Windows low-load handoff");
+assert.match(runtimeWrapper, /\/affinity 1 \/belownormal \/wait \/b node/, "the whole-runtime wrapper must constrain the complete browser process tree to one logical processor");
+assert.match(runtimeWrapper, /set MOBILE_CPU_AFFINITY_ENFORCED=1/, "the whole-runtime wrapper must mark the enforced launch path");
+assert.match(runtimeWrapper, /%\*/, "the whole-runtime wrapper must forward smoke and full-matrix arguments");
+for (const scriptName of ["check:mobile-telemetry", "check:mobile-telemetry:full", "check:mobile-reference-runtime"]) {
+  assert.match(packageJson.scripts[scriptName], /tools\/run-mobile-reference-runtime\.js/, `${scriptName} must use the portable bounded launcher`);
+}
 assert.equal(cpuLoadBetween({ total: 1000, idle: 400 }, { total: 2000, idle: 700 }), 70);
 assert.equal(cpuLoadBetween({ total: 1000, idle: 400 }, { total: 2000, idle: 800 }), 60);
 

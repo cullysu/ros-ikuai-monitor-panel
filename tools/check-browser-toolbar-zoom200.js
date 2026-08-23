@@ -98,10 +98,22 @@ function toolbarScenarioConfig(scenario) {
   throw new Error(`Unsupported real Edge toolbar scenario: ${scenario}`);
 }
 
-function toolbarReportReadiness(report) {
+function toolbarReportReadiness(report, currentIdentity = null) {
     const actionable = "Run: node tools/check-browser-toolbar-zoom200.js (headed Microsoft Edge; bounded v9 variable-increment matrix).";
   if (!report || typeof report !== "object") return { pass: false, code: "V8_REPORT_MISSING", reason: `Current-owner real Edge 200% evidence is missing. ${actionable}` };
   if (report.contract !== TOOLBAR_CONTRACT) return { pass: false, code: "V8_CONTRACT_STALE", reason: `Toolbar report contract is ${report.contract || "missing"}, expected ${TOOLBAR_CONTRACT}. ${actionable}` };
+  if (currentIdentity) {
+    const evidenceIdentity = report.identity || {};
+    const exactIdentityMatches = evidenceIdentity.commit === currentIdentity.commit
+      && evidenceIdentity.artifactKey === currentIdentity.artifactKey;
+    if (!exactIdentityMatches || currentIdentity.worktreeClean !== true || currentIdentity.releaseEvidenceEligible !== true) {
+      return {
+        pass: false,
+        code: "V8_EXACT_SHA_STALE",
+        reason: `Toolbar evidence is not bound to the current clean exact SHA. ${actionable}`,
+      };
+    }
+  }
   const owner = report.ownerContract || {};
   if (owner.overview !== MOBILE_ORIGIN_OWNER.overview || owner.route !== MOBILE_ORIGIN_OWNER.route || owner.navigation !== MOBILE_ORIGIN_OWNER.navigation ||
       owner.desktopOverview !== DESKTOP_ORIGIN_OWNER.overview || owner.desktopRoute !== DESKTOP_ORIGIN_OWNER.route || owner.desktopNavigation !== DESKTOP_ORIGIN_OWNER.navigation) {
@@ -116,8 +128,9 @@ function toolbarReportReadiness(report) {
 }
 
 function currentToolbarReportStatus() {
-  if (!fs.existsSync(reportPath)) return toolbarReportReadiness(null);
-  try { return toolbarReportReadiness(JSON.parse(fs.readFileSync(reportPath, "utf8"))); }
+  const currentIdentity = gitWorktreeIdentity(root);
+  if (!fs.existsSync(reportPath)) return toolbarReportReadiness(null, currentIdentity);
+  try { return toolbarReportReadiness(JSON.parse(fs.readFileSync(reportPath, "utf8")), currentIdentity); }
   catch (error) { return { pass: false, code: "V8_REPORT_INVALID", reason: `Current-owner toolbar report is invalid JSON: ${String(error?.message || error)}. Run: node tools/check-browser-toolbar-zoom200.js.` }; }
 }
 

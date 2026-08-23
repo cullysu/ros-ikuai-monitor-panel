@@ -314,7 +314,11 @@ async function checkInteraction(page, runtime) {
   assert(runtime.mock.state.snapshotCalls > snapshotCallsBefore, "no-snapshot recovery action must request a fresh snapshot");
 
   await openHome(page, runtime, scenarios[0], viewports[3]);
-  const refresh = page.getByRole("button", { name: "刷新当前数据" });
+  // The accessible name intentionally changes while refreshing. Keep the
+  // locator anchored to the stable busy-state contract so the post-click
+  // assertion observes the same control instead of re-querying its old name.
+  const refresh = page.locator('.ref-topbar button[aria-busy]').first();
+  assert(await refresh.getAttribute("aria-label") === "刷新当前数据", "refresh control must expose its idle accessible name");
   await refresh.click();
   assert(await refresh.getAttribute("aria-busy") === "true", "refresh control must expose busy feedback immediately");
   await page.waitForTimeout(750);

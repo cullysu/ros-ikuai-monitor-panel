@@ -161,6 +161,21 @@ try {
   assert.doesNotThrow(() => assertCurrentOwnerReport(JSON.parse(fs.readFileSync(reportPath, 'utf8')), identity));
   assert.equal(toolbarReportReadiness(passingReport()).pass, true);
 
+  const cleanCurrentIdentity = {
+    ...identity,
+    worktreeClean: true,
+    releaseEvidenceEligible: true,
+  };
+  const exactReport = passingReport();
+  exactReport.identity = cleanCurrentIdentity;
+  assert.equal(toolbarReportReadiness(exactReport, cleanCurrentIdentity).pass, true);
+  const differentCurrentSha = {
+    ...cleanCurrentIdentity,
+    commit: 'f'.repeat(40),
+    artifactKey: 'f'.repeat(40),
+  };
+  assert.equal(toolbarReportReadiness(exactReport, differentCurrentSha).code, 'V8_EXACT_SHA_STALE');
+
   const oldOwner = passingReport();
   oldOwner.contract = 'edge-toolbar-zoom200-windows-v6-mobile-pulse';
   assert.equal(toolbarReportReadiness(oldOwner).code, 'V8_CONTRACT_STALE');

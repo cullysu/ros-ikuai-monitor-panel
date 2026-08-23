@@ -29,6 +29,7 @@ const ikuaiMobileArchitectureSource = source('tools/check-mobile-reference-archi
 const ikuaiMobileModelCheckSource = source('tools/check-mobile-reference-model.js');
 const ikuaiMobileConnectionSecuritySource = source('tools/check-mobile-reference-connection-security.js');
 const ikuaiMobileRuntimeSource = source('tools/check-mobile-reference-runtime.js');
+const ikuaiMobileRuntimeLauncherSource = source('tools/run-mobile-reference-runtime.js');
 const sectionModelSource = source('src/panel-framework/sections/sectionModels.ts');
 const resourceHistorySource = source('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts');
 const resourceTimeSeriesSource = source('src/panel-framework/sections/resourceTimeSeries.ts');
@@ -153,9 +154,9 @@ check(
     /async function runBrowserChecks[\s\S]*?const browser = await launchBrowser\(args, report\);[\s\S]*?try\s*\{[\s\S]*?for \(const profile/.test(localPredeploySource) &&
     localPredeploySource.includes('launchManagedBrowser') &&
     localPredeploySource.includes('lifecycleBounded') &&
-    localPredeploySource.includes('await withTimeout(cdp.closeTarget(), 12_000, targetLabel)') &&
+    /await withTimeout\(\s*cdp\.closeTarget\(\),\s*configuredBrowserTimeoutMs\(12_000\),\s*targetLabel\s*\)/.test(localPredeploySource) &&
     localPredeploySource.includes("record(report, targetLabel, false") &&
-    localPredeploySource.includes("await withTimeout(browser.stop(), 30_000, 'browser stop')") &&
+    /await withTimeout\(\s*browser\.stop\(\),\s*configuredBrowserTimeoutMs\(30_000\),\s*'browser stop',?\s*\)/.test(localPredeploySource) &&
     !localPredeploySource.includes('await context.close().catch(() => {})'),
   'the matrix must use the real Python runtime and one managed browser with bounded per-cell cleanup'
 );
@@ -222,10 +223,12 @@ check(
     packageJson.scripts['check:mobile-telemetry-model'].includes('tools/check-mobile-reference-connection-security.js') &&
     typeof packageJson.scripts['check:mobile-telemetry'] === 'string' &&
     packageJson.scripts['check:mobile-telemetry'].includes('npm run check:mobile-telemetry-model') &&
-    packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-reference-runtime.js --smoke') &&
+    packageJson.scripts['check:mobile-telemetry'].includes('tools/run-mobile-reference-runtime.js --smoke') &&
     typeof packageJson.scripts['check:mobile-telemetry:full'] === 'string' &&
     packageJson.scripts['check:mobile-telemetry:full'].includes('npm run check:mobile-telemetry-model') &&
-    packageJson.scripts['check:mobile-telemetry:full'].includes('tools/check-mobile-reference-runtime.js') &&
+    packageJson.scripts['check:mobile-telemetry:full'].includes('tools/run-mobile-reference-runtime.js') &&
+    ikuaiMobileRuntimeLauncherSource.includes('run-mobile-reference-runtime-low-load.cmd') &&
+    ikuaiMobileRuntimeLauncherSource.includes('process.env.CI !== "true"') &&
     packageJson.scripts['check:runtime-browser'].includes('npm run check:mobile-telemetry'),
   'runtime browser must use iKuai 4 once for smoke and retain a separate required full-matrix command'
 );
@@ -241,7 +244,8 @@ check(
     ikuaiMobileRuntimeSource.includes('wanDetailHistory') &&
     ikuaiMobileRuntimeSource.includes('moreDirectory') &&
     ikuaiMobileRuntimeSource.includes('connectionAddressValidation') &&
-    ikuaiMobileRuntimeSource.includes('cells.length === requiredTargets.length') &&
+    ikuaiMobileRuntimeSource.includes('const fullCellSet = cells.length === requiredKeys.size') &&
+    ikuaiMobileRuntimeSource.includes('const complete = !smoke && fullCellSet') &&
     ikuaiMobileRuntimeSource.includes('gitWorktreeIdentity(root)') &&
     ikuaiMobileRuntimeSource.includes('releaseEvidenceEligible: false') &&
     /path\.join\(output,\s*smoke\s*\?\s*["']report-smoke\.json["']\s*:\s*["']report\.json["']/.test(ikuaiMobileRuntimeSource) &&

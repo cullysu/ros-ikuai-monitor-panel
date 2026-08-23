@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 
-// Production-bundle contract for the three route supplements. This deliberately
-// tests only observable data contracts: it uses the shared mock and managed
-// browser lifecycle from check-panel-runtime-browser, never a second server or
-// a substituted UI. Keep this strict: a missing evidence boundary, an implicit
-// connection query, or a snapshot replacement is a release failure.
+// Production-bundle contract for the three desktop route supplements. Mobile Reference
+// owns an intentionally independent route tree and is covered by its model, architecture,
+// runtime and deep-interaction gates. This contract must not resurrect retired mobile
+// supplement owners merely to reuse desktop selectors.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -24,10 +23,8 @@ const stepTimeoutMs = screenshotRoot ? 80_000 : 38_000;
 const cleanupTimeoutMs = 6_000;
 const capturedScreenshots = [];
 const viewports = [
-  { name: 'phone', width: 390, height: 844, workspace: 'mobile' },
-  { name: 'landscape', width: 844, height: 390, workspace: 'mobile' },
-  { name: 'tablet', width: 768, height: 1024, workspace: 'mobile' },
-  { name: 'desktop', width: 1366, height: 768, workspace: 'desktop' },
+  { name: 'desktop1366', width: 1366, height: 768, workspace: 'desktop' },
+  { name: 'desktop1440', width: 1440, height: 900, workspace: 'desktop' },
 ];
 
 function assert(condition, message, detail) {
@@ -515,7 +512,7 @@ async function main() {
   const firstError = lifecycleRuns.find((run) => run.lifecycle.error)?.lifecycle.error || null;
   const report = {
     contract: 'supplemental-route-production-runtime-v1',
-    source: 'checked-in-public-bundle + isolated-startMock-per-viewport + managed-browser-lifecycle-v2',
+    source: 'checked-in-public-bundle + isolated-startMock-per-desktop-viewport + managed-browser-lifecycle-v2',
     pass: lifecycleRuns.every((run) => run.lifecycle.ok) && surfaces.every((surface) => surface.checks.every((item) => item.pass)),
     lifecycle: lifecycleRuns.map((run) => ({ viewport: run.viewport, ...run.lifecycle.diagnostics })),
     surfaces,

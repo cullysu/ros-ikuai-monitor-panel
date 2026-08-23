@@ -60,6 +60,10 @@ function createWindow(initialUrl) {
     addEventListener(type, listener) { listeners.set(type, listener); },
     removeEventListener(type) { listeners.delete(type); },
     dispatchEvent() {},
+    requestAnimationFrame(callback) { callback(0); return 1; },
+    cancelAnimationFrame() {},
+    scrollY: 0,
+    scrollTo() {},
   };
   return { window, listeners, calls, setUrl };
 }
@@ -68,6 +72,7 @@ function mountRouteHook(browser) {
   const previousWindow = global.window;
   const previousDocument = global.document;
   const previousMutationObserver = global.MutationObserver;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
   const react = {
     useState(initial) { return [typeof initial === "function" ? initial() : initial, () => {}]; },
     useRef(current) { return { current }; },
@@ -79,11 +84,15 @@ function mountRouteHook(browser) {
   global.window = browser.window;
   global.document = {
     body: { dataset: {} },
+    documentElement: { dataset: {} },
     title: "",
     getElementById() { return null; },
     querySelector() { return null; },
+    addEventListener() {},
+    removeEventListener() {},
   };
   global.MutationObserver = class { observe() {} disconnect() {} };
+  global.requestAnimationFrame = (callback) => { callback(0); return 1; };
   delete require.cache[require.resolve(routeHookPath)];
   Module._load = function load(request, parent, isMain) {
     if (request === "react") return react;
@@ -96,6 +105,7 @@ function mountRouteHook(browser) {
         global.window = previousWindow;
         global.document = previousDocument;
         global.MutationObserver = previousMutationObserver;
+        global.requestAnimationFrame = previousRequestAnimationFrame;
       },
     };
   } finally {
@@ -196,7 +206,7 @@ assert.match(
 );
 assert.match(
   runtime,
-  /const onOffline = \(\) => \{[\s\S]{0,300}setBrowserOnlineHint\(false\)[\s\S]{0,300}void refresh\([\"']recovery[\"']\)/,
+  /const onOffline = \(\) => \{[\s\S]{0,300}setBrowserOnlineHint\(nextBrowserOnlineHint\([\"']offline[\"']\)\)[\s\S]{0,300}void refresh\([\"']recovery[\"']\)/,
   "browser offline events must update the hint and still schedule a bounded recovery request",
 );
 
