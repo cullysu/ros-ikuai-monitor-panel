@@ -21,6 +21,8 @@ assert.match(runnerSource, /data-panel-route=\\"interfaces\\"/, 'the toolbar fix
 assert.match(runnerSource, /\.panel-task-navigation/, 'the toolbar fixture must verify wide landscape browser navigation ownership');
 assert.match(runnerSource, /keyboardTraversal/, 'the toolbar fixture must traverse every current-owner control');
 assert.match(runnerSource, /maxLeft === 0/, 'the toolbar fixture must fail on any horizontal scroll range');
+assert.match(runnerSource, /process\.env\.PYTHON_EXECUTABLE \|\| "python"/, 'toolbar automation must use the setup-python interpreter from PATH unless explicitly overridden');
+assert.doesNotMatch(runnerSource, /spawn\("py"|\["-3", "-B"/, 'toolbar automation must not bypass setup-python through the Windows launcher');
 assert.doesNotMatch(runnerSource, /data-mobile-pulse|\.oc-objects|data-mobile-ops-overview|mop-route-row/, 'the toolbar fixture must not retain retired mobile selector fallbacks');
 assert.match(windowsZoomSource, /send_chord\(0x11, 0x30\).*Ctrl \+ 0/, 'toolbar reset must use a real bounded Win32 Ctrl+0 input without importing the full UIA tree');
 assert.match(windowsZoomSource, /elif args\.action == "menu-plus":[\s\S]*from pywinauto import Desktop/, 'pywinauto must be loaded only for the real Edge menu fallback');

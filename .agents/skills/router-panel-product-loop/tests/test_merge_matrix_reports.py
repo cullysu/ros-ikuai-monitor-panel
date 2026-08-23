@@ -32,7 +32,9 @@ class MergeMatrixReportsTest(unittest.TestCase):
         self.candidate = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=WORKSPACE, text=True
         ).strip()
-        self.tempdir = tempfile.TemporaryDirectory(dir=WORKSPACE / "_acceptance")
+        acceptance_root = WORKSPACE / "_acceptance"
+        acceptance_root.mkdir(parents=True, exist_ok=True)
+        self.tempdir = tempfile.TemporaryDirectory(dir=acceptance_root)
         self.root = Path(self.tempdir.name)
 
     def tearDown(self) -> None:

@@ -256,11 +256,12 @@ function validWindowsCapture(capture, expectedHandle) {
 
 function runPythonToolbarZoom(title, { action = "reset", capturePath = "", captureOnly = false, windowHandle = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
   return new Promise((resolve, reject) => {
-    const args = ["-3", "-B", pythonHelper, "--title", title, "--action", action, "--timeout-seconds", String(Math.ceil(timeoutMs / 1000))];
+    const pythonCommand = process.env.PYTHON_EXECUTABLE || "python";
+    const args = ["-B", pythonHelper, "--title", title, "--action", action, "--timeout-seconds", String(Math.ceil(timeoutMs / 1000))];
     if (captureOnly) args.push("--capture-only");
     if (capturePath) args.push("--capture-path", capturePath);
     if (Number.isInteger(windowHandle) && windowHandle > 0) args.push("--window-handle", String(windowHandle));
-    const child = spawn("py", args, {
+    const child = spawn(pythonCommand, args, {
       cwd: root,
       windowsHide: true,
       detached: process.platform === "win32",
