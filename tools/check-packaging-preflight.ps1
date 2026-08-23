@@ -131,7 +131,7 @@ try {
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
     $reactShell = (
-      $indexText -match '<main\s+id="app"(?:\s|>)' -and
+      $indexText -match '<div\s+id="app"(?:\s|>)' -and
       $indexText -notmatch 'data-app-shell="ikuai"' -and
       $indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)' -and
       $indexText -match 'data-overview-framework-asset="style"' -and

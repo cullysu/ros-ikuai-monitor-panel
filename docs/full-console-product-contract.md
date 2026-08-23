@@ -2,12 +2,18 @@
 
 ## Status
 
-- Review baseline: `ced6386`
-- Release gate: **closed**
-- Current loop stage: Discover
+- status: `current-contract / acceptance-failed`
+- validForCommit: Step947 exact local acceptance and engineering readiness; whole-product release acceptance remains failed
+- supersededBy: `null`
+- Current local review boundary: Step947 has four records bound to exact clean runtime artifact `d45b428535d9beadd5abbe980d6485c77338d483`; they are local evidence only, not external promotion acceptance, and `releaseEligible=false`
+- Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
+- Product release gate: **FAIL — local four-role acceptance, exact matrices and engineering readiness are closed, but route maturity, real RouterOS soak, trusted promotion and current remote-SHA CL are not closed**
+- Current loop stage: Verify release evidence
 - Baseline failure evidence: `_acceptance/review-ced6386-all-sections/report.json`
 
 The previous overview-only matrices are retained as regression evidence for the overview surface. They are not evidence that the full product is releasable.
+
+Step947 records an exact clean-SHA whole-product replay and local independent acceptance. It still requires real RouterOS read-only soak, route-owner maturity/acceptance, trusted promotion authorization, GitHub publication and exact uploaded-SHA Linux/Windows/GHCR CL. GitHub is not uploaded; the task is active with `blocked=false`.
 
 ## Operator jobs
 
@@ -26,6 +32,14 @@ The previous overview-only matrices are retained as regression evidence for the 
 - Mobile and desktop may share route/data semantics but do not share a hidden presentation tree.
 - No RouterOS write API is introduced.
 - Public readiness remains false while any required route, state, viewport, accessibility, security, or exact-SHA CL cell is missing.
+
+## Release gate semantics
+
+`structuralPass` only means that the route registry and its local evidence records are internally consistent. It is an engineering result, never a public-release verdict. Ordinary readiness reports `engineeringReadinessPass` only.
+
+The versioned `bounded-public-release-v1` policy declares the 18 operational routes as `module` routes with minimum maturity `bounded-readonly`; `more` is explicitly a `directory` route with maturity `unavailable`. A public release additionally requires a clean exact-SHA candidate, the complete runtime matrix, external reviews, RouterOS read-only soak, and a trusted `public-release` signature. That signature binds the raw product-contract digest, raw route-policy digest, and a canonical 19-route manifest recomputed from `PANEL_ROUTE_IDS`, `PANEL_ROUTES`, and route-maturity evidence. The external review bundle must carry exactly those manifest bytes as `route-manifest.json`.
+
+The repository candidate checker can report only `candidateEvidenceShapePass`; it always keeps `candidateEvidencePass=false`, `publicReleasePass=false`, and `releaseComplete=false` because candidate code cannot authenticate caller-supplied reviewer or assistive-technology identities. Promotion authorization belongs to a controller outside the candidate repository with a fixed trust root and promotion policy. Even that authorization is pre-publication evidence: `releaseComplete` remains false until the uploaded exact SHA passes Linux, Windows, and GHCR CL. Local `acceptanceRefs` are forbidden as acceptance proof.
 
 ## Route contract
 
@@ -56,8 +70,8 @@ Unknown routes resolve to `overview` and replace the invalid URL; they never dis
 
 ## Navigation behavior
 
-- The canonical deep link keeps route state in both `?section=interfaces` and `#interfaces`; the hash wins when the two disagree.
-- Route changes update both representations together so reload, copied links, and older `?section=` links resolve to the same destination.
+- The canonical deep link keeps route state in `?section=interfaces` only; a legacy `#interfaces` may be read once for compatibility and is then removed with `replaceState`. Query state wins if both are present.
+- Route changes emit only the canonical query representation; reload, copied links, and old hash-only links normalize to the same destination.
 - Clicking navigation pushes browser history.
 - Back/Forward restores route and focus.
 - Reloading a deep link renders that route directly.
@@ -90,7 +104,7 @@ Transitions may also enter `stale`, `error`, or `recovering`. A last known snaps
 
 Four stable compact destinations are `概览 / 网络 / 终端 / 日志`; lower-frequency routes live in the real `更多` directory rather than a fifth persistent tab.
 
-The independent compact render tree owns viewports through `1365px`. From `600px` upward it must use a persistent task rail, comparable object list, and evidence inspector rather than a stretched phone composition. The desktop work surface starts at the required `1366px` desktop viewport; 1180/1181px and 1279/1280px must remain in the same compact architecture instead of switching products one pixel apart.
+The independent compact render tree owns viewports through `1199px`. From `600px` upward it may introduce task navigation and object/detail capability only when both usable width and height can hold them; short landscape keeps the continuous patrol grammar. The dense desktop work surface starts at `1200px`. The 1199/1200 boundary may change pane arrangement, but must preserve task vocabulary, selected object, evidence priority and URL state; 1365/1366 must therefore remain semantically continuous.
 
 The 390×844 overview first viewport must include:
 
@@ -104,11 +118,13 @@ An affected-object list is vertical. Selecting an object navigates to its detail
 
 ## Desktop domain workspaces
 
-At `1366px` and above, operational routes use a desktop-only object workspace rather than the compact render tree or a generic read-only table. Every formal domain route provides real search, typed filters, typed sorting, pagination state, comparable object rows, and an evidence inspector. Normal interface pages automatically preview the verified default-route carrier; incidents preview the highest-risk object. Explicit object selection is represented in the URL and Back/Forward history.
+At `1200px` and above, as defined by `docs/decision-system/responsive-capabilities.md`, operational routes use a desktop-only object workspace rather than the compact render tree or a generic read-only table. `1366px` and `1440px` are required desktop acceptance viewports, not additional product thresholds. Every formal domain route provides real search, typed filters, typed sorting, pagination state, comparable object rows, and an evidence inspector. Normal interface pages automatically preview the verified default-route carrier; incidents preview the highest-risk object. Explicit object selection is represented in the URL and Back/Forward history.
 
 Interface, route, terminal, log, security, and DNS inspectors expose domain-specific relationships. Connection and resource inspectors expose their bounded evidence; a low-frequency object may use a clearly labelled generic fallback only while its domain model is incomplete. The desktop return command is visible and functional.
 
 ## Data validation
+
+安全边界的窄表述是：这是一个**公开分发、默认仅本机访问、只读边界已验证**的产品；这不等于任意公网部署都安全。HTTPS 风险确认、SSH 指纹 trust、host/port/scheme/fingerprint/expiry 绑定和损坏配置错误都必须以实际检查为准。
 
 Unknown JSON is validated before entering route models. Validation must distinguish:
 
@@ -123,6 +139,7 @@ Fixtures are available only through the explicit test injection surface.
 
 - Prefer RouterOS HTTPS REST. HTTP requires explicit, persisted risk acknowledgement and is visibly marked insecure.
 - SSH uses a known-host policy. Unknown fingerprints require an explicit first-trust action; changed fingerprints block connection.
+- SSH trust failure never sends SSH credentials or replaces a stored pin. When and only when HTTPS REST succeeds with certificate verification enabled, the operator may explicitly continue REST-only for that request; this keeps SSH visibly blocked and is not persisted or interpreted as network health.
 - Responses include CSP, `frame-ancestors`, `X-Content-Type-Options`, and Referrer Policy.
 - Server version does not expose the Python runtime.
 - Session creation is route-scoped and bounded; login attempts are rate-limited.

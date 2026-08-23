@@ -1,0 +1,73 @@
+{
+  "schema": "independent-review/v1",
+  "step": 995,
+  "role": "accessibility-interaction",
+  "scope": "local-independent-scope",
+  "status": "superseded",
+  "currentEvidence": false,
+  "historicalEvidenceOnly": true,
+  "releaseEligible": false,
+  "reviewerAgentId": "db3599fc-d470-4221-8273-0aac6b43b207",
+  "verdict": "veto",
+  "p0": 0,
+  "p1": 3,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/mobile-telemetry-runtime/report.json",
+    "_acceptance/mobile-telemetry-runtime/single-phone320-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-phone390-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-phone430-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-tablet768-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-tablet1199-overview.png",
+    "_acceptance/mobile-telemetry-runtime/route-interfaces-phone390.png",
+    "_acceptance/mobile-telemetry-runtime/detail-interface-phone390.png",
+    "src/panel-framework/mobile-telemetry/MobileTelemetrySignals.tsx",
+    "src/panel-framework/mobile-telemetry/MobileTelemetryRouteSurface.tsx",
+    "src/panel-framework/routes/usePanelRoute.ts",
+    "src/panel-framework/mobile-telemetry/styles/telemetry-overview.css",
+    "src/panel-framework/mobile-telemetry/styles/telemetry-navigation.css",
+    "tools/check-mobile-telemetry-runtime.js"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-6aa7d327c022-5c5d8384a5b1",
+    "worktreeFingerprint": "5c5d8384a5b16604cb6e5fb3cfd107a95788de7fcf3f06ed99bd40d7fb865534",
+    "generatedAt": "2026-08-14T13:02:20.622Z",
+    "commit": "6aa7d327c022a5a58b45540bc81c8de103a85d3c",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "browser-semantics-history-and-input",
+      "result": "pass",
+      "summary": "The current browser artifact reports all 49 viewport/scenario cells complete with runtimePass=true; 18 route checks report a main landmark, focusable route titles, no missing controls and no unlabeled rows. The route-detail workflow exercises explicit Back plus browser Back/Forward, while source restores the selected row focus. The tablet radio group uses radio semantics, roving tabindex and Arrow/Home/End handling."
+    },
+    {
+      "id": "browser-touch-and-responsive-geometry",
+      "result": "pass",
+      "summary": "The current report records 44px-or-larger action controls and no horizontal overflow in the inspected workflow. The seven original single-scene screenshots cover phone 320/390/430, landscape 667/844 and tablet 768/1199; the phone screenshots retain the persistent tab bar and the landscape/tablet screenshots retain the selected-object workbench."
+    },
+    {
+      "id": "p1-physical-ios-voiceover-unverified",
+      "result": "veto",
+      "severity": "P1",
+      "summary": "This artifact is Playwright/browser evidence only. It contains no physical iOS device or VoiceOver session proving screen-reader traversal, focus order and restoration, native form/radio announcements, bottom safe-area reachability, or Back/Forward behavior in the shipped mobile environment.",
+      "action": "On a physical supported iPhone, capture a reproducible VoiceOver acceptance run through overview, route row/detail/return, bottom tabs, connection form and tablet-style radio selection where applicable; include Dynamic Type and safe-area observations, then regenerate the runtime evidence."
+    },
+    {
+      "id": "p1-200-percent-text-runtime-unverified",
+      "result": "veto",
+      "severity": "P1",
+      "summary": "The current 49-cell runtime report and its screenshots use fixed viewport dimensions, but contain no current 200% text/page-scale or equivalent system text-size execution. Source has a data-panel-large-text layout branch, yet source presence is not reflow evidence for this artifact.",
+      "action": "Add and run current-artifact 200% browser text/page-scale and iOS Dynamic Type acceptance cases across phone, landscape and tablet layouts; assert no clipped essential text, lost controls, focus traps or unreachable bottom navigation."
+    },
+    {
+      "id": "p1-reduced-preference-runtime-unverified",
+      "result": "veto",
+      "severity": "P1",
+      "summary": "Source declares reduced-motion, reduced-transparency and forced-colors branches, but the current runtime report has no preference-mode workflow or rendered result. Therefore these declarations are not verified browser evidence, and do not establish native iOS reduced-motion behavior.",
+      "action": "Exercise and retain current runtime checks for prefers-reduced-motion, prefers-reduced-transparency and forced-colors where supported, plus iOS Reduce Motion/Reduce Transparency on device; verify motion is suppressed without changing keyboard, focus or touch reachability."
+    }
+  ]
+}

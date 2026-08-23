@@ -55,6 +55,8 @@ def normalize_router_host(value):
         if len(hostname) > 253 or hostname.endswith("."):
             raise ValueError("RouterOS hostname is invalid")
         labels = hostname.split(".")
+        if len(labels) == 4 and all(label.isdigit() for label in labels):
+            raise ValueError("RouterOS IPv4 address is invalid")
         if any(
             not label
             or len(label) > 63
@@ -141,6 +143,16 @@ def validate_rest_security(scheme, verify_tls=True, insecure_confirmed=False):
         "insecureRestConfirmed": bool(insecure_confirmed) if insecure else False,
         "insecure": insecure,
     }
+
+
+def rest_channel_has_verified_identity(rest_test):
+    """Return true only when this request reached RouterOS over verified HTTPS."""
+    return bool(
+        isinstance(rest_test, dict)
+        and rest_test.get("ok") is True
+        and rest_test.get("scheme") == "https"
+        and rest_test.get("verifyTls") is True
+    )
 
 
 def normalize_router_transport(

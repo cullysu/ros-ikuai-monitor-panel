@@ -16,6 +16,9 @@ import {
   gunzipSync,
   gzipSync,
 } from "node:zlib";
+import frameworkAssetIdentity from "./framework-asset-identity.js";
+
+const { computeFrameworkInputIdentity } = frameworkAssetIdentity;
 
 const originalExec = childProcess.exec;
 childProcess.exec = function patchedExec(command, options, callback) {
@@ -38,48 +41,272 @@ syncBuiltinESMExports();
 
 const { build, defineConfig } = await import("vite");
 const react = (await import("@vitejs/plugin-react")).default;
+const postcss = (await import("postcss")).default;
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(rootDir, "..");
 const frameworkDir = resolve(projectRoot, "public/assets/framework");
+const frameworkInputsBeforeBuild = computeFrameworkInputIdentity(projectRoot);
 
-await build(defineConfig({
-  root: projectRoot,
-  configFile: false,
-  plugins: [react()],
-  esbuild: false,
-  publicDir: false,
-  define: {
-    "process.env.NODE_ENV": JSON.stringify("production")
-  },
-  build: {
-    minify: false,
-    cssMinify: true,
-    outDir: frameworkDir,
-    emptyOutDir: false,
-    lib: {
-      entry: resolve(projectRoot, "src/panel-framework/main.tsx"),
-      name: "PanelFramework",
-      formats: ["iife"],
-      fileName: () => "panel-framework.js",
-      cssFileName: "style"
+async function buildSurface({ entry, name, script, style }) {
+  await build(defineConfig({
+    root: projectRoot,
+    configFile: false,
+    plugins: [react()],
+    esbuild: false,
+    publicDir: false,
+    define: {
+      "process.env.NODE_ENV": JSON.stringify("production")
+    },
+    build: {
+      minify: "terser",
+      terserOptions: {
+        compress: { passes: 2 },
+        format: { comments: false },
+        mangle: true,
+      },
+      cssMinify: true,
+      outDir: frameworkDir,
+      emptyOutDir: false,
+      lib: {
+        entry: resolve(projectRoot, entry),
+        name,
+        formats: ["iife"],
+        fileName: () => script,
+        cssFileName: style.replace(/\.css$/, "")
+      }
     }
-  }
-}));
+  }));
+}
 
-const stalePattern = /^(?:panel-framework\.[0-9a-f]{12}\.js|style\.[0-9a-f]{12}\.css)(?:\.(?:br|gz))?$/;
+await buildSurface({
+  entry: "src/panel-framework/mobile/main.tsx",
+  name: "PanelMobile",
+  script: "panel-mobile.js",
+  style: "mobile.css",
+});
+await buildSurface({
+  entry: "src/panel-framework/desktop/main.tsx",
+  name: "PanelDesktop",
+  script: "panel-desktop.js",
+  style: "desktop.css",
+});
+
+const frameworkInputs = computeFrameworkInputIdentity(projectRoot);
+if (frameworkInputs.digest !== frameworkInputsBeforeBuild.digest) {
+  throw new Error(
+    "framework build inputs changed while the bundle was being generated; retry from a stable worktree",
+  );
+}
+
+const stalePattern = /^(?:(?:panel-mobile|panel-desktop|panel-surface-loader)\.[0-9a-f]{12}\.js|(?:mobile|desktop)\.[0-9a-f]{12}\.css|panel-framework\.[0-9a-f]{12}\.js|style\.[0-9a-f]{12}\.css|desktop-overview\.[0-9a-f]{12}\.css)(?:\.(?:br|gz))?$/;
 for (const name of readdirSync(frameworkDir)) {
   if (stalePattern.test(name) || name === "manifest.json") {
     rmSync(resolve(frameworkDir, name), { force: true });
   }
 }
 
-const assets = {};
-for (const definition of [
-  { kind: "script", source: "panel-framework.js", prefix: "panel-framework", extension: "js" },
-  { kind: "style", source: "style.css", prefix: "style", extension: "css" },
-]) {
-  const body = readFileSync(resolve(frameworkDir, definition.source));
+const assets = { mobile: {}, desktop: {} };
+const preservedFrameworkCustomProperties = new Set([
+  "--mdw-muted",
+  "--mdw-faint",
+  "--mdw-surface",
+  "--mdw-surface-tonal",
+]);
+
+function compactFrameworkCustomProperties(body) {
+  const names = [...new Set(body.match(/--[A-Za-z0-9_-]+/g) || [])]
+    .filter((name) => !preservedFrameworkCustomProperties.has(name));
+  const countUses = (name) => {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return (body.match(new RegExp(`${escaped}(?![A-Za-z0-9_-])`, "g")) || []).length;
+  };
+  // Give the most frequently emitted private tokens the shortest deterministic
+  // names. Keep the four diagnostic aliases reserved by
+  // compactPreservedFrameworkReferences and avoid collisions with source names.
+  names.sort((left, right) => {
+    const useDelta = countUses(right) - countUses(left);
+    if (useDelta !== 0) return useDelta;
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
+  const reservedAliases = new Set(["--m", "--n", "--o", "--p"]);
+  const occupied = new Set([...names, ...reservedAliases]);
+  const candidates = [
+    ..."abcdefghijklmnopqrstuvwxyz".split("").map((letter) => `--${letter}`),
+    ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => `--${letter}`),
+    ...Array.from({ length: 128 }, (_, index) => `--a${index.toString(36)}`),
+  ];
+  const aliases = new Map();
+  for (const name of names) {
+    const alias = candidates.find((candidate) => !occupied.has(candidate));
+    if (!alias) throw new Error("private custom-property alias budget exhausted");
+    aliases.set(name, alias);
+    occupied.add(alias);
+  }
+  return body.replace(/--[A-Za-z0-9_-]+/g, (name) => aliases.get(name) || name);
+}
+
+function compactFrameworkSelectorCombinators(body) {
+  // Only rewrite selector/at-rule preludes. Declaration values such as
+  // calc(100% + 10px) require their surrounding whitespace and must remain
+  // untouched.
+  return body.replace(/(^|[{}])([^{}]*)(?=\{)/g, (match, boundary, prelude) =>
+    `${boundary}${prelude.replace(/\s*([>+~])\s*/g, "$1")}`,
+  );
+}
+
+function compactFrameworkColorKeywords(body) {
+  // CSS Color 4 four-digit hex is equivalent to transparent black and is
+  // supported by the browser targets of this panel. Keep this deterministic
+  // reduction in the production builder rather than editing generated assets.
+  return body.replace(/\btransparent\b/g, "#0000");
+}
+
+function compactFrameworkRgbaFunctions(body) {
+  // The emitted stylesheet already uses modern rgb() slash-alpha notation;
+  // normalize legacy rgba() spellings without changing the channel values.
+  return body.replace(
+    /rgba\((\d+),(\d+),(\d+),([.\d]+)\)/g,
+    "rgb($1 $2 $3/$4)",
+  );
+}
+
+function compactAdjacentFrameworkBlocks(body) {
+  const root = postcss.parse(body);
+  let changed = false;
+
+  function visit(container, parentAtRuleName = "") {
+    if (!container.nodes) return;
+    for (const child of [...container.nodes]) {
+      if (child.nodes) visit(child, child.type === "atrule" ? child.name : parentAtRuleName);
+    }
+
+    for (let index = 0; index < container.nodes.length - 1;) {
+      const current = container.nodes[index];
+      const next = container.nodes[index + 1];
+      if (
+        current.type === "atrule" &&
+        next.type === "atrule" &&
+        current.name === next.name &&
+        current.params === next.params &&
+        current.nodes &&
+        next.nodes
+      ) {
+        current.append(next.nodes);
+        next.remove();
+        changed = true;
+        continue;
+      }
+      if (
+        parentAtRuleName !== "keyframes" &&
+        parentAtRuleName !== "-webkit-keyframes" &&
+        current.type === "rule" &&
+        next.type === "rule" &&
+        current.selector === next.selector &&
+        current.nodes &&
+        next.nodes
+      ) {
+        // Adjacent rules with the same selector have identical cascade
+        // position. Joining their declaration lists removes patch sediment
+        // without moving a rule across any competing selector.
+        current.append(next.nodes);
+        next.remove();
+        changed = true;
+        continue;
+      }
+      if (
+        parentAtRuleName !== "keyframes" &&
+        parentAtRuleName !== "-webkit-keyframes" &&
+        current.type === "rule" &&
+        next.type === "rule" &&
+        current.nodes &&
+        next.nodes &&
+        current.nodes.toString() === next.nodes.toString()
+      ) {
+        current.selector = `${current.selector},${next.selector}`;
+        next.remove();
+        changed = true;
+        continue;
+      }
+      index += 1;
+    }
+  }
+
+  let passes = 0;
+  do {
+    changed = false;
+    visit(root);
+    passes += 1;
+    if (passes > 2048) throw new Error("adjacent framework block compaction did not converge");
+  } while (changed);
+  return root.toString();
+}
+
+function compactFrameworkTransparentBackgrounds(body) {
+  // `background:#0000` is a shorthand with the same initial image/repeat/
+  // position values as `background:none`; keep the equivalence in the builder.
+  return body.replace(/background:#0000/g, "background:none");
+}
+function compactFrameworkZeroLengths(body) {
+  // A bare zero is equivalent to a zero length in ordinary CSS declarations.
+  // Preserve zero units inside CSS math functions: a unit can be required by
+  // the dimensional algebra there, even when its numeric value is zero.
+  const mathBlocks = [];
+  const protectedBody = body.replace(/(?:calc|min|max|clamp)\([^)]*\)/g, (match) => {
+    if (!match.includes("0px")) return match;
+    const token = "__PANEL_ZERO_LENGTH_" + mathBlocks.length + "__";
+    mathBlocks.push(match);
+    return token;
+  });
+  let compact = protectedBody.replace(/(?<![0-9A-Za-z_.-])0px(?![A-Za-z0-9_.-])/g, "0");
+  for (let index = 0; index < mathBlocks.length; index += 1) {
+    compact = compact.replace("__PANEL_ZERO_LENGTH_" + index + "__", mathBlocks[index]);
+  }
+  return compact;
+}
+
+function compactPreservedFrameworkReferences(body) {
+  const aliases = new Map([
+    ["--mdw-muted", "--m"],
+    ["--mdw-faint", "--n"],
+    ["--mdw-surface", "--o"],
+    ["--mdw-surface-tonal", "--p"],
+  ]);
+  let compact = body;
+  for (const [name, alias] of aliases) {
+    compact = compact.replaceAll(`var(${name})`, `var(${alias})`);
+  }
+  const definitions = [...aliases]
+    .map(([name, alias]) => `${alias}:var(${name})`)
+    .join(";");
+  const anchor = /--mdw-faint:[^;{}]+;/;
+  if (!anchor.test(compact)) {
+    throw new Error("preserved framework custom-property anchor missing");
+  }
+  return compact.replace(anchor, (match) => `${match}${definitions};`);
+}
+
+function emitOwnedAsset(definition) {
+  let body = readFileSync(resolve(frameworkDir, definition.source));
+  if (definition.kind === "style") {
+    // Vite/esbuild leaves harmless declaration-value whitespace in a few
+    // custom-property and media-query forms. Normalize only separators that
+    // cannot change CSS value meaning, keeping the public byte budget stable
+    // across the Windows/Linux build path.
+    let cssBody = body
+      .toString("utf8")
+      .replace(/:\s+/g, ":")
+      .replace(/,\s+/g, ",")
+      .replace(/\s+\/\s+/g, "/");
+    cssBody = compactFrameworkSelectorCombinators(cssBody);
+    cssBody = compactFrameworkColorKeywords(cssBody);
+    cssBody = compactFrameworkRgbaFunctions(cssBody);
+    cssBody = compactAdjacentFrameworkBlocks(cssBody);
+    cssBody = compactFrameworkTransparentBackgrounds(cssBody);
+    cssBody = compactFrameworkZeroLengths(cssBody);
+    body = Buffer.from(cssBody);
+    writeFileSync(resolve(frameworkDir, definition.source), body);
+  }
   const sha256 = createHash("sha256").update(body).digest("hex");
   const file = `${definition.prefix}.${sha256.slice(0, 12)}.${definition.extension}`;
   const outputPath = resolve(frameworkDir, file);
@@ -90,7 +317,7 @@ for (const definition of [
   const brotli = brotliCompressSync(body, {
     params: {
       [zlibConstants.BROTLI_PARAM_MODE]: zlibConstants.BROTLI_MODE_TEXT,
-      [zlibConstants.BROTLI_PARAM_QUALITY]: 9,
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
     },
   });
   writeFileSync(outputPath, body);
@@ -99,7 +326,7 @@ for (const definition of [
   if (!gunzipSync(gzip).equals(body) || !brotliDecompressSync(brotli).equals(body)) {
     throw new Error(`compressed framework asset verification failed: ${file}`);
   }
-  assets[definition.kind] = {
+  return {
     file,
     sha256,
     bytes: body.length,
@@ -108,21 +335,28 @@ for (const definition of [
   };
 }
 
+assets.mobile.script = emitOwnedAsset({ kind: "script", source: "panel-mobile.js", prefix: "panel-mobile", extension: "js" });
+assets.mobile.style = emitOwnedAsset({ kind: "style", source: "mobile.css", prefix: "mobile", extension: "css" });
+assets.desktop.script = emitOwnedAsset({ kind: "script", source: "panel-desktop.js", prefix: "panel-desktop", extension: "js" });
+assets.desktop.style = emitOwnedAsset({ kind: "style", source: "desktop.css", prefix: "desktop", extension: "css" });
+
+const loaderSource = `(()=>{const q=new URLSearchParams(location.search).get("surface");const valid=q==="mobile"||q==="desktop";let s=valid?q:null;try{if(!s){const remembered=sessionStorage.getItem("router-panel-surface");if(remembered==="mobile"||remembered==="desktop")s=remembered}}catch{}if(!s){const coarse=matchMedia("(pointer:coarse)").matches||navigator.maxTouchPoints>0;s=coarse||screen.width<=1023?"mobile":"desktop"}try{sessionStorage.setItem("router-panel-surface",s)}catch{}document.documentElement.dataset.panelSurface=s;const a=${JSON.stringify(assets)}[s];const l=document.createElement("link");l.rel="stylesheet";l.href="/assets/framework/"+a.style.file;l.dataset.panelSurfaceAsset=s+"-style";document.head.append(l);const j=document.createElement("script");j.src="/assets/framework/"+a.script.file;j.dataset.panelSurfaceAsset=s+"-script";j.async=false;document.head.append(j);window.dispatchEvent(new CustomEvent("router-panel-surface-selected",{detail:{surface:s,explicit:valid}}))})();`;
+writeFileSync(resolve(frameworkDir, "panel-surface-loader.js"), loaderSource, "utf8");
+assets.loader = emitOwnedAsset({ kind: "script", source: "panel-surface-loader.js", prefix: "panel-surface-loader", extension: "js" });
+
 writeFileSync(
   resolve(frameworkDir, "manifest.json"),
-  `${JSON.stringify({ version: 1, assets }, null, 2)}\n`,
+  `${JSON.stringify({ version: 3, inputs: frameworkInputs, assets }, null, 2)}\n`,
   "utf8",
 );
 
 const indexPath = resolve(projectRoot, "public/index.html");
-const indexSource = readFileSync(indexPath, "utf8")
+let indexSource = readFileSync(indexPath, "utf8")
+  .replace(/\s*<link rel="stylesheet"[^>]*data-overview-framework-asset="[^"]+"[^>]*>/g, "")
+  .replace(/\s*<script[^>]*data-overview-framework-asset="[^"]+"[^>]*><\/script>/g, "")
   .replace(
-    /\/assets\/framework\/style(?:\.[0-9a-f]{12})?\.css/g,
-    `/assets/framework/${assets.style.file}`,
-  )
-  .replace(
-    /\/assets\/framework\/panel-framework(?:\.[0-9a-f]{12})?\.js/g,
-    `/assets/framework/${assets.script.file}`,
+    /<\/head>/,
+    `  <script defer src="/assets/framework/${assets.loader.file}" data-overview-framework-asset="surface-loader"></script>\n</head>`,
   );
 writeFileSync(indexPath, indexSource, "utf8");
 
@@ -130,8 +364,12 @@ writeFileSync(indexPath, indexSource, "utf8");
 // JavaScript itself so a truncated or otherwise malformed artifact cannot pass
 // a source-only TypeScript build.
 for (const scriptPath of [
-  resolve(frameworkDir, "panel-framework.js"),
-  resolve(frameworkDir, assets.script.file),
+  resolve(frameworkDir, "panel-mobile.js"),
+  resolve(frameworkDir, "panel-desktop.js"),
+  resolve(frameworkDir, "panel-surface-loader.js"),
+  resolve(frameworkDir, assets.mobile.script.file),
+  resolve(frameworkDir, assets.desktop.script.file),
+  resolve(frameworkDir, assets.loader.file),
 ]) {
   childProcess.execFileSync(process.execPath, ["--check", scriptPath], {
     stdio: "inherit",

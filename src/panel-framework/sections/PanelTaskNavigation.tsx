@@ -21,7 +21,7 @@ export function PanelTaskNavigation({
 }) {
   const selected = selectedDestination(route);
   return (
-    <nav className="panel-task-navigation" aria-label="手机主要任务">
+    <nav className="panel-task-navigation" aria-label="主要任务">
       {PANEL_TASK_ROUTES.map((destination) => {
         const item = ITEMS[destination];
         const Icon = item.icon;
@@ -30,6 +30,8 @@ export function PanelTaskNavigation({
           <button
             type="button"
             className={active ? "is-active" : ""}
+            aria-label={item.label}
+            title={item.label}
             aria-current={active ? "page" : undefined}
             data-section={destination}
             onClick={() => onNavigate(destination)}

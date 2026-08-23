@@ -1,0 +1,120 @@
+{
+  "role": "independent-visual-interaction-review",
+  "artifact": {
+    "scope": "exact mobile-native only; no retired mobile UI was considered",
+    "contract": [
+      "docs/mobile-native-ui-contract.md",
+      "docs/ikuai4-ui-study.md"
+    ],
+    "screenshots": [
+      "_acceptance/mobile-native-runtime/single-phone320-overview.png",
+      "_acceptance/mobile-native-runtime/single-phone390-overview.png",
+      "_acceptance/mobile-native-runtime/single-landscape667-overview.png",
+      "_acceptance/mobile-native-runtime/single-tablet768-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-phone320-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-phone390-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-landscape667-overview.png",
+      "_acceptance/mobile-native-runtime/resource-full-tablet768-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-phone320-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-phone390-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-landscape667-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-down-tablet768-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-phone390-workspace.png",
+      "_acceptance/mobile-native-runtime/interfaces-phone390-detail.png",
+      "_acceptance/mobile-native-runtime/connection-phone390-device.png"
+    ]
+  },
+  "verdict": "fail",
+  "score": 43,
+  "p0": [],
+  "p1": [
+    {
+      "id": "phone320-fixed-tab-obscures-priority-content",
+      "location": "resource-full-phone320-overview.png; interfaces-down-phone320-overview.png",
+      "finding": "浮动 Tab 条直接压在最高优先级队列上：资源场景的第三个风险对象、接口场景的第三个接口都被底栏切掉。320px 是契约的必测电话宽度，固定导航不能遮住首屏可巡检对象。",
+      "required": "为内容保留与浮动栏等高的底部安全区，并把 320px 事故首屏重新排成完整可读、可点的风险队列。"
+    },
+    {
+      "id": "tablet768-is-a-phone-layout-with-a-rail-not-a-task-board",
+      "location": "single-tablet768-overview.png; resource-full-tablet768-overview.png; interfaces-down-tablet768-overview.png",
+      "finding": "768px 仅把竖向 Tab rail 和电话概览并排；核心模块结束后留下约半屏空白。没有对象比较、选中对象证据或可利用的第二工作区，未达到契约规定的 iPad task board。",
+      "required": "为 600–899px 建立真正的自适应任务结构：无选中对象时用第二列呈现比较/近期证据，选中对象时呈现列表/详情；不得用空白替代工作区。"
+    },
+    {
+      "id": "short-landscape-has-no-complete-horizontal-task-composition",
+      "location": "single-landscape667-overview.png; resource-full-landscape667-overview.png; interfaces-down-landscape667-overview.png",
+      "finding": "667×390 虽未退化为左栏，但内容只占上半部：摘要、三格信号和一个模块被横向摊开，下面是大块未利用画布。它仍是把竖屏模块压扁，不是可连续巡检的横向任务组合。",
+      "required": "为短横屏设计独立的主/次工作区，让风险对象或路由证据与主判断同屏持续可见，并用完整高度承载可操作内容。"
+    },
+    {
+      "id": "detail-surface-does-not-earn-the-push-navigation",
+      "location": "interfaces-phone390-detail.png",
+      "finding": "ether9 详情只有一个 2×2 事实框和一行“上级”，下半屏完全空白。它既没有接口历史、关联路径、最近变化或下一层原始证据，也没有形成比概览更多的对象判断。",
+      "required": "详情必须补入不与概览复读的接口证据：可用历史、依赖/关联对象、采样时间与原始字段分组；在证据确实缺失时用明确的 unavailable 状态，而非无解释留白。"
+    },
+    {
+      "id": "overview-looks-like-a-bounded-web-console-not-a-finished-ios-patrol",
+      "location": "single-phone390-overview.png; resource-full-phone390-overview.png; interfaces-down-phone390-overview.png",
+      "finding": "所有信息以同样的白色圆角边框、细横线和左右表格化列呈现。视觉重量几乎均等，标题、证据、可点对象和辅助说明没有形成一个明确的移动端扫视节奏；结果像缩窄的后台控制台，而非成熟 iOS 巡检产品。",
+      "required": "收敛数据容器数量，建立一条更强的手机主线（结论→最高风险/流量→对象）。用分组背景、间距和字重区分层级，保留边线只做组内分隔，避免每个模块都是同一种白框。"
+    },
+    {
+      "id": "connection-step-is-visually-a-desktop-form",
+      "location": "connection-phone390-device.png",
+      "finding": "连接流程把“设备地址、用户名、密码”排成大段白底字段表，密码行留出大面积空洞；底部整宽高饱和按钮又抢走视觉中心。它能使用，但没有移动端表单的紧凑节奏、清晰字段状态或 iOS 级细节完成度。",
+      "required": "将连接流程重排为紧凑的分组输入与真实字段状态，压缩无数据行高，并让主操作与步骤进度、键盘/安全区和验证反馈形成一致的移动流程。"
+    }
+  ],
+  "p2": [
+    {
+      "id": "chart-metadata-is-too-small",
+      "location": "single-phone320-overview.png; single-phone390-overview.png",
+      "finding": "WAN 图的纵轴、横轴和单位文字在电话截图中接近不可读，尤其 320px；图表虽然具备时间和单位，但可读性未达到契约的操作性要求。"
+    },
+    {
+      "id": "liquid-control-layer-is-correctly-contained-but-too-opaque",
+      "location": "single-phone390-overview.png; interfaces-phone390-workspace.png",
+      "finding": "半透明材料仅出现在导航层，这是正确边界；但 Tab bar 看起来更像厚白色悬浮卡，选中态是常规浅蓝填充，缺少克制、细腻的现代 iOS 材料与层次。"
+    },
+    {
+      "id": "industrial-ikuai-density-is-not-yet-achieved",
+      "location": "single-phone390-overview.png; resource-full-phone390-overview.png; interfaces-phone390-workspace.png",
+      "finding": "对象名、状态和比较关系是正确方向，但大量说明复述、均一行高与大圆角白框降低了扫读效率。爱快 4.0 的冷静工业秩序来自对象比较与紧凑对齐，不是冷蓝描边的连续卡片。"
+    },
+    {
+      "id": "state-signals-need-a-stronger-scan-hierarchy",
+      "location": "resource-full-phone390-overview.png; interfaces-down-phone390-overview.png",
+      "finding": "红点、红字和绿色信号都很克制，但“资源策略已触发”或“3 个出口依赖接口未运行”之后，风险对象仍与普通路由证据拥有接近的视觉权重；第一次扫视不能足够快地落在最需处理的对象上。"
+    }
+  ],
+  "passes": [
+    {
+      "id": "mobile-render-is-not-a-retired-ui-reference",
+      "finding": "受检工件呈现的是独立 mobile-native 表面；未以旧 UI 作为审查标准。"
+    },
+    {
+      "id": "material-boundary-is-mostly-correct",
+      "finding": "数据内容使用实色分组面，半透明/悬浮效果基本限定在底部导航和少量控制层，没有把 Liquid Glass 涂到告警、证据或图表数据上。"
+    },
+    {
+      "id": "evidence-and-state-are-scanable-at-phone390",
+      "finding": "390px 正常、资源满载、接口异常均先给出当前证据、时间与三项对象信号；红绿状态没有变成大面积高饱和事故块。"
+    },
+    {
+      "id": "phone-object-workspace-has-a-real-mobile-list-pattern",
+      "finding": "接口工作区使用搜索、过滤、状态、行级前进箭头和固定四根导航；它比桌面表格更接近可单手检查的对象列表。"
+    },
+    {
+      "id": "short-landscape-avoids-the-rejected-desktop-rail",
+      "finding": "667×390 保留顶部横向导航，没有将手机页面变成固定左侧桌面导航。"
+    }
+  ],
+  "requiredActions": [
+    "先修复 320px 固定 Tab 遮挡，再重新截取三个事故场景的原图；该项关闭前不得进入视觉签收。",
+    "将 600–899px 重做为真正 iPad 任务板，并单独签收 768px 正常与两类事故，而不是把电话概览置于轨道旁。",
+    "为 667×390 增加独立横向任务构图，保证风险/路由证据与主判断同屏连续、可操作且不留大块无意义空白。",
+    "重做接口详情与连接第一步的移动信息密度和字段层级；详情必须提供新证据，连接必须是紧凑、可验证的手机表单。",
+    "在不重回大卡片堆叠的前提下，收敛概览容器、提升主线层级和图表标签可读性；重新校准圆角、边线、材料和状态权重，使之形成 iOS 级完成度与爱快式对象扫读。",
+    "完成以上后，用新的 exact screenshot set 重新进行独立视觉/交互评审；当前 P1=6，因此发布资格保持关闭。"
+  ]
+}

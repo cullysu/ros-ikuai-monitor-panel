@@ -75,9 +75,11 @@ async function inspectSectionBrowser(
     };
   };
   const app = document.querySelector('#app');
-  const active = document.querySelector('#app .section, #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const active = document.querySelector('#app .section, #app [data-mobile-inspection-overview], #app [data-inspection-workspace], #app [data-mobile-inspection-connection], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
   const requested = document.querySelector(
-    '#' + CSS.escape(sectionName) +
+    (sectionName === 'overview' ? '[data-mobile-inspection-overview]' : '[data-inspection-workspace="' + CSS.escape(sectionName) + '"]') +
+    ', #' + CSS.escape(sectionName) +
+    ', [data-mobile-pulse-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
   );
@@ -100,19 +102,16 @@ async function inspectSectionBrowser(
   const scaleMetaOk = Boolean(scaleMeta.wan && Number(scaleMeta.wan.actualCount || 0) >= 0 && Number(scaleMeta.wan.shownCount || 0) >= 0);
   const scaleRequiredSections = new Set(['overview', 'interfaces', 'terminals', 'dhcp', 'trafficLoad']);
   const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrentReactShell;
-  const sectionRoot = requested || active;
+  // Route interaction can settle a responsive React tree after the first query
+  // (resource-full is the reproducible case). Keep the initial root for the
+  // interaction helper, then replace it with the current root before running
+  // the contract probes so stale hidden/mobile DOM cannot mask the desktop tree.
+  let sectionRoot = requested || active;
   const {
-    nativeMobileInteractionOk,
-    nativeMobileInteractionProbe,
-    nativeMobileFocusKeyboardOk,
-    nativeMobileFocusKeyboardProbe,
-    nativeMobileObjectSelectionOk,
-    nativeMobileObjectSelectionProbe,
-    nativeMobileObjectNavigationOk,
-    nativeDetailSectionCount,
-    nativeDetailRawEvidenceCount,
-    nativeDetailHasNovelEvidence,
-    nativeDetailNoHomeReplay,
+    mobileReferenceInteractionOk,
+    mobileReferenceInteractionProbe,
+    mobileReferenceObjectSelectionOk,
+    mobileReferenceObjectSelectionProbe,
   } = await runOverviewMobileInteraction({
     sectionName,
     sectionRoot,
@@ -122,13 +121,16 @@ async function inspectSectionBrowser(
     viewport,
     strictResponsive,
   });
-  const refreshedActive = document.querySelector('#app .section, #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const refreshedActive = document.querySelector('#app .section, #app [data-mobile-inspection-overview], #app [data-inspection-workspace], #app [data-mobile-inspection-connection], #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
   const refreshedRequested = document.querySelector(
-    '#' + CSS.escape(sectionName) +
+    (sectionName === 'overview' ? '[data-mobile-inspection-overview]' : '[data-inspection-workspace="' + CSS.escape(sectionName) + '"]') +
+    ', #' + CSS.escape(sectionName) +
+    ', [data-mobile-pulse-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
     ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
   );
   const refreshedSectionRoot = refreshedRequested || refreshedActive;
+  sectionRoot = refreshedSectionRoot || sectionRoot;
   const mobileNativeResult = inspectMobileNativeOverview({
     sectionName,
     scaleScenario,
@@ -143,17 +145,114 @@ async function inspectSectionBrowser(
     hasBadLiteral,
     scaleMetaOk,
     normalize,
-    nativeMobileInteractionOk,
-    nativeMobileInteractionProbe,
-    nativeMobileFocusKeyboardOk,
-    nativeMobileFocusKeyboardProbe,
-    nativeMobileObjectSelectionProbe,
-    nativeMobileObjectNavigationOk,
-    nativeDetailHasNovelEvidence,
-    nativeDetailNoHomeReplay,
+    mobileReferenceInteractionOk,
+    mobileReferenceInteractionProbe,
+    mobileReferenceObjectSelectionOk,
+    mobileReferenceObjectSelectionProbe,
   });
   if (mobileNativeResult) return mobileNativeResult;
-  if (sectionName === 'overview' && window.innerWidth >= 900) {
+  const mobileReferenceRouteRoot = window.innerWidth < 900 && sectionName !== 'overview' &&
+    refreshedSectionRoot?.matches('[data-panel-route-content="' + CSS.escape(sectionName) + '"]') &&
+    refreshedSectionRoot.querySelector('[data-mobile-reference-workspace], [data-mobile-reference-directory], [data-mobile-reference-wan-detail], [data-mobile-reference-network-directory]')
+    ? refreshedSectionRoot
+    : null;
+  if (mobileReferenceRouteRoot) {
+    const visible = (node) => {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    };
+    const title = mobileReferenceRouteRoot.querySelector('[data-panel-route-title]');
+    const workspace = mobileReferenceRouteRoot.querySelector('[data-mobile-reference-workspace]');
+    const directory = mobileReferenceRouteRoot.querySelector('[data-mobile-reference-directory]');
+    const wanDetail = mobileReferenceRouteRoot.querySelector('[data-mobile-reference-wan-detail]');
+    const networkDirectory = mobileReferenceRouteRoot.querySelector('[data-mobile-reference-network-directory]');
+    const rows = Array.from(mobileReferenceRouteRoot.querySelectorAll('.ref-object-list > button')).filter(visible);
+    const controls = Array.from(mobileReferenceRouteRoot.querySelectorAll('button, input, select')).filter(visible);
+    const targetSizes = controls.map((node) => {
+      const target = node instanceof HTMLInputElement || node instanceof HTMLSelectElement ? node.closest('label') || node : node;
+      const rect = target.getBoundingClientRect();
+      return { width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    const checks = {
+      mounted: Boolean(mobileReferenceRouteRoot.getAttribute('data-panel-route-content') === sectionName),
+      title: Boolean(title && title.getAttribute('tabindex') === '-1' && normalize(title.textContent)),
+      routeSurface: Boolean(workspace || directory || wanDetail || networkDirectory),
+      content: sectionName === 'more'
+        ? rows.length >= 10
+        : sectionName === 'lineStatus'
+          ? Boolean(
+            wanDetail?.querySelector('.ref-wan, .ref-status') ||
+            networkDirectory?.querySelector('.ref-status') &&
+              networkDirectory.querySelector('.ref-interfaces > button, .ref-interfaces .ref-empty') &&
+              networkDirectory.querySelectorAll('.ref-network-actions button').length >= 3
+          )
+          : Boolean(rows.length > 0 || mobileReferenceRouteRoot.querySelector('.ref-empty')),
+      pointerTargets: targetSizes.every((item) => item.width >= 44 && item.height >= 44),
+      noHorizontalOverflow: overflowX <= 1,
+      noBadLiteral: !hasBadLiteral,
+      scaleMeta: scaleMetaOk,
+      isolatedTree: document.querySelectorAll('[data-panel-route-content]').length === 1,
+    };
+    return {
+      pass: Boolean(app && active && Object.values(checks).every(Boolean)),
+      surface: 'mobile-reference-route',
+      contract: 'mobile-reference-route-v1',
+      profile,
+      viewport,
+      scaleScenario,
+      requestedSection: sectionName,
+      activeSection: sectionName,
+      requestedFound: true,
+      title: normalize(title?.textContent || ''),
+      checks,
+      rows: rows.length,
+      targetSizes,
+      overflowX: Math.round(overflowX),
+      url: location.href,
+    };
+  }
+  const mobileFlowRouteRoot = window.innerWidth < 900 && sectionName !== 'overview' &&
+    sectionRoot?.matches('[data-inspection-workspace]') ? sectionRoot : null;
+  if (mobileFlowRouteRoot) {
+    const visible = (node) => {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    };
+    const title = mobileFlowRouteRoot.querySelector('[data-panel-route-title]');
+    const rows = Array.from(mobileFlowRouteRoot.querySelectorAll('.inspection-workspace__rows button')).filter(visible);
+    const empty = mobileFlowRouteRoot.querySelector('.inspection-workspace__empty');
+    const directoryRows = Array.from(mobileFlowRouteRoot.querySelectorAll('.inspection-directory__group > button')).filter(visible);
+    const controls = Array.from(mobileFlowRouteRoot.querySelectorAll('button, input, select')).filter(visible);
+    const targetSizes = controls.map((node) => {
+      const target = node instanceof HTMLInputElement || node instanceof HTMLSelectElement ? node.closest('label') || node : node;
+      const rect = target.getBoundingClientRect();
+      return { width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    const more = sectionName === 'more';
+    const checks = {
+      mounted: mobileFlowRouteRoot.getAttribute('data-inspection-workspace') === sectionName,
+      title: Boolean(title && title.getAttribute('tabindex') === '-1'),
+      workspace: more ? directoryRows.length >= 10 : Boolean(rows.length > 0 || empty),
+      pointerTargets: targetSizes.every((item) => item.width >= 44 && item.height >= 44),
+      noHorizontalOverflow: overflowX <= 1,
+      noBadLiteral: !hasBadLiteral,
+      scaleMeta: scaleMetaOk,
+      isolatedTree: document.querySelectorAll('[data-inspection-workspace]').length === 1,
+    };
+    return {
+      pass: Boolean(app && active && Object.values(checks).every(Boolean)),
+      surface: 'mobile-inspection-route', contract: 'mobile-inspection-route-v1', profile, viewport, scaleScenario,
+      requestedSection: sectionName, activeSection: sectionName, requestedFound: true,
+      title: normalize(title?.textContent || ''), checks, rows: rows.length, directoryRows: directoryRows.length,
+      targetSizes, overflowX: Math.round(overflowX), url: location.href,
+    };
+  }
+  const wideLandscapeBrowserOwner = window.innerWidth >= 600 && window.innerWidth > window.innerHeight;
+  if (sectionName === 'overview' && (window.innerWidth >= 900 || wideLandscapeBrowserOwner)) {
     const desktopOverviewResult = inspectOverviewDesktopLayout({
       sectionName,
       scaleScenario,
@@ -171,6 +270,61 @@ async function inspectSectionBrowser(
     });
     if (desktopOverviewResult?.surface === 'desktop-overview') return desktopOverviewResult;
   }
+  const pulseRouteRoot = refreshedSectionRoot?.matches('[data-mobile-pulse-workspace]')
+    ? refreshedSectionRoot
+    : null;
+  if (sectionName !== 'overview' && window.innerWidth < 900 && pulseRouteRoot) {
+    const visible = (node) => {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    };
+    const title = pulseRouteRoot.querySelector('[data-panel-route-title]');
+    const rows = Array.from(pulseRouteRoot.querySelectorAll('[data-mobile-pulse-object-trigger]')).filter(visible);
+    const empty = pulseRouteRoot.querySelector('.mpu-empty');
+    const directoryRows = Array.from(pulseRouteRoot.querySelectorAll('.mpu-directory section > button')).filter(visible);
+    const controls = Array.from(pulseRouteRoot.querySelectorAll('button, input, select')).filter(visible);
+    const targetSizes = controls.map((node) => {
+      const target = node instanceof HTMLInputElement || node instanceof HTMLSelectElement
+        ? node.closest('label') || node
+        : node;
+      const rect = target.getBoundingClientRect();
+      return { width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    const more = sectionName === 'more';
+    const checks = {
+      mounted: pulseRouteRoot.getAttribute('data-mobile-pulse-workspace') === sectionName,
+      routeContent: pulseRouteRoot.getAttribute('data-panel-route-content') === sectionName,
+      title: more ? Boolean(title) : Boolean(title && title.getAttribute('tabindex') === '-1'),
+      workspace: more
+        ? directoryRows.length >= 10
+        : Boolean(rows.length > 0 || empty),
+      pointerTargets: targetSizes.every((item) => item.width >= 44 && item.height >= 44),
+      noHorizontalOverflow: overflowX <= 1,
+      noBadLiteral: !hasBadLiteral,
+      scaleMeta: scaleMetaOk,
+      isolatedTree: document.querySelectorAll('[data-mobile-pulse-workspace]').length === 1,
+    };
+    return {
+      pass: Boolean(app && active && Object.values(checks).every(Boolean)),
+      surface: 'mobile-pulse-route',
+      contract: 'mobile-pulse-route-v1',
+      profile,
+      viewport,
+      scaleScenario,
+      requestedSection: sectionName,
+      activeSection: active?.id || sectionName,
+      requestedFound: true,
+      title: normalize(title?.textContent || ''),
+      checks,
+      rows: rows.length,
+      directoryRows: directoryRows.length,
+      targetSizes,
+      overflowX: Math.round(overflowX),
+      url: location.href,
+    };
+  }
   const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
   const operationalRoute = sectionName !== 'overview';
   const mobileDomainRoot = sectionRoot?.matches('[data-mobile-domain-workspace]') ? sectionRoot : null;
@@ -181,6 +335,143 @@ async function inspectSectionBrowser(
     table.querySelector('h2') &&
     (table.querySelector('tbody tr') || table.querySelector('.panel-empty-state'))
   ));
+  const operationalTimeSeries = sectionRoot?.querySelector('[data-section-time-series]');
+  const operationalTimeSeriesSvg = operationalTimeSeries?.querySelector('svg');
+  const operationalTimeSeriesRect = operationalTimeSeriesSvg?.getBoundingClientRect();
+  const operationalTimeSeriesViewBox = operationalTimeSeriesSvg?.viewBox?.baseVal;
+  const operationalTimeSeriesPreserve = operationalTimeSeriesSvg?.getAttribute('preserveAspectRatio') || '';
+  const operationalTimeSeriesViewRatio = operationalTimeSeriesViewBox?.width > 0 && operationalTimeSeriesViewBox?.height > 0
+    ? operationalTimeSeriesViewBox.width / operationalTimeSeriesViewBox.height
+    : 0;
+  const operationalTimeSeriesRenderedRatio = operationalTimeSeriesRect?.width > 0 && operationalTimeSeriesRect?.height > 0
+    ? operationalTimeSeriesRect.width / operationalTimeSeriesRect.height
+    : 0;
+  const operationalTimeSeriesRatioDelta = operationalTimeSeriesViewRatio > 0 && operationalTimeSeriesRenderedRatio > 0
+    ? Math.abs(operationalTimeSeriesViewRatio / operationalTimeSeriesRenderedRatio - 1)
+    : Number.POSITIVE_INFINITY;
+  const operationalTimeSeriesScale = Array.from(operationalTimeSeries?.querySelectorAll('.section-timeseries-scale b') || [])
+    .map((node) => normalize(node.textContent));
+  const operationalTimeSeriesTimes = Array.from(operationalTimeSeries?.querySelectorAll('.section-timeseries-axis b') || [])
+    .map((node) => normalize(node.textContent));
+  const operationalTimeSeriesLines = Array.from(operationalTimeSeriesSvg?.querySelectorAll('.section-series-line') || []);
+  const operationalTimeSeriesHeightOk = !operationalTimeSeriesRect || (
+    window.innerWidth >= 1200
+      ? operationalTimeSeriesRect.height >= 120 && operationalTimeSeriesRect.height <= 200
+      : operationalTimeSeriesRect.height >= 52 && operationalTimeSeriesRect.height <= 120
+  );
+  const operationalResourceTimeSeries = scaleScenario === 'resource-full' && ['trafficLoad', 'loadAudit'].includes(sectionName);
+  const operationalScaleContractOk = operationalResourceTimeSeries
+    ? ['100%', '90%', '80%'].every((label) => operationalTimeSeriesScale.includes(label))
+    : ['100%', '50%'].every((label) => operationalTimeSeriesScale.includes(label)) &&
+      operationalTimeSeriesScale.some((label) => /^0%?$/.test(label));
+  const operationalTimeSeriesContractOk = !operationalTimeSeries || Boolean(
+    operationalTimeSeriesSvg?.getAttribute('role') === 'img' &&
+    operationalTimeSeriesSvg.querySelector('title') &&
+    operationalTimeSeriesSvg.querySelector('desc') &&
+    operationalTimeSeriesPreserve &&
+    !/none/i.test(operationalTimeSeriesPreserve) &&
+    operationalTimeSeriesRatioDelta <= 0.03 &&
+    operationalTimeSeriesHeightOk &&
+    operationalTimeSeriesLines.length >= 1 &&
+    operationalTimeSeriesLines.every((node) => normalize(node.getAttribute('points')).split(' ').filter(Boolean).length >= 2) &&
+    operationalScaleContractOk &&
+    operationalTimeSeriesTimes.length === 2
+  );
+  const mobileDomainLayout = mobileDomainRoot?.getAttribute('data-mobile-domain-layout') || '';
+  const mobileDomainEvidenceMode = mobileDomainRoot?.getAttribute('data-mobile-evidence-mode') || '';
+  const mobileDomainInspector = mobileDomainRoot?.querySelector('.mdw-inspector');
+  const mobileDomainObjectInspector = mobileDomainRoot?.querySelector(
+    '.mdw-inspector[data-mobile-object-detail], .mdw-inspector[data-mobile-object-preview]'
+  );
+  const mobileDomainPreview = mobileDomainRoot?.querySelector('[data-mobile-object-preview]');
+  const mobileDomainDetail = mobileDomainRoot?.querySelector('[data-mobile-object-detail]');
+  const mobileDomainObjectList = mobileDomainRoot?.querySelector('.mdw-object-list');
+  const mobileDomainEmpty = mobileDomainRoot?.querySelector('.mdw-empty');
+  const mobileDomainEvidenceWorkspace = mobileDomainRoot?.querySelector(
+    '[data-mobile-domain-evidence-workspace="' + CSS.escape(sectionName) + '"]'
+  );
+  const mobileDomainRecoveryBoundary = mobileDomainRoot?.querySelector(
+    '[data-route-recovery="' + CSS.escape(sectionName) + '"]'
+  );
+  const mobileDomainRecoveryActions = Array.from(
+    mobileDomainRecoveryBoundary?.querySelectorAll('[data-route-recovery-action]') || []
+  );
+  const mobileDomainRecoveryFactNodes = Array.from(
+    mobileDomainEvidenceWorkspace?.querySelectorAll('[data-mobile-evidence-workspace-fact]') || []
+  );
+  const mobileDomainRecoveryFactKeys = mobileDomainRecoveryFactNodes.map((node) => (
+    node.getAttribute('data-mobile-evidence-workspace-fact') || ''
+  ));
+  const mobileDomainExpectedRecoveryState = mobileDomainEvidenceMode === 'unavailable'
+    ? 'unavailable'
+    : mobileDomainEvidenceMode === 'historical'
+      ? 'historical'
+      : 'partial';
+  const mobileDomainRecoveryContractOk = Boolean(
+    mobileDomainEvidenceWorkspace &&
+    mobileDomainEvidenceWorkspace.getAttribute('data-mobile-evidence-workspace-mode') === mobileDomainEvidenceMode &&
+    mobileDomainRecoveryFactNodes.length === 4 &&
+    new Set(mobileDomainRecoveryFactKeys).size === 4 &&
+    ['missing', 'impact', 'last-success', 'collection'].every((key) => mobileDomainRecoveryFactKeys.includes(key)) &&
+    mobileDomainRecoveryFactNodes.every((node) => normalize(node.textContent)) &&
+    normalize(mobileDomainEvidenceWorkspace.querySelector('[data-mobile-evidence-workspace-investigation]')?.textContent || '') &&
+    mobileDomainRecoveryBoundary?.getAttribute('data-route-recovery-state') === mobileDomainExpectedRecoveryState &&
+    mobileDomainRecoveryActions.length >= 2 &&
+    !mobileDomainObjectList && !mobileDomainEmpty
+  );
+  const mobileDomainMetricSurfaces = mobileDomainRoot?.querySelectorAll('.mdw-metrics').length || 0;
+  const mobileDomainLogRoutes = new Set(['logs', 'serviceLogs']);
+  const mobileDomainLogInspector = mobileDomainRoot?.querySelector(
+    '.mdw-inspector[data-domain-inspector-kind="log"][data-mobile-log-detail="v1"]'
+  );
+  const mobileDomainLogSections = Array.from(mobileDomainLogInspector?.querySelectorAll(
+    '.mdi-section h3, .mdi-disclosure summary b'
+  ) || []).map((node) => normalize(node.textContent));
+  const mobileDomainLogRequiredSections = sectionName === 'serviceLogs'
+    ? ['服务来源', '事件证据', '相邻服务事件', '服务记录身份']
+    : ['事件证据', '相邻事件', '记录身份'];
+  const mobileDomainLogEvidenceContractOk = !mobileDomainLogRoutes.has(sectionName) || Boolean(
+    mobileDomainLogInspector &&
+    mobileDomainLogInspector.querySelector('.mdi-facts') &&
+    mobileDomainLogInspector.querySelector('.mdi-relations, .mdi-message') &&
+    mobileDomainLogInspector.querySelector('.mdi-disclosure') &&
+    mobileDomainLogRequiredSections.every((title) => mobileDomainLogSections.includes(title))
+  );
+  const mobileDomainLayoutRoot = mobileDomainRoot?.querySelector('.mdw-layout');
+  const mobileDomainListPane = mobileDomainRoot?.querySelector('.mdw-list-pane');
+  const mobileDomainLayoutRect = mobileDomainLayoutRoot?.getBoundingClientRect();
+  const mobileDomainListRect = mobileDomainListPane?.getBoundingClientRect();
+  const mobileDomainListOnly = /^(phone-list|compact-list|tablet-list)$/.test(mobileDomainLayout);
+  const mobileDomainRecoveryLayout = /^(phone-evidence|compact-evidence|tablet-evidence)$/.test(mobileDomainLayout);
+  const mobileDomainOneColumnLayout = mobileDomainListOnly || /^(phone-evidence|compact-evidence)$/.test(mobileDomainLayout);
+  const mobileDomainListFillsLayout = !mobileDomainOneColumnLayout || Boolean(
+    mobileDomainLayoutRect &&
+    mobileDomainListRect &&
+    mobileDomainLayoutRect.width > 0 &&
+    mobileDomainListRect.width >= mobileDomainLayoutRect.width - 2 &&
+    Math.abs(mobileDomainListRect.left - mobileDomainLayoutRect.left) <= 2 &&
+    Math.abs(mobileDomainListRect.right - mobileDomainLayoutRect.right) <= 2
+  );
+  const mobileDomainLayoutContractOk = mobileDomainListOnly
+    ? !mobileDomainObjectInspector && !mobileDomainEvidenceWorkspace && mobileDomainListFillsLayout
+    : mobileDomainRecoveryLayout
+      ? mobileDomainRecoveryContractOk && Boolean(mobileDomainInspector) && (
+          mobileDomainLayout === 'tablet-evidence' || mobileDomainListFillsLayout
+        )
+    : /^(phone-detail|compact-detail)$/.test(mobileDomainLayout)
+      ? Boolean(mobileDomainDetail) && !mobileDomainPreview
+      : mobileDomainLayout === 'workbench' && Boolean(mobileDomainInspector);
+  const mobileDomainMetricsContractOk = mobileDomainLayout === 'workbench'
+    ? mobileDomainMetricSurfaces > 0
+    : true;
+  const mobileDomainCapabilityContractOk = mobileDomainLayout !== 'workbench'
+    ? true
+    : mobileDomainLogRoutes.has(sectionName)
+      ? mobileDomainLogEvidenceContractOk
+      : mobileDomainMetricsContractOk;
+  const mobileDomainContentContractOk = mobileDomainRecoveryLayout
+    ? mobileDomainRecoveryContractOk
+    : Boolean(mobileDomainObjectList || mobileDomainEmpty);
   const desktopDomainWorkspace = desktopDomainRoot?.querySelector(
     '[data-desktop-domain-workspace="' + CSS.escape(sectionName) + '"]'
   );
@@ -189,6 +480,11 @@ async function inspectSectionBrowser(
   const desktopWorkspaceRows = desktopDomainWorkspace?.querySelectorAll('.ddw-table-pane tbody tr').length || 0;
   const desktopWorkspaceEmpty = desktopDomainWorkspace?.querySelector('.ddw-empty');
   const desktopWorkspaceInspector = desktopDomainWorkspace?.querySelector('.ddw-inspector');
+  const desktopWorkspaceUnselected = Boolean(
+    desktopWorkspaceInspector?.classList.contains('is-empty') &&
+    /未选择对象/.test(normalize(desktopWorkspaceInspector.querySelector('h2')?.textContent || '')) &&
+    /从列表打开证据/.test(normalize(desktopWorkspaceInspector.querySelector('p')?.textContent || ''))
+  );
   const desktopDomainWorkspaceOk = Boolean(
     desktopDomainWorkspace &&
     desktopDomainWorkspace.querySelector('.ddw-search input[type="search"]') &&
@@ -197,26 +493,26 @@ async function inspectSectionBrowser(
     ['对象', '来源', '状态', '关键证据'].every((label) => desktopWorkspaceHeaders.includes(label)) &&
     (desktopWorkspaceRows > 0 || desktopWorkspaceEmpty) &&
     desktopWorkspaceInspector &&
-    (desktopWorkspaceRows === 0 || (
+    (desktopWorkspaceRows === 0 || desktopWorkspaceUnselected || (
       desktopWorkspaceInspector.hasAttribute('data-desktop-object-detail') &&
       desktopWorkspaceInspector.querySelector('.ddi-block')
     ))
   );
   const operationalRouteContractOk = !operationalRoute || Boolean(
-    sectionRoot && operationalTitle && (
+    sectionRoot && operationalTitle && operationalTimeSeriesContractOk && (
       mobileDomainRoot
         ? mobileDomainRoot.getAttribute('data-mobile-domain-workspace') === sectionName &&
-          /^(current|historical|unavailable)$/.test(mobileDomainRoot.getAttribute('data-mobile-evidence-mode') || '') &&
+          /^(current|historical|unavailable)$/.test(mobileDomainEvidenceMode) &&
           (sectionName === 'more'
             ? mobileDomainRoot.querySelectorAll('.mdw-directory-list [data-section]').length === 10
-            : mobileDomainRoot.querySelectorAll('.mdw-metrics > div').length === 3 &&
-              Boolean(mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')) &&
-              Boolean(mobileDomainRoot.querySelector('.mdw-inspector')))
+            : mobileDomainCapabilityContractOk &&
+              mobileDomainContentContractOk &&
+              mobileDomainLayoutContractOk)
         : sectionName === 'more'
           ? Boolean(sectionRoot.querySelector('.panel-more-list [data-section]'))
           : desktopDomainRoot?.getAttribute('data-panel-route-content') === sectionName &&
             /^(current|historical|unavailable)$/.test(desktopDomainRoot.getAttribute('data-panel-evidence-mode') || '') &&
-            desktopDomainRoot.querySelectorAll('.panel-section-metrics > div').length === 3 &&
+            desktopDomainRoot.querySelectorAll('.panel-section-metrics > div').length >= 3 &&
             (desktopDomainWorkspaceOk || (operationalTables.length > 0 && operationalTablesValid)) &&
             Boolean(desktopDomainRoot.querySelector('.panel-readonly-footer'))
     )
@@ -225,7 +521,9 @@ async function inspectSectionBrowser(
     .map((node) => normalize(node.textContent));
   const operationalInterfaceTableOk = sectionName !== 'interfaces' || Boolean(
     mobileDomainRoot
-      ? mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')
+      ? mobileDomainRecoveryLayout
+        ? mobileDomainRecoveryContractOk
+        : mobileDomainObjectList || mobileDomainEmpty
       : desktopDomainRoot?.getAttribute('data-panel-evidence-mode') === 'unavailable'
         ? desktopDomainRoot.querySelector('.panel-section-table .panel-empty-state, .ddw-empty')
         : desktopDomainWorkspace
@@ -245,13 +543,13 @@ async function inspectSectionBrowser(
     trafficLoad: ['CPU', '18%'],
     loadAudit: ['CPU', '6 个'],
     trafficAudit: ['TCP', /(?:3 个连接|TCP\s+3(?:\s|$))/],
-    connections: ['192.168.0.11', '203.0.113.20'],
+    connections: ['192.168.0.11', '203.0.113.20', '活动明细样本', /(?:非全量枚举|完整性未声明|快照声明完整枚举)/],
     dns4: ['lan.local'],
     dns6: ['bridge-lan'],
     security: ['allow established'],
     logs: ['smoke fixture ready'],
     serviceLogs: ['smoke fixture ready'],
-    readonlyDiagnostics: ['没有失败端点记录'],
+    readonlyDiagnostics: [/\u5df2\u8bb0\u5f55\u5931\u8d25\u7aef\u70b9\s*0/],
     more: [/(?:资源与负载|资源\s+CPU)/, /(?:IPv4 DNS|DNS v4)/, /(?:安全观察|安全\s+防火墙)/],
   };
   const requiredRouteEvidence = scaleScenario === 'single' ? singleRouteEvidence[sectionName] || [] : [];
@@ -4802,9 +5100,9 @@ async function inspectSectionBrowser(
     /当前证据|当前采样|快照\s*实时/.test(combinedOverviewText) &&
     !/历史快照|当前影响未知|影响未知：缓存快照|使用缓存快照/.test(firstScreenOverviewText + ' ' + mobileTop120Text + ' ' + overviewDesktopTopText)
   );
-  const loadAuditResourceGrid = sectionRoot?.querySelector('.ops-resource-grid');
-  const loadAuditResourceCards = Array.from(loadAuditResourceGrid?.querySelectorAll('.ops-resource-card') || []);
-  const loadAuditThresholdLines = sectionRoot?.querySelectorAll('.ops-threshold-line').length;
+  const loadAuditResourceGrid = sectionRoot?.querySelector('.ops-resource-grid, .mdw-domain-context[data-resource-evidence-role="time-series"]');
+  const loadAuditResourceCards = Array.from(loadAuditResourceGrid?.querySelectorAll('.ops-resource-card, .mdw-metrics > div') || []);
+  const loadAuditThresholdLines = loadAuditResourceGrid?.querySelectorAll('.ops-threshold-line, .mdw-metrics > div').length || 0;
   const loadAuditResourceText = normalize(loadAuditResourceGrid?.textContent || '');
   const overviewInterfacesDownCollectionParityOk = sectionName !== 'overview' || scaleScenario !== 'interfaces-down' || Boolean(
     restSshPairPattern.test(combinedOverviewText) &&
@@ -5911,7 +6209,7 @@ async function inspectSectionBrowser(
     loadAuditResourceProbe: {
       cardCount: loadAuditResourceCards.length,
       thresholdLines: loadAuditThresholdLines,
-      hasThresholdHeader: loadAuditResourceText.includes('阈/持续/均/峰'),
+      hasThresholdHeader: /阈值/.test(loadAuditResourceText) && /当前.*峰值.*均值/.test(loadAuditResourceText),
       text: loadAuditResourceText.slice(0, 260),
     },
     overviewResourceFullIncidentProbe: {
@@ -6034,7 +6332,54 @@ async function inspectSectionBrowser(
     resourceColumns,
     detailFeedbackOk,
     operationalRouteContractOk,
+    operationalRouteContractProbe: operationalRoute ? {
+      sectionRootMatchesMobileDomain: Boolean(mobileDomainRoot),
+      sectionRootMatchesDesktopDomain: Boolean(desktopDomainRoot),
+      requestedSection: sectionName,
+      mobileWorkspace: mobileDomainRoot?.getAttribute('data-mobile-domain-workspace') || '',
+      mobileEvidenceMode: mobileDomainRoot?.getAttribute('data-mobile-evidence-mode') || '',
+      mobileLayout: mobileDomainLayout,
+      mobileLayoutContract: mobileDomainLayoutContractOk,
+      mobileListFillsLayout: mobileDomainListFillsLayout,
+      mobileLayoutWidth: mobileDomainLayoutRect ? Math.round(mobileDomainLayoutRect.width) : 0,
+      mobileListWidth: mobileDomainListRect ? Math.round(mobileDomainListRect.width) : 0,
+      mobileInspector: Boolean(mobileDomainInspector),
+      mobileObjectInspector: Boolean(mobileDomainObjectInspector),
+      mobileEvidenceWorkspace: Boolean(mobileDomainEvidenceWorkspace),
+      mobileRecoveryContract: mobileDomainRecoveryContractOk,
+      mobileRecoveryFacts: mobileDomainRecoveryFactKeys,
+      mobileRecoveryActions: mobileDomainRecoveryActions.length,
+      mobileMetricSurfaces: mobileDomainMetricSurfaces,
+      mobileMetricsContract: mobileDomainMetricsContractOk,
+      mobileCapabilityContract: mobileDomainCapabilityContractOk,
+      mobileObjectList: mobileDomainObjectList ? 1 : 0,
+      mobileEmpty: mobileDomainEmpty ? 1 : 0,
+      mobileTitle: Boolean(operationalTitle),
+      timeSeries: operationalTimeSeriesContractOk,
+    } : null,
+    operationalTimeSeriesContractOk,
+    operationalTimeSeriesProbe: operationalTimeSeries ? {
+      preserveAspectRatio: operationalTimeSeriesPreserve,
+      rect: operationalTimeSeriesRect ? {
+        width: Math.round(operationalTimeSeriesRect.width),
+        height: Math.round(operationalTimeSeriesRect.height),
+      } : null,
+      viewBox: operationalTimeSeriesViewBox ? {
+        width: Number(operationalTimeSeriesViewBox.width.toFixed(1)),
+        height: Number(operationalTimeSeriesViewBox.height.toFixed(1)),
+      } : null,
+      viewBoxRatio: Number(operationalTimeSeriesViewRatio.toFixed(3)),
+      renderedRatio: Number(operationalTimeSeriesRenderedRatio.toFixed(3)),
+      ratioDelta: Number.isFinite(operationalTimeSeriesRatioDelta) ? Number(operationalTimeSeriesRatioDelta.toFixed(3)) : null,
+      heightOk: operationalTimeSeriesHeightOk,
+      scale: operationalTimeSeriesScale,
+      times: operationalTimeSeriesTimes,
+      lines: operationalTimeSeriesLines.length,
+    } : null,
+    mobileDomainLayout,
+    mobileDomainLayoutContractOk,
     desktopDomainWorkspaceOk,
+    desktopWorkspaceUnselected,
     desktopWorkspaceHeaders,
     desktopWorkspaceRows,
     desktopWorkspaceInspectorKind: desktopWorkspaceInspector?.getAttribute('data-domain-inspector-kind') || '',

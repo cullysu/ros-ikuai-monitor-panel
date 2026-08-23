@@ -1,4 +1,5 @@
 import { parseRfc3339Timestamp } from "../timeContract";
+import { assessRawInterfaceOperationalState } from "../sections/interfaceOperationalAssessment";
 import type {
   DeriveOverviewOptions,
   OverviewCollectionState,
@@ -62,14 +63,26 @@ export function formatCompact(value: unknown): string {
   return `${Math.round(n)}`;
 }
 
+export type RateUnit = "bps" | "Kbps" | "Mbps" | "Gbps";
+
+export function rateUnit(value: unknown): RateUnit | null {
+  const n = toNumber(value, NaN);
+  if (!Number.isFinite(n)) return null;
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return "Gbps";
+  if (abs >= 1e6) return "Mbps";
+  if (abs >= 1e3) return "Kbps";
+  return "bps";
+}
+
 export function formatRate(value: unknown): string {
   const n = toNumber(value, NaN);
-  if (!Number.isFinite(n)) return "-";
-  const abs = Math.abs(n);
-  if (abs >= 1e9) return `${(n / 1e9).toFixed(2)} Gbps`;
-  if (abs >= 1e6) return `${(n / 1e6).toFixed(2)} Mbps`;
-  if (abs >= 1e3) return `${(n / 1e3).toFixed(2)} Kbps`;
-  return `${Math.round(n)} bps`;
+  const unit = rateUnit(n);
+  if (!unit) return "-";
+  if (unit === "Gbps") return `${(n / 1e9).toFixed(2)} ${unit}`;
+  if (unit === "Mbps") return `${(n / 1e6).toFixed(2)} ${unit}`;
+  if (unit === "Kbps") return `${(n / 1e3).toFixed(2)} ${unit}`;
+  return `${Math.round(n)} ${unit}`;
 }
 
 export function formatDurationCompact(seconds: unknown): string {
@@ -109,6 +122,20 @@ function normalize(value: unknown, fallback = "-"): string {
 
 function text(value: unknown, fallback = "-"): string {
   return normalize(value, fallback);
+}
+
+function uniqueErrorPhrases(values: unknown[]): string[] {
+  const seen = new Set<string>();
+  const phrases: string[] = [];
+  for (const value of values) {
+    for (const rawPhrase of String(value ?? "").split(/[；;\r\n]+/)) {
+      const phrase = normalize(rawPhrase, "");
+      if (!phrase || seen.has(phrase)) continue;
+      seen.add(phrase);
+      phrases.push(phrase);
+    }
+  }
+  return phrases;
 }
 
 function credibilityLabelOf(credibility: OverviewDataCredibility): string {
@@ -337,10 +364,10 @@ function businessEvidenceState(snapshot: OverviewRawSnapshot) {
 function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState, failures = failedEndpointSummary(snapshot)): OverviewCollectionState {
   const meta = snapshot.meta || {};
   const noSnapshot = isSnapshotUnavailable(snapshot);
-  const coreRestErrors = [meta.realtimeError, meta.slowRestError].filter(Boolean).map(String);
-  const auxiliaryRestErrors = [meta.connectionDetailError, meta.connectionProtocolError].filter(Boolean).map(String);
-  const restErrors = [...coreRestErrors, ...auxiliaryRestErrors];
-  const sshErrors = [meta.staticError].filter(Boolean).map(String);
+  const coreRestErrors = uniqueErrorPhrases([meta.realtimeError, meta.slowRestError]);
+  const auxiliaryRestErrors = uniqueErrorPhrases([meta.connectionDetailError, meta.connectionProtocolError]);
+  const restErrors = uniqueErrorPhrases([...coreRestErrors, ...auxiliaryRestErrors]);
+  const sshErrors = uniqueErrorPhrases([meta.staticError]);
   const restSuccessAt = latestTimestamp([meta.realtimeUpdatedAt, meta.slowRestUpdatedAt, meta.connectionDetailUpdatedAt, meta.connectionProtocolUpdatedAt]);
   const sshSuccessAt = latestTimestamp([meta.staticUpdatedAt]);
   const channelStatus = (coreErrors: string[], auxiliaryErrors: string[], successAt: string) => {
@@ -416,10 +443,11 @@ function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFresh
 function routeState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState): OverviewRouteState {
   const candidates = defaultRouteRows(snapshot);
   const selected = candidates[0] || null;
+  const activeCandidates = candidates.filter((route) => route.active === true && route.disabled !== true).length;
   const rawSummary = defaultRouteRawSummary(selected);
   const businessSummary = defaultRouteBusinessSummary(selected);
   const active = Boolean(selected?.active === true && selected.disabled !== true);
-  const base = { rawSummary, selected, verified: false, candidates: candidates.length };
+  const base = { rawSummary, selected, verified: false, candidates: candidates.length, activeCandidates };
   if (isSnapshotUnavailable(snapshot)) return { ...base, label: "不可判定", text: "缺少当前路由快照", level: "warn" };
   if (freshness.stale || freshness.history) return {
     ...base,
@@ -487,31 +515,53 @@ function interfaceState(snapshot: OverviewRawSnapshot): OverviewInterfaceState {
   const rows = available ? snapshot.interfaces! : [];
   const onlineRows = rows.filter((row) => row?.running === true);
   const downRows = rows.filter((row) => row?.running === false);
+  const assessedRows = rows.map((row) => ({ row, assessment: assessRawInterfaceOperationalState(row, snapshot.routes) }));
+  const confirmedRiskRows = assessedRows.filter(({ assessment }) => assessment.impact === "risk");
+  const reviewRows = assessedRows.filter(({ assessment }) => assessment.observation === "not-running" && assessment.impact === "unverified");
+  const disabledRows = assessedRows.filter(({ assessment }) => assessment.observation === "disabled");
   const online = onlineRows.length;
   const down = downRows.length;
   const unknown = Math.max(0, rows.length - online - down);
   const downNames = downRows.map((row) => row.name || row.interface || "").filter(Boolean);
+  const riskNames = confirmedRiskRows.map(({ row }) => row.name || row.interface || "").filter(Boolean);
+  const reviewNames = reviewRows.map(({ row }) => row.name || row.interface || "").filter(Boolean);
   const label = !available
     ? "接口未采集"
     : rows.length === 0
       ? "未发现接口对象"
-      : unknown > 0
-        ? "接口状态未完整"
-        : down > 0
-          ? "接口部分未运行"
-          : "接口在线";
+      : confirmedRiskRows.length > 0
+        ? "接口配置依赖未运行"
+        : reviewRows.length > 0
+          ? "接口未运行，影响待确认"
+          : unknown > 0
+            ? "接口状态未完整"
+            : "接口在线";
   const text = !available
     ? "接口对象未采集"
     : rows.length === 0
       ? "已采集 · 0 个接口对象"
       : down > 0 || unknown > 0
-        ? `${formatNumber(online)}/${formatNumber(rows.length)} 运行 · ${formatNumber(down)} down${unknown ? ` · ${formatNumber(unknown)} 未知` : ""}${down ? ` · ${compactListText(downNames, 3) || "未列出"}` : ""}`
+        ? `${formatNumber(online)}/${formatNumber(rows.length)} 运行 · ${formatNumber(down)} 未运行${confirmedRiskRows.length ? ` · ${formatNumber(confirmedRiskRows.length)} 项配置依赖` : ""}${reviewRows.length ? ` · ${formatNumber(reviewRows.length)} 项影响待确认` : ""}${disabledRows.length ? ` · ${formatNumber(disabledRows.length)} 已停用` : ""}${unknown ? ` · ${formatNumber(unknown)} 未知` : ""}${down ? ` · ${compactListText(downNames, 3) || "未列出"}` : ""}`
         : `${formatNumber(online)}/${formatNumber(rows.length)} 运行`;
-  return { available, total: available ? rows.length : 0, online, down, unknown, downNames, label, text };
+  return {
+    available,
+    total: available ? rows.length : 0,
+    online,
+    down,
+    unknown,
+    confirmedRisk: confirmedRiskRows.length,
+    impactUnverified: reviewRows.length,
+    disabled: disabledRows.length,
+    downNames,
+    riskNames,
+    reviewNames,
+    label,
+    text,
+  };
 }
 
 function connectionState(snapshot: OverviewRawSnapshot) {
-  return { total: toNumber(snapshot.connections?.total, 0), active: Array.isArray(snapshot.connections?.active) ? snapshot.connections.active.length : 0, topIps: Array.isArray(snapshot.connections?.topIps) ? snapshot.connections.topIps.length : 0 };
+  return { total: toFiniteNumber(snapshot.connections?.total), active: Array.isArray(snapshot.connections?.active) ? snapshot.connections.active.length : 0, topIps: Array.isArray(snapshot.connections?.topIps) ? snapshot.connections.topIps.length : 0 };
 }
 
 function deviceFacts(snapshot: OverviewRawSnapshot): OverviewDeviceFacts {
@@ -530,10 +580,10 @@ function countsOf(wan: ReturnType<typeof wanState>, interfaces: ReturnType<typeo
     wanOnline: wan.online,
     wanOffline: wan.offline,
     wanUnknown: wan.unknown,
-    interfacesTotal: interfaces.total,
-    interfacesOnline: interfaces.online,
-    interfacesDown: interfaces.down,
-    interfacesUnknown: interfaces.unknown,
+    interfacesTotal: interfaces.available ? interfaces.total : null,
+    interfacesOnline: interfaces.available ? interfaces.online : null,
+    interfacesDown: interfaces.available ? interfaces.down : null,
+    interfacesUnknown: interfaces.available ? interfaces.unknown : null,
     failures: failures.count,
     connections: connections.total,
   };
@@ -544,10 +594,10 @@ function scenarioOf(snapshot: OverviewRawSnapshot, counts: OverviewCounts, resou
   if (options.scenarioHint) return options.scenarioHint;
   if (isSnapshotUnavailable(snapshot)) return "no-snapshot";
   if (counts.wanTotal > 0 && counts.wanOnline === 0 && counts.wanUnknown === 0) return "all-offline";
-  if (counts.interfacesDown > 0) return "interfaces-down";
+  if (toNumber(counts.interfacesDown) > 0) return "interfaces-down";
   if (resource.level === "danger") return "resource-full";
   if (collection.channelDegraded) return "collection-down";
-  if (counts.wanTotal >= 4 || counts.interfacesTotal >= 8 || counts.connections >= 5000) return "fleet";
+  if (counts.wanTotal >= 4 || toNumber(counts.interfacesTotal) >= 8 || toNumber(counts.connections) >= 5000) return "fleet";
   return "single";
 }
 

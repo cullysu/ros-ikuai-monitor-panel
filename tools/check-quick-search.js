@@ -1,3 +1,6 @@
+// status: superseded
+// Historical shell probe retained for audit traceability; it is not a current
+// acceptance gate and must not be used to justify restoring the retired shell.
 const fs = require('fs/promises');
 const path = require('path');
 const { spawn } = require('child_process');

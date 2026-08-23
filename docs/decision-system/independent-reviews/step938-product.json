@@ -1,0 +1,44 @@
+{
+  "schema": "independent-review/v1",
+  "step": 938,
+  "role": "product-information-architecture",
+  "scope": "local-independent-scope",
+  "releaseEligible": false,
+  "reviewerAgentId": "019ff149-d081-7843-8c6f-2091913db893",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "p2": 1,
+  "evidence": [
+    "_acceptance/optical-patrol-runtime/report.json",
+    "_acceptance/optical-patrol-runtime/originals/single-320x568.png",
+    "_acceptance/optical-patrol-runtime/originals/resource-full-768x1024.png",
+    "_acceptance/optical-patrol-runtime/originals/all-offline-1199x900.png",
+    "_acceptance/responsive-boundary-current/report.json",
+    "docs/mobile-optical-patrol-design-contract.md"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-f8a12846eebd-188e42d7e8c5",
+    "worktreeFingerprint": "188e42d7e8c5e8c53415d401f46d21773abc53d2e22c62aea90d779e533c193b",
+    "generatedAt": "2026-08-11T14:42:07.194Z",
+    "commit": "f8a12846eebd8f6d89b4748b89e8808b23257e67",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "seven-scene-task-substitution",
+      "result": "pass",
+      "summary": "七个场景改变主断言、决定性几何、禁止结论与对象动作；不是只换颜色或文案。"
+    },
+    {
+      "id": "phone-first-scan-and-navigation",
+      "result": "pass",
+      "summary": "320/390/430 从零滚动原点展示证据、判断、主对象和动作；动作完整位于固定导航上方。"
+    },
+    {
+      "id": "tablet-sparse-rail-polish",
+      "result": "p2",
+      "summary": "部分稀疏 768–1199 场景的左轨保留较多呼吸空间，但不隐藏判断、证据、动作或导航；作为后续密度精修记录。"
+    }
+  ]
+}

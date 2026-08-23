@@ -113,54 +113,178 @@ def atomic_write(path: Path, value: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def checkpoint_only_failures(
-    failures: Any,
-    matrix: dict[str, Any],
-    candidate: str,
-) -> bool:
-    if failures == []:
-        return True
-    if not isinstance(failures, list) or len(failures) != 1:
-        return False
+def explicitly_not_applicable(check: dict[str, Any]) -> bool:
+    """Return whether a check is explicitly excluded from this matrix scope.
 
-    failure = failures[0]
-    if not isinstance(failure, dict):
-        return False
-    if failure.get("name") != "unified release scenario matrix covers required scenarios":
-        return False
-    if failure.get("pass") is not False:
-        return False
+    A skipped check is evidence, not an absent or failed check.  Keeping this
+    shape strict prevents a producer from relabelling an arbitrary failure as
+    non-applicable during aggregation.
+    """
 
-    detail = failure.get("detail")
-    if not isinstance(detail, dict):
-        return False
-    if detail.get("commit") != candidate:
-        return False
-    if detail.get("currentRequestedComplete") is not True:
-        return False
-    if detail.get("currentRequiredComplete") is not False:
-        return False
-    if detail.get("aggregateComplete") is not False:
-        return False
-    if detail.get("releaseMatrixComplete") is not False:
-        return False
+    return (
+        check.get("applicable") is False
+        and check.get("status") == "not_applicable"
+        and check.get("pass") is None
+        and isinstance(check.get("reason"), str)
+        and bool(check["reason"].strip())
+    )
 
-    covered = detail.get("currentCoveredScenarios")
-    passed = detail.get("currentPassedScenarios")
-    matrix_covered = matrix.get("coveredScenarios")
-    matrix_passed = matrix.get("passedScenarios")
-    scenario_lists = (covered, passed, matrix_covered, matrix_passed)
-    if not all(isinstance(value, list) and value for value in scenario_lists):
-        return False
-    if any(len(value) != len(set(value)) for value in scenario_lists):
-        return False
-    if set(covered) != set(passed):
-        return False
-    if set(covered) != set(matrix_covered) or set(passed) != set(matrix_passed):
-        return False
-    if matrix.get("requestedComplete") is not True or matrix.get("complete") is not False:
-        return False
-    return True
+
+def false_pass_paths(value: Any, current_path: str = "") -> list[str]:
+    """Find every nested ``pass: false`` before a report can be merged.
+
+    A report is a tree, not only a flat ``checks`` list.  A producer that puts a
+    failed child under ``detail`` or another nested evidence object must not be
+    able to keep the root green by clearing ``failures`` during aggregation.
+    Explicit non-applicability uses ``pass: null`` and is therefore unaffected.
+    """
+
+    if isinstance(value, dict):
+        paths: list[str] = []
+        for key, child in value.items():
+            child_path = f"{current_path}/{key}"
+            if key == "pass" and child is False:
+                paths.append(child_path)
+            paths.extend(false_pass_paths(child, child_path))
+        return paths
+    if isinstance(value, list):
+        paths: list[str] = []
+        for index, child in enumerate(value):
+            paths.extend(false_pass_paths(child, f"{current_path}/{index}"))
+        return paths
+    return []
+
+
+def validate_checks(path: Path, checks: Any, failures: Any) -> list[dict[str, Any]]:
+    """Validate report evidence before it can contribute to a green merge.
+
+    The merger never infers non-applicability from a check name or detail
+    payload.  A false applicable check and every failure-list entry are hard
+    failures; an explicitly structured non-applicable check is preserved.
+    """
+
+    if not isinstance(checks, list):
+        raise RuntimeError(f"{path}: checks must be a list")
+    if not isinstance(failures, list):
+        raise RuntimeError(f"{path}: failures must be a list")
+    if failures:
+        raise RuntimeError(f"{path}: failures must be empty before merge")
+
+    normalized: list[dict[str, Any]] = []
+    for index, check in enumerate(checks):
+        if not isinstance(check, dict):
+            raise RuntimeError(f"{path}: checks[{index}] is not an object")
+        if explicitly_not_applicable(check):
+            normalized.append(check)
+            continue
+        if check.get("applicable") is False or check.get("status") == "not_applicable":
+            raise RuntimeError(
+                f"{path}: checks[{index}] has an invalid not_applicable shape"
+            )
+        if check.get("pass") is not True:
+            raise RuntimeError(
+                f"{path}: applicable check failed or has no boolean pass value at checks[{index}]"
+            )
+        normalized.append(check)
+    return normalized
+
+
+def finalize_merged_truth(report: dict[str, Any]) -> dict[str, Any]:
+    """Derive the merged report truth from the assembled evidence tree.
+
+    Input validation is necessary but not sufficient: the template can carry
+    fields outside the validated lists, and a future change can add a child
+    evidence object after validation.  The final root result must therefore be
+    computed from the exact tree that will be written, never assigned as an
+    unconditional green constant.
+    """
+
+    failures: list[dict[str, Any]] = []
+    reported_failures = report.get("failures")
+    if not isinstance(reported_failures, list):
+        failures.append({
+            "name": "merged failures shape",
+            "pass": False,
+            "detail": {"reason": "failures must be a list"},
+        })
+    elif reported_failures:
+        failures.append({
+            "name": "merged reported failures",
+            "pass": False,
+            "detail": {"count": len(reported_failures)},
+        })
+    nested_false_passes = false_pass_paths(report)
+    if nested_false_passes:
+        failures.append({
+            "name": "nested report evidence truth",
+            "pass": False,
+            "detail": {"paths": nested_false_passes[:32], "count": len(nested_false_passes)},
+        })
+
+    checks = report.get("checks")
+    if not isinstance(checks, list):
+        failures.append({
+            "name": "merged checks shape",
+            "pass": False,
+            "detail": {"reason": "checks must be a list"},
+        })
+    else:
+        for index, check in enumerate(checks):
+            if not isinstance(check, dict):
+                failures.append({
+                    "name": "merged check shape",
+                    "pass": False,
+                    "detail": {"index": index, "reason": "check must be an object"},
+                })
+            elif not explicitly_not_applicable(check) and check.get("pass") is not True:
+                failures.append({
+                    "name": "merged check truth",
+                    "pass": False,
+                    "detail": {"index": index, "check": check},
+                })
+
+    matrix = report.get("matrix")
+    if not isinstance(matrix, dict):
+        failures.append({
+            "name": "merged matrix shape",
+            "pass": False,
+            "detail": {"reason": "matrix must be an object"},
+        })
+    else:
+        cells = matrix.get("cells")
+        if matrix.get("complete") is not True or matrix.get("requestedComplete") is not True:
+            failures.append({
+                "name": "merged matrix completeness",
+                "pass": False,
+                "detail": {
+                    "complete": matrix.get("complete"),
+                    "requestedComplete": matrix.get("requestedComplete"),
+                },
+            })
+        if not isinstance(cells, list) or matrix.get("total") != len(cells) or matrix.get("passed") != len(cells) or matrix.get("failed") != 0:
+            failures.append({
+                "name": "merged matrix counts",
+                "pass": False,
+                "detail": {
+                    "total": matrix.get("total"),
+                    "passed": matrix.get("passed"),
+                    "failed": matrix.get("failed"),
+                    "cellCount": len(cells) if isinstance(cells, list) else None,
+                },
+            })
+        if isinstance(cells, list):
+            for index, cell in enumerate(cells):
+                if not isinstance(cell, dict) or cell.get("pass") is not True:
+                    failures.append({
+                        "name": "merged matrix cell truth",
+                        "pass": False,
+                        "detail": {"index": index, "cell": cell},
+                    })
+
+    report["failures"] = failures
+    report["pass"] = not failures
+    report["exitCodeShouldFail"] = bool(failures)
+    return report
 
 
 def main() -> None:
@@ -198,6 +322,10 @@ def main() -> None:
 
     for path in report_paths:
         report = read_report(path)
+        if report.get("pass") is not True:
+            raise RuntimeError(f"{path}: report.pass must be true before merge")
+        if report.get("exitCodeShouldFail") is not False:
+            raise RuntimeError(f"{path}: exitCodeShouldFail must be false before merge")
         matrix = report.get("matrix") if isinstance(report.get("matrix"), dict) else {}
         if matrix.get("commit") != candidate:
             raise RuntimeError(f"{path}: matrix.commit {matrix.get('commit')} != {candidate}")
@@ -210,6 +338,10 @@ def main() -> None:
             raise RuntimeError(f"{path}: matrix.cells is empty")
         if not isinstance(browser_checks, list) or len(browser_checks) != len(cells):
             raise RuntimeError(f"{path}: browserChecks does not match matrix.cells")
+        if matrix.get("complete") is not True:
+            raise RuntimeError(f"{path}: matrix.complete must be true before merge")
+        if matrix.get("total") != len(cells) or matrix.get("passed") != len(cells):
+            raise RuntimeError(f"{path}: matrix total/passed must equal matrix.cells length")
 
         local_ids = set()
         for cell in cells:
@@ -236,10 +368,13 @@ def main() -> None:
         if set(browser_by_id).intersection(local_ids) != local_ids:
             missing = sorted(local_ids - set(browser_by_id))
             raise RuntimeError(f"{path}: browser cells missing for {missing[:3]}")
-        if not checkpoint_only_failures(failures, matrix, candidate):
-            raise RuntimeError(f"{path}: contains non-checkpoint failures")
-
-        merged_checks.extend(item for item in report.get("checks", []) if isinstance(item, dict))
+        merged_checks.extend(validate_checks(path, report.get("checks"), failures))
+        nested_false_passes = false_pass_paths(report)
+        if nested_false_passes:
+            raise RuntimeError(
+                f"{path}: report contains nested pass=false at "
+                f"{', '.join(nested_false_passes[:5])}"
+            )
         merged_warnings.extend(report.get("warnings", []) if isinstance(report.get("warnings"), list) else [])
         provenance.append({
             "path": str(path.relative_to(workspace)).replace("\\", "/"),
@@ -263,8 +398,6 @@ def main() -> None:
     merged["warnings"] = merged_warnings
     merged["failures"] = []
     merged["browserChecks"] = [browser_by_id[cell_id] for cell_id in wanted]
-    merged["pass"] = True
-    merged["exitCodeShouldFail"] = False
     merged["matrix"] = {
         **(template.get("matrix") if isinstance(template.get("matrix"), dict) else {}),
         "commit": candidate,
@@ -287,6 +420,12 @@ def main() -> None:
             "inputs": provenance,
         },
     }
+    finalize_merged_truth(merged)
+    if merged["pass"] is not True:
+        raise RuntimeError(
+            "merged report failed final truth derivation: "
+            f"{len(merged['failures'])} failure(s)"
+        )
     atomic_write(output, merged)
     print(json.dumps({
         "output": str(output),

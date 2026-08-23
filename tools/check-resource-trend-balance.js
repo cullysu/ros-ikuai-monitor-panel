@@ -111,8 +111,36 @@ function sampleTimestamps(now, count = 6, intervalMs = 5000) {
   );
 }
 
+function atomicTrafficSamples(timestamps, downlink, uplink) {
+  if (timestamps.length !== downlink.length || downlink.length !== uplink.length) {
+    throw new Error('traffic fixture arrays must have equal lengths');
+  }
+  return timestamps.map((timestamp, index) => ({
+    timestamp,
+    downlink: downlink[index],
+    uplink: uplink[index],
+    source: 'desktop-focused:wan-aggregate',
+    evidenceMode: 'current',
+  }));
+}
+
+function resourceSamples(timestamps, cpu, memory, disk) {
+  return timestamps.map((timestamp, index) => ({
+    timestamp,
+    cpu: cpu[index],
+    memory: memory[index],
+    disk: disk[index],
+    source: 'desktop-focused:resource',
+    evidenceMode: 'current',
+  }));
+}
+
 function resourceFullSnapshot() {
   const now = new Date().toISOString();
+  const timestamps = sampleTimestamps(now);
+  const cpu = [88, 91, 94, 96, 96, 96];
+  const memory = [86, 89, 90, 91, 92, 92];
+  const disk = [91, 93, 95, 96, 97, 97];
   return {
     status: 'ok',
     updatedAt: now,
@@ -135,12 +163,13 @@ function resourceFullSnapshot() {
       memoryUsage: 92,
       diskUsage: 97,
       history: {
-        timestamps: sampleTimestamps(now),
+        timestamps,
         downlink: [4400, 5200, 6100, 7200, 6900, 7600],
         uplink: [1300, 1600, 1900, 2100, 2000, 2300],
-        cpu: [88, 91, 94, 96, 96, 96],
-        memory: [86, 89, 90, 91, 92, 92],
-        disk: [91, 93, 95, 96, 97, 97]
+        cpu,
+        memory,
+        disk,
+        resourceSamples: resourceSamples(timestamps, cpu, memory, disk),
       }
     },
     wan: [{ name: 'pppoe-out10', parent: 'ether1', running: true, upRate: 1200, downRate: 3400 }],
@@ -159,6 +188,9 @@ function resourceFullSnapshot() {
 
 function balanceSnapshot() {
   const now = new Date().toISOString();
+  const timestamps = sampleTimestamps(now);
+  const downlink = [4200, 5100, 4700, 5900, 5600, 6200];
+  const uplink = [1500, 1800, 1650, 2050, 1900, 2100];
   return {
     status: 'ok',
     updatedAt: now,
@@ -181,9 +213,10 @@ function balanceSnapshot() {
       memoryUsage: 51,
       diskUsage: 31,
       history: {
-        timestamps: sampleTimestamps(now),
-        downlink: [4200, 5100, 4700, 5900, 5600, 6200],
-        uplink: [1500, 1800, 1650, 2050, 1900, 2100],
+        timestamps,
+        downlink,
+        uplink,
+        trafficSamples: atomicTrafficSamples(timestamps, downlink, uplink),
         cpu: [36, 39, 38, 41, 40, 42],
         memory: [47, 48, 49, 50, 50, 51],
         disk: [31, 31, 31, 31, 31, 31]
@@ -214,7 +247,8 @@ function balanceSnapshot() {
 
 function accumulatingTrafficSnapshot() {
   const snapshot = balanceSnapshot();
-  delete snapshot.overview.history.timestamps;
+  snapshot.meta.scaleScenario = 'traffic-accumulating';
+  snapshot.overview.history.trafficSamples = snapshot.overview.history.trafficSamples.slice(-1);
   return snapshot;
 }
 
@@ -309,6 +343,9 @@ async function main() {
     await listen(staticServer);
     lifecycle.server = staticServer;
     url = `http://127.0.0.1:${staticServer.address().port}/`;
+  }
+  if (!/[?&]surface=desktop(?:&|$)/.test(url)) {
+    url += `${url.includes('?') ? '&' : '?'}surface=desktop`;
   }
   const section = arg('--section', 'desktopV1030');
   const outJson = path.resolve(arg('--json', `resource-balance-${section}.json`));

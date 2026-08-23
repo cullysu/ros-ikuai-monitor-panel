@@ -1,11 +1,11 @@
 import {
   formatNumber,
-  shortTimestamp,
   type OverviewDerivedState,
   type OverviewRawSnapshot,
   type OverviewRawWanRow,
   type OverviewTone,
 } from "./index";
+import { parseRfc3339Timestamp } from "../timeContract";
 
 export type RouterOsTrustPlaneId = "forwarding" | "collection" | "snapshot" | "business";
 
@@ -40,16 +40,12 @@ function twoDigit(value: number): string {
 }
 
 function mobileTime(raw: unknown): string {
-  const source = String(raw ?? "").trim();
-  if (!source) return "未记录";
-  const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
-  const date = Number.isFinite(numeric)
-    ? new Date(numeric < 1_000_000_000_000 ? numeric * 1000 : numeric)
-    : new Date(source);
-  if (Number.isNaN(date.getTime())) {
-    const fallback = shortTimestamp(raw);
-    return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
-  }
+  const numeric = typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+  const timestamp = numeric === null
+    ? parseRfc3339Timestamp(raw)
+    : numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
+  if (timestamp === null || !Number.isFinite(timestamp)) return "未记录";
+  const date = new Date(timestamp);
   const now = new Date();
   const time = `${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
   if (date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate()) return time;

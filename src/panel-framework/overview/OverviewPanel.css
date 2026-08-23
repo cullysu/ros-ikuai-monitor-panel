@@ -1,19 +1,11 @@
 .router-overview-framework {
-  box-sizing: border-box;
-  min-width: 0;
   min-height: 100%;
-  margin: 0;
-  padding: 0;
   background: #eaf0f2;
 }
 
-.mobile-patrol-mount {
-  min-width: 0;
-}
-
-@media (max-width: 1365px) {
+@media (max-width: 1199px) {
   .router-overview-framework {
     min-height: 100dvh;
-    background: #edf3f5;
+    background: #f7f8f9;
   }
 }

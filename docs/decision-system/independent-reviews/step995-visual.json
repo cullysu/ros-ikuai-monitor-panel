@@ -1,0 +1,82 @@
+{
+  "schema": "independent-review/v1",
+  "step": 995,
+  "role": "visual-interaction",
+  "scope": "local-independent-scope",
+  "status": "superseded",
+  "currentEvidence": false,
+  "historicalEvidenceOnly": true,
+  "releaseEligible": false,
+  "reviewerAgentId": "codex-visual-emil-step995",
+  "verdict": "veto",
+  "p0": 0,
+  "p1": 1,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/mobile-telemetry-runtime/report.json",
+    "_acceptance/mobile-telemetry-runtime/single-phone320-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-phone390-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-phone430-overview.png",
+    "_acceptance/mobile-telemetry-runtime/all-offline-phone430-overview.png",
+    "_acceptance/mobile-telemetry-runtime/no-snapshot-phone390-overview.png",
+    "_acceptance/mobile-telemetry-runtime/resource-full-phone320-overview.png",
+    "_acceptance/mobile-telemetry-runtime/interfaces-down-phone430-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/all-offline-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/no-snapshot-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/resource-full-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/interfaces-down-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/all-offline-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/no-snapshot-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/resource-full-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/interfaces-down-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-tablet768-overview.png",
+    "_acceptance/mobile-telemetry-runtime/no-snapshot-tablet768-overview.png",
+    "_acceptance/mobile-telemetry-runtime/resource-full-tablet768-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-tablet1199-overview.png",
+    "_acceptance/mobile-telemetry-runtime/no-snapshot-tablet1199-overview.png",
+    "_acceptance/mobile-telemetry-runtime/resource-full-tablet1199-overview.png",
+    "src/panel-framework/mobile-telemetry/MobileTelemetryBriefing.tsx",
+    "src/panel-framework/mobile-telemetry/MobileTelemetryTabletWorkbench.tsx",
+    "src/panel-framework/mobile-telemetry/styles/telemetry-tablet-workbench.css",
+    "src/panel-framework/mobile/mobile-entry.css",
+    "docs/product-loop-current.md"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-6aa7d327c022-5c5d8384a5b1",
+    "worktreeFingerprint": "5c5d8384a5b16604cb6e5fb3cfd107a95788de7fcf3f06ed99bd40d7fb865534",
+    "generatedAt": "2026-08-14T13:02:20.622Z",
+    "commit": "6aa7d327c022a5a58b45540bc81c8de103a85d3c",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "landscape-short-height-inspector-is-not-a-first-screen-task",
+      "severity": "P1",
+      "result": "fail",
+      "summary": "VETO. At 667x390, every inspected scene shows only the verdict and horizontal object rail above the fixed tab bar; the selected inspector, its evidence and its action are below the fold. At 844x390, the width-based split inspector appears, but the header, verdict and fixed tab bar still leave only a narrow, cut-off strip of its content. A landscape patrol therefore starts with a selection affordance instead of an inspectable operational object, which breaks the required three-second hierarchy and reduces iKuai-style status density.",
+      "evidence": [
+        "_acceptance/mobile-telemetry-runtime/single-landscape667-overview.png",
+        "_acceptance/mobile-telemetry-runtime/all-offline-landscape667-overview.png",
+        "_acceptance/mobile-telemetry-runtime/no-snapshot-landscape667-overview.png",
+        "_acceptance/mobile-telemetry-runtime/resource-full-landscape667-overview.png",
+        "_acceptance/mobile-telemetry-runtime/interfaces-down-landscape667-overview.png",
+        "_acceptance/mobile-telemetry-runtime/single-landscape844-overview.png",
+        "_acceptance/mobile-telemetry-runtime/all-offline-landscape844-overview.png",
+        "_acceptance/mobile-telemetry-runtime/no-snapshot-landscape844-overview.png",
+        "_acceptance/mobile-telemetry-runtime/resource-full-landscape844-overview.png",
+        "_acceptance/mobile-telemetry-runtime/interfaces-down-landscape844-overview.png",
+        "src/panel-framework/mobile-telemetry/MobileTelemetryBriefing.tsx",
+        "src/panel-framework/mobile-telemetry/styles/telemetry-tablet-workbench.css",
+        "src/panel-framework/mobile/mobile-entry.css"
+      ],
+      "action": "Add a short-height landscape composition rather than relying only on width breakpoints: keep the selected highest-priority object and its minimum evidence/action visible with the tab bar, or deliberately use the compact phone presentation. Preserve instant, interruptible control feedback and the existing reduced-motion behavior; do not solve this with animated rearrangement or decorative material. Re-capture and independently inspect every 667x390 and 844x390 scenario."
+    },
+    {
+      "id": "phone-tablet-material-hierarchy-and-feedback",
+      "result": "pass",
+      "summary": "Phone 320/390/430 and tablet 768/1199 originals maintain a restrained cool material palette, compact object/status density, clear incident weight, readable numeric typography and bounded read-only actions. The source limits feedback to short transform/color transitions, provides active states and disables them under reduced motion; no decorative telemetry animation was found."
+    }
+  ]
+}

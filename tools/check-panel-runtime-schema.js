@@ -67,6 +67,146 @@ assert.strictEqual(schema.validatePanelSnapshot({ ...operational, updatedAt: 'no
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, updatedAt: '2026-07-16 10:00:00' }).ok, false, 'offset-free top-level time must be rejected');
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, updatedAt: '2026-02-30T10:00:00Z' }).ok, false, 'calendar-invalid RFC3339-looking time must be rejected');
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, meta: { ...operational.meta, realtimeUpdatedAt: '2026-07-16 10:00:00' } }).ok, false, 'offset-free nested time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, overview: { ...operational.overview, systemTime: '2026-07-16 10:00:00' } }).ok, false, 'offset-free RouterOS device clock must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, overview: { ...operational.overview, systemTime: '2026-07-16T10:00:00+08:00' } }).ok, true, 'timezone-qualified RouterOS device clock must pass');
+assert.strictEqual(schema.validatePanelSnapshot({
+  ...operational,
+  collectionEvidence: { lastSuccessAt: '2026-07-16 10:00:00', lastFailureAt: null },
+}).ok, false, 'offset-free late-added collection evidence must make the snapshot malformed');
+assert.strictEqual(schema.validatePanelSnapshot({
+  ...operational,
+  collectionEvidence: { lastSuccessAt: '2026-07-16T10:00:00Z', lastFailureAt: null },
+}).ok, true, 'timezone-qualified late-added collection evidence must pass');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, logs: { all: [{ time: '12:00:01' }] } }).ok, false, 'offset-free log time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, logs: { all: [{ observedAt: '2026-07-16 10:00:00' }] } }).ok, false, 'offset-free log observation time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, logs: { all: [{ observedAt: '2026-07-16T10:00:00Z' }] } }).ok, true, 'qualified log observation time must pass');
+const validAtomicTrafficSample = {
+  ...operational,
+  overview: {
+    ...operational.overview,
+    history: {
+      trafficSamples: [{
+        timestamp: '2026-07-16T09:59:55Z',
+        uplink: 0,
+        downlink: 0,
+        source: 'realtime',
+        evidenceMode: 'current',
+      }],
+    },
+  },
+};
+assert.strictEqual(schema.validatePanelSnapshot(validAtomicTrafficSample).ok, true, 'timezone-qualified atomic sample time must pass');
+const missingTrafficTimestamp = JSON.parse(JSON.stringify(validAtomicTrafficSample));
+delete missingTrafficTimestamp.overview.history.trafficSamples[0].timestamp;
+assert.strictEqual(
+  schema.validatePanelSnapshot(missingTrafficTimestamp).ok,
+  false,
+  'atomic traffic sample timestamp is required',
+);
+
+for (const [label, patch] of [
+  ['missing traffic source', { source: '' }],
+  ['unknown traffic evidence mode', { evidenceMode: 'trusted' }],
+  ['missing current uplink', { uplink: null }],
+  ['negative current downlink', { downlink: -1 }],
+  ['unavailable traffic carrying rates', { evidenceMode: 'unavailable' }],
+]) {
+  const sample = { ...validAtomicTrafficSample.overview.history.trafficSamples[0], ...patch };
+  const candidate = {
+    ...validAtomicTrafficSample,
+    overview: { ...validAtomicTrafficSample.overview, history: { trafficSamples: [sample] } },
+  };
+  assert.strictEqual(schema.validatePanelSnapshot(candidate).ok, false, label);
+}
+const validUnavailableTrafficSample = {
+  ...validAtomicTrafficSample,
+  overview: {
+    ...validAtomicTrafficSample.overview,
+    history: {
+      trafficSamples: [{
+        ...validAtomicTrafficSample.overview.history.trafficSamples[0],
+        uplink: null,
+        downlink: null,
+        evidenceMode: 'unavailable',
+      }],
+    },
+  },
+};
+assert.strictEqual(schema.validatePanelSnapshot(validUnavailableTrafficSample).ok, true, 'unavailable traffic sample must preserve a null counter boundary');
+const validResourceHistory = {
+  ...operational,
+  overview: {
+    ...operational.overview,
+    history: {
+      timestamps: ['2026-07-16T09:59:50Z', '2026-07-16T10:00:00Z'],
+      cpu: [10, 20],
+      memory: [30, 40],
+      disk: [50, 60],
+    },
+  },
+};
+assert.strictEqual(schema.validatePanelSnapshot(validResourceHistory).ok, true, 'timezone-qualified resource history must pass');
+const validAtomicResourceHistory = {
+  ...operational,
+  overview: {
+    ...operational.overview,
+    history: {
+      resourceSamples: [{
+        timestamp: '2026-07-16T09:59:55Z',
+        cpu: 0,
+        memory: 0,
+        disk: 0,
+        source: 'routeros-resource',
+        evidenceMode: 'current',
+      }],
+    },
+  },
+};
+assert.strictEqual(schema.validatePanelSnapshot(validAtomicResourceHistory).ok, true, 'complete timezone-qualified atomic resource samples must pass');
+const partialAtomicResourceHistory = {
+  ...validAtomicResourceHistory,
+  overview: {
+    ...validAtomicResourceHistory.overview,
+    history: { resourceSamples: [{ ...validAtomicResourceHistory.overview.history.resourceSamples[0], cpu: null }] },
+  },
+};
+assert.strictEqual(schema.validatePanelSnapshot(partialAtomicResourceHistory).ok, true, 'one missing metric preserves the remaining atomic resource observation');
+for (const [label, patch] of [
+  ['offset-free resource time', { timestamp: '2026-07-16 09:59:55' }],
+  ['all current resource metrics missing', { cpu: null, memory: null, disk: null }],
+  ['out-of-range memory', { memory: 101 }],
+  ['missing resource source', { source: '' }],
+  ['unknown evidence mode', { evidenceMode: 'trusted' }],
+]) {
+  const sample = { ...validAtomicResourceHistory.overview.history.resourceSamples[0], ...patch };
+  const candidate = {
+    ...validAtomicResourceHistory,
+    overview: { ...validAtomicResourceHistory.overview, history: { resourceSamples: [sample] } },
+  };
+  assert.strictEqual(schema.validatePanelSnapshot(candidate).ok, false, label);
+}
+assert.strictEqual(schema.validatePanelSnapshot({
+  ...validResourceHistory,
+  overview: {
+    ...validResourceHistory.overview,
+    history: {
+      ...validResourceHistory.overview.history,
+      timestamps: [1721123990, '2026-07-16T10:00:00Z'],
+    },
+  },
+}).ok, false, 'numeric epoch resource history must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({
+  ...validAtomicTrafficSample,
+  overview: {
+    ...validAtomicTrafficSample.overview,
+    history: {
+      trafficSamples: [{
+        ...validAtomicTrafficSample.overview.history.trafficSamples[0],
+        timestamp: '2026-07-16 09:59:55',
+      }],
+    },
+  },
+}).ok, false, 'offset-free atomic sample time must make the snapshot malformed');
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, overview: { ...operational.overview, cpuLoad: 101 } }).ok, false, 'resource percentages must stay in range');
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, interfaces: ['ether1'] }).ok, false, 'operational collections must contain objects');
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, routes: { items: [], defaultRoutes: ['not-a-route'] } }).ok, false, 'nested route collections must contain objects');
@@ -79,6 +219,14 @@ assert.strictEqual(validOperational.ok, true);
 assert.strictEqual(validOperational.kind, 'operational');
 assert.strictEqual(validOperational.value.overview.cpuLoad, 0, 'observed zero must stay zero');
 assert.strictEqual(validOperational.value.wan[0].upRate, 0, 'observed zero rate must stay zero');
+
+const nullableRateOperational = schema.validatePanelSnapshot({
+  ...operational,
+  overview: { ...operational.overview, uplinkBps: null, downlinkBps: null },
+  wan: [{ name: 'wan1', running: true, upRate: null, downRate: null }],
+});
+assert.strictEqual(nullableRateOperational.ok, true, 'unavailable current rates must remain schema-valid');
+assert.strictEqual(nullableRateOperational.value.wan[0].upRate, null, 'unavailable rate must not be coerced to zero');
 
 const emptyOperational = schema.validatePanelSnapshot({
   status: 'ok',
@@ -186,4 +334,34 @@ assert.strictEqual(mutation.test.ssh.ok, true);
 assert.strictEqual(mutation.test.rest.ok, false);
 assert.strictEqual(mutation.warning, 'REST unavailable');
 
-console.log('[runtime-schema] PASS malformed/error/partial/operational/login contracts');
+const validTrustMutation = schema.parseRouterLoginMutation({
+  ...loginPayload,
+  routerLogin: { ...loginPayload.routerLogin, configured: true, host: '192.0.2.1', user: 'observer', passwordSet: true },
+  test: {
+    ssh: {
+      ok: false,
+      error: 'confirmation required',
+      elapsedMs: 12,
+      fingerprint: 'SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      confirmationRequired: true,
+      trustToken: 'session-bound-token',
+      trustExpiresAt: '2026-07-16T10:01:00Z',
+    },
+    rest: { ok: true, error: null, elapsedMs: 8, scheme: 'https', port: 443, verifyTls: true },
+    elapsedMs: 13,
+  },
+  warning: '',
+});
+assert.ok(validTrustMutation, 'timezone-qualified trust expiry must pass');
+assert.strictEqual(validTrustMutation.test.ssh.trustExpiresAt, '2026-07-16T10:01:00Z');
+assert.strictEqual(schema.parseRouterLoginMutation({
+  ...loginPayload,
+  routerLogin: { ...loginPayload.routerLogin, configured: true, host: '192.0.2.1', user: 'observer', passwordSet: true },
+  test: {
+    ...validTrustMutation.test,
+    ssh: { ...validTrustMutation.test.ssh, trustExpiresAt: '2026-07-16 10:01:00' },
+  },
+  warning: '',
+}), null, 'offset-free trust expiry must reject the mutation envelope');
+
+console.log('[runtime-schema] PASS malformed/error/partial/operational/login/RFC3339-history contracts');

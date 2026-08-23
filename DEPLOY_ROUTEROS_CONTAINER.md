@@ -77,17 +77,25 @@ and `public/` assets into the image. Do not build from an unpacked `dist/`,
 `_staging_*`, or other static snapshot; recent public UI fixes ship through the
 repository `public/` directory and `COPY public ./public`.
 
-Optional registry image, only after anonymous pulls are confirmed to work:
+Optional registry image, only after anonymous pulls are confirmed to work. Use
+the exact immutable CI tag for the release you selected; `main`, `latest`, and
+other moving tags are not valid deployment inputs:
 
 ```text
-ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
 ```
 
 Verify before using `remote-image=`:
 
 ```bash
-docker pull ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+IMAGE='ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>'
+docker pull "$IMAGE"
 ```
+
+Replace `<40-hex-commit-sha>` with the exact 40-character lower-case commit
+SHA published by CI. If that immutable image is unavailable or its pull fails,
+stop the registry path and use the local archive path above; do not substitute
+a moving tag and do not silently fall back to a different image.
 
 Example for your own public registry or fork:
 
@@ -244,12 +252,13 @@ before removing it or starting a replacement:
 /container/remove [find where root-dir="disk1/routeros-triage"]
 ```
 
-Optional registry image, only after the GHCR package is public and anonymous
-pulls work:
+Optional registry image, only after the exact immutable GHCR package is public
+and an anonymous pull works. Replace `<40-hex-commit-sha>` before pasting this
+command; `main` and `latest` are intentionally unsupported:
 
 ```routeros
 /container/config/set registry-url=https://ghcr.io tmpdir=disk1/container-tmp
-/container/add remote-image=ghcr.io/cullysu/ros-ikuai-monitor-panel:main interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
+/container/add remote-image=ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha> interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
 /container/start [find where root-dir="disk1/routeros-triage"]
 ```
 

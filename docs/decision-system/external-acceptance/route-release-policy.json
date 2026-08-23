@@ -1,0 +1,25 @@
+{
+  "schema-version": 1,
+  "policy-id": "bounded-public-release-v1",
+  "routes": [
+    { "route": "overview", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "interfaces", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "lineStatus", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "balance", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "routes", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "terminals", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "dhcp", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "arp", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "trafficLoad", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "loadAudit", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "trafficAudit", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "connections", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "dns4", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "dns6", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "security", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "logs", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "serviceLogs", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "readonlyDiagnostics", "kind": "module", "minimum-maturity": "bounded-readonly" },
+    { "route": "more", "kind": "directory", "minimum-maturity": "unavailable" }
+  ]
+}

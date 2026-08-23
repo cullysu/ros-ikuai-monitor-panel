@@ -1,0 +1,49 @@
+{
+  "schema": "independent-review/v1",
+  "step": 932,
+  "role": "product-information-architecture",
+  "scope": "local-independent-scope",
+  "releaseEligible": false,
+  "reviewerAgentId": "019feccb-6d7c-7922-8430-0cfd770413cc",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/pocket-console-runtime/report.json",
+    "_acceptance/pocket-console-runtime/fleet-390x844.png",
+    "_acceptance/pocket-console-runtime/all-offline-768x1024.png",
+    "_acceptance/pocket-console-runtime/collection-down-768x1024.png",
+    "_acceptance/release-matrix-working-tree/report.json",
+    "src/panel-framework/overview/mobile-overview/pocket-console/pocketConsoleModel.ts"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-f8a12846eebd-96ec52e7f8f8",
+    "worktreeFingerprint": "96ec52e7f8f8c640482609ac6618c6979f10fe99c6e46173042ad14de47ed905",
+    "generatedAt": "2026-08-10T20:47:40.973Z",
+    "commit": "f8a12846eebd8f6d89b4748b89e8808b23257e67",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "fleet-risk-precedes-scale",
+      "result": "pass",
+      "summary": "Fleet 在全部七个视口均与 single 语义和像素证据不同；接口依赖事故成为第一对象，规模只保留为背景，不再覆盖最高风险。"
+    },
+    {
+      "id": "evidence-object-action-closure",
+      "result": "pass",
+      "summary": "七场景均保持证据边界、一个可验证判断、有界对象、所选对象新证据和一个真实工作区动作；历史或不可用证据不会展示伪造当前值。"
+    },
+    {
+      "id": "phone-tablet-task-architecture",
+      "result": "pass",
+      "summary": "320–430 手机保持巡检顺序和底栏安全区；768–1199 使用对象索引、详情和场景对照，不是机械放大手机。"
+    },
+    {
+      "id": "copy-precision-polish",
+      "result": "pass",
+      "summary": "混合折叠集合统一称为“相关对象”，采集错误压缩为可扫读且事实边界不变的摘要；前轮两个 P2 已关闭。"
+    }
+  ]
+}

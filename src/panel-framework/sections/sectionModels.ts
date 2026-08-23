@@ -8,16 +8,32 @@ import {
   type OverviewTone,
 } from "../overview";
 import { parseRfc3339Timestamp } from "../timeContract";
+import {
+  compareResourceRisk,
+  RESOURCE_METRIC_DEFINITIONS,
+  resourceEvidenceWindow,
+} from "../overview/evidence-model/resourceHistorySamples";
 import { panelObjectIdentityPartsForRaw } from "./panelObjectIdentity";
 import { buildSectionRowEvidence, type SectionEvidenceContext, type SectionRowEvidence } from "./sectionRowEvidence";
-
-type UnknownRecord = Record<string, unknown>;
+import {
+  assessRawInterfaceOperationalState,
+  type InterfaceOperationalImpact,
+  type InterfaceOperationalReason,
+} from "./interfaceOperationalAssessment";
+import { objectRows as rows, record, type UnknownRecord } from "./rawValue";
+import {
+  diagnosticChannelSummaries,
+  diagnosticFailureRows,
+  hasDiagnosticFailures,
+} from "./diagnosticFailureModel";
+import { resourceTimeSeries } from "./resourceTimeSeries";
 
 export interface SectionMetric {
   label: string;
   value: string;
   note?: string;
   tone?: OverviewTone;
+  action?: PanelRouteId;
 }
 
 export interface SectionColumn {
@@ -59,6 +75,8 @@ export interface SectionRowMeta {
   ruleOrder: number | null;
   tags: string[];
   identityParts: string[];
+  operationalImpact: InterfaceOperationalImpact;
+  operationalReason: InterfaceOperationalReason | null;
 }
 
 export interface SectionTable {
@@ -83,8 +101,8 @@ export interface SectionTimeSeriesVisualization {
   kind: "time-series";
   title: string;
   windowLabel: string;
-  min: 0;
-  max: 100;
+  min: number;
+  max: number;
   series: SectionTimeSeries[];
   accessibleSummary: string;
 }
@@ -100,14 +118,6 @@ export interface SectionModel {
   metrics: SectionMetric[];
   tables: SectionTable[];
   visualization?: SectionTimeSeriesVisualization;
-}
-
-function record(value: unknown): UnknownRecord {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as UnknownRecord : {};
-}
-
-function rows(value: unknown): UnknownRecord[] {
-  return Array.isArray(value) ? value.filter((item): item is UnknownRecord => Boolean(item && typeof item === "object" && !Array.isArray(item))) : [];
 }
 
 function text(value: unknown, fallback = "未记录"): string {
@@ -128,6 +138,107 @@ function count(value: unknown): number {
   return rows(value).length;
 }
 
+interface CollectionState {
+  present: boolean;
+  rows: UnknownRecord[];
+}
+
+function collectionAt(parent: unknown, key: string): CollectionState {
+  if (!parent || typeof parent !== "object" || Array.isArray(parent)) return { present: false, rows: [] };
+  const source = parent as UnknownRecord;
+  return Object.prototype.hasOwnProperty.call(source, key)
+    ? { present: true, rows: rows(source[key]) }
+    : { present: false, rows: [] };
+}
+
+function directCollection(parent: unknown, key: string): CollectionState {
+  if (!parent || typeof parent !== "object" || Array.isArray(parent)) return { present: false, rows: [] };
+  const source = parent as UnknownRecord;
+  return Object.prototype.hasOwnProperty.call(source, key)
+    ? { present: true, rows: rows(source[key]) }
+    : { present: false, rows: [] };
+}
+
+function collectionCount(collection: CollectionState): string {
+  return collection.present ? String(collection.rows.length) : "未取得";
+}
+
+function connectionDetailCoverageMetric(
+  connections: UnknownRecord,
+  activeCollection: CollectionState,
+  reportedTotal: number | null,
+): SectionMetric {
+  if (!activeCollection.present) {
+    return {
+      label: "活动明细样本",
+      value: "未取得",
+      note: "活动明细集合未返回",
+      tone: "missing",
+    };
+  }
+
+  const activeMeta = record(record(connections.meta).active);
+  const metadataTotal = number(activeMeta.totalCount ?? activeMeta.actualCount);
+  const declaredShown = number(activeMeta.shownCount);
+  const renderedCount = activeCollection.rows.length;
+  const total = reportedTotal ?? metadataTotal;
+  const metadataMismatch = (
+    (reportedTotal !== null && metadataTotal !== null && reportedTotal !== metadataTotal)
+    || (declaredShown !== null && declaredShown !== renderedCount)
+  );
+  const sampled = activeMeta.sampled === true;
+  const hasMore = activeMeta.hasMore === true;
+  const explicitlyComplete = (
+    activeMeta.sampled === false
+    && activeMeta.hasMore === false
+    && total !== null
+    && renderedCount === total
+    && !metadataMismatch
+  );
+
+  if (metadataMismatch) {
+    return {
+      label: "活动明细样本",
+      value: total === null ? `${renderedCount} 条` : `${renderedCount} / ${total}`,
+      note: "覆盖元数据与可见行不一致",
+      tone: "warn",
+    };
+  }
+
+  if (sampled || hasMore) {
+    return {
+      label: "活动明细样本",
+      value: total === null ? `${renderedCount} 条` : `${renderedCount} / ${total}`,
+      note: "非全量枚举 · 活动速率样本",
+      tone: "warn",
+    };
+  }
+
+  if (explicitlyComplete) {
+    return {
+      label: "活动明细样本",
+      value: `${renderedCount} / ${total}`,
+      note: "快照声明完整枚举",
+      tone: "trust",
+    };
+  }
+
+  return {
+    label: "活动明细样本",
+    value: total === null ? `${renderedCount} 条` : `${renderedCount} / ${total}`,
+    note: total === null ? "总连接数未取得 · 完整性未声明" : "完整性未声明",
+    tone: "warn",
+  };
+}
+
+function collectionTone(collection: CollectionState, nonEmptyTone: OverviewTone = "trust"): OverviewTone {
+  return collection.present && collection.rows.length ? nonEmptyTone : collection.present ? "trust" : "missing";
+}
+
+function collectionEmpty(collection: CollectionState, empty: string): string {
+  return collection.present ? empty : "未取得该对象集合";
+}
+
 function state(value: unknown, disabled?: unknown): string {
   if (disabled === true) return "已停用";
   if (value === true || String(value).toLowerCase() === "running" || String(value).toLowerCase() === "bound") return "运行";
@@ -138,6 +249,14 @@ function state(value: unknown, disabled?: unknown): string {
 function rate(value: unknown): string {
   const observed = number(value);
   return observed === null ? "未取得" : formatRate(observed);
+}
+
+function aggregateRate(item: UnknownRecord): number | null {
+  const total = number(item.totalRate) ?? number(item.bytes) ?? number(item.value);
+  if (total !== null) return total;
+  const down = number(item.downRate);
+  const up = number(item.upRate);
+  return down !== null && up !== null ? down + up : null;
 }
 
 export function emptySectionRowMeta(overrides: Partial<SectionRowMeta> = {}): SectionRowMeta {
@@ -160,6 +279,8 @@ export function emptySectionRowMeta(overrides: Partial<SectionRowMeta> = {}): Se
     ruleOrder: null,
     tags: [],
     identityParts: [],
+    operationalImpact: "none",
+    operationalReason: null,
     ...overrides,
   };
 }
@@ -176,7 +297,7 @@ function rawString(...values: unknown[]): string {
 function rawBoolean(value: unknown): boolean | null {
   if (typeof value === "boolean") return value;
   if (typeof value !== "string") return null;
-  const normalized = value.trim().toLocaleLowerCase();
+  const normalized = value.trim().toLowerCase();
   if (["true", "yes", "running", "active", "bound", "online", "enabled", "up"].includes(normalized)) return true;
   if (["false", "no", "stopped", "inactive", "unbound", "offline", "disabled", "down"].includes(normalized)) return false;
   return null;
@@ -197,7 +318,7 @@ function observedTotal(...values: unknown[]): number | null {
 
 function rawSeverity(row: UnknownRecord, route: PanelRouteId): SectionRowSeverity {
   const evidence = [row.severity, row.level, row.topics]
-    .map((value) => rawString(value).toLocaleLowerCase())
+    .map((value) => rawString(value).toLowerCase())
     .filter(Boolean)
     .join(" ");
   if (/(?:^|[\s,;:/_-])(critical|fatal|emergency|alert)(?:$|[\s,;:/_-])/.test(evidence)) return "critical";
@@ -208,7 +329,7 @@ function rawSeverity(row: UnknownRecord, route: PanelRouteId): SectionRowSeverit
 }
 
 function statusState(value: unknown): SectionRowState {
-  const normalized = rawString(value).toLocaleLowerCase();
+  const normalized = rawString(value).toLowerCase();
   if (!normalized) return "unknown";
   if (["running", "up", "enabled", "reachable"].includes(normalized)) return "running";
   if (["online"].includes(normalized)) return "online";
@@ -222,17 +343,23 @@ function statusState(value: unknown): SectionRowState {
   return "unknown";
 }
 
-function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): SectionRowMeta {
+function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord, evidence: SectionRowEvidence): SectionRowMeta {
   const disabled = rawBoolean(row.disabled);
   const active = rawBoolean(row.active);
   const online = rawBoolean(row.online);
   let running = rawBoolean(row.running);
   const severity = rawSeverity(row, route);
-  const protocol = rawString(row.protocol, row.label).toLocaleLowerCase();
+  const protocol = rawString(row.protocol, row.label).toLowerCase();
   const directTraffic = firstNumber(row.totalRate, row.rate, row.bytes, row.value);
   const trafficBps = directTraffic ?? observedTotal(row.downRate, row.upRate, row.rxRate, row.txRate);
   const connections = firstNumber(row.connections, row.count);
-  const timestampText = rawString(row.time, row.lastConfirmed, row.timestamp, row.at);
+  const timestampText = rawString(
+    row.observedAt,
+    row.lastConfirmed,
+    row.timestamp,
+    row.at,
+    route === "logs" || route === "serviceLogs" ? "" : row.time,
+  );
   const timestamp = timestampText ? parseRfc3339Timestamp(timestampText) : null;
   const address = rawString(row.address, row.ip, row.source, row.localIp, row.srcAddress, row.src);
   const targetAddress = rawString(row.destination, row.remoteIp, row.dstAddress, row.dst);
@@ -244,9 +371,9 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
   const sampleCount = observedSeries.length ? observedSeries.length : firstNumber(row.sampleCount, row.samples);
   const ruleOrder = firstNumber(row.rawOrder, row.order);
   const tags = new Set<string>();
-  const status = rawString(row.status, row.state).toLocaleLowerCase();
-  const topicText = [row.group, row.topics].map((value) => rawString(value).toLocaleLowerCase()).filter(Boolean).join(" ");
-  const action = rawString(row.action).toLocaleLowerCase();
+  const status = rawString(row.status, row.state).toLowerCase();
+  const topicText = [row.group, row.topics].map((value) => rawString(value).toLowerCase()).filter(Boolean).join(" ");
+  const action = rawString(row.action).toLowerCase();
   const destination = rawString(row.dstAddress, row.destination);
   const isDefaultRoute = row.default === true || destination === "0.0.0.0/0" || destination === "::/0";
 
@@ -272,10 +399,14 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
   if (route === "dhcp" && status === "bound") running = true;
 
   let rowState: SectionRowState;
+  const interfaceEvidence = (route === "interfaces" || route === "lineStatus") && evidence.kind === "interface"
+    ? evidence
+    : null;
+
   if (disabled === true) {
     rowState = "disabled";
   } else if ((route === "trafficLoad" || route === "loadAudit") && utilization !== null) {
-    const threshold = rawString(row.key, row.series).toLocaleLowerCase() === "disk" ? 90 : 85;
+    const threshold = rawString(row.key, row.series).toLowerCase() === "disk" ? 90 : 85;
     rowState = utilization >= threshold ? "error" : "neutral";
   } else if (severity === "critical" || severity === "error") {
     rowState = "error";
@@ -288,7 +419,11 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
   } else if (route === "routes" || (route === "balance" && title === "默认路由")) {
     rowState = active === true ? "active" : active === false ? "inactive" : "unknown";
   } else if (route === "interfaces" || route === "lineStatus") {
-    rowState = running === true ? "running" : running === false ? "stopped" : "unknown";
+    rowState = running === true
+      ? "running"
+      : running === false
+        ? interfaceEvidence?.operationalImpact === "risk" ? "error" : "warning"
+        : "unknown";
   } else if (route === "terminals") {
     rowState = online === true ? "online" : online === false ? "stopped" : statusState(status);
   } else if (route === "dhcp" && status === "bound") {
@@ -298,13 +433,15 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
     if (rowState === "unknown") rowState = "neutral";
   }
 
-  const attention = disabled === true
-    || rowState === "stopped"
-    || rowState === "warning"
-    || rowState === "error"
-    || title === "身份告警"
-    || title === "安全告警"
-    || title === "采集与诊断边界";
+  const attention = interfaceEvidence
+    ? interfaceEvidence.operationalImpact === "risk"
+    : disabled === true
+      || rowState === "stopped"
+      || rowState === "warning"
+      || rowState === "error"
+      || title === "身份告警"
+      || title === "安全告警"
+      || title === "采集与诊断边界";
 
   return emptySectionRowMeta({
     state: rowState,
@@ -325,16 +462,19 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
     ruleOrder,
     tags: [...tags].sort(),
     identityParts: panelObjectIdentityPartsForRaw(route, title, row),
+    operationalImpact: interfaceEvidence?.operationalImpact || (attention ? "risk" : "none"),
+    operationalReason: interfaceEvidence?.operationalReason || null,
   });
 }
 
 function table(route: PanelRouteId, title: string, columns: SectionColumn[], sourceRows: UnknownRecord[], map: (row: UnknownRecord, index: number) => Record<string, string>, empty: string, note?: string, evidenceContext: SectionEvidenceContext = {}): SectionTable {
+  const rowEvidence = sourceRows.map((row) => buildSectionRowEvidence(route, title, row, evidenceContext));
   return {
     title,
     columns,
     rows: sourceRows.map(map),
-    rowMeta: sourceRows.map((row) => metadataFor(route, title, row)),
-    rowEvidence: sourceRows.map((row) => buildSectionRowEvidence(route, title, row, evidenceContext)),
+    rowMeta: sourceRows.map((row, index) => metadataFor(route, title, row, rowEvidence[index])),
+    rowEvidence,
     empty,
     note,
   };
@@ -343,12 +483,6 @@ function table(route: PanelRouteId, title: string, columns: SectionColumn[], sou
 function evidenceMode(snapshot: OverviewRawSnapshot): SectionModel["evidenceMode"] {
   if (isSnapshotUnavailable(snapshot) || !latestBusinessSuccessTime(snapshot)) return "unavailable";
   const meta = snapshot.meta;
-  const hasEndpointFailures = [
-    meta?.staticEndpointFailures,
-    meta?.realtimeEndpointFailures,
-    meta?.slowRestEndpointFailures,
-    meta?.detailEndpointFailures,
-  ].some((items) => Array.isArray(items) && items.length > 0);
   if (
     meta?.clientEvidenceBoundary ||
     meta?.realtimeError ||
@@ -356,15 +490,13 @@ function evidenceMode(snapshot: OverviewRawSnapshot): SectionModel["evidenceMode
     meta?.staticError ||
     meta?.connectionDetailError ||
     meta?.connectionProtocolError ||
-    hasEndpointFailures
+    hasDiagnosticFailures(meta)
   ) return "historical";
   return "current";
 }
 
-function base(route: PanelRouteId, snapshot: OverviewRawSnapshot): Pick<SectionModel, "title" | "description" | "updatedAt" | "observedAt" | "evidenceMode" | "status" | "statusTone"> {
+function base(route: PanelRouteId, snapshot: OverviewRawSnapshot, historicalStatus = "历史证据 · 不代表当前"): Pick<SectionModel, "title" | "description" | "updatedAt" | "observedAt" | "evidenceMode" | "status" | "statusTone"> {
   const mode = evidenceMode(snapshot);
-  const evidenceBoundary = snapshot.meta?.clientEvidenceBoundary;
-  const boundaryLabel = evidenceBoundary ? "历史快照" : "";
   const successAt = latestBusinessSuccessTime(snapshot);
   return {
     title: PANEL_ROUTES[route].title,
@@ -372,7 +504,7 @@ function base(route: PanelRouteId, snapshot: OverviewRawSnapshot): Pick<SectionM
     updatedAt: successAt ? shortTimestamp(successAt) : "未记录",
     observedAt: successAt || null,
     evidenceMode: mode,
-    status: boundaryLabel || (mode === "unavailable" ? text(snapshot.error, "当前证据不可用") : mode === "historical" ? "历史快照 · 当前变化不可见" : "当前只读证据"),
+    status: mode === "unavailable" ? text(snapshot.error, "当前证据不可用") : mode === "historical" ? historicalStatus : "当前只读证据",
     statusTone: mode === "unavailable" ? "danger" : mode === "historical" ? "warn" : "trust",
   };
 }
@@ -384,12 +516,11 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
     metrics: model.metrics.map((metric) => ({
       ...metric,
       label: metric.label.replace(/^当前/, "历史"),
-      note: [metric.note, "历史记录，不代表当前"].filter(Boolean).join(" · "),
-      tone: metric.tone === "danger" ? "danger" : "warn",
+      tone: "warn",
     })),
     tables: model.tables.map((item) => ({
       ...item,
-      note: [item.note, "以下对象来自上次成功快照，不代表当前状态"].filter(Boolean).join(" · "),
+      note: [item.note, "以下对象为历史记录，不代表当前"].filter(Boolean).join(" · "),
     })),
   };
   return {
@@ -411,61 +542,28 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
   };
 }
 
-function historyTimestamp(value: unknown): number | null {
-  const numeric = number(value);
-  if (numeric !== null) return numeric < 1e12 ? numeric * 1000 : numeric;
-  return parseRfc3339Timestamp(value);
-}
-
-function resourceVisualization(history: UnknownRecord): SectionTimeSeriesVisualization | undefined {
-  const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
-  if (timestamps.length < 2) return undefined;
-  const definitions: Array<{ key: SectionTimeSeries["key"]; label: string; threshold: number }> = [
-    { key: "cpu", label: "CPU", threshold: 85 },
-    { key: "memory", label: "内存", threshold: 85 },
-    { key: "disk", label: "磁盘", threshold: 90 },
-  ];
-  const series = definitions.map((definition) => {
-    const values = Array.isArray(history[definition.key]) ? history[definition.key] as unknown[] : [];
-    const length = Math.min(timestamps.length, values.length);
-    const points: SectionTimeSeries["points"] = [];
-    for (let index = 0; index < length; index += 1) {
-      const timestamp = historyTimestamp(timestamps[index]);
-      const value = number(values[index]);
-      if (timestamp !== null && value !== null && value >= 0 && value <= 100) points.push({ timestamp, value });
-    }
-    return { ...definition, unit: "%" as const, points };
-  }).filter((item) => item.points.length >= 2);
-  if (!series.length) return undefined;
-  const allPoints = series.flatMap((item) => item.points);
-  const start = Math.min(...allPoints.map((point) => point.timestamp));
-  const end = Math.max(...allPoints.map((point) => point.timestamp));
-  const durationSeconds = Math.max(0, Math.round((end - start) / 1000));
-  const windowLabel = durationSeconds >= 60
-    ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟`
-    : `最近 ${Math.max(1, durationSeconds)} 秒`;
-  const latest = series.map((item) => `${item.label} ${item.points[item.points.length - 1].value}%`).join("，");
-  return {
-    kind: "time-series",
-    title: "资源压力时间序列",
-    windowLabel,
-    min: 0,
-    max: 100,
-    series,
-    accessibleSummary: `${windowLabel}，${latest}；CPU 和内存阈值 85%，磁盘阈值 90%。`,
-  };
-}
-
 function interfaceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const available = Array.isArray(snapshot.interfaces);
   const items = rows(snapshot.interfaces);
   const down = items.filter((item) => item.running === false).length;
   const disabled = items.filter((item) => item.disabled === true).length;
+  const assessments = items.map((item) => assessRawInterfaceOperationalState(item, snapshot.routes));
+  const confirmedRisk = assessments.filter((item) => item.impact === "risk").length;
+  const impactUnverified = assessments.filter((item) => item.observation === "not-running" && item.impact === "unverified").length;
   return {
     ...base(route, snapshot),
     metrics: [
       { label: "接口总数", value: available ? String(items.length) : "未取得", tone: !available ? "missing" : items.length ? "trust" : "warn" },
-      { label: "未运行", value: available ? String(down) : "未取得", tone: !available ? "missing" : down ? "danger" : "trust" },
+      {
+        label: "未运行",
+        value: available ? String(down) : "未取得",
+        tone: !available ? "missing" : confirmedRisk ? "danger" : down ? "warn" : "trust",
+        note: confirmedRisk
+          ? `${confirmedRisk} 项有已启用默认路由依赖`
+          : impactUnverified
+            ? `${impactUnverified} 项影响未判定`
+            : undefined,
+      },
       { label: "已停用", value: available ? String(disabled) : "未取得", tone: !available ? "missing" : disabled ? "warn" : "trust" },
     ],
     tables: [table(route, "接口对象", [
@@ -509,19 +607,27 @@ function wanModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionMo
 
 function routeModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const routeData = record(snapshot.routes);
-  const routeItems = rows(routeData.items);
-  const defaultRouteItems = rows(routeData.defaultRoutes);
-  const items = routeItems.length ? routeItems : defaultRouteItems;
+  const routeCollection = collectionAt(routeData, "items");
+  const defaultRouteCollection = collectionAt(routeData, "defaultRoutes");
+  const staticRouteCollection = collectionAt(routeData, "staticRoutes");
+  const items = routeCollection.rows.length
+    ? routeCollection.rows
+    : defaultRouteCollection.rows.length
+      ? defaultRouteCollection.rows
+      : staticRouteCollection.rows;
+  const routeCollectionObserved = routeCollection.present || defaultRouteCollection.present || staticRouteCollection.present;
   const active = items.filter((item) => item.active === true && item.disabled !== true).length;
-  const defaults = routeItems.length
+  const defaults = routeCollection.rows.length
     ? items.filter((item) => item.default === true || item.dstAddress === "0.0.0.0/0" || item.dstAddress === "::/0").length
-    : defaultRouteItems.length;
+    : defaultRouteCollection.rows.length
+      ? defaultRouteCollection.rows.length
+      : staticRouteCollection.rows.filter((item) => item.default === true || item.dstAddress === "0.0.0.0/0" || item.dstAddress === "::/0").length;
   return {
     ...base(route, snapshot),
     metrics: [
-      { label: "路由记录", value: String(items.length), tone: items.length ? "trust" : "missing" },
-      { label: "活动记录", value: String(active), tone: active ? "trust" : "warn" },
-      { label: "默认路由", value: String(defaults), tone: defaults ? "trust" : "warn" },
+      { label: "路由记录", value: routeCollectionObserved ? String(items.length) : "未取得", tone: routeCollectionObserved ? (items.length ? "trust" : "warn") : "missing" },
+      { label: "活动记录", value: routeCollectionObserved ? String(active) : "未取得", tone: !routeCollectionObserved ? "missing" : active ? "trust" : "warn" },
+      { label: "默认路由", value: routeCollectionObserved ? String(defaults) : "未取得", tone: !routeCollectionObserved ? "missing" : defaults ? "trust" : "warn" },
     ],
     tables: [table(route, "路由记录", [
       { key: "destination", label: "目的" }, { key: "gateway", label: "网关" }, { key: "table", label: "路由表" }, { key: "distance", label: "距离" }, { key: "status", label: "状态" },
@@ -531,12 +637,13 @@ function routeModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Section
       table: text(item.table || item.routingTable, "main"),
       distance: text(item.distance),
       status: item.disabled === true ? "已停用" : item.active === true ? "活动" : item.active === false ? "非活动" : "未确认",
-    }), "当前快照没有路由记录", undefined, { interfaces: snapshot.interfaces, wan: snapshot.wan })],
+    }), collectionEmpty({ present: routeCollectionObserved, rows: items }, "当前快照没有路由记录"), undefined, { interfaces: snapshot.interfaces, wan: snapshot.wan })],
   };
 }
 
 function balanceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const balance = record(snapshot.loadBalance);
+  const distributionCollection = collectionAt(balance, "distribution");
   const defaults = rows(balance.defaultRoutes);
   const rules = [...rows(balance.mangleRules), ...rows(balance.routingRules)];
   const activeLines = number(balance.activeLines);
@@ -548,6 +655,12 @@ function balanceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Secti
       { label: "PCC", value: balance.pccDetected === true ? "已识别" : balance.pccDetected === false ? "未识别" : "未记录", tone: balance.pccDetected === true ? "trust" : "missing" },
     ],
     tables: [
+      table(route, "线路分布", [{ key: "name", label: "线路" }, { key: "share", label: "占比" }, { key: "status", label: "状态" }, { key: "traffic", label: "下载 / 上传" }], distributionCollection.rows, (item, index) => ({
+        name: text(item.name || item.interface || item.lineId, `线路 ${index + 1}`),
+        share: number(item.share) === null ? "未取得" : `${number(item.share)}%`,
+        status: item.active === true ? "运行" : item.active === false ? "未运行" : "未确认",
+        traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`,
+      }), collectionEmpty(distributionCollection, "未取得线路分布")),
       table(route, "默认路由", [{ key: "gateway", label: "网关" }, { key: "table", label: "路由表" }, { key: "distance", label: "距离" }, { key: "status", label: "状态" }], defaults, (item) => ({ gateway: text(item.gateway), table: text(item.table), distance: text(item.distance), status: item.active === true ? "活动" : item.active === false ? "非活动" : "未确认" }), "未取得默认路由", undefined, { interfaces: snapshot.interfaces, wan: snapshot.wan }),
       table(route, "策略规则", [{ key: "chain", label: "链 / 动作" }, { key: "mark", label: "标记 / 表" }, { key: "interface", label: "接口" }, { key: "comment", label: "说明" }], rules, (item) => ({ chain: `${text(item.chain, "rule")} / ${text(item.action)}`, mark: text(item.newRoutingMark || item.table || item.routingMark), interface: text(item.inInterface || item.outInterface || item.interface), comment: text(item.comment, "—") }), "未取得策略规则"),
     ],
@@ -555,7 +668,8 @@ function balanceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Secti
 }
 
 function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
-  const items = rows(snapshot.terminals);
+  const terminalCollection = directCollection(snapshot, "terminals");
+  const items = terminalCollection.rows;
   const online = items.filter((item) => {
     const observed = statusState(item.status);
     return item.online === true || observed === "online" || observed === "active" || observed === "running" || observed === "bound";
@@ -566,9 +680,9 @@ function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
   return {
     ...base(route, snapshot),
     metrics: [
-      { label: "终端记录", value: String(items.length), tone: items.length ? "trust" : "missing" },
-      { label: "在线标记", value: String(online), tone: online ? "trust" : "missing" },
-      { label: "连接合计", value: connections === null ? "未取得" : String(connections), tone: connections === null ? "missing" : "trust" },
+      { label: "终端记录", value: collectionCount(terminalCollection), tone: collectionTone(terminalCollection) },
+      { label: "在线标记", value: terminalCollection.present ? String(online) : "未取得", tone: !terminalCollection.present ? "missing" : online ? "trust" : "trust" },
+      { label: "连接合计", value: !terminalCollection.present || connections === null ? "未取得" : String(connections), tone: !terminalCollection.present || connections === null ? "missing" : "trust" },
     ],
     tables: [table(route, "终端对象", [
       { key: "name", label: "终端" }, { key: "address", label: "IP / MAC" }, { key: "status", label: "状态" }, { key: "connections", label: "连接" }, { key: "traffic", label: "下载 / 上传" },
@@ -579,67 +693,102 @@ function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
       connections: text(item.connections, "未取得"),
       traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`,
       _mac: text(item.mac, ""),
-    }), "当前快照没有终端记录", undefined, { dhcp: snapshot.dhcp, arp: snapshot.arp })],
+    }), collectionEmpty(terminalCollection, "当前快照没有终端记录"), undefined, { dhcp: snapshot.dhcp, arp: snapshot.arp })],
   };
 }
 
 function dhcpModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const dhcp = record(snapshot.dhcp);
-  const leases = rows(dhcp.leases);
-  const clients = rows(dhcp.clients);
-  const pools = rows(dhcp.pools);
+  const leaseCollection = collectionAt(dhcp, "leases");
+  const clientCollection = collectionAt(dhcp, "clients");
+  const poolCollection = collectionAt(dhcp, "pools");
+  const leases = leaseCollection.rows;
+  const clients = clientCollection.rows;
+  const pools = poolCollection.rows;
   return {
     ...base(route, snapshot),
     metrics: [
-      { label: "租约", value: String(leases.length), tone: leases.length ? "trust" : "missing" },
-      { label: "上游客户端", value: String(clients.length), tone: clients.length ? "trust" : "missing" },
-      { label: "地址池", value: String(pools.length), tone: pools.length ? "trust" : "missing" },
+      { label: "租约", value: collectionCount(leaseCollection), tone: collectionTone(leaseCollection) },
+      { label: "上游客户端", value: collectionCount(clientCollection), tone: collectionTone(clientCollection) },
+      { label: "地址池", value: collectionCount(poolCollection), tone: collectionTone(poolCollection) },
     ],
     tables: [
-      table(route, "地址租约", [{ key: "host", label: "主机" }, { key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "server", label: "服务器" }, { key: "status", label: "状态" }], leases, (item) => ({ host: text(item.hostName || item.hostname), address: text(item.address), mac: text(item.macAddress || item.mac), server: text(item.server), status: text(item.status), _leaseId: text(item.id || item[".id"], "") }), "当前快照没有 DHCP 租约", undefined, { dhcp, arp: snapshot.arp }),
-      table(route, "DHCP 客户端", [{ key: "interface", label: "接口" }, { key: "status", label: "状态" }, { key: "route", label: "默认路由" }, { key: "dns", label: "使用上游 DNS" }], clients, (item) => ({ interface: text(item.interface), status: text(item.status), route: text(item.addDefaultRoute), dns: text(item.usePeerDns) }), "当前快照没有 DHCP 客户端"),
+      table(route, "地址租约", [{ key: "host", label: "主机" }, { key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "server", label: "服务器" }, { key: "status", label: "状态" }], leases, (item) => ({ host: text(item.hostName || item.hostname), address: text(item.address), mac: text(item.macAddress || item.mac), server: text(item.server), status: text(item.status), _leaseId: text(item.id || item[".id"], "") }), collectionEmpty(leaseCollection, "当前快照没有 DHCP 租约"), undefined, { dhcp, arp: snapshot.arp }),
+      table(route, "DHCP 客户端", [{ key: "interface", label: "接口" }, { key: "status", label: "状态" }, { key: "route", label: "默认路由" }, { key: "dns", label: "使用上游 DNS" }], clients, (item) => ({ interface: text(item.interface), status: text(item.status), route: text(item.addDefaultRoute), dns: text(item.usePeerDns) }), collectionEmpty(clientCollection, "当前快照没有 DHCP 客户端")),
+      table(route, "地址池", [{ key: "name", label: "地址池" }, { key: "ranges", label: "范围" }, { key: "used", label: "已用" }, { key: "total", label: "容量" }, { key: "status", label: "状态" }], pools, (item) => {
+        const used = number(item.used);
+        const total = number(item.total);
+        return {
+          name: text(item.name || item.pool),
+          ranges: text(item.ranges || item.range),
+          used: used === null ? "未取得" : String(used),
+          total: total === null ? "未取得" : String(total),
+          status: used !== null && total !== null && total > 0 && used >= total ? "已满" : "可用",
+        };
+      }, collectionEmpty(poolCollection, "当前快照没有 DHCP 地址池")),
     ],
   };
 }
 
 function arpModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const arp = record(snapshot.arp);
-  const items = rows(arp.items).length ? rows(arp.items) : rows(snapshot.arp);
-  const alerts = rows(arp.alerts);
+  const arpItems = Array.isArray(snapshot.arp)
+    ? { present: true, rows: rows(snapshot.arp) }
+    : collectionAt(arp, "items");
+  const alertCollection = collectionAt(arp, "alerts");
+  const items = arpItems.rows;
+  const alerts = alertCollection.rows;
   return {
     ...base(route, snapshot),
     metrics: [
-      { label: "ARP 记录", value: String(items.length), tone: items.length ? "trust" : "missing" },
-      { label: "身份告警", value: String(alerts.length), tone: alerts.length ? "danger" : "trust" },
-      { label: "动态记录", value: String(items.filter((item) => item.dynamic === true).length), tone: "trust" },
+      { label: "ARP 记录", value: collectionCount(arpItems), tone: collectionTone(arpItems) },
+      { label: "身份告警", value: collectionCount(alertCollection), tone: !alertCollection.present ? "missing" : alerts.length ? "danger" : "trust" },
+      { label: "动态记录", value: arpItems.present ? String(items.filter((item) => item.dynamic === true).length) : "未取得", tone: arpItems.present ? "trust" : "missing" },
     ],
     tables: [
-      table(route, "身份告警", [{ key: "address", label: "地址" }, { key: "kind", label: "类型" }, { key: "detail", label: "证据" }], alerts, (item) => ({ address: text(item.ip || item.address), kind: text(item.type || item.level, "冲突"), detail: text(item.message || item.detail) }), "没有记录到 ARP 身份告警"),
-      table(route, "ARP 对象", [{ key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "status", label: "状态" }, { key: "interface", label: "接口" }], items, (item) => ({ address: text(item.ip || item.address), mac: text(item.mac || item.macAddress), status: text(item.status, item.dynamic === true ? "动态" : "未确认"), interface: text(item.interface) }), "当前快照没有 ARP 记录", undefined, { dhcp: snapshot.dhcp, arp }),
+      table(route, "身份告警", [{ key: "address", label: "地址" }, { key: "kind", label: "类型" }, { key: "detail", label: "证据" }], alerts, (item) => ({ address: text(item.ip || item.address), kind: text(item.type || item.level, "冲突"), detail: text(item.message || item.detail) }), collectionEmpty(alertCollection, "没有记录到 ARP 身份告警")),
+      table(route, "ARP 对象", [{ key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "status", label: "状态" }, { key: "interface", label: "接口" }], items, (item) => ({ address: text(item.ip || item.address), mac: text(item.mac || item.macAddress), status: text(item.status, item.dynamic === true ? "动态" : "未确认"), interface: text(item.interface) }), collectionEmpty(arpItems, "当前快照没有 ARP 记录"), undefined, { dhcp: snapshot.dhcp, arp }),
     ],
   };
 }
 
 function resourceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
-  const overview = record(snapshot.overview);
-  const history = record(overview.history);
-  const series = ["cpu", "memory", "disk"].map((key) => ({ key, values: Array.isArray(history[key]) ? history[key] as unknown[] : [] }));
-  const cpu = number(overview.cpuLoad);
-  const memory = number(overview.memoryUsage);
-  const disk = number(overview.diskUsage);
+  const resourceWindow = resourceEvidenceWindow(snapshot);
+  const resourceMetrics = RESOURCE_METRIC_DEFINITIONS.map(({ key, label }) => {
+    const metric = resourceWindow.metrics[key];
+    return {
+      key,
+      label,
+      value: metric.current,
+      ...metric,
+    };
+  });
+  const series = resourceMetrics.map(({ key, label, points, evidence }) => ({
+    values: points.map((point) => point.value),
+    key,
+    label,
+    sampleSequence: points.map((point) => ({ timestamp: new Date(point.timestamp).toISOString(), value: point.value })),
+    timestamps: points.map((point) => new Date(point.timestamp).toISOString()),
+    ...evidence,
+  }));
+  const priority = resourceMetrics
+    .filter((metric) => metric.value !== null && metric.value >= metric.threshold)
+    .sort((left, right) => compareResourceRisk(left.evidence, right.evidence))[0];
   return {
     ...base(route, snapshot),
-    visualization: resourceVisualization(history),
-    metrics: [
-      { label: "CPU", value: cpu === null ? "未取得" : `${cpu}%`, tone: cpu === null ? "missing" : cpu >= 85 ? "danger" : "trust" },
-      { label: "内存", value: memory === null ? "未取得" : `${memory}%`, tone: memory === null ? "missing" : memory >= 85 ? "danger" : "trust" },
-      { label: "磁盘", value: disk === null ? "未取得" : `${disk}%`, tone: disk === null ? "missing" : disk >= 90 ? "danger" : "trust" },
-    ],
-    tables: [table(route, route === "loadAudit" ? "资源采样摘要" : "资源证据", [{ key: "series", label: "对象" }, { key: "samples", label: "有效样本" }, { key: "latest", label: "最近值" }, { key: "range", label: "样本范围" }], series, (item) => {
+    visualization: resourceTimeSeries({ metrics: resourceMetrics }),
+    metrics: resourceMetrics.map((metric) => ({
+      label: metric.label,
+      value: metric.value === null ? "未取得" : `${metric.value}%`,
+      note: metric.evidence.trailing ? `连续 ${metric.evidence.trailing} / ${metric.evidence.observed} 阈值 ${metric.threshold}%` : undefined,
+      tone: metric.value === null ? "missing" : metric.value >= metric.threshold ? "danger" : "trust",
+      action: metric === priority ? "loadAudit" : undefined,
+    })),
+    tables: [table(route, route === "loadAudit" ? "采样审计" : "资源证据", [{ key: "series", label: "对象" }, { key: "samples", label: "有效样本" }, { key: "latest", label: "最近值" }, { key: "range", label: "样本范围" }], series, (item) => {
       const values = Array.isArray(item.values) ? item.values : [];
       const observed = values.map((value) => number(value)).filter((value): value is number => value !== null && value >= 0 && value <= 100);
       return {
-        series: item.key === "cpu" ? "CPU" : item.key === "memory" ? "内存" : "磁盘",
+        series: text(item.label),
         samples: observed.length ? `${observed.length} 个` : "未取得",
         latest: observed.length ? `${observed[observed.length - 1]}%` : "未取得",
         range: observed.length ? `${Math.min(...observed)}% – ${Math.max(...observed)}%` : "未取得",
@@ -650,50 +799,76 @@ function resourceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
 
 function connectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const connections = record(snapshot.connections);
-  const active = rows(connections.active);
-  const protocols = rows(connections.protocolTop);
-  const topIps = rows(connections.topIps);
-  const source = route === "connections" ? active : route === "trafficAudit" ? [...protocols, ...topIps] : active;
+  const activeCollection = collectionAt(connections, "active");
+  const protocolCollection = collectionAt(connections, "protocolTop");
+  const topIpCollection = collectionAt(connections, "topIps");
+  const active = activeCollection.rows;
+  const protocols = protocolCollection.rows;
+  const topIps = topIpCollection.rows;
+  const source = active;
+  const sourceObserved = route === "connections"
+    ? activeCollection.present
+    : protocolCollection.present || topIpCollection.present;
   const total = number(connections.total);
+  const detailCoverage = connectionDetailCoverageMetric(connections, activeCollection, total);
   return {
     ...base(route, snapshot),
     metrics: [
       { label: "连接总数", value: total === null ? "未取得" : String(total), tone: total === null ? "missing" : "trust" },
-      { label: "当前明细", value: String(active.length), tone: active.length ? "trust" : "missing" },
-      { label: "协议分组", value: String(protocols.length), tone: protocols.length ? "trust" : "missing" },
+      detailCoverage,
+      { label: "协议分组", value: protocolCollection.present ? String(protocols.length) : "未取得", tone: protocolCollection.present ? "trust" : "missing" },
     ],
-    tables: [table(route, route === "connections" ? "活动连接" : "流量对象", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, (item) => {
-      const remote = text(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
-      const protocol = text(item.protocol || item.label, "");
-      return {
-        source: text(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
-        target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
-        connections: text(item.connections ?? item.count, "—"),
-        traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得"),
-        _id: text(item.id || item[".id"], ""),
-        _protocol: protocol,
-        _sourcePort: text(item.sourcePort || item.srcPort, ""),
-        _targetPort: text(item.destinationPort || item.dstPort, ""),
-      };
-    }, route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象")],
+    tables: route === "connections"
+      ? [table(route, "活动连接", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, mapConnectionRow, collectionEmpty({ present: sourceObserved, rows: source }, "当前快照没有活动连接明细"), `${detailCoverage.value} · ${detailCoverage.note}`)]
+      : [
+        table(route, "协议分布", [{ key: "protocol", label: "协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }, { key: "source", label: "采集来源" }], protocols, (item) => ({
+          protocol: text(item.protocol || item.label || item.name),
+          connections: text(item.connections ?? item.count, "未取得"),
+          traffic: rate(item.totalRate ?? item.bytes ?? item.value),
+          source: text(item.source, "未记录"),
+        }), collectionEmpty(protocolCollection, "当前快照没有协议分布")),
+        table(route, "终端流量对象", [{ key: "source", label: "终端" }, { key: "target", label: "目标" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], topIps, mapConnectionRow, collectionEmpty(topIpCollection, "当前快照没有终端流量对象")),
+      ],
+  };
+}
+
+function mapConnectionRow(item: UnknownRecord): Record<string, string> {
+  const remote = text(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
+  const protocol = text(item.protocol || item.label, "");
+  return {
+    source: text(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
+    target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
+    connections: text(item.connections ?? item.count, "—"),
+    traffic: item.totalRate !== undefined || item.bytes !== undefined || item.value !== undefined
+      ? text(item.totalRate ?? item.bytes ?? item.value, "未取得")
+      : rate(aggregateRate(item)),
+    _id: text(item.id || item[".id"], ""),
+    _protocol: protocol,
+    _sourcePort: text(item.sourcePort || item.srcPort, ""),
+    _targetPort: text(item.destinationPort || item.dstPort, ""),
   };
 }
 
 function dnsModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const dns = record(snapshot.dns);
   const ipv6 = route === "dns6";
-  const source = ipv6 ? [...rows(dns.ipv6Nd), ...rows(dns.ipv6DhcpClients)] : rows(dns.forwardRules);
-  const servers = Array.isArray(dns.servers) ? dns.servers : [];
+  const ndCollection = collectionAt(dns, "ipv6Nd");
+  const dhcp6Collection = collectionAt(dns, "ipv6DhcpClients");
+  const forwardCollection = collectionAt(dns, "forwardRules");
+  const source = ipv6 ? [...ndCollection.rows, ...dhcp6Collection.rows] : forwardCollection.rows;
+  const sourceObserved = ipv6 ? ndCollection.present || dhcp6Collection.present : forwardCollection.present;
+  const serverCollection = collectionAt(dns, "servers");
+  const servers = serverCollection.rows;
   return {
     ...base(route, snapshot),
     metrics: ipv6 ? [
-      { label: "ND 对象", value: String(count(dns.ipv6Nd)), tone: count(dns.ipv6Nd) ? "trust" : "missing" },
-      { label: "DHCPv6 客户端", value: String(count(dns.ipv6DhcpClients)), tone: count(dns.ipv6DhcpClients) ? "trust" : "missing" },
-      { label: "DNS 发布", value: String(rows(dns.ipv6Nd).filter((item) => item.advertiseDns === true).length), tone: "trust" },
+      { label: "ND 对象", value: collectionCount(ndCollection), tone: collectionTone(ndCollection) },
+      { label: "DHCPv6 客户端", value: collectionCount(dhcp6Collection), tone: collectionTone(dhcp6Collection) },
+      { label: "DNS 发布", value: ndCollection.present ? String(ndCollection.rows.filter((item) => item.advertiseDns === true).length) : "未取得", tone: ndCollection.present ? "trust" : "missing" },
     ] : [
       { label: "远程请求", value: dns.running === true ? "允许" : dns.running === false ? "未允许" : "未记录", tone: dns.running === true ? "trust" : dns.running === false ? "warn" : "missing" },
-      { label: "上游服务器", value: String(servers.length), tone: servers.length ? "trust" : "warn" },
-      { label: "静态规则", value: text(dns.forwardRuleCount, String(source.length)), tone: source.length ? "trust" : "missing" },
+      { label: "上游服务器", value: collectionCount(serverCollection), tone: collectionTone(serverCollection) },
+      { label: "静态规则", value: !sourceObserved ? "未取得" : text(dns.forwardRuleCount, String(source.length)), tone: !sourceObserved ? "missing" : source.length ? "trust" : "trust" },
     ],
     tables: [table(route, ipv6 ? "IPv6 网络对象" : "DNS 静态规则", ipv6 ? [
       { key: "interface", label: "接口" }, { key: "status", label: "状态" }, { key: "prefix", label: "前缀 / DNS" }, { key: "route", label: "默认路由" },
@@ -702,61 +877,127 @@ function dnsModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionMo
     ], source, (item): Record<string, string> => {
       if (ipv6) return { interface: text(item.interface), status: state(item.status, item.disabled), prefix: text(item.prefix || item.dnsServers), route: text(item.addDefaultRoute) };
       return { name: text(item.name), type: text(item.type), value: text(item.value || item.address), status: item.disabled === true ? "已停用" : item.disabled === false ? "启用" : "未确认" };
-    }, ipv6 ? "当前快照没有 IPv6 ND/DHCP 对象" : "当前快照没有 DNS 静态规则", undefined, { dns })],
+    }, collectionEmpty({ present: sourceObserved, rows: source }, ipv6 ? "当前快照没有 IPv6 ND/DHCP 对象" : "当前快照没有 DNS 静态规则"), undefined, { dns })],
   };
 }
 
 function securityModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const security = record(snapshot.security);
-  const filters = rows(security.filters);
-  const alerts = rows(security.alerts);
-  const addressLists = rows(security.addressLists);
+  const filterCollection = collectionAt(security, "filters");
+  const alertCollection = collectionAt(security, "alerts");
+  const addressListCollection = collectionAt(security, "addressLists");
+  const filters = filterCollection.rows;
+  const alerts = alertCollection.rows;
+  const addressLists = addressListCollection.rows;
   return {
     ...base(route, snapshot),
     metrics: [
-      { label: "过滤规则", value: String(filters.length), tone: filters.length ? "trust" : "missing" },
-      { label: "地址集", value: String(addressLists.length), tone: addressLists.length ? "trust" : "missing" },
-      { label: "告警记录", value: String(alerts.length), tone: alerts.length ? "danger" : "trust" },
+      { label: "过滤规则", value: collectionCount(filterCollection), tone: collectionTone(filterCollection) },
+      { label: "地址集", value: collectionCount(addressListCollection), tone: collectionTone(addressListCollection) },
+      { label: "告警记录", value: collectionCount(alertCollection), tone: !alertCollection.present ? "missing" : alerts.length ? "danger" : "trust" },
     ],
     tables: [
-      table(route, "安全告警", [{ key: "time", label: "时间" }, { key: "scope", label: "范围" }, { key: "message", label: "事件" }], alerts, (item) => ({ time: text(item.time || item.lastConfirmed), scope: text(item.affected || item.topics), message: text(item.abnormal || item.message) }), "当前快照没有安全告警"),
-      table(route, "防火墙规则", [{ key: "order", label: "顺序" }, { key: "chain", label: "链" }, { key: "action", label: "动作" }, { key: "comment", label: "说明" }], filters, (item) => ({ order: text(item.rawOrder), chain: text(item.chain), action: text(item.action), comment: text(item.comment, "—") }), "当前快照没有防火墙规则"),
+      table(route, "安全告警", [{ key: "time", label: "时间" }, { key: "scope", label: "范围" }, { key: "message", label: "事件" }], alerts, (item) => ({ time: text(item.time || item.lastConfirmed), scope: text(item.affected || item.topics), message: text(item.abnormal || item.message) }), collectionEmpty(alertCollection, "当前快照没有安全告警")),
+      table(route, "防火墙规则", [{ key: "order", label: "顺序" }, { key: "chain", label: "链" }, { key: "action", label: "动作" }, { key: "comment", label: "说明" }], filters, (item) => ({ order: text(item.rawOrder), chain: text(item.chain), action: text(item.action), comment: text(item.comment, "—") }), collectionEmpty(filterCollection, "当前快照没有防火墙规则")),
+      table(route, "地址集", [{ key: "list", label: "列表" }, { key: "address", label: "地址" }, { key: "timeout", label: "超时" }, { key: "comment", label: "说明" }], addressLists, (item) => ({ list: text(item.list || item.name), address: text(item.address || item.ip), timeout: text(item.timeout, "永久"), comment: text(item.comment, "—") }), collectionEmpty(addressListCollection, "当前快照没有安全地址集")),
     ],
+  };
+}
+
+function serviceLogCategoryLabel(value: unknown): string {
+  const category = text(value, "未知来源").toLowerCase();
+  if (category === "system") return "系统";
+  if (category === "firewall") return "防火墙";
+  if (category === "dhcp") return "DHCP";
+  if (category === "dns") return "DNS";
+  return "来源未确认";
+}
+
+function serviceLogModel(snapshot: OverviewRawSnapshot): SectionModel {
+  const logs = record(snapshot.logs);
+  const grouped: UnknownRecord[] = ["system", "firewall", "dhcp", "dns"].flatMap((group) => rows(logs[group]).map((item) => ({ ...item, group })));
+  const observedCategories = new Set(grouped.map((item) => serviceLogCategoryLabel(item.group)).filter((item) => item !== "来源未确认"));
+  const warningCount = grouped.filter((item) => /error|warning|critical/i.test(text(item.topics, ""))).length;
+  return {
+    ...base("serviceLogs", snapshot, "历史服务证据 · 不代表当前"),
+    metrics: [
+      { label: "服务来源", value: grouped.length ? `${observedCategories.size} 类` : "未取得", tone: grouped.length ? "trust" : "missing", note: "仅统计有来源集合的记录" },
+      { label: "分类记录", value: String(grouped.length), tone: grouped.length ? "trust" : "missing" },
+      { label: "错误/警告", value: String(warningCount), tone: warningCount ? "warn" : "trust", note: "不等于服务当前健康" },
+    ],
+    tables: [table("serviceLogs", "服务分类日志", [{ key: "category", label: "服务" }, { key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ category: serviceLogCategoryLabel(item.group), time: text(item.observedAt), topics: text(item.topics), message: text(item.message) }), "没有可用于当前判断的服务日志", "按来源集合分开；分类缺失或没有记录不推断服务正常", { logs })],
   };
 }
 
 function logModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
+  if (route === "serviceLogs") return serviceLogModel(snapshot);
   const logs = record(snapshot.logs);
-  const all = rows(logs.all);
-  const grouped = route === "serviceLogs" ? ["system", "firewall", "dhcp", "dns"].flatMap((group) => rows(logs[group]).map((item) => ({ ...item, group }))) : all;
+  const allCollection = collectionAt(logs, "all");
+  const categoryCollections = ["system", "firewall", "dhcp", "dns"].map((key) => ({ key, collection: collectionAt(logs, key) }));
+  const grouped = allCollection.rows.length
+    ? allCollection.rows
+    : categoryCollections.flatMap(({ key, collection }) => collection.rows.map((item) => ({ ...item, group: key })));
+  const logCollectionObserved = allCollection.present || categoryCollections.some(({ collection }) => collection.present);
+  const firewallCollection = categoryCollections.find(({ key }) => key === "firewall")?.collection || { present: false, rows: [] };
   return {
     ...base(route, snapshot),
     metrics: [
-      { label: "全部记录", value: String(all.length), tone: all.length ? "trust" : "missing" },
-      { label: "防火墙", value: String(count(logs.firewall)), tone: count(logs.firewall) ? "warn" : "trust" },
-      { label: "错误/警告", value: String(all.filter((item) => /error|warning|critical/i.test(text(item.topics, ""))).length), tone: "warn" },
+      { label: "全部记录", value: logCollectionObserved ? String(grouped.length) : "未取得", tone: !logCollectionObserved ? "missing" : grouped.length ? "trust" : "trust" },
+      { label: "防火墙", value: collectionCount(firewallCollection), tone: !firewallCollection.present ? "missing" : firewallCollection.rows.length ? "warn" : "trust" },
+      { label: "错误/警告", value: logCollectionObserved ? String(grouped.filter((item) => /error|warning|critical/i.test(text(item.topics, ""))).length) : "未取得", tone: logCollectionObserved ? "warn" : "missing" },
     ],
-    tables: [table(route, route === "serviceLogs" ? "分类日志" : "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text(item.time), topics: route === "serviceLogs" ? `${text(item.group)} · ${text(item.topics)}` : text(item.topics), message: text(item.message) }), "当前快照没有日志记录", undefined, { logs })],
+    tables: [table(route, "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text(item.observedAt), topics: text(item.topics), message: text(item.message) }), logCollectionObserved ? "当前快照没有日志记录" : "未取得日志集合", undefined, { logs })],
   };
 }
 
 function diagnosticsModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
-  const meta = record(snapshot.meta);
-  const failures = [...rows(meta.realtimeEndpointFailures), ...rows(meta.staticEndpointFailures), ...rows(meta.detailEndpointFailures)];
+  const failures = diagnosticFailureRows(snapshot.meta);
+  const channels = diagnosticChannelSummaries(snapshot.meta);
+  const observedChannels = channels.filter((channel) => channel.observed).length;
   return {
-    ...base(route, snapshot),
-    status: "按需诊断受公开配置边界约束",
-    statusTone: "warn",
-    metrics: [
-      { label: "REST 采集", value: meta.realtimeError ? "有错误" : "无错误记录", tone: meta.realtimeError ? "danger" : "trust" },
-      { label: "SSH 采集", value: meta.staticError ? "有错误" : "无错误记录", tone: meta.staticError ? "danger" : "trust" },
-      { label: "失败端点", value: failures.length ? String(failures.length) : "未记录", tone: failures.length ? "warn" : "missing" },
-    ],
-    tables: [table(route, "采集与诊断边界", [{ key: "group", label: "通道" }, { key: "name", label: "对象" }, { key: "message", label: "记录" }], failures, (item) => ({ group: text(item.group), name: text(item.name), message: text(item.message, "失败端点记录") }), "没有失败端点记录；这不等于外部诊断已经执行", "公开 RouterOS-only 配置默认不执行外部只读探测")],
+    ...base(route, snapshot, "历史诊断记录 · 不代表当前"),
+    metrics: channels.map((channel) => ({
+      label: channel.label,
+      value: !channel.observed
+        ? "未取得"
+        : channel.failureCount
+        ? `${channel.failureCount} 条记录`
+        : channel.error
+          ? "错误记录"
+          : "已记录失败端点 0",
+      note: channel.observedAt ? shortTimestamp(channel.observedAt) : channel.observed ? "记录时间未取得" : "通道记录未取得",
+      tone: !channel.observed ? "missing" : channel.error ? "danger" : channel.failureCount ? "warn" : "trust",
+    })),
+    tables: [table(
+      route,
+      "采集通道失败证据",
+      [{ key: "group", label: "通道" }, { key: "name", label: "端点" }, { key: "message", label: "记录" }],
+      failures,
+      (item) => ({
+        group: text(item.group),
+        name: [text(item.name), text(item.endpoint, "")].filter(Boolean).join(" · "),
+        message: text(item.message, "端点读取失败"),
+      }),
+      observedChannels ? "已记录失败端点 0" : "未取得采集通道失败记录",
+      "仅证明采集端点失败；不证明转发面或外部业务中断。",
+    )],
   };
 }
 
+function moreModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
+  return {
+    ...base(route, snapshot, "工具目录 · 不承载业务快照"),
+    evidenceMode: "unavailable",
+    updatedAt: "未记录",
+    observedAt: null,
+    status: "工具目录 · 不提供业务快照",
+    statusTone: "missing",
+    metrics: [],
+    tables: [],
+  };
+}
 function buildCurrentSectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
+  if (route === "more") return moreModel(route, snapshot);
   if (route === "interfaces") return interfaceModel(route, snapshot);
   if (route === "lineStatus") return wanModel(route, snapshot);
   if (route === "balance") return balanceModel(route, snapshot);
@@ -764,8 +1005,10 @@ function buildCurrentSectionModel(route: PanelRouteId, snapshot: OverviewRawSnap
   if (route === "terminals") return terminalModel(route, snapshot);
   if (route === "dhcp") return dhcpModel(route, snapshot);
   if (route === "arp") return arpModel(route, snapshot);
-  if (route === "trafficLoad" || route === "loadAudit") return resourceModel(route, snapshot);
-  if (route === "trafficAudit" || route === "connections") return connectionModel(route, snapshot);
+  if (route === "trafficLoad") return resourceModel(route, snapshot);
+  if (route === "loadAudit") return resourceModel(route, snapshot);
+  if (route === "trafficAudit") return connectionModel(route, snapshot);
+  if (route === "connections") return connectionModel(route, snapshot);
   if (route === "dns4" || route === "dns6") return dnsModel(route, snapshot);
   if (route === "security") return securityModel(route, snapshot);
   if (route === "logs" || route === "serviceLogs") return logModel(route, snapshot);

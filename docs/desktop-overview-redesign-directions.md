@@ -1,5 +1,9 @@
 # Desktop Overview redesign directions
 
+- status: `superseded`
+- validForCommit: `pre-a414f7ae design exploration`
+- supersededBy: `docs/decision-system/responsive-capabilities.md`
+
 ## Baseline finding
 
 The current 1024/1180 Overview is rejected. It uses 7–10px operational text, CSS rulers posing as trends, clipped threshold copy, and uneven columns that leave useful workspace empty. Mobile and desktop must remain separate render trees; they may share only evidence policy and typed data.

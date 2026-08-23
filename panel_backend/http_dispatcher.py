@@ -1,5 +1,8 @@
 import json
+import os
+import re
 import sys
+from contextlib import nullcontext
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
@@ -18,6 +21,62 @@ from panel_backend.static_assets import (
     resolve_static_asset,
     static_asset_name,
 )
+from panel_backend.supplemental_contract import bounded_public_text, parse_connection_query, parse_dns_page_query
+from panel_backend.time_contract import enforce_public_timestamp_contract
+
+
+EXACT_BUILD_COMMIT = re.compile(r"^[0-9a-fA-F]{40}$")
+BUILD_COMMIT_ENV_NAMES = ("ROS_PANEL_BUILD_COMMIT", "SOURCE_VERSION", "GITHUB_SHA")
+
+
+def resolve_build_commit(runtime):
+    candidates = (
+        getattr(runtime, "PANEL_BUILD_COMMIT", None),
+        getattr(runtime, "BUILD_COMMIT", None),
+        *(os.environ.get(name) for name in BUILD_COMMIT_ENV_NAMES),
+    )
+    for candidate in candidates:
+        value = str(candidate or "").strip()
+        if EXACT_BUILD_COMMIT.fullmatch(value):
+            return value.lower()
+    return None
+
+
+def readonly_collection_evidence(runtime, state):
+    collector = runtime.collector
+    meta = state.get("meta") if isinstance(state.get("meta"), dict) else {}
+    lock = getattr(collector, "lock", None)
+    with lock if lock is not None else nullcontext():
+        last_success_at = getattr(collector, "realtime_updated_at", None)
+        last_failure_at = getattr(collector, "realtime_last_error_at", None)
+        active_error = getattr(collector, "realtime_error", None)
+        endpoint_failures = getattr(collector, "realtime_failures", None)
+
+    if not last_success_at:
+        last_success_at = meta.get("realtimeUpdatedAt")
+    if not last_failure_at:
+        last_failure_at = meta.get("realtimeLastErrorAt")
+    if active_error is None:
+        active_error = meta.get("realtimeError")
+    if endpoint_failures is None:
+        endpoint_failures = meta.get("realtimeEndpointFailures")
+    endpoint_failure_count = len(endpoint_failures) if isinstance(endpoint_failures, (dict, list)) else 0
+    failure_active = bool(active_error) or endpoint_failure_count > 0 or state.get("status") == "error"
+    if failure_active and not last_failure_at and endpoint_failure_count:
+        last_failure_at = last_success_at
+    return {
+        "channel": "routeros-realtime-rest",
+        "lastSuccessAt": last_success_at,
+        "lastFailureAt": last_failure_at,
+        "failureActive": failure_active,
+    }
+
+
+def attach_readonly_evidence(payload, state, runtime, build_commit):
+    result = dict(payload)
+    result["buildCommit"] = build_commit
+    result["collectionEvidence"] = readonly_collection_evidence(runtime, state)
+    return result
 
 
 class PanelRequestHandler(BaseHTTPRequestHandler):
@@ -121,23 +180,23 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
         for header_name in ("X-CSRF-Token", "X-Ros-Panel-CSRF"):
             if self.runtime.csrf_token_matches(session, self.headers.get(header_name)):
                 return True
-        origin = self.runtime.first_header_value(self.headers.get("Origin"))
-        if origin:
-            return self.runtime.panel_origin_is_allowed(self.headers, origin)
-        referer = self.runtime.first_header_value(self.headers.get("Referer"))
-        if referer:
-            return self.runtime.panel_origin_is_allowed(self.headers, referer)
+        origins = self.headers.get_all("Origin") or []
+        if origins:
+            return len(origins) == 1 and self.runtime.panel_origin_is_allowed(self.headers, origins[0])
+        referers = self.headers.get_all("Referer") or []
+        if referers:
+            return len(referers) == 1 and self.runtime.panel_referer_is_allowed(self.headers, referers[0])
         return False
 
     def require_write_authorization(self, parsed):
         session = self.ensure_panel_session(create=False)
         if not session:
             self.send_json_error("Local panel session is required", status=403, code="local_session_required")
-            return False
+            return None
         if not self.write_request_guard_is_valid(session):
             self.send_json_error("CSRF, Origin, or Referer validation failed", status=403, code="csrf_validation_failed")
-            return False
-        return True
+            return None
+        return session
 
     def reject_non_localhost_request(self, parsed):
         if self.runtime.panel_client_address_is_allowed(self.client_address, self.headers) and self.runtime.panel_host_header_is_allowed(self.headers):
@@ -201,58 +260,108 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
                 }
             )
         if parsed.path == "/api/snapshot":
-            return self.send_json(self.runtime.collector.get_state())
+            state = self.runtime.collector.get_state()
+            return self.send_json(attach_readonly_evidence(state, state, self.runtime, self.build_commit))
         if parsed.path == "/api/connection-search":
             params = parse_qs(parsed.query)
-            target_ip = (params.get("target") or params.get("ip") or [""])[0].strip()
-            source_ip = (params.get("source") or params.get("src") or [""])[0].strip() or None
-            limit = self.runtime.to_int((params.get("limit") or [80])[0], 80)
-            if not target_ip:
-                return self.send_json_error("target IP is required", status=400, code="bad_request")
+            try:
+                target_ip, source_ip, limit = parse_connection_query(params)
+            except ValueError:
+                return self.send_json_error(
+                    "Connection search requires canonical IP addresses and a limit from 1 to 50.",
+                    status=400,
+                    code="invalid_connection_query",
+                )
+            guard = self.runtime.SUPPLEMENTAL_CONNECTION_GUARD
+            accepted, reason, retry_after = guard.acquire(self.rate_limit_identity())
+            if not accepted:
+                return self.send_json_error(
+                    "Connection search is already running for this peer." if reason == "connection_search_in_flight" else "请求过于频繁，请稍后重试。",
+                    status=429,
+                    code=reason,
+                    response_headers={"Retry-After": str(retry_after)},
+                    retryAfterSeconds=retry_after,
+                )
             try:
                 return self.send_json(self.runtime.collector.fetch_connection_search(target_ip, source_ip=source_ip, limit=limit))
-            except ValueError as exc:
-                return self.send_json_error(str(exc), status=400, code="bad_request")
+            except ValueError:
+                return self.send_json_error(
+                    "Connection search request could not be processed.",
+                    status=400,
+                    code="invalid_connection_query",
+                )
             except Exception as exc:
-                return self.send_json_error(str(exc), status=502, code="connection_search_failed")
+                self.log_service_error(exc, "connection search failed")
+                return self.send_json_error(
+                    "Connection search is temporarily unavailable.",
+                    status=502,
+                    code="connection_search_unavailable",
+                )
+            finally:
+                guard.release(self.rate_limit_identity())
         if parsed.path == "/api/dns-static":
             params = parse_qs(parsed.query)
-            offset = self.runtime.to_int((params.get("offset") or [0])[0], 0)
-            limit = self.runtime.to_int((params.get("limit") or [self.runtime.DNS_STATIC_PAGE_LIMIT])[0], self.runtime.DNS_STATIC_PAGE_LIMIT)
-            rows = self.runtime.collector.fetch_dns_static_page(offset=offset, limit=limit)
-            total_count = self.runtime.collector.get_dns_static_total_count()
+            try:
+                offset, page_size = parse_dns_page_query(params)
+            except ValueError:
+                return self.send_json_error(
+                    "DNS pages require an aligned offset and a page size from 1 to 50.",
+                    status=400,
+                    code="invalid_dns_page",
+                )
+            dns_payload = self.runtime.collector.fetch_dns_static_evidence_page(offset=offset, page_size=page_size)
+            total_count = dns_payload.get("totalCount") if isinstance(dns_payload, dict) else None
+            if (
+                offset > 0
+                and isinstance(total_count, int)
+                and not isinstance(total_count, bool)
+                and total_count >= 0
+                and offset >= total_count
+            ):
+                last_page = max(1, (total_count + page_size - 1) // page_size)
+                return self.send_json_error(
+                    "The requested DNS page no longer exists in this collection generation.",
+                    status=409,
+                    code="dns_page_out_of_range",
+                    totalCount=total_count,
+                    lastPage=last_page,
+                    revision=dns_payload.get("revision"),
+                )
+            rows = dns_payload.get("rows") if isinstance(dns_payload, dict) else []
             normalized_rows = [
                 {
-                    "name": item.get("name") or item.get("regexp", "-"),
-                    "type": item.get("type", "-"),
-                    "value": item.get("address") or item.get("cname") or item.get("text") or "-",
-                    "ttl": item.get("ttl", "-"),
-                    "comment": item.get("comment", ""),
+                    "name": bounded_public_text(item.get("name") or item.get("regexp"), limit=255, fallback="-"),
+                    "type": bounded_public_text(item.get("type"), limit=32, fallback="-"),
+                    "value": bounded_public_text(item.get("address") or item.get("cname") or item.get("text"), limit=1024, fallback="-"),
+                    "ttl": bounded_public_text(item.get("ttl"), limit=64, fallback="-"),
+                    "comment": bounded_public_text(item.get("comment"), limit=256),
                     "disabled": self.runtime.to_bool(item.get("disabled")),
                 }
                 for item in rows
             ]
-            return self.send_json(
-                {
-                    "totalCount": total_count,
-                    "offset": max(offset, 0),
-                    "limit": max(1, min(limit, self.runtime.DNS_STATIC_MAX_PAGE_LIMIT)),
-                    "visibleRuleCount": len(normalized_rows),
-                    "rows": normalized_rows,
-                }
-            )
+            response = dict(dns_payload)
+            response["rows"] = normalized_rows
+            response["visibleRuleCount"] = len(normalized_rows)
+            page = response.get("page") if isinstance(response.get("page"), dict) else {}
+            response["page"] = {**page, "returnedCount": len(normalized_rows)}
+            return self.send_json(response)
         if parsed.path == "/api/health":
             state = self.runtime.collector.get_state()
             return self.send_json(
-                {
-                    "status": state.get("status"),
-                    "updatedAt": state.get("updatedAt"),
-                    "profile": self.runtime.PANEL_PROFILE,
-                    "target": self.runtime.PANEL_TARGET,
-                    "panelNetwork": self.panel_network_payload(),
-                    "routerLogin": self.runtime.public_router_config(),
-                    "savedLoginCount": len(self.runtime.public_saved_router_logins()),
-                }
+                attach_readonly_evidence(
+                    {
+                        "status": state.get("status"),
+                        "updatedAt": state.get("updatedAt"),
+                        "profile": self.runtime.PANEL_PROFILE,
+                        "target": self.runtime.PANEL_TARGET,
+                        "panelNetwork": self.panel_network_payload(),
+                        "routerLogin": self.runtime.public_router_config(),
+                        "savedLoginCount": len(self.runtime.public_saved_router_logins()),
+                    },
+                    state,
+                    self.runtime,
+                    self.build_commit,
+                )
             )
         if parsed.path in {"/api/status-findings", "/api/health-findings"}:
             return self.send_json(self.runtime.collector.get_status_findings())
@@ -276,7 +385,8 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
             return
         if parsed.path not in self.write_api_paths:
             return self.send_json_error("API route not found", status=404, code="not_found")
-        if not self.require_write_authorization(parsed):
+        authorized_session = self.require_write_authorization(parsed)
+        if not authorized_session:
             return
         if parsed.path == "/api/router-login":
             if not self.enforce_rate_limit("router-login", self.runtime.PANEL_LOGIN_ATTEMPT_LIMIT):
@@ -294,6 +404,28 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
                         status=400,
                         code="saved_login_password_required",
                     )
+                requested_fingerprint = self.runtime.normalize_ssh_fingerprint(
+                    request.ssh_host_key_fingerprint
+                )
+                saved_fingerprint = self.runtime.normalize_ssh_fingerprint(
+                    (saved_entry or {}).get("sshHostKeyFingerprint") or ""
+                )
+                if requested_fingerprint and not saved_fingerprint:
+                    try:
+                        self.runtime.verify_panel_ssh_trust_challenge(
+                            authorized_session.get("id"),
+                            request.ssh_host_key_trust_token,
+                            request.host,
+                            request.ssh_port,
+                            requested_fingerprint,
+                            rest_scheme=request.rest_scheme,
+                        )
+                    except self.runtime.SshTrustChallengeError as exc:
+                        return self.send_json_error(
+                            str(exc),
+                            status=409,
+                            code=exc.code,
+                        )
                 test = self.runtime.test_router_credentials(
                     request.host,
                     request.user,
@@ -305,16 +437,40 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
                     insecure_rest_confirmed=request.insecure_rest_confirmed,
                     ssh_host_key_fingerprint=request.ssh_host_key_fingerprint,
                 )
-                ssh_ok = test.get("ssh", {}).get("ok") is True
-                rest_ok = test.get("rest", {}).get("ok") is True
-                if test.get("ssh", {}).get("hostKeyChanged") is True:
+                ssh_test = test.get("ssh", {})
+                rest_test = test.get("rest", {})
+                ssh_ok = ssh_test.get("ok") is True
+                rest_ok = rest_test.get("ok") is True
+                verified_rest_identity = self.runtime.rest_channel_has_verified_identity(rest_test)
+                continue_with_verified_rest_only = request.continue_with_verified_rest_only
+                if continue_with_verified_rest_only and not verified_rest_identity:
+                    return self.send_json_error(
+                        "仅当 HTTPS 证书校验通过且 REST 请求成功时，才能在本次请求中跳过未完成的 SSH 通道。",
+                        status=409,
+                        code="verified_rest_only_unavailable",
+                        test=test,
+                    )
+                if ssh_test.get("hostKeyChanged") is True and not continue_with_verified_rest_only:
                     return self.send_json_error(
                         "SSH 主机密钥与已固定指纹不一致；已在发送密码前阻断连接。",
                         status=409,
                         code="ssh_host_key_changed",
                         test=test,
                     )
-                if test.get("ssh", {}).get("confirmationRequired") is True:
+                if ssh_test.get("confirmationRequired") is True and not continue_with_verified_rest_only:
+                    challenge = self.runtime.issue_panel_ssh_trust_challenge(
+                        authorized_session.get("id"),
+                        request.host,
+                        request.ssh_port,
+                        ssh_test.get("fingerprint"),
+                        rest_scheme=request.rest_scheme,
+                    )
+                    ssh_test.update(
+                        {
+                            "trustToken": challenge["token"],
+                            "trustExpiresAt": challenge["expiresAt"],
+                        }
+                    )
                     return self.send_json_error(
                         "首次连接必须确认 RouterOS SSH 主机密钥指纹。确认前不会发送 SSH 密码。",
                         status=409,
@@ -474,7 +630,19 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
         if getattr(self, "_service_error_logged", False):
             return
         self._service_error_logged = True
-        print(f"[panel] {context}: {type(exc).__name__}: {exc}", file=sys.stderr)
+        # Exception messages can contain RouterOS URLs, command text, hostnames,
+        # or credentials supplied by an upstream library.  Keep the useful
+        # failure class and bounded numeric diagnostics without copying the
+        # untrusted message into public service logs.
+        diagnostics = []
+        error_number = getattr(exc, "errno", None)
+        if isinstance(error_number, int):
+            diagnostics.append(f"errno={error_number}")
+        response_status = getattr(getattr(exc, "response", None), "status_code", None)
+        if isinstance(response_status, int):
+            diagnostics.append(f"status={response_status}")
+        suffix = f" ({', '.join(diagnostics)})" if diagnostics else ""
+        print(f"[panel] {context}: {type(exc).__name__}{suffix}", file=sys.stderr)
 
     def send_internal_error(self, exc):
         if self.is_expected_disconnect_error(exc):
@@ -483,7 +651,11 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
         return self.send_json_error("Internal panel error", status=500, code="internal_error")
 
     def send_json(self, payload, status=200, headers=None):
-        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        # This is the final public JSON boundary.  Routes can append evidence
+        # after collecting a normalized snapshot, so normalizing only inside
+        # snapshot construction would leave late-added values (for example
+        # collectionEvidence and connection-test errors) ambiguous.
+        body = json.dumps(enforce_public_timestamp_contract(payload), ensure_ascii=False).encode("utf-8")
         try:
             self.send_response(status)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -552,4 +724,5 @@ def create_panel_handler(runtime):
         pass
 
     Handler.runtime = runtime
+    Handler.build_commit = resolve_build_commit(runtime)
     return Handler

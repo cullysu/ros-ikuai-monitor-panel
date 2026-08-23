@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
+const surface = process.env.PANEL_SURFACE === "desktop" ? "desktop" : "mobile";
 
 export default defineConfig({
   plugins: [react()],
@@ -15,10 +16,11 @@ export default defineConfig({
     outDir: "public/assets/framework",
     emptyOutDir: false,
     lib: {
-      entry: resolve(rootDir, "src/panel-framework/main.tsx"),
-      name: "PanelFramework",
+      entry: resolve(rootDir, `src/panel-framework/${surface}/main.tsx`),
+      name: surface === "desktop" ? "PanelDesktop" : "PanelMobile",
       formats: ["iife"],
-      fileName: () => "panel-framework.js"
+      fileName: () => `panel-${surface}.js`,
+      cssFileName: surface,
     }
   }
 });

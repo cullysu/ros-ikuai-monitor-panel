@@ -1,0 +1,37 @@
+{
+  "review": "independent-mobile-pulse-emil-visual-interaction-acceptance",
+  "scope": {
+    "artifact": "_acceptance/mobile-pulse-runtime/report.json",
+    "artifactKey": "worktree-ed9195a9a9cd-b07dd0f53b55",
+    "commit": "ed9195a9a9cd393b254e3a5daa2af3850e4991ef",
+    "worktreeFingerprint": "b07dd0f53b55d42cda7cee8554130eaf70ea32752b5ff06d4e9950be92ae9483",
+    "screenshotsReviewed": 56,
+    "additionalSurfacesReviewed": 4
+  },
+  "verdict": "VETO",
+  "p0": [],
+  "p1": [
+    "Normal first screen repeats verdict and default route across pulse, route and patrol.",
+    "Full-width white sections and borders create an administrative field-wall visual grammar.",
+    "Incident scenes remain too structurally isomorphic instead of having distinct task rhythms.",
+    "Resource and interface rows lack fast comparison and a clear current focus.",
+    "Fleet has no visible scope, comparison or risk distribution.",
+    "Tablet is phone modules arranged in columns with large unused space.",
+    "Short landscape becomes a miniature desktop split layout.",
+    "Overview, workspace, detail and connection do not yet share one mobile product language."
+  ],
+  "p2": [
+    "Floating navigation remains visually heavy on short phones.",
+    "Device metadata consumes excess height at 320px.",
+    "Detail exposes too many unavailable fields before raw evidence.",
+    "Real-device motion and touch feel remain unverified.",
+    "The traffic chart dominates actionable objects."
+  ],
+  "requiredActions": [
+    "Remove first-screen repetition and establish one mobile visual mainline.",
+    "Create scene-specific mobile task structures and comparison primitives.",
+    "Replace tablet and landscape desktop-like compositions.",
+    "Unify product-level mobile typography, object headers, state markers and grouped lists."
+  ]
+}
+

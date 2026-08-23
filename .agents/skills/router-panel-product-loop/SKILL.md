@@ -17,9 +17,14 @@ Read `references/project-gates.md` before changing the overview product. For any
 - Keep evidence available, but progressively disclose it after the first decision surface.
 - Never let a local test redefine the product requirement merely to pass.
 - Never set top-level pass when a required scenario, viewport, screenshot, or CI check is missing.
+- Never set top-level pass when any applicable descendant check is false. Aggregation may preserve explicitly non-applicable checks, but it may not erase or outvote failures.
+- Product, Design, and Visual QA cannot be self-signed by the implementation loop. They remain `fail` or `pending` until independent acceptance evidence exists.
 - Do not upload until local gates pass. After any GitHub upload, wait for Linux validation, Windows packaging, and GHCR/container checks.
 - Do not use normal `git push` in this repository; follow its atomic connector workflow.
 - Bind evidence to both the candidate commit and its Git tree. A later commit is not the same release candidate even when runtime files appear unchanged.
+- A release receipt proves the final identity and gate results; it never replaces the decision rationale. Record every material choice, rejected alternative, evidence-triggered change, and lesson in `docs/panel-redesign-decision-log.md`.
+- Keep `D:\想法\面板\面板重做决策日志.md` as a byte-identical mirror of the repository decision log whenever that path is available. A post-release log entry must say explicitly that it is not contained in the already-published SHA.
+- Decision logging is write-ahead, not end-of-turn cleanup. Before moving from one material implementation slice to the next, append the slice's problem, decision, rejected alternatives, evidence, remaining doubt, and next action to the repository log, synchronize the D-drive mirror, and verify byte identity. Code may not keep advancing while the decision ledger is knowingly stale.
 - Treat public-repository publication as external disclosure. Complete the read-only disclosure and capability preflight before uploading the first blob; never use source uploads as a capability probe.
 - Long-running matrices and publication transactions must have durable checkpoints and a cancellation-safe resume path. Use `scripts/merge_matrix_reports.py` for strict reconstruction from scenario-sized matrix reports; a monolithic in-memory loop is not a release procedure.
 
@@ -36,9 +41,13 @@ For non-trivial work, maintain `docs/product-loop-current.md` with:
 7. inspected local commit/tree and verified remote parent;
 8. evidence freshness, including which candidate generated each report;
 9. public-disclosure and publication-capability status.
+10. latest recorded decision step and D-drive mirror verification status.
+
+The only current human conclusion for this repository lives in `docs/decision-system/current-state.md`. Product contracts and journals must carry `status`, `validForCommit`, and `supersededBy`; historical prose may not override current state.
 
 Never mark a gate passed from prose alone. Attach code, test, report, or screenshot evidence.
 If this file disagrees with `.product-loop/state.json`, a current report, the worktree, or the remote ref, mark the affected gate stale immediately instead of choosing the more convenient record.
+Before ending a non-trivial continuation, reconcile the decision log, its D-drive mirror, this handoff, and machine state. A checkpoint or ignored acceptance receipt is additional evidence, not permission to leave those records stale.
 
 ## Stage 1 — Product Manager
 
@@ -137,7 +146,9 @@ Return a failed item to its owner:
 8. Fetch or compare the resulting remote ref and tree, then wait for Linux validation, Windows packaging, and GHCR/container checks for that exact remote SHA.
 9. A missing local Docker daemon remains `pending`; only the exact-SHA GHCR job can close the container gate in that case.
 10. If any check fails, diagnose it and return to the owning stage. Never call the release complete while CL is pending, missing, cancelled, or red.
+11. After the exact remote SHA finishes all three checks, write the final reasoning and outcome to the decision log and synchronize the D-drive mirror. If that write occurs after publication, label it local/unpublished instead of creating or claiming an unverified successor SHA.
+12. Use `release_checkpoint.py verify-progress` while staging or waiting. Only `release_checkpoint.py verify --final`, which requires exact remote tree/commit/ref plus Linux, Windows, and container pass evidence, can close the engineering release transaction.
 
 ## Completion Rule
 
-Complete the loop only when every required gate is `pass`, evidence paths exist and match the final candidate identity, the release matrix is complete, public-disclosure preflight passed, and all three exact-SHA GitHub checks are green. Otherwise report the current failing gate and continue from that stage.
+Complete the loop only when every required gate is `pass`, evidence paths exist and match the final candidate identity, the release matrix is complete, public-disclosure preflight passed, all three exact-SHA GitHub checks are green, and the decision log/loop state are reconciled with an explicit publication boundary. Otherwise report the current failing gate and continue from that stage.

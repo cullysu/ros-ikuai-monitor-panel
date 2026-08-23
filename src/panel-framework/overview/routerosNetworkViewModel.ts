@@ -1,12 +1,12 @@
 import {
   formatNumber,
-  shortTimestamp,
   toNumber,
   type OverviewDerivedState,
   type OverviewRawSnapshot,
   type OverviewRawWanRow,
   type OverviewTone,
 } from "./index";
+import { parseRfc3339Timestamp } from "../timeContract";
 import { buildRouterOsEvidenceModel, type RouterOsEvidenceModel } from "./routerosEvidenceModel";
 import type { RouterOsTrustPlane, RouterOsTrustPlaneId } from "./routerosTrustModel";
 
@@ -69,16 +69,12 @@ function twoDigit(value: number): string {
 }
 
 function compactTime(raw: unknown): string {
-  const source = String(raw ?? "").trim();
-  if (!source) return "未记录";
-  const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
-  const date = Number.isFinite(numeric)
-    ? new Date(numeric < 1_000_000_000_000 ? numeric * 1000 : numeric)
-    : new Date(source);
-  if (Number.isNaN(date.getTime())) {
-    const fallback = shortTimestamp(raw);
-    return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
-  }
+  const numeric = typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+  const timestamp = numeric === null
+    ? parseRfc3339Timestamp(raw)
+    : numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
+  if (timestamp === null || !Number.isFinite(timestamp)) return "未记录";
+  const date = new Date(timestamp);
   const now = new Date();
   const time = `${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
   if (date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate()) return time;
@@ -102,13 +98,12 @@ function stripSsh(label: string): string {
 }
 
 export function routerOsNetworkPriority(state: OverviewDerivedState): RouterOsNetworkPriority {
-  if (state.scenario === "fleet") return "normal";
-  if (state.scenario === "single") return "normal";
   if (state.scenario === "no-snapshot") return "snapshot-missing";
   if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return "wan-offline";
-  if (state.scenario === "resource-full") return "resource-full";
+  if (state.scenario === "resource-full" || state.facts.resource.level === "danger") return "resource-full";
   if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return "interface-down";
   if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
+  if (state.scenario === "fleet" || state.scenario === "single") return "normal";
   return "normal";
 }
 

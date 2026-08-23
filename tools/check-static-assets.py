@@ -4,6 +4,8 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -13,7 +15,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from panel_backend.static_assets import StaticAssetNotFound, etag_matches, resolve_static_asset
+from panel_backend.static_assets import (
+    StaticAssetNotFound,
+    _resolve_contained_file,
+    _resolve_public_root,
+    etag_matches,
+    resolve_static_asset,
+)
 
 
 def assert_unit_contract() -> None:
@@ -57,19 +65,105 @@ def assert_unit_contract() -> None:
         else:
             raise AssertionError("path traversal escaped the public directory")
 
+        outside = public.parent / "outside-sidecar"
+        outside.write_bytes(b"must-not-be-served")
+        for suffix, encoding in (("gz", "gzip"), ("br", "br")):
+            sidecar = Path(f"{hashed}.{suffix}")
+            sidecar.unlink()
+            try:
+                sidecar.symlink_to(outside)
+            except OSError:
+                # Windows can forbid symlink creation without Developer Mode or elevation.
+                # Exercise the same containment helper so this test remains executable there.
+                try:
+                    _resolve_contained_file(public.resolve(), outside, f"{hashed.name}.{suffix}")
+                except StaticAssetNotFound:
+                    pass
+                else:
+                    raise AssertionError("external sidecar target bypassed root containment")
+            else:
+                try:
+                    resolve_static_asset(public, f"/{hashed.name}", encoding)
+                except StaticAssetNotFound:
+                    pass
+                else:
+                    raise AssertionError(f"external .{suffix} sidecar was served")
+            finally:
+                if sidecar.is_symlink() or sidecar.exists():
+                    sidecar.unlink()
+
+        in_root_sidecar_target = public / "prebuilt-sidecar"
+        in_root_sidecar_target.write_bytes(b"must-not-be-served-through-a-link")
+        for suffix, encoding in (("gz", "gzip"), ("br", "br")):
+            sidecar = Path(f"{hashed}.{suffix}")
+            try:
+                sidecar.symlink_to(in_root_sidecar_target)
+            except OSError:
+                # Windows can forbid symlink creation without Developer Mode or elevation.
+                continue
+            try:
+                try:
+                    resolve_static_asset(public, f"/{hashed.name}", encoding)
+                except StaticAssetNotFound:
+                    pass
+                else:
+                    raise AssertionError(f"symlinked .{suffix} sidecar was served")
+            finally:
+                if sidecar.is_symlink() or sidecar.exists():
+                    sidecar.unlink()
+
+        # public-root symlink must not become a trusted root after resolve().
+        external_public = public.parent / f"external-public-root-{public.name}"
+        external_public.mkdir()
+        (external_public / "index.html").write_text("external", encoding="utf-8")
+        public_link = public.parent / "public-root-link"
+        try:
+            public_link.symlink_to(external_public, target_is_directory=True)
+        except OSError:
+            pass
+        else:
+            try:
+                try:
+                    resolve_static_asset(public_link, "/")
+                except StaticAssetNotFound:
+                    pass
+                else:
+                    raise AssertionError("public-root symlink escaped the trusted asset root")
+            finally:
+                if public_link.is_symlink() or public_link.exists():
+                    public_link.unlink()
+                (external_public / "index.html").unlink(missing_ok=True)
+                external_public.rmdir()
+
 
 def assert_built_assets() -> None:
     output = ROOT / "public" / "assets" / "framework"
     manifest_path = output / "manifest.json"
     assert manifest_path.is_file(), "framework asset manifest is missing"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["version"] == 3
+    assert manifest["inputs"]["algorithm"] == "sha256"
+    assert manifest["inputs"]["schema"] == "framework-inputs-v1"
+    assert len(manifest["inputs"]["digest"]) == 64
+    assert manifest["inputs"]["files"] > 0
     index = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-    for kind in ("script", "style"):
-        record = manifest["assets"][kind]
+    records = [
+        manifest["assets"]["mobile"]["script"],
+        manifest["assets"]["mobile"]["style"],
+        manifest["assets"]["desktop"]["script"],
+        manifest["assets"]["desktop"]["style"],
+        manifest["assets"]["loader"],
+    ]
+    loader_source = (output / manifest["assets"]["loader"]["file"]).read_text(encoding="utf-8")
+    for record in records:
         path = output / record["file"]
         body = path.read_bytes()
         assert hashlib.sha256(body).hexdigest() == record["sha256"]
-        assert record["file"] in index
+        if record is manifest["assets"]["loader"]:
+            assert record["file"] in index
+        else:
+            assert record["file"] in loader_source
+            assert record["file"] not in index
         gzip_body = Path(f"{path}.gz").read_bytes()
         assert gzip.decompress(gzip_body) == body
         assert gzip_body[:3] == b"\x1f\x8b\x08"
@@ -82,7 +176,43 @@ def assert_built_assets() -> None:
     assert "Pragma" not in index
 
 
+def assert_framework_input_identity() -> None:
+    environment = os.environ.copy()
+    environment["CODEX_MEMORY_LIMIT_MB"] = "2048"
+    environment["NODE_OPTIONS"] = "--max-old-space-size=2048"
+    result = subprocess.run(
+        ["node", str(ROOT / "tools" / "check-framework-asset-identity.js")],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        "framework source/public identity mismatch\n" + result.stdout + result.stderr
+    )
+
+
+def assert_framework_asset_budget() -> None:
+    environment = os.environ.copy()
+    environment["CODEX_MEMORY_LIMIT_MB"] = "2048"
+    environment["NODE_OPTIONS"] = "--max-old-space-size=2048"
+    result = subprocess.run(
+        ["node", str(ROOT / "tools" / "check-framework-asset-budget.js")],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        "framework asset budget mismatch\n" + result.stdout + result.stderr
+    )
+
+
 if __name__ == "__main__":
     assert_unit_contract()
+    assert_framework_input_identity()
+    assert_framework_asset_budget()
     assert_built_assets()
     print("[static-assets] PASS hashed URLs + immutable cache + br/gzip + ETag contract")

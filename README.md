@@ -85,6 +85,11 @@ RouterOS-only, localhost-only security stance:
 | Linux systemd / VM | non-root systemd service listens on `127.0.0.1:28646` | systemd host opens `http://127.0.0.1:28646/` |
 | RouterOS Container | container listens inside RouterOS container networking | client opens `http://127.0.0.1:28646/` through a client-local forwarder |
 
+For Docker / Compose, `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1` recognizes only
+the container's exact default bridge gateway together with a loopback `Host`.
+It does not turn arbitrary bridge, LAN, or container-IP access into a supported
+entrypoint.
+
 Across all four modes, keep `routeros_only`, proxy-header trust off unless a
 trusted reverse proxy design is reviewed, IP-alias writes off, and admin-session
 exposure off. Remember that `127.0.0.1` belongs to the browser machine; it does
@@ -101,11 +106,12 @@ existing private installs and should not be used in new deployments.
 ## Quick Start: Docker One-command
 
 The installer builds locally by default so the public one-command path does not
-depend on registry visibility. CI also publishes an optional GHCR image for
-prebuilt installs:
+depend on registry visibility. CI also publishes optional immutable GHCR images
+for prebuilt installs. Select a published commit SHA; mutable tags are not part
+of the public install contract:
 
 ```text
-ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
 ```
 
 Safest first run: download, review, dry-run, then install.
@@ -142,10 +148,13 @@ Force a local build from the checked-out source:
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --build-local
 ```
 
-Use the prebuilt GHCR image when package visibility allows anonymous pulls:
+Use a published immutable prebuilt GHCR image when anonymous pulls are enabled.
+Replace the placeholder with the exact 40-character commit SHA selected for the
+install; `--prebuilt` rejects missing, `main`, and `latest` tags:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt
+IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt --image "$IMAGE"
 ```
 
 Upgrade:
@@ -219,6 +228,12 @@ docker compose --env-file .env.docker up -d --build
 Open `http://127.0.0.1:28646/` on the Docker host. Other IP browser entrypoints
 are not enabled by the public Compose defaults.
 
+Compose keeps the panel bounded to **1.5 GiB memory**, **1.50 CPUs**, and
+**256 PIDs** while retaining its read-only root filesystem and dropped Linux
+capabilities. A local `--source-dir` install preserves unrelated destination
+files by default; add `--upgrade` only when intentionally replacing stale
+source files.
+
 Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login,
 localhost-only defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
 `allowed-address` notes.
@@ -236,10 +251,11 @@ RouterOS storage, and import it with `/container/add file=...`:
 bash tools/build-routeros-container-archive.sh --platform linux/amd64
 ```
 
-The GHCR image is an optional fast path only after anonymous pulls work:
+The GHCR image is an optional fast path only after anonymous pulls work. Use an
+immutable tag for the exact selected commit:
 
 ```text
-ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
 ```
 
 Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a

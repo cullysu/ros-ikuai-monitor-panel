@@ -1,0 +1,9 @@
+@import "../network-console-visual-tokens.css";
+@import "../overview/OverviewPanel.css";
+@import "../overview/desktop-overview/styles/desktop-overview-entry.css";
+@import "../sections/section-console.css";
+html,body,#app,.router-overview-panel-root { min-height: 100%; margin: 0; }
+body { background: #edf2f3; }
+#app,.router-overview-panel-root { width: 100%; }
+.panel-runtime-live { min-height: 100vh; }
+.panel-app-desktop { min-height: calc(100vh - 58px); }

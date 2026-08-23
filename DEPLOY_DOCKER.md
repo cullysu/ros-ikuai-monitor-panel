@@ -5,11 +5,11 @@ NAS boxes, mini PCs, Linux hosts, OpenWrt Docker environments, and cloud VMs
 without requiring Python, ESXi, or a manually managed systemd service.
 
 The one-command installer builds locally by default so it works even before a
-prebuilt registry image is public. A GHCR image is published by CI and can be
-used as an optional acceleration path:
+prebuilt registry image is public. CI publishes immutable GHCR images that can
+be used as an optional acceleration path when the exact commit SHA is selected:
 
 ```text
-ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
 ```
 
 The default install publishes the panel only on `127.0.0.1:28646`:
@@ -39,6 +39,25 @@ In Docker specifically, `ROS_PANEL_BIND=0.0.0.0` is only the in-container
 listener required for Docker port publishing. The host-side published address
 stays `127.0.0.1` by default, so another device cannot browse the Docker host's
 LAN IP and get a supported public panel URL.
+
+Compose also enables `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1`. Docker rewrites a
+host-loopback connection so the application observes the container's default
+bridge gateway as the TCP peer. This explicit mode accepts that exact gateway
+peer only when the HTTP `Host` is loopback. A sibling container, a LAN peer, or
+a request with a non-loopback `Host` remains rejected. The image default stays
+off, so non-Compose deployments must opt in deliberately.
+
+Release validation runs the same real ingress path locally and in CI:
+
+```text
+python3 tools/check-container-host-ingress-smoke.py \
+  --image routeros-triage-panel:routeros-ci \
+  --platform linux/amd64
+```
+
+The smoke gate never pulls or pushes. It verifies host-loopback access, session
+bootstrap, CSRF rejection, non-loopback Host rejection, and sibling-container
+rejection, then removes only its own randomly named container and volume.
 
 ## One-command Install
 
@@ -92,13 +111,14 @@ Default install directory:
 --bind <addr>         Host publish address. Only 127.0.0.1/localhost is allowed.
 --port <port>         Host and in-container panel port. Default: 28646.
 --name <name>         Docker container name. Default: routeros-triage-panel.
---prebuilt            Pull the prebuilt GHCR image first, then fall back to local build.
---image <image>       Image tag to use. Default: routeros-triage-panel:local.
+--prebuilt            Pull an explicitly selected immutable GHCR image; no build fallback.
+--image <image>       Image tag to use. --prebuilt requires ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>.
 --build-local         Build from source. This is the default public install mode.
 --target-ip <addr>    URL host printed by the panel. Only 127.0.0.1/localhost is allowed.
 --dir <path>          Install directory.
 --repo <url>          Git repository URL.
 --branch <name>       Git branch to install.
+--source-dir <path>   Copy from a local source tree; preserves unrelated files unless --upgrade is also set.
 --upgrade             Update the installed source before starting.
 --uninstall           Stop and remove the Compose service.
 --purge               With --uninstall, also remove the Docker volume and install directory.
@@ -132,9 +152,15 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d --build
 ```
 
-For a no-build manual run after the GHCR package is public, set
-`ROS_PANEL_IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:main` in `.env.docker`
-and run:
+For a no-build manual run, set `ROS_PANEL_IMAGE` to an immutable GHCR tag for
+the exact published commit. Replace the placeholder with a 40-character commit
+SHA; do not use `main` or `latest`:
+
+```dotenv
+ROS_PANEL_IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
+```
+
+Then run:
 
 ```bash
 docker compose --env-file .env.docker pull routeros-triage
@@ -158,11 +184,22 @@ ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT=
 The default browser-facing target is localhost-only:
 
 ```dotenv
-ROS_PANEL_PUBLISHED_ADDR=127.0.0.1
 ROS_PANEL_PUBLISHED_PORT=28646
 ROS_PANEL_IMAGE=routeros-triage-panel:local
 ROS_PANEL_TARGET_IP=127.0.0.1
 ```
+
+`compose.yml` fixes the host bind to `127.0.0.1`; only the loopback port is
+configurable. This is required by the Docker gateway-forward trust contract and
+cannot be widened through `.env.docker`.
+
+Compose also applies fixed runtime bounds: **1.5 GiB memory**, **1.50 CPUs**,
+and **256 PIDs**. The panel's polling workload is intentionally small; these
+limits keep a compromised or runaway container below the 2 GiB task-process
+ceiling while leaving headroom for the application, Python runtime, and a
+bounded number of read-only RouterOS requests. The existing read-only root
+filesystem, dropped capabilities, and `no-new-privileges` constraints remain in
+force.
 
 `ROS_PANEL_TARGET_IP` is now a configured fallback for startup logs and saved
 address settings. Normal browser/API status uses the request `Host` header, so
@@ -251,10 +288,16 @@ The included Docker setup:
 - drops Linux capabilities
 - enables `no-new-privileges`
 - uses a read-only root filesystem
+- limits the container to 1.5 GiB memory, 1.50 CPUs, and 256 PIDs
 - stores mutable panel data only in the `routeros-triage-data` volume
 - does not bake RouterOS credentials into the image
 
 ## Upgrade
+
+`--source-dir` is non-destructive by default: it updates project files but
+preserves unrelated files already in the destination. Add `--upgrade` only when
+you intentionally want the rsync-based source replacement to remove stale
+source files. Keep `.env.docker` backed up before that explicit replacement.
 
 One-command install:
 

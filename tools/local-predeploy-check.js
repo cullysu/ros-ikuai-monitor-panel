@@ -7,13 +7,29 @@ const http = require('http');
 const net = require('net');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
-const { chromium } = require('playwright-core');
+const {
+  LifecycleError,
+  bounded: lifecycleBounded,
+  browserExecutable,
+  launchManagedBrowser,
+} = require('./acceptance/browser-lifecycle-v2/browser-lifecycle');
 const { inspectMobileNativeOverview, inspectOverviewMobileInteraction } = require('./acceptance/inspect-overview-mobile');
 const { inspectSectionBrowser } = require('./acceptance/inspect-section-browser');
 const { inspectOverviewDesktopLayout } = require('./acceptance/inspect-overview-desktop-layout');
 const { inspectPanelRouteRuntime } = require('./acceptance/inspect-panel-routes');
+const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
+const { gitWorktreeIdentity, matrixArtifactKey } = require('./worktree-runtime-identity');
 
 const ROOT = path.resolve(__dirname, '..');
+const configuredServerStartupTimeout = Number(
+  process.env.CODEX_LOW_LOAD_SERVER_STARTUP_TIMEOUT_MS || process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0,
+);
+// A CPU-capped acceptance process may need more than the ordinary 16s Python
+// startup budget. This only extends the bounded health wait when explicitly
+// requested by the low-load launcher; it does not change product timeouts.
+const SERVER_STARTUP_TIMEOUT_MS = Number.isFinite(configuredServerStartupTimeout) && configuredServerStartupTimeout > 0
+  ? Math.min(120_000, Math.max(16_000, configuredServerStartupTimeout))
+  : 16_000;
 const DEFAULT_VIEWPORTS = [
   { name: 'desktop', width: 1600, height: 1000 },
   { name: 'laptop', width: 1366, height: 900 },
@@ -49,6 +65,7 @@ const DEFAULT_PRIVATE_SECTIONS = [
 ];
 const DEFAULT_SCALE_SCENARIOS = ['multi'];
 const EDGE_SCALE_SCENARIOS = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+const DIAGNOSTIC_SCALE_SCENARIOS = ['traffic-accumulating'];
 const OVERVIEW_RELEASE_SCALE_SCENARIOS = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];
 const OVERVIEW_RELEASE_VIEWPORTS = [
   { name: 'desktop', width: 1366, height: 768 },
@@ -56,18 +73,36 @@ const OVERVIEW_RELEASE_VIEWPORTS = [
   { name: 'wide', width: 844, height: 390 },
   { name: 'narrow', width: 390, height: 844 },
 ];
-const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet', ...EDGE_SCALE_SCENARIOS]);
 
-function isOverviewReleaseMatrix(args = {}) {
-  const requiredScenarios = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];
+// A wide landscape tablet is a browser/workbench surface, not a stretched
+// phone page. Keep this boundary shared by navigation, semantic probes, and
+// screenshot anchors so the matrix cannot silently validate the wrong owner.
+function isWideLandscapeViewport(viewport) {
+  return Boolean(viewport && viewport.width >= 600 && viewport.width > viewport.height);
+}
+const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet', ...EDGE_SCALE_SCENARIOS, ...DIAGNOSTIC_SCALE_SCENARIOS]);
+
+function requestsRequiredOverviewMatrix(args = {}) {
   const scenarioSet = new Set(args.scaleScenarios || []);
-  const viewportSet = new Set((args.viewports || []).map((viewport) => viewportCellKey(viewport)));
   return Array.isArray(args.sections) &&
     args.sections.length === 1 &&
     args.sections[0] === 'overview' &&
     args.profile === 'public' &&
-    requiredScenarios.every((scenario) => scenarioSet.has(scenario)) &&
+    OVERVIEW_RELEASE_SCALE_SCENARIOS.every((scenario) => scenarioSet.has(scenario));
+}
+
+function isOverviewReleaseMatrix(args = {}) {
+  const viewportSet = new Set((args.viewports || []).map((viewport) => viewportCellKey(viewport)));
+  return requestsRequiredOverviewMatrix(args) &&
     OVERVIEW_RELEASE_VIEWPORTS.every((viewport) => viewportSet.has(viewportCellKey(viewport)));
+}
+
+function isMergeableScenarioSubset(args = {}) {
+  const requested = [...new Set(args.scaleScenarios || [])];
+  return Boolean(args.scaleScenariosExplicit) &&
+    requested.length > 0 &&
+    requested.length < OVERVIEW_RELEASE_SCALE_SCENARIOS.length &&
+    requested.every((scenario) => OVERVIEW_RELEASE_SCALE_SCENARIOS.includes(scenario));
 }
 
 function viewportCellKey(viewport = {}) {
@@ -78,6 +113,72 @@ function viewportCellKey(viewport = {}) {
     return `${viewport.name}=${width}x${height}`;
   }
   return viewport.name;
+}
+
+function browserResumeCellKey(check = {}) {
+  return [
+    check.profile || '',
+    check.scaleScenario || '',
+    check.requestedSection || '',
+    viewportCellKey(check.viewport || {}),
+  ].join('::');
+}
+
+function pendingBrowserSections(
+  completedChecks = [],
+  profile,
+  scaleScenario,
+  viewport,
+  sections = [],
+) {
+  const passed = new Set(
+    completedChecks
+      .filter((check) => check && check.pass === true)
+      .map((check) => browserResumeCellKey(check)),
+  );
+  return sections.filter((section) => !passed.has(browserResumeCellKey({
+    profile,
+    scaleScenario,
+    viewport,
+    requestedSection: section,
+  })));
+}
+
+function buildBrowserResumeKey(args = {}, worktreeIdentity = {}) {
+  return JSON.stringify({
+    version: 1,
+    artifactKey: matrixArtifactKey(worktreeIdentity),
+    profile: args.profile || '',
+    viewports: (args.viewports || []).map((viewport) => viewportCellKey(viewport)),
+    sections: args.sections || [],
+    scaleScenarios: args.scaleScenarios || [],
+    strictResponsive: args.strictResponsive === true,
+    screenshotAllSections: args.screenshotAllSections === true,
+    boundedMatrix: args.boundedMatrix === true,
+  });
+}
+
+function requestedBrowserResumeCellKeys(args = {}) {
+  const profiles = args.profile === 'both' ? ['public', 'private'] : [args.profile];
+  const keys = [];
+  for (const profile of profiles) {
+    const sections = args.sections || (
+      profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS
+    );
+    for (const scaleScenario of args.scaleScenarios || []) {
+      for (const viewport of args.viewports || []) {
+        for (const requestedSection of sections) {
+          keys.push(browserResumeCellKey({
+            profile,
+            scaleScenario,
+            viewport,
+            requestedSection,
+          }));
+        }
+      }
+    }
+  }
+  return new Set(keys);
 }
 
 function usage() {
@@ -96,12 +197,15 @@ Options:
                               Browser fixture profile. Default: both.
   --viewports <list>          Comma list like desktop=1366x768,desktop1440=1440x900,wide=844x390,narrow=390x844.
   --sections <list>           Comma list of sections to visit, or main-menu/public-release.
-  --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down. Default: multi; overview-only runs default to release overview matrix.
+  --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down,traffic-accumulating. Default: multi; overview-only runs default to release overview matrix.
   --skip-browser              Run backend/static/API checks only.
   --skip-backend              Run browser checks only.
   --keep-server               Leave the spawned app server running.
   --strict-responsive         Treat narrow horizontal overflow as a failure.
   --screenshot-all-sections   Capture every requested route, not only overview or failures.
+  --bounded-matrix            Treat explicit sections/scenarios/viewports as a capability shard, not a release-matrix claim.
+  --resume                    Reuse exact passing cells from partial-report.json when worktree and run shape match.
+  --max-browser-cells <n>     Stop cleanly after n newly inspected cells; 0 runs all remaining cells.
   --help                      Show this help.
 
 Safety:
@@ -148,9 +252,13 @@ function parseArgs(argv) {
     keepServer: false,
     strictResponsive: false,
     screenshotAllSections: false,
+    boundedMatrix: false,
+    resume: false,
+    maxBrowserCells: 0,
     scaleScenarios: DEFAULT_SCALE_SCENARIOS,
     scaleScenariosExplicit: false,
     viewportsExplicit: false,
+    sectionsExplicit: false,
     help: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
@@ -168,6 +276,11 @@ function parseArgs(argv) {
     else if (item === '--keep-server') args.keepServer = true;
     else if (item === '--strict-responsive') args.strictResponsive = true;
     else if (item === '--screenshot-all-sections') args.screenshotAllSections = true;
+    else if (item === '--bounded-matrix') args.boundedMatrix = true;
+    else if (item === '--resume') args.resume = true;
+    else if (item === '--max-browser-cells' || item.startsWith('--max-browser-cells=')) {
+      args.maxBrowserCells = Number(readValue('--max-browser-cells'));
+    }
     else if (item === '--url' || item.startsWith('--url=')) args.url = readValue('--url');
     else if (item === '--port' || item.startsWith('--port=')) args.port = Number(readValue('--port'));
     else if (item === '--python' || item.startsWith('--python=')) args.python = readValue('--python');
@@ -177,7 +290,10 @@ function parseArgs(argv) {
       args.viewports = parseViewports(readValue('--viewports'));
       args.viewportsExplicit = true;
     }
-    else if (item === '--sections' || item.startsWith('--sections=')) args.sections = parseSections(readValue('--sections'));
+    else if (item === '--sections' || item.startsWith('--sections=')) {
+      args.sections = parseSections(readValue('--sections'));
+      args.sectionsExplicit = true;
+    }
     else if (item === '--scale-scenarios' || item.startsWith('--scale-scenarios=')) {
       args.scaleScenarios = readValue('--scale-scenarios').split(',').map((part) => part.trim()).filter(Boolean);
       args.scaleScenariosExplicit = true;
@@ -196,7 +312,13 @@ function parseArgs(argv) {
     throw new Error('--profile must be public, private, or both');
   }
   if (!args.scaleScenarios.length || args.scaleScenarios.some((item) => !SCALE_SCENARIOS.has(item))) {
-    throw new Error('--scale-scenarios must use one or more of: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
+    throw new Error('--scale-scenarios must use one or more of: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down,traffic-accumulating');
+  }
+  if (args.boundedMatrix && (!args.sectionsExplicit || !args.scaleScenariosExplicit || !args.viewportsExplicit)) {
+    throw new Error('--bounded-matrix requires explicit --sections, --scale-scenarios, and --viewports');
+  }
+  if (!Number.isInteger(args.maxBrowserCells) || args.maxBrowserCells < 0) {
+    throw new Error('--max-browser-cells must be a non-negative integer');
   }
   if (!args.out) {
     args.out = path.join(ROOT, '_acceptance', `local-predeploy-${timestamp()}`);
@@ -294,6 +416,19 @@ async function writeJson(filePath, payload) {
   await fs.writeFile(filePath, `${jsonStringifyAscii(payload, 2)}\n`, 'utf8');
 }
 
+async function writeJsonAtomic(filePath, payload) {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const temporaryPath = `${filePath}.tmp-${process.pid}`;
+  await fs.writeFile(temporaryPath, `${jsonStringifyAscii(payload, 2)}\n`, 'utf8');
+  try {
+    await fs.rename(temporaryPath, filePath);
+  } catch (error) {
+    if (!error || !['EEXIST', 'EPERM'].includes(error.code)) throw error;
+    await fs.rm(filePath, { force: true });
+    await fs.rename(temporaryPath, filePath);
+  }
+}
+
 async function readJsonIfAny(filePath) {
   try {
     const text = await fs.readFile(filePath, 'utf8');
@@ -301,6 +436,55 @@ async function readJsonIfAny(filePath) {
   } catch {
     return null;
   }
+}
+
+function browserResumePath(args = {}) {
+  return path.join(args.out, 'partial-report.json');
+}
+
+function browserResumeCellDirectory(args = {}) {
+  return path.join(args.out, '.partial-browser-cells');
+}
+
+function browserResumeCellPath(args, check) {
+  const safeCell = browserResumeCellKey(check).replace(/[^A-Za-z0-9_.-]+/g, '-');
+  return path.join(browserResumeCellDirectory(args), `${safeCell}.json`);
+}
+
+async function writeBrowserResumeProgress(args, report, check) {
+  await writeJsonAtomic(browserResumeCellPath(args, check), {
+    version: 1,
+    resumeKey: report.browserResumeKey,
+    updatedAt: new Date().toISOString(),
+    check,
+  });
+}
+
+async function readBrowserResumeChecks(args, resumeKey) {
+  const candidates = [];
+  const summary = await readJsonIfAny(browserResumePath(args));
+  if (summary && summary.resumeKey === resumeKey) {
+    candidates.push(...(summary.browserChecks || []));
+  }
+
+  try {
+    const directory = browserResumeCellDirectory(args);
+    const names = (await fs.readdir(directory)).filter((name) => name.endsWith('.json'));
+    for (const name of names) {
+      const payload = await readJsonIfAny(path.join(directory, name));
+      if (payload && payload.resumeKey === resumeKey && payload.check) {
+        candidates.push(payload.check);
+      }
+    }
+  } catch (error) {
+    if (error && error.code !== 'ENOENT') throw error;
+  }
+
+  const unique = new Map();
+  for (const check of candidates) {
+    if (check && check.pass === true) unique.set(browserResumeCellKey(check), check);
+  }
+  return [...unique.values()];
 }
 
 function matrixSessionKey() {
@@ -312,9 +496,17 @@ function matrixSessionKey() {
   return 'local';
 }
 
-function matrixStatePath(commit) {
+function matrixStatePath(commit, outputDir) {
   const safeCommit = String(commit || 'unknown').replace(/[^A-Za-z0-9._-]+/g, '-');
-  return path.join(ROOT, '_acceptance', `release-matrix-${safeCommit}.json`);
+  const outputName = path.basename(path.resolve(ROOT, String(outputDir || '')));
+  const family = outputName.startsWith('release-matrix-')
+    ? 'release-matrix'
+    : outputName.startsWith('route-state-matrix-')
+      ? 'route-state-matrix'
+      : outputName.startsWith('route-matrix-')
+        ? 'route-matrix'
+        : `${outputName.replace(/-[A-Fa-f0-9]{7,40}$/, '') || 'matrix'}-matrix`;
+  return path.join(ROOT, '_acceptance', `${family}-${safeCommit}.json`);
 }
 
 function listScreenshotFiles(outDir) {
@@ -339,6 +531,10 @@ function summarizeMatrixRun(report, args, matrix) {
     startedAt: report.startedAt,
     finishedAt: report.finishedAt,
     commit: matrix.commit || '',
+    worktreeClean: matrix.worktreeClean === true,
+    worktreeFingerprint: matrix.worktreeFingerprint || '',
+    artifactKey: matrix.artifactKey || '',
+    releaseEvidenceEligible: matrix.releaseEvidenceEligible === true,
     session: matrix.session || '',
     outputDir: args.out,
     screenshotDir: args.out,
@@ -364,7 +560,12 @@ function summarizeMatrixRun(report, args, matrix) {
 }
 
 function mergeMatrixAggregate(existing, matrix, runSummary, sessionKey) {
-  const base = existing && existing.commit === matrix.commit ? existing : null;
+  const base = existing &&
+    existing.commit === matrix.commit &&
+    existing.worktreeClean === matrix.worktreeClean &&
+    existing.worktreeFingerprint === matrix.worktreeFingerprint
+    ? existing
+    : null;
   const coveredScenarios = new Set(base?.coveredScenarios || []);
   const passedScenarios = new Set(base?.passedScenarios || []);
   const coveredCells = new Set(base?.coveredCells || []);
@@ -393,6 +594,10 @@ function mergeMatrixAggregate(existing, matrix, runSummary, sessionKey) {
   const requiredCellList = [...requiredCells].sort();
   return {
     commit: matrix.commit,
+    worktreeClean: matrix.worktreeClean === true,
+    worktreeFingerprint: matrix.worktreeFingerprint || '',
+    artifactKey: matrix.artifactKey || '',
+    releaseEvidenceEligible: matrix.releaseEvidenceEligible === true,
     session: sessionKey,
     sessions: [...sessions].sort(),
     requiredScenarios: [...matrix.requiredScenarios],
@@ -547,7 +752,7 @@ async function startSafeAppServer(args, report) {
   });
 
   try {
-    await waitForJson(`${baseUrl}api/health`, 16000);
+    await waitForJson(`${baseUrl}api/health`, SERVER_STARTUP_TIMEOUT_MS);
   } catch (error) {
     child.kill('SIGKILL');
     const stdoutArtifact = await writeLogArtifact(args.out, 'server-start-failure.stdout.log', stdout);
@@ -656,6 +861,180 @@ function record(report, name, pass, detail = {}) {
   return check;
 }
 
+function isExplicitNotApplicableCheck(check) {
+  return Boolean(
+    check &&
+    typeof check === 'object' &&
+    check.applicable === false &&
+    check.status === 'not_applicable' &&
+    check.pass === null &&
+    typeof check.reason === 'string' &&
+    check.reason.trim()
+  );
+}
+
+function reportCheckTruthFailures(checks) {
+  if (!Array.isArray(checks)) return [];
+  return checks.filter((check) => !isExplicitNotApplicableCheck(check) && (!check || check.pass !== true));
+}
+
+function reportNestedPassFalsePaths(value, currentPath = '') {
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => reportNestedPassFalsePaths(item, `${currentPath}/${index}`));
+  }
+  if (!value || typeof value !== 'object') return [];
+  const paths = [];
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = `${currentPath}/${key}`;
+    if (key === 'pass' && child === false) paths.push(childPath);
+    paths.push(...reportNestedPassFalsePaths(child, childPath));
+  }
+  return paths;
+}
+
+function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
+  const failures = Array.isArray(report.failures) ? [...report.failures] : [];
+  if (!Array.isArray(report.failures)) {
+    failures.push({
+      name: 'report failures shape',
+      pass: false,
+      detail: { reason: 'failures must be an array' },
+    });
+  }
+  const nestedPassFalsePaths = reportNestedPassFalsePaths(report);
+  if (nestedPassFalsePaths.length > 0) {
+    failures.push({
+      name: 'nested report evidence truth',
+      pass: false,
+      detail: { paths: nestedPassFalsePaths.slice(0, 32), count: nestedPassFalsePaths.length },
+    });
+  }
+  const seen = new Set(failures);
+  for (const check of reportCheckTruthFailures(report.checks)) {
+    if (!seen.has(check)) {
+      failures.push(check);
+      seen.add(check);
+    }
+  }
+  const matrixPresent = report.matrix && typeof report.matrix === 'object';
+  const matrixIncomplete = Boolean(
+    matrixPresent && (
+      report.matrix.complete !== true ||
+      report.matrix.requestedComplete !== true
+    )
+  );
+  if (matrixBlocksTopLevelPass) {
+    failures.push({
+      name: 'required matrix completeness',
+      pass: false,
+      detail: {
+        complete: report.matrix?.complete,
+        requestedComplete: report.matrix?.requestedComplete,
+      },
+    });
+    failures.push({
+      name: 'required matrix gate',
+      pass: false,
+      detail: { reason: 'required matrix gate did not pass' },
+    });
+  }
+  report.failures = failures;
+  const engineeringPass = failures.length === 0;
+  report.engineeringPass = engineeringPass;
+  report.boundedPass = engineeringPass && Boolean(!matrixPresent || report.matrix.requestedComplete === true);
+  report.releasePass = engineeringPass && !matrixBlocksTopLevelPass && !matrixIncomplete;
+  report.pass = report.releasePass;
+  report.exitCodeShouldFail = Boolean(failures.length > 0 || matrixBlocksTopLevelPass || matrixIncomplete);
+  return report;
+}
+
+function recordNotApplicable(report, name, reason, detail = {}) {
+  const check = {
+    name,
+    applicable: false,
+    status: 'not_applicable',
+    pass: null,
+    reason,
+    detail,
+  };
+  report.checks.push(check);
+  console.log(`[N/A] ${name}: ${reason}`);
+  return check;
+}
+
+function scenarioMatrixGate(args, matrix) {
+  const requestedScopeComplete = matrix.requestedComplete === true && matrix.failed === 0;
+  const fullRequiredMatrixRequested = requestsRequiredOverviewMatrix(args);
+  const mergeableSubset = isMergeableScenarioSubset(args);
+  const boundedMatrix = args.boundedMatrix === true;
+
+  if (boundedMatrix && !requestedScopeComplete) {
+    return {
+      applicable: true,
+      pass: false,
+      reason: 'The bounded capability matrix did not complete every requested cell.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  if (boundedMatrix) {
+    return {
+      applicable: false,
+      pass: null,
+      reason: 'This bounded capability matrix covers its explicit requested scope; release completeness is evaluated separately.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+
+  if (fullRequiredMatrixRequested) {
+    return {
+      applicable: true,
+      pass: Boolean(requestedScopeComplete && matrix.complete),
+      reason: 'The command requests the complete required public overview matrix.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  if (mergeableSubset && requestedScopeComplete) {
+    return {
+      applicable: false,
+      pass: null,
+      reason: 'This bounded scenario shard covers its requested scope; cross-scenario release completeness is evaluated only after merge.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  if (!requestedScopeComplete) {
+    return {
+      applicable: true,
+      pass: false,
+      reason: 'The command did not complete every requested matrix cell.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  return {
+    applicable: false,
+    pass: null,
+    reason: 'This command does not claim a complete required matrix.',
+    requestedScopeComplete,
+    fullRequiredMatrixRequested,
+    mergeableSubset,
+    boundedMatrix,
+  };
+}
+
 function serverLogNoiseProbe(report) {
   const stderr = String(report.serverLogs?.stderr?.tail || report.serverLogs?.stderr?.text || '');
   const stdout = String(report.serverLogs?.stdout?.tail || report.serverLogs?.stdout?.text || '');
@@ -702,8 +1081,9 @@ function gitFullHead() {
   return result.status === 0 ? String(result.stdout || '').trim() : '';
 }
 
-function buildMatrixSummary(browserChecks = [], args = {}) {
-  const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+function buildMatrixSummary(browserChecks = [], args = {}, worktreeIdentity = null) {
+  const worktree = worktreeIdentity || gitWorktreeIdentity(ROOT);
+  const requiredScenarios = OVERVIEW_RELEASE_SCALE_SCENARIOS;
   const scenarioOrder = new Map([
     ['single', 0],
     ['multi', 1],
@@ -715,7 +1095,7 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     ['interfaces-down', 7],
   ]);
   const groups = new Map();
-  const overviewReleaseMatrix = isOverviewReleaseMatrix(args);
+  const requiredOverviewMatrixRequested = requestsRequiredOverviewMatrix(args);
   const cells = browserChecks.map((check) => ({
     profile: check.profile || '',
     scaleScenario: check.scaleScenario || 'multi',
@@ -724,13 +1104,16 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     section: check.requestedSection || '',
     pass: Boolean(check.pass),
   }));
-  const profiles = [...new Set(cells.map((cell) => cell.profile).filter(Boolean))];
+  const profiles = args.profile === 'both'
+    ? ['public', 'private']
+    : [args.profile].filter(Boolean);
   const viewports = [...new Set(cells.map((cell) => cell.viewport).filter(Boolean))];
-  const sections = [...new Set(cells.map((cell) => cell.section).filter(Boolean))];
+  const sections = args.sections || [...new Set(cells.map((cell) => cell.section).filter(Boolean))];
   const cellId = (profile, scenario, section, viewport) => `${profile}::${scenario}::${section}::${viewport}`;
-  const requiredViewportIds = overviewReleaseMatrix
+  const requestedViewportIds = (args.viewports || []).map((viewport) => viewportCellKey(viewport)).filter(Boolean);
+  const requiredViewportIds = requiredOverviewMatrixRequested
     ? OVERVIEW_RELEASE_VIEWPORTS.map((viewport) => viewportCellKey(viewport))
-    : [...new Set(cells.map((cell) => cell.viewportKey || cell.viewport).filter(Boolean))];
+    : requestedViewportIds;
   const coveredCells = [...new Set(cells.map((cell) => cellId(
     cell.profile,
     cell.scaleScenario,
@@ -745,6 +1128,20 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
       cell.section,
       cell.viewportKey || cell.viewport,
     )))].sort();
+  const expectedCells = (scenarios, viewportIds) => {
+    const result = [];
+    for (const profile of profiles) {
+      for (const viewport of viewportIds) {
+        for (const section of sections) {
+          for (const scenario of scenarios) {
+            result.push(cellId(profile, scenario, section, viewport));
+          }
+        }
+      }
+    }
+    return [...new Set(result)].sort();
+  };
+  const requestedRequiredCells = expectedCells(args.scaleScenarios || [], requestedViewportIds);
   const requiredCells = [];
   for (const profile of profiles) {
     for (const viewport of requiredViewportIds) {
@@ -779,6 +1176,7 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     if (cell.viewport && !group.viewports.includes(cell.viewport)) group.viewports.push(cell.viewport);
     if (cell.section && !group.sections.includes(cell.section)) group.sections.push(cell.section);
   }
+  const requestedMissingCells = requestedRequiredCells.filter((cell) => !passedCells.includes(cell));
   const scenarios = Array.from(groups.values()).sort((a, b) => {
     const orderA = scenarioOrder.has(a.scaleScenario) ? scenarioOrder.get(a.scaleScenario) : Number.MAX_SAFE_INTEGER;
     const orderB = scenarioOrder.has(b.scaleScenario) ? scenarioOrder.get(b.scaleScenario) : Number.MAX_SAFE_INTEGER;
@@ -787,19 +1185,27 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     return a.scaleScenario.localeCompare(b.scaleScenario);
   });
   return {
-    commit: gitFullHead() || gitShortHead(),
+    commit: worktree.commit,
+    worktreeClean: worktree.worktreeClean,
+    worktreeFingerprint: worktree.worktreeFingerprint,
+    artifactKey: worktree.artifactKey,
+    releaseEvidenceEligible: worktree.releaseEvidenceEligible,
+    worktreeIdentityError: worktree.identityError,
+    worktreeUntrackedFiles: worktree.untrackedFiles,
     requestedScenarios: args.scaleScenarios || [],
     requiredScenarios,
     coveredScenarios: [...new Set(cells.map((cell) => cell.scaleScenario))].sort(),
     passedScenarios,
     sections: [...sections].sort(),
-    requestedComplete: (args.scaleScenarios || []).every((scenario) => passedScenarios.includes(scenario)),
+    requestedRequiredCells,
+    requestedMissingCells,
+    requestedComplete: requestedRequiredCells.length > 0 && requestedMissingCells.length === 0 && cells.every((cell) => cell.pass),
     coveredCells,
     passedCells,
     requiredCells: [...new Set(requiredCells)].sort(),
     complete: requiredCells.length > 0
-      ? [...new Set(requiredCells)].every((cell) => passedCells.includes(cell))
-      : requiredScenarios.every((scenario) => passedScenarios.includes(scenario)),
+      ? [...new Set(requiredCells)].every((cell) => passedCells.includes(cell)) && cells.every((cell) => cell.pass)
+      : requiredScenarios.every((scenario) => passedScenarios.includes(scenario)) && cells.every((cell) => cell.pass),
     total: cells.length,
     passed: cells.filter((cell) => cell.pass).length,
     failed: cells.filter((cell) => !cell.pass).length,
@@ -1018,7 +1424,7 @@ class PlaywrightSession {
     if (method === 'Page.navigate') {
       await this.page.goto(String(params.url || 'about:blank'), {
         waitUntil: 'domcontentloaded',
-        timeout: 15000,
+        timeout: configuredBrowserTimeoutMs(15_000),
       });
       return { frameId: 'playwright' };
     }
@@ -1036,23 +1442,68 @@ class PlaywrightSession {
       }
     }
     if (method === 'Page.captureScreenshot') {
+      const viewport = this.page.viewportSize();
+      if (!viewport) throw new Error('Playwright viewport is unavailable for bounded screenshot capture');
       const data = await this.page.screenshot({
         type: 'png',
         fullPage: false,
         animations: 'disabled',
+        caret: 'hide',
+        scale: 'css',
+        clip: { x: 0, y: 0, width: viewport.width, height: viewport.height },
       });
-      return { data: data.toString('base64') };
+      return {
+        data: data.toString('base64'),
+        captureMode: 'playwright-explicit-viewport-clip',
+        viewport,
+      };
     }
     throw new Error(`Unsupported Playwright browser command: ${method}`);
   }
 
-  close() {}
+  close() {
+    this.closed = true;
+  }
 
   async closeTarget() {
     if (this.closed) return;
     this.closed = true;
-    await this.context.close();
+    const failures = [];
+    if (!this.page.isClosed()) {
+      try {
+        await lifecycleBounded(
+          'matrix.target.page.close',
+          () => this.page.close({ runBeforeUnload: false }),
+          3_000,
+        );
+      } catch (error) {
+        failures.push({ target: 'page', message: error && error.message ? error.message : String(error) });
+      }
+    }
+    try {
+      await lifecycleBounded(
+        'matrix.target.context.close',
+        () => this.context.close(),
+        8_000,
+      );
+    } catch (error) {
+      failures.push({ target: 'context', message: error && error.message ? error.message : String(error) });
+    }
+    if (failures.length) {
+      throw new LifecycleError(
+        'TARGET_CLOSE_FAILED',
+        'matrix browser target could not be closed cleanly',
+        { failures },
+      );
+    }
   }
+}
+
+function configuredBrowserTimeoutMs(fallback = 15_000) {
+  const configuredLowLoadTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS);
+  return Number.isFinite(configuredLowLoadTimeout)
+    ? Math.min(Math.max(configuredLowLoadTimeout, fallback), 120_000)
+    : fallback;
 }
 
 async function launchBrowser(args, report) {
@@ -1060,12 +1511,15 @@ async function launchBrowser(args, report) {
   if (!browserPath) {
     throw new Error('Edge/Chrome executable not found. Set BROWSER or CHROME_PATH.');
   }
-  const browser = await chromium.launch({
-    executablePath: browserPath,
-    headless: true,
+  const browserTimeoutMs = configuredBrowserTimeoutMs();
+  const managedBrowser = (await lifecycleBounded('matrix.browser.managed.launch', () => launchManagedBrowser({
+    executablePath: browserExecutable(browserPath),
+    launchTimeoutMs: browserTimeoutMs,
+    cleanupTimeoutMs: Math.min(configuredBrowserTimeoutMs(8_000), 30_000),
     args: [
       '--disable-background-networking',
       '--disable-dev-shm-usage',
+      '--disable-gpu',
       '--disable-sync',
       '--disable-extensions',
       '--no-first-run',
@@ -1073,29 +1527,60 @@ async function launchBrowser(args, report) {
       '--metrics-recording-only',
       ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
     ],
-  });
-  report.browser = { driver: 'playwright-core', path: browserPath };
+  }), browserTimeoutMs, async (lateManagedBrowser) => {
+    if (lateManagedBrowser) await lateManagedBrowser.close();
+  })).value;
+  const browser = managedBrowser.browser;
+  report.browser = {
+    driver: 'playwright-core-managed-v2',
+    path: browserPath,
+    ownedBrowserPid: managedBrowser.diagnostics.ownedBrowserPid,
+    lifecycle: null,
+  };
 
   return {
     browserPath,
     connect: async () => {
-      const context = await browser.newContext({
-        locale: 'zh-CN',
-        colorScheme: 'light',
-        reducedMotion: 'reduce',
-      });
+      let context = null;
       try {
-        const page = await context.newPage();
-        page.setDefaultTimeout(15000);
-        page.setDefaultNavigationTimeout(15000);
+        context = (await lifecycleBounded(
+          'matrix.context.create',
+          () => managedBrowser.openContext({
+            locale: 'zh-CN',
+            colorScheme: 'light',
+            reducedMotion: 'reduce',
+          }),
+          browserTimeoutMs,
+          async (lateContext) => {
+            if (lateContext) await lateContext.close();
+          },
+        )).value;
+        const page = (await lifecycleBounded(
+          'matrix.page.create',
+          () => context.newPage(),
+          browserTimeoutMs,
+          async (latePage) => {
+            if (latePage && !latePage.isClosed()) await latePage.close({ runBeforeUnload: false });
+          },
+        )).value;
+        page.setDefaultTimeout(browserTimeoutMs);
+        page.setDefaultNavigationTimeout(browserTimeoutMs);
         return new PlaywrightSession(context, page);
       } catch (error) {
-        await context.close().catch(() => {});
+        if (context) {
+          try {
+            await lifecycleBounded('matrix.context.abort-close', () => context.close(), 8_000);
+          } catch (cleanupError) {
+            error.lifecycleCleanupError = cleanupError && cleanupError.message ? cleanupError.message : String(cleanupError);
+          }
+        }
         throw error;
       }
     },
     stop: async () => {
-      await browser.close();
+      const lifecycle = await managedBrowser.close();
+      report.browser.lifecycle = lifecycle;
+      return lifecycle;
     },
   };
 }
@@ -1108,17 +1593,20 @@ async function waitForApp(cdp, timeoutMs = 8000) {
       expression: `(() => {
         const app = document.querySelector('#app');
         const section = document.querySelector('#app .section');
+        const surfaceStyle = document.querySelector('link[data-panel-surface-asset$="-style"]');
         return {
           readyState: document.readyState,
           app: Boolean(app),
           section: section ? section.id : '',
-          contentMounted: Boolean(section?.firstElementChild && section.getBoundingClientRect().height > 0)
+          contentMounted: Boolean(section?.firstElementChild && section.getBoundingClientRect().height > 0),
+          surfaceStyleReady: Boolean(surfaceStyle && surfaceStyle.sheet),
+          fontsReady: !document.fonts || document.fonts.status === 'loaded'
         };
       })()`,
       returnByValue: true,
     });
     last = result.result && result.result.value;
-    if (last && last.app && last.section && last.contentMounted) return last;
+    if (last && last.app && last.section && last.contentMounted && last.surfaceStyleReady && last.fontsReady) return last;
     await delay(250);
   }
   throw new Error(`Timed out waiting for app render: ${JSON.stringify(last)}`);
@@ -1146,7 +1634,7 @@ async function collectBootDiagnostics(cdp) {
   }
 }
 
-async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario) {
+async function navigateWithFixture(cdp, baseUrl, profile, viewport, scaleScenario) {
   const snapshot = buildSnapshot(profile, scaleScenario);
   const fixtureSource = `window.__PANEL_TEST_SNAPSHOT__ = ${JSON.stringify(snapshot)};`;
   await cdp.send('Runtime.enable');
@@ -1160,14 +1648,14 @@ async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scal
   });
   await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: fixtureSource });
   await cdp.send('Page.navigate', {
-    url: `${baseUrl}?section=overview&predeploy=${Date.now()}#overview`,
+    url: `${baseUrl}?section=overview&surface=${viewport.width >= 900 || isWideLandscapeViewport(viewport) ? 'desktop' : 'mobile'}&predeploy=${Date.now()}#overview`,
   });
-  await waitForApp(cdp);
-  record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, {
+  await waitForApp(cdp, configuredBrowserTimeoutMs(8_000));
+  return {
     viewport,
     profile,
     scaleScenario,
-  });
+  };
 }
 
 async function setSection(cdp, section) {
@@ -1177,6 +1665,7 @@ async function setSection(cdp, section) {
       const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim();
       const selector = [
         '[data-section="' + CSS.escape(section) + '"]',
+        '[data-ikuai4-mobile-nav="' + CSS.escape(section) + '"]',
         'a[href="#' + CSS.escape(section) + '"]',
       ].join(',');
       const candidates = Array.from(document.querySelectorAll(selector));
@@ -1186,13 +1675,29 @@ async function setSection(cdp, section) {
         return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
       }) || null;
       const link = visible || candidates[0] || null;
-      if (link) link.click();
-      else location.hash = '#' + section;
+      let directNavigation = false;
+      let clickScheduled = false;
+      if (link) {
+        setTimeout(() => link.click(), 0);
+        clickScheduled = true;
+      } else {
+        const target = new URL(location.href);
+        target.searchParams.set('section', section);
+        target.searchParams.delete('object');
+        target.searchParams.delete('from');
+        target.searchParams.delete('evidenceAt');
+        target.hash = '';
+        history.pushState({}, '', target);
+        dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+        directNavigation = true;
+      }
       return {
         linkFound: candidates.length > 0,
         linkVisible: Boolean(visible),
         linkCount: candidates.length,
         linkText: normalize((visible || link) ? (visible || link).textContent : ''),
+        clickScheduled,
+        directNavigation,
       };
     })()`,
     awaitPromise: true,
@@ -1204,6 +1709,8 @@ async function setSection(cdp, section) {
     linkVisible: false,
     linkCount: 0,
     linkText: '',
+    clickScheduled: false,
+    directNavigation: false,
   };
 }
 
@@ -1238,6 +1745,54 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
   }
   const inspection = result.result && result.result.value;
   if (section !== 'overview' || !inspection) return inspection;
+  if (viewport.width < 900 && !isWideLandscapeViewport(viewport)) {
+    const referenceProbeResult = await cdp.send('Runtime.evaluate', {
+      expression: `(() => {
+        const root = document.querySelector('[data-mobile-reference-home]');
+        const nav = document.querySelector('[data-mobile-reference-navigation]');
+        const navLabels = [...(nav?.querySelectorAll('button') || [])]
+          .map((node) => String(node.textContent || '').replace(/\\s+/g, ' ').trim());
+        const evidenceMode = root?.getAttribute('data-evidence-mode') || '';
+        const scene = root?.getAttribute('data-mobile-reference-scene') || '';
+        const wan = root?.querySelector('.ref-wan');
+        const chart = root?.querySelector('.ref-chart svg');
+        const metrics = wan?.querySelectorAll('.ref-rate-grid .ref-rate').length || 0;
+        const resourceMeters = root?.querySelectorAll('.ref-resource').length || 0;
+        const interfaceRows = root?.querySelectorAll('.ref-interfaces > button').length || 0;
+        const knownScene = ['normal', 'outage', 'unavailable', 'collection', 'resource', 'interfaces', 'route'].includes(scene);
+        const checks = {
+          ikuai4Root: Boolean(root?.matches('main.ref-mobile')),
+          evidenceMode: /^(current|historical|unavailable)$/.test(evidenceMode),
+          scene: knownScene,
+          currentOnlyRates: scene !== 'normal' || (evidenceMode === 'current' && metrics === 2 && Boolean(chart)),
+          fourNavigationRoots: navLabels.length === 4 && ['概览', '网络', '设备', '日志'].every((item) => navLabels.includes(item)),
+          moreDirectory: Boolean(root?.querySelector('button[aria-label="打开更多工具"]')),
+          objectDetail: scene === 'normal'
+            ? Boolean(root?.querySelector('.ref-card-link'))
+            : scene === 'interfaces'
+              ? Boolean(root?.querySelector('.ref-interfaces > button'))
+              : true,
+          noRejectedOwner: document.querySelectorAll('[data-mobile-reference-home]').length === 1 &&
+            document.querySelectorAll('[data-mobile-reference-home]').length === 1,
+          interfaceRows: scene !== 'interfaces' || interfaceRows > 0,
+          resourceRows: scene !== 'resource' || resourceMeters === 3,
+          noFalseCurrentData: scene !== 'unavailable' || !root?.querySelector('.ref-wan'),
+        };
+        return {
+          contract: 'mobile-reference-runtime-v1',
+          appHomePass: Object.values(checks).every(Boolean),
+          truthMode: evidenceMode,
+          risk: scene === 'unavailable' ? 'evidence' : scene === 'normal' ? 'none' : scene,
+          requiredChecks: Object.keys(checks),
+          checks,
+        };
+      })()`,
+      returnByValue: true,
+    });
+    const mobileReferenceGateProbe = referenceProbeResult.result?.value || null;
+    inspection.mobileReferenceGateProbe = mobileReferenceGateProbe;
+    inspection.pass = Boolean(inspection.pass && mobileReferenceGateProbe?.appHomePass === true);
+  }
   const canonicalRouteProbeCell = scaleScenario === 'single' && viewport.width === 390 && viewport.height === 844;
   if (!canonicalRouteProbeCell) {
     return {
@@ -1281,15 +1836,101 @@ async function withTimeout(promise, timeoutMs, label) {
   }
 }
 
-async function inspectScreenshotBlackPixels(cdp, screenshotData) {
+function analyzeScreenshotAnchorPixels({
+  pixels,
+  width,
+  height,
+  anchors,
+  darkThreshold = 210,
+  edgeThreshold = 28,
+  minForegroundRatio = 0.006,
+  minEdgeRatio = 0.006,
+}) {
+  const imageWidth = Math.max(0, Math.floor(Number(width) || 0));
+  const imageHeight = Math.max(0, Math.floor(Number(height) || 0));
+  const pixelData = pixels || [];
+  const rows = (Array.isArray(anchors) ? anchors : []).map((anchor) => {
+    const rect = anchor?.rect || {};
+    const left = Math.max(0, Math.min(imageWidth, Math.floor(Number(rect.x) || 0)));
+    const top = Math.max(0, Math.min(imageHeight, Math.floor(Number(rect.y) || 0)));
+    const right = Math.max(left, Math.min(imageWidth, Math.ceil(left + (Number(rect.width) || 0))));
+    const bottom = Math.max(top, Math.min(imageHeight, Math.ceil(top + (Number(rect.height) || 0))));
+    const clippedWidth = right - left;
+    const clippedHeight = bottom - top;
+    const area = clippedWidth * clippedHeight;
+    if (anchor?.present !== true || imageWidth <= 0 || imageHeight <= 0 || area < 64) {
+      return {
+        ...anchor,
+        rect: { x: left, y: top, width: clippedWidth, height: clippedHeight },
+        sampleCount: 0,
+        foregroundRatio: 0,
+        edgeRatio: 0,
+        pass: false,
+        reason: anchor?.present === true ? 'anchor rectangle is not measurable' : 'anchor is missing from the rendered DOM',
+      };
+    }
+
+    const step = Math.max(1, Math.ceil(Math.sqrt(area / 60000)));
+    let sampleCount = 0;
+    let foregroundSamples = 0;
+    let edgeComparisons = 0;
+    let edgeSamples = 0;
+    const channelDifference = (first, second) => Math.max(
+      Math.abs(pixelData[first] - pixelData[second]),
+      Math.abs(pixelData[first + 1] - pixelData[second + 1]),
+      Math.abs(pixelData[first + 2] - pixelData[second + 2]),
+    );
+    for (let y = top; y < bottom; y += step) {
+      for (let x = left; x < right; x += step) {
+        const offset = (y * imageWidth + x) * 4;
+        if (offset + 2 >= pixelData.length) continue;
+        sampleCount += 1;
+        if (Math.max(pixelData[offset], pixelData[offset + 1], pixelData[offset + 2]) < darkThreshold) {
+          foregroundSamples += 1;
+        }
+        if (x + step < right) {
+          edgeComparisons += 1;
+          if (channelDifference(offset, (y * imageWidth + x + step) * 4) > edgeThreshold) edgeSamples += 1;
+        }
+        if (y + step < bottom) {
+          edgeComparisons += 1;
+          if (channelDifference(offset, ((y + step) * imageWidth + x) * 4) > edgeThreshold) edgeSamples += 1;
+        }
+      }
+    }
+    const foregroundRatio = sampleCount ? foregroundSamples / sampleCount : 0;
+    const edgeRatio = edgeComparisons ? edgeSamples / edgeComparisons : 0;
+    const requiredForegroundRatio = Number(anchor.minForegroundRatio) || minForegroundRatio;
+    const requiredEdgeRatio = Number(anchor.minEdgeRatio) || minEdgeRatio;
+    const pass = sampleCount >= 64 && foregroundRatio >= requiredForegroundRatio && edgeRatio >= requiredEdgeRatio;
+    return {
+      ...anchor,
+      rect: { x: left, y: top, width: clippedWidth, height: clippedHeight },
+      sampleCount,
+      foregroundRatio,
+      edgeRatio,
+      minForegroundRatio: requiredForegroundRatio,
+      minEdgeRatio: requiredEdgeRatio,
+      pass,
+      reason: pass ? null : 'anchor pixels lack the foreground and edge structure of rendered controls',
+    };
+  });
+  return {
+    required: rows.length > 0,
+    pass: rows.length === 0 || rows.every((row) => row.pass === true),
+    anchors: rows,
+  };
+}
+
+async function inspectScreenshotPixels(cdp, screenshotData, { section = null } = {}) {
+  const analyzerSource = analyzeScreenshotAnchorPixels.toString();
   const result = await cdp.send('Runtime.evaluate', {
     expression: `(() => new Promise((resolve, reject) => {
       const image = new Image();
       image.onload = () => {
-        const scale = Math.min(1, 220 / image.width, 440 / image.height);
-        const width = Math.max(1, Math.round(image.width * scale));
-        const height = Math.max(1, Math.round(image.height * scale));
         const canvas = document.createElement('canvas');
+        const width = image.width;
+        const height = image.height;
         canvas.width = width;
         canvas.height = height;
         const context = canvas.getContext('2d', { willReadFrequently: true });
@@ -1299,7 +1940,65 @@ async function inspectScreenshotBlackPixels(cdp, screenshotData) {
         for (let index = 0; index < pixels.length; index += 4) {
           if (pixels[index] < 8 && pixels[index + 1] < 8 && pixels[index + 2] < 8) blackPixels += 1;
         }
-        resolve({ blackPixels, pixelCount: width * height, ratio: blackPixels / (width * height) });
+        const requireOverviewAnchors = ${JSON.stringify(section === 'overview')};
+        const wideLandscapeBrowserOwner = window.innerWidth >= 600 && window.innerWidth > window.innerHeight;
+        const requireDesktopOverviewAnchors = requireOverviewAnchors && (window.innerWidth >= 1200 || wideLandscapeBrowserOwner);
+        const requireMobileOverviewAnchors = requireOverviewAnchors && window.innerWidth < 900 && !wideLandscapeBrowserOwner;
+        const specs = requireDesktopOverviewAnchors ? [
+          {
+            name: 'desktop-toolbar',
+            selector: '[data-panel-runtime-toolbar="desktop"], [data-desktop-fixture-toolbar]',
+          },
+          { name: 'task-navigation', selector: '.panel-task-navigation', minForegroundRatio: 0.004 },
+          { name: 'status-bus', selector: '[data-desktop-status-bus]' },
+        ] : requireMobileOverviewAnchors ? [
+          { name: 'mobile-reference-root', selector: '[data-mobile-reference-home]' },
+          { name: 'mobile-reference-lead', selector: '[data-mobile-reference-home] .ref-card, [data-mobile-reference-home] .ref-status' },
+          { name: 'mobile-reference-status', selector: '[data-mobile-reference-home] .ref-status' },
+          { name: 'mobile-reference-navigation', selector: '[data-mobile-reference-navigation]' },
+        ] : [];
+        const scaleX = width / Math.max(1, window.innerWidth);
+        const scaleY = height / Math.max(1, window.innerHeight);
+        const anchors = specs.map((spec) => {
+          const node = document.querySelector(spec.selector);
+          const style = node ? getComputedStyle(node) : null;
+          const rect = node ? node.getBoundingClientRect() : null;
+          const attributePresent = !spec.attribute || Boolean(node?.getAttribute(spec.attribute));
+          const present = Boolean(
+            node &&
+            rect &&
+            rect.width >= 8 &&
+            rect.height >= 8 &&
+            rect.bottom > 0 &&
+            rect.right > 0 &&
+            rect.top < window.innerHeight &&
+            rect.left < window.innerWidth &&
+            style &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            Number(style.opacity || 1) > 0.05 &&
+            attributePresent
+          );
+          return {
+            ...spec,
+            present,
+            rect: rect ? {
+              x: rect.left * scaleX,
+              y: rect.top * scaleY,
+              width: rect.width * scaleX,
+              height: rect.height * scaleY,
+            } : null,
+          };
+        });
+        const anchorCheck = (${analyzerSource})({ pixels, width, height, anchors });
+        resolve({
+          width,
+          height,
+          blackPixels,
+          pixelCount: width * height,
+          ratio: blackPixels / (width * height),
+          anchorCheck,
+        });
       };
       image.onerror = () => reject(new Error('captured PNG could not be decoded'));
       image.src = 'data:image/png;base64,' + ${JSON.stringify(screenshotData)};
@@ -1308,66 +2007,239 @@ async function inspectScreenshotBlackPixels(cdp, screenshotData) {
     returnByValue: true,
   });
   if (result.exceptionDetails) throw new Error('captured PNG pixel inspection failed');
-  return result.result?.value || { blackPixels: 0, pixelCount: 0, ratio: 0 };
+  return result.result?.value || {
+    blackPixels: 0,
+    pixelCount: 0,
+    ratio: 0,
+    anchorCheck: { required: false, pass: true, anchors: [] },
+  };
 }
 
-async function captureScreenshot(cdp, filePath) {
-  await cdp.send('Runtime.evaluate', {
-    expression: `(() => {
+async function resetScreenshotScroll(cdp) {
+  const result = await cdp.send('Runtime.evaluate', {
+    expression: `(async () => {
+      const root = document.documentElement;
+      const body = document.body;
+      const scrollingElement = document.scrollingElement;
+      const describe = (node) => {
+        if (!(node instanceof Element)) return '';
+        if (node.id) return '#' + node.id;
+        const dataRoute = node.getAttribute('data-panel-route-content');
+        if (dataRoute) return '[data-panel-route-content="' + dataRoute + '"]';
+        const dataWorkspace = node.getAttribute('data-mobile-domain-workspace');
+        if (dataWorkspace) return '[data-mobile-domain-workspace="' + dataWorkspace + '"]';
+        return node.tagName.toLowerCase() + (node.classList.length ? '.' + Array.from(node.classList).slice(0, 2).join('.') : '');
+      };
+      const snapshot = () => {
+        const mobileRuntimeBar = document.querySelector(
+          '[data-panel-runtime-toolbar="mobile"], .panel-runtime-bar-mobile, .mp-device-context'
+        );
+        const mobileRuntimeBarRect = mobileRuntimeBar?.getBoundingClientRect();
+        const mobileRuntimeBarStyle = mobileRuntimeBar ? getComputedStyle(mobileRuntimeBar) : null;
+        const mobileRuntimeBarVisibleHeight = mobileRuntimeBarRect
+          ? Math.max(0, Math.min(window.innerHeight, mobileRuntimeBarRect.bottom) - Math.max(0, mobileRuntimeBarRect.top))
+          : 0;
+        const mobileRuntimeBarProbe = mobileRuntimeBarRect ? {
+          top: Math.round(mobileRuntimeBarRect.top),
+          bottom: Math.round(mobileRuntimeBarRect.bottom),
+          height: Math.round(mobileRuntimeBarRect.height),
+          visibleHeight: Math.round(mobileRuntimeBarVisibleHeight),
+          position: mobileRuntimeBarStyle?.position || '',
+          transform: mobileRuntimeBarStyle?.transform || '',
+        } : null;
+        const horizontalElements = Array.from(document.querySelectorAll('*'))
+          .filter((node) => Math.abs(Number(node.scrollLeft) || 0) > 1)
+          .slice(0, 12)
+          .map((node) => ({ selector: describe(node), scrollLeft: Math.round(node.scrollLeft) }));
+        const verticalElements = Array.from(document.querySelectorAll('*'))
+          .filter((node) => node !== root && node !== body && node !== scrollingElement)
+          .filter((node) => Math.abs(Number(node.scrollTop) || 0) > 1)
+          .slice(0, 12)
+          .map((node) => ({ selector: describe(node), scrollTop: Math.round(node.scrollTop) }));
+        const values = [
+          window.scrollX,
+          root.scrollLeft,
+          body.scrollLeft,
+          scrollingElement?.scrollLeft || 0,
+          window.visualViewport?.offsetLeft || 0,
+          ...horizontalElements.map((row) => row.scrollLeft),
+        ].map((value) => Math.abs(Number(value) || 0));
+        const verticalValues = [
+          window.scrollY,
+          root.scrollTop,
+          body.scrollTop,
+          scrollingElement?.scrollTop || 0,
+          window.visualViewport?.offsetTop || 0,
+          ...verticalElements.map((row) => row.scrollTop),
+        ].map((value) => Math.abs(Number(value) || 0));
+        return {
+          viewportWidth: Math.round(window.innerWidth),
+          viewportHeight: Math.round(window.innerHeight),
+          windowX: Math.round(window.scrollX),
+          windowY: Math.round(window.scrollY),
+          rootLeft: Math.round(root.scrollLeft),
+          rootTop: Math.round(root.scrollTop),
+          bodyLeft: Math.round(body.scrollLeft),
+          bodyTop: Math.round(body.scrollTop),
+          scrollingElementLeft: Math.round(scrollingElement?.scrollLeft || 0),
+          scrollingElementTop: Math.round(scrollingElement?.scrollTop || 0),
+          visualOffsetLeft: Math.round(window.visualViewport?.offsetLeft || 0),
+          visualOffsetTop: Math.round(window.visualViewport?.offsetTop || 0),
+          horizontalMax: Math.round(Math.max(0, ...values)),
+          verticalMax: Math.round(Math.max(0, ...verticalValues)),
+          mobileRuntimeBarOriginOk: !mobileRuntimeBarProbe || (
+            mobileRuntimeBarProbe.top >= -1 &&
+            mobileRuntimeBarProbe.visibleHeight >= mobileRuntimeBarProbe.height - 1
+          ),
+          mobileRuntimeBarProbe,
+          horizontalElements,
+          verticalElements,
+        };
+      };
+      const before = snapshot();
       window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
+      root.scrollLeft = 0;
+      root.scrollTop = 0;
+      body.scrollLeft = 0;
+      body.scrollTop = 0;
+      if (scrollingElement) {
+        scrollingElement.scrollLeft = 0;
+        scrollingElement.scrollTop = 0;
+      }
+      for (const node of document.querySelectorAll('*')) {
+        if (Math.abs(Number(node.scrollLeft) || 0) > 1) node.scrollLeft = 0;
+      }
       const mobileScreen = document.querySelector('#overview .ik-mobile-decision-screen');
       if (mobileScreen) mobileScreen.scrollTop = 0;
-      return true;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const after = snapshot();
+      return {
+        before,
+        after,
+        horizontalBeforeOk: before.horizontalMax <= 1,
+        horizontalAfterOk: after.horizontalMax <= 1,
+        captureOriginOk:
+          after.windowY === 0 &&
+          after.rootTop === 0 &&
+          after.bodyTop === 0 &&
+          after.scrollingElementTop === 0 &&
+          after.visualOffsetTop === 0 &&
+          after.verticalMax <= 1 &&
+          after.mobileRuntimeBarOriginOk,
+      };
     })()`,
+    awaitPromise: true,
     returnByValue: true,
   });
+  if (result.exceptionDetails) throw new Error('screenshot scroll reset failed');
+  return result.result?.value || null;
+}
+
+async function captureScreenshot(cdp, filePath, options = {}) {
+  const scrollState = await resetScreenshotScroll(cdp);
   await new Promise((resolve) => setTimeout(resolve, 120));
   let shot = null;
   let lastError = null;
   let visualCheck = null;
+  let stableAttempt = 0;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
-      shot = await withTimeout(
+      const firstShot = await withTimeout(
         cdp.send('Page.captureScreenshot', {
           format: 'png',
           fromSurface: true,
           captureBeyondViewport: false,
         }),
-        7500,
-        `capture screenshot attempt ${attempt}`,
+        configuredBrowserTimeoutMs(7_500),
+        `capture screenshot first sample attempt ${attempt}`,
       );
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      const secondShot = await withTimeout(
+        cdp.send('Page.captureScreenshot', {
+          format: 'png',
+          fromSurface: true,
+          captureBeyondViewport: false,
+        }),
+        configuredBrowserTimeoutMs(7_500),
+        `capture screenshot second sample attempt ${attempt}`,
+      );
+      if (firstShot.data !== secondShot.data) {
+        throw new Error(`viewport screenshot did not stabilize on attempt ${attempt}`);
+      }
+      shot = secondShot;
       visualCheck = await withTimeout(
-        inspectScreenshotBlackPixels(cdp, shot.data),
-        5000,
+        inspectScreenshotPixels(cdp, shot.data, options),
+        configuredBrowserTimeoutMs(5_000),
         `inspect screenshot pixels attempt ${attempt}`,
       );
+      visualCheck.captureMode = shot.captureMode || 'unknown';
+      const expectedWidth = Number(scrollState?.after?.viewportWidth || 0);
+      const expectedHeight = Number(scrollState?.after?.viewportHeight || 0);
+      if (
+        expectedWidth < 1 ||
+        expectedHeight < 1 ||
+        visualCheck.width !== expectedWidth ||
+        visualCheck.height !== expectedHeight
+      ) {
+        throw new Error(
+          `viewport screenshot dimensions ${visualCheck.width}x${visualCheck.height} do not match ` +
+          `the CSS viewport ${expectedWidth}x${expectedHeight}`,
+        );
+      }
       if (visualCheck.ratio > 0.02) {
         throw new Error(`captured screenshot contains ${(visualCheck.ratio * 100).toFixed(2)}% unexpected black pixels`);
       }
+      if (visualCheck.anchorCheck?.required && visualCheck.anchorCheck.pass !== true) {
+        const failures = visualCheck.anchorCheck.anchors
+          .filter((anchor) => anchor.pass !== true)
+          .map((anchor) => [
+            anchor.name,
+            `present=${anchor.present === true}`,
+            `foreground=${Number(anchor.foregroundRatio || 0).toFixed(4)}`,
+            `edges=${Number(anchor.edgeRatio || 0).toFixed(4)}`,
+            `rect=${Math.round(anchor.rect?.width || 0)}x${Math.round(anchor.rect?.height || 0)}`,
+          ].join(' '))
+          .join(', ');
+        throw new Error(`captured screenshot is missing required visual anchors: ${failures || 'unknown'}`);
+      }
+      stableAttempt = attempt;
       break;
     } catch (error) {
       lastError = error;
       shot = null;
-      if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 160));
+      if (attempt < 3) {
+        await resetScreenshotScroll(cdp);
+        await new Promise((resolve) => setTimeout(resolve, 160));
+      }
     }
   }
   if (!shot) throw lastError || new Error('screenshot capture failed');
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, Buffer.from(shot.data, 'base64'));
-  return visualCheck;
+  return {
+    visualCheck: { ...visualCheck, stableAttempt, consecutiveCaptures: 2 },
+    scrollState,
+  };
 }
 
 async function runBrowserChecks(args, report, baseUrl) {
   const profiles = args.profile === 'both' ? ['public', 'private'] : [args.profile];
+  const browserTimeoutMs = configuredBrowserTimeoutMs();
+  let newBrowserChecks = 0;
   const browser = await launchBrowser(args, report);
-  report.browser = { driver: 'playwright-core', path: browser.browserPath };
   try {
     for (const profile of profiles) {
     const sections = args.sections || (profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS);
     for (const scaleScenario of args.scaleScenarios) {
       for (const viewport of args.viewports) {
+        const pendingSections = pendingBrowserSections(
+          report.browserChecks,
+          profile,
+          scaleScenario,
+          viewport,
+          sections,
+        );
+        if (!pendingSections.length) continue;
         let cdp = null;
         const runtimeErrors = [];
         const consoleErrors = [];
@@ -1375,7 +2247,7 @@ async function runBrowserChecks(args, report, baseUrl) {
           try {
             cdp = await withTimeout(
               browser.connect(),
-              15000,
+              browserTimeoutMs,
               `browser connect ${profile}/${scaleScenario}/${viewport.name}`,
             );
           } catch (error) {
@@ -1398,15 +2270,38 @@ async function runBrowserChecks(args, report, baseUrl) {
             if (params.entry && params.entry.level === 'error') consoleErrors.push(params.entry);
           });
           try {
-            await withTimeout(
-              navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario),
-              25000,
+            const bootDetail = await withTimeout(
+              navigateWithFixture(cdp, baseUrl, profile, viewport, scaleScenario),
+              configuredBrowserTimeoutMs(25_000),
               `browser navigate ${profile}/${scaleScenario}/${viewport.name}`,
             );
+            record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, bootDetail);
           } catch (error) {
+            // Under a severely CPU-capped headed Edge launch, Chromium can
+            // abort the first navigation while the target is still about:blank.
+            // Retry only that narrow infrastructure race once; real page
+            // errors and repeated aborts remain failures.
+            let navigationRetry = null;
+            if (/ERR_ABORTED/.test(String(error?.message || error))) {
+              await delay(500);
+              try {
+                const retryDetail = await withTimeout(
+                  navigateWithFixture(cdp, baseUrl, profile, viewport, scaleScenario),
+                  configuredBrowserTimeoutMs(25_000),
+                  `browser navigate retry ${profile}/${scaleScenario}/${viewport.name}`,
+                );
+                record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, {
+                  ...retryDetail,
+                  navigationRetry: 1,
+                });
+                continue;
+              } catch (retryError) {
+                navigationRetry = retryError.stack || retryError.message || String(retryError);
+              }
+            }
             const bootDiag = await withTimeout(
               collectBootDiagnostics(cdp),
-              5000,
+              configuredBrowserTimeoutMs(5_000),
               `boot diagnostics ${profile}/${scaleScenario}/${viewport.name}`,
             ).catch((diagError) => ({ error: diagError.message }));
             const detail = {
@@ -1418,17 +2313,18 @@ async function runBrowserChecks(args, report, baseUrl) {
               consoleErrorCount: consoleErrors.length,
               runtimeErrors: runtimeErrors.slice(0, 3),
               consoleErrors: consoleErrors.slice(0, 3),
+              navigationRetry,
               bootDiag,
             };
             record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, false, detail);
             await withTimeout(
               captureScreenshot(cdp, path.join(args.out, `${profile}-${scaleScenario}-${viewport.name}-boot-failure.png`)),
-              8000,
+              configuredBrowserTimeoutMs(8_000),
               `boot failure screenshot ${profile}/${scaleScenario}/${viewport.name}`,
             ).catch(() => {});
             continue;
           }
-          for (const section of sections) {
+          for (const section of pendingSections) {
             const runtimeErrorStart = runtimeErrors.length;
             const consoleErrorStart = consoleErrors.length;
             let sectionActivation = null;
@@ -1436,12 +2332,12 @@ async function runBrowserChecks(args, report, baseUrl) {
             try {
               sectionActivation = await withTimeout(
                 setSection(cdp, section),
-                8000,
+                configuredBrowserTimeoutMs(8_000),
                 `set section ${profile}/${scaleScenario}/${viewport.name}/${section}`,
               );
               inspection = await withTimeout(
                 inspectSection(cdp, profile, viewport, section, args, scaleScenario),
-                18000,
+                configuredBrowserTimeoutMs(18_000),
                 `inspect section ${profile}/${scaleScenario}/${viewport.name}/${section}`,
               );
             } catch (error) {
@@ -1484,13 +2380,20 @@ async function runBrowserChecks(args, report, baseUrl) {
               const fileName = `${profile}-${scaleScenario}-${viewport.name}-${section}.png`.replace(/[^A-Za-z0-9_.-]+/g, '-');
               const screenshotPath = path.join(args.out, fileName);
               await withTimeout(
-                captureScreenshot(cdp, screenshotPath),
-                20000,
+                captureScreenshot(cdp, screenshotPath, { section }),
+                configuredBrowserTimeoutMs(20_000),
                 `screenshot ${profile}/${scaleScenario}/${viewport.name}/${section}`,
               )
-                .then((screenshotVisualCheck) => {
+                .then((screenshotResult) => {
                   inspection.screenshot = fileName;
-                  inspection.screenshotVisualCheck = screenshotVisualCheck;
+                  inspection.screenshotVisualCheck = screenshotResult.visualCheck;
+                  inspection.screenshotScrollState = screenshotResult.scrollState;
+                  inspection.screenshotScrollOk = Boolean(
+                    screenshotResult.scrollState?.horizontalBeforeOk &&
+                    screenshotResult.scrollState?.horizontalAfterOk &&
+                    screenshotResult.scrollState?.captureOriginOk
+                  );
+                  screenshotOk = Boolean(screenshotOk && inspection.screenshotScrollOk);
                 })
                 .catch((error) => {
                   screenshotOk = false;
@@ -1506,24 +2409,32 @@ async function runBrowserChecks(args, report, baseUrl) {
             const hardPass = inspection.pass;
             report.browserChecks.push(inspection);
             record(report, `responsive ${profile}/${scaleScenario}/${viewport.name}/${section}`, hardPass, inspection);
+            newBrowserChecks += 1;
+            await writeBrowserResumeProgress(args, report, inspection);
             if (inspection.overflowX > 24 && viewport.width < 768 && !args.strictResponsive) {
               warn(report, `narrow overflow observed ${profile}/${viewport.name}/${section}`, {
                 overflowX: inspection.overflowX,
                 note: 'Current shell keeps desktop layout on narrow viewports; use --strict-responsive to fail this.',
               });
             }
+            if (args.maxBrowserCells > 0 && newBrowserChecks >= args.maxBrowserCells) {
+              return;
+            }
           }
         } finally {
           if (cdp) {
             cdp.close();
             if (typeof cdp.closeTarget === 'function') {
-              await withTimeout(
-                cdp.closeTarget(),
-                3000,
-                `close browser target ${profile}/${scaleScenario}/${viewport.name}`,
-              ).catch((error) => {
-                warn(report, `browser target close timed out ${profile}/${scaleScenario}/${viewport.name}`, { error: error.message });
-              });
+              const targetLabel = `close browser target ${profile}/${scaleScenario}/${viewport.name}`;
+              try {
+                await withTimeout(cdp.closeTarget(), configuredBrowserTimeoutMs(12_000), targetLabel);
+                record(report, targetLabel, true, { lifecycle: 'managed-context-and-page-close' });
+              } catch (error) {
+                record(report, targetLabel, false, {
+                  lifecycle: 'managed-context-and-page-close',
+                  error: error && (error.stack || error.message) ? (error.stack || error.message) : String(error),
+                });
+              }
             }
           }
         }
@@ -1531,15 +2442,34 @@ async function runBrowserChecks(args, report, baseUrl) {
     }
   }
   } finally {
-    await withTimeout(browser.stop(), 8000, 'browser stop').catch((error) => {
-      warn(report, 'browser stop timed out', { error: error.message });
-    });
+    try {
+      const lifecycle = await withTimeout(
+        browser.stop(),
+        configuredBrowserTimeoutMs(30_000),
+        'browser stop',
+      );
+      const cleanup = Array.isArray(lifecycle?.cleanup) ? lifecycle.cleanup : [];
+      const cleanupOk = cleanup.length > 0 && cleanup.every((entry) => entry.status === 'ok');
+      record(report, 'browser managed lifecycle closes owned process tree', cleanupOk, {
+        ownedBrowserPid: lifecycle?.ownedBrowserPid || report.browser?.ownedBrowserPid || null,
+        cleanup,
+      });
+    } catch (error) {
+      record(report, 'browser managed lifecycle closes owned process tree', false, {
+        error: error && (error.stack || error.message) ? (error.stack || error.message) : String(error),
+        lifecycle: report.browser?.lifecycle || null,
+      });
+    }
   }
 }
 
 function buildSnapshot(profile, scaleScenario = 'multi') {
   const publicProfile = profile === 'public';
   const now = '2026-05-24T12:00:00Z';
+  const nowMilliseconds = Date.parse(now);
+  const historyTimestamps = Array.from({ length: 6 }, (_, index) =>
+    new Date(nowMilliseconds - (5 - index) * 180_000).toISOString()
+  );
   const capabilities = {
     readonlyDiagnostics: !publicProfile,
     privateDiagnostics: !publicProfile,
@@ -1747,7 +2677,15 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         disk: [20, 20, 21, 21, 21, 21],
         uplink: [32000000, 48000000, 51000000, 62000000, 70000000, 79000000],
         downlink: [180000000, 210000000, 225000000, 280000000, 300000000, 323000000],
-        timestamps: [1, 2, 3, 4, 5, 6],
+        timestamps: historyTimestamps,
+        resourceSamples: historyTimestamps.map((timestamp, index) => ({
+          timestamp,
+          cpu: [12, 16, 18, 17, 15, 18][index],
+          memory: [38, 39, 40, 41, 42, 42][index],
+          disk: [20, 20, 21, 21, 21, 21][index],
+          source: 'scenario-fixture',
+          evidenceMode: 'current',
+        })),
       },
     },
     interfaces,
@@ -1884,15 +2822,15 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       tables: [{ name: 'main', activeRoutes: 3, staticCount: 3 }],
     },
     logs: {
-      system: [{ time: '12:00:01', topics: 'system,info', message: 'smoke fixture ready' }],
-      firewall: [{ time: '12:01:01', topics: 'firewall,info', message: 'accepted established session' }],
-      dhcp: [{ time: '12:02:01', topics: 'dhcp,info', message: 'lease bound' }],
-      dns: [{ time: '12:03:01', topics: 'dns,info', message: 'cache hit' }],
+      system: [{ time: historyTimestamps[2], topics: 'system,info', message: 'smoke fixture ready' }],
+      firewall: [{ time: historyTimestamps[3], topics: 'firewall,info', message: 'accepted established session' }],
+      dhcp: [{ time: historyTimestamps[4], topics: 'dhcp,info', message: 'lease bound' }],
+      dns: [{ time: historyTimestamps[5], topics: 'dns,info', message: 'cache hit' }],
       all: [
-        { time: '12:00:01', topics: 'system,info', message: 'smoke fixture ready' },
-        { time: '12:01:01', topics: 'firewall,info', message: 'accepted established session' },
-        { time: '12:02:01', topics: 'dhcp,info', message: 'lease bound' },
-        { time: '12:03:01', topics: 'dns,info', message: 'cache hit' },
+        { time: historyTimestamps[2], topics: 'system,info', message: 'smoke fixture ready' },
+        { time: historyTimestamps[3], topics: 'firewall,info', message: 'accepted established session' },
+        { time: historyTimestamps[4], topics: 'dhcp,info', message: 'lease bound' },
+        { time: historyTimestamps[5], topics: 'dns,info', message: 'cache hit' },
       ],
     },
     statusFindings: {
@@ -2088,18 +3026,40 @@ function setFixtureFinding(snapshot, severity, title, summary, evidence = []) {
 function setSnapshotFresh(snapshot) {
   const now = new Date().toISOString();
   const history = snapshot.overview && snapshot.overview.history;
-  if (history && Array.isArray(history.downlink) && Array.isArray(history.uplink)) {
-    const sampleCount = Math.min(history.downlink.length, history.uplink.length);
-    const nowSeconds = Math.floor(Date.parse(now) / 1000);
+  const trafficSamples = Array.isArray(history?.trafficSamples) ? history.trafficSamples : [];
+  const resourceSamples = Array.isArray(history?.resourceSamples) ? history.resourceSamples : [];
+  if (history && resourceSamples.length) {
+    const nowMilliseconds = Date.parse(now);
+    history.resourceSamples = resourceSamples.map((sample, index) => ({
+      ...sample,
+      timestamp: new Date(nowMilliseconds - (resourceSamples.length - 1 - index) * 180_000).toISOString(),
+      source: sample.source || 'scenario-fixture',
+      evidenceMode: sample.evidenceMode || 'current',
+    }));
+  }
+  if (history && trafficSamples.length) {
+    const nowMilliseconds = Date.parse(now);
     const wanRows = Array.isArray(snapshot.wan) ? snapshot.wan.filter((row) => row.running !== false && row.disabled !== true) : [];
-    const currentDown = wanRows.reduce((total, row) => total + Number(row.downRate || 0), 0);
-    const currentUp = wanRows.reduce((total, row) => total + Number(row.upRate || 0), 0);
+    const observedWanTotal = (field) => {
+      if (!wanRows.length) return null;
+      const values = wanRows.map((row) => typeof row?.[field] === 'number' ? row[field] : null);
+      return values.every((value) => Number.isFinite(value) && value >= 0)
+        ? values.reduce((total, value) => total + value, 0)
+        : null;
+    };
+    const currentDown = observedWanTotal('downRate');
+    const currentUp = observedWanTotal('upRate');
     const factors = [0.72, 0.81, 0.76, 0.9, 0.94, 1];
-    history.downlink = Array.from({ length: sampleCount }, (_, index) => Math.round(currentDown * factors[Math.max(0, factors.length - sampleCount + index)]));
-    history.uplink = Array.from({ length: sampleCount }, (_, index) => Math.round(currentUp * factors[Math.max(0, factors.length - sampleCount + index)]));
-    history.timestamps = Array.from({ length: sampleCount }, (_, index) => nowSeconds - (sampleCount - 1 - index) * 5);
+    history.trafficSamples = trafficSamples.map((sample, index) => ({
+      ...sample,
+      timestamp: new Date(nowMilliseconds - (trafficSamples.length - 1 - index) * 180_000).toISOString(),
+      uplink: currentUp === null ? null : Math.round(currentUp * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
+      downlink: currentDown === null ? null : Math.round(currentDown * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
+      source: sample.source || 'scenario-fixture',
+      evidenceMode: currentUp === null || currentDown === null ? 'unavailable' : (sample.evidenceMode || 'current'),
+    }));
     snapshot.meta.rateHistoryUpdatedAt = now;
-    snapshot.meta.rateHistorySampleCount = sampleCount;
+    snapshot.meta.rateHistorySampleCount = trafficSamples.length;
   }
   snapshot.updatedAt = now;
   snapshot.meta.realtimeUpdatedAt = now;
@@ -2123,12 +3083,48 @@ function setCollectionHealthy(snapshot) {
 
 function refreshOverviewWanRates(snapshot) {
   const wan = Array.isArray(snapshot.wan) ? snapshot.wan : [];
-  const upTotal = wan.reduce((sum, row) => sum + Number(row.upRate || 0), 0);
-  const downTotal = wan.reduce((sum, row) => sum + Number(row.downRate || 0), 0);
+  const observedTotal = (field) => {
+    if (!wan.length) return null;
+    const values = wan.map((row) => typeof row?.[field] === 'number' ? row[field] : null);
+    return values.every((value) => Number.isFinite(value) && value >= 0)
+      ? values.reduce((sum, value) => sum + value, 0)
+      : null;
+  };
+  const upTotal = observedTotal('upRate');
+  const downTotal = observedTotal('downRate');
   snapshot.overview.uplinkBps = upTotal;
   snapshot.overview.downlinkBps = downTotal;
   snapshot.overview.wanUpRate = upTotal;
   snapshot.overview.wanDownRate = downTotal;
+}
+
+function refreshFixtureTrafficHistory(snapshot, evidenceMode = 'current') {
+  const history = snapshot.overview?.history;
+  const updatedAt = Date.parse(snapshot.updatedAt);
+  const uplink = Number(snapshot.overview?.uplinkBps);
+  const downlink = Number(snapshot.overview?.downlinkBps);
+  if (!history || !Number.isFinite(updatedAt) || !Number.isFinite(uplink) || !Number.isFinite(downlink)) {
+    throw new Error('fixture traffic history requires timestamped finite WAN aggregates');
+  }
+  const factors = [0.55, 0.64, 0.72, 0.83, 0.92, 1];
+  const trafficSamples = factors.map((factor, index) => ({
+    timestamp: new Date(updatedAt - (factors.length - 1 - index) * 180_000).toISOString(),
+    uplink: Math.round(uplink * factor),
+    downlink: Math.round(downlink * factor),
+    source: 'scenario-fixture',
+    evidenceMode,
+  }));
+  history.trafficSamples = trafficSamples;
+  snapshot.meta.rateHistorySampleCount = trafficSamples.length;
+}
+
+function retainLatestFixtureTrafficSample(snapshot) {
+  const history = snapshot.overview?.history;
+  const samples = Array.isArray(history?.trafficSamples) ? history.trafficSamples : [];
+  const latest = samples[samples.length - 1];
+  if (!history || !latest) throw new Error('traffic-accumulating fixture requires one current atomic sample');
+  history.trafficSamples = [latest];
+  snapshot.meta.rateHistorySampleCount = 1;
 }
 
 function refreshFixtureCounts(snapshot, scaleScenario) {
@@ -2209,6 +3205,20 @@ function markForwardingInterfacesDown(snapshot) {
     txError: 0,
   }));
   snapshot.interfaces = [...wanInterfaces, ...affected];
+  const dependencyRoutes = affected.map((row, index) => ({
+    dstAddress: '0.0.0.0/0',
+    gateway: row.name,
+    distance: 20 + index,
+    table: 'main',
+    active: false,
+    static: true,
+    disabled: false,
+    default: true,
+    comment: 'acceptance configured fallback dependency',
+  }));
+  snapshot.routes = snapshot.routes || {};
+  snapshot.routes.items = [...(snapshot.routes.items || []), ...dependencyRoutes];
+  snapshot.routes.defaultRoutes = [...(snapshot.routes.defaultRoutes || []), ...dependencyRoutes];
 }
 
 function applyNoSnapshotScenario(snapshot) {
@@ -2244,6 +3254,13 @@ function applyNoSnapshotScenario(snapshot) {
   snapshot.overview.diskUsage = null;
   snapshot.overview.diskUsedPercent = null;
   snapshot.overview.systemLoadLevel = 'warning';
+  snapshot.overview.history = {
+    trafficSamples: [],
+    resourceSamples: [],
+    cpu: [],
+    memory: [],
+    disk: [],
+  };
   refreshOverviewWanRates(snapshot);
   setFixtureFinding(snapshot, 'critical', 'No snapshot', '无可用快照，RouterOS 当前不可达，无业务快照，业务数据不展示。', [
     { label: '采集', value: '断链' },
@@ -2292,6 +3309,12 @@ function applyEdgeScenario(snapshot, scaleScenario) {
     snapshot.overview.history.cpu = [91, 93, 94, 95, 96, 96];
     snapshot.overview.history.memory = [87, 88, 90, 91, 92, 92];
     snapshot.overview.history.disk = [92, 93, 94, 95, 96, 97];
+    snapshot.overview.history.resourceSamples = (snapshot.overview.history.resourceSamples || []).map((sample, index) => ({
+      ...sample,
+      cpu: snapshot.overview.history.cpu[index],
+      memory: snapshot.overview.history.memory[index],
+      disk: snapshot.overview.history.disk[index],
+    }));
     snapshot.connections.total = 98000;
     snapshot.connections.thresholdLevel = 'danger';
     setFixtureFinding(snapshot, 'critical', 'Resource full', 'CPU、内存、磁盘与连接压力过高。', [
@@ -2302,10 +3325,10 @@ function applyEdgeScenario(snapshot, scaleScenario) {
     ]);
   } else if (scaleScenario === 'interfaces-down') {
     snapshot.status = 'error';
-    snapshot.error = '3 个转发接口 Down；WAN 与活动默认路由仍有当前记录';
+    snapshot.error = '3 个已启用默认路由依赖接口未运行；活动主默认路由仍有当前记录';
     markForwardingInterfacesDown(snapshot);
-    setFixtureFinding(snapshot, 'critical', 'Interfaces down', 'Three forwarding interfaces are down while WAN and route observations remain current.', [
-      { label: 'interfacesDown', value: '3' },
+    setFixtureFinding(snapshot, 'critical', 'Interfaces down', 'Three enabled default-route dependencies are not running while the active primary route remains current.', [
+      { label: 'configuredDependenciesDown', value: '3' },
       { label: 'wanOnline', value: String((snapshot.wan || []).filter((row) => row.running !== false).length) },
     ]);
   }
@@ -2320,7 +3343,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     'resource-full': { wan: 4, terminals: 24 },
     'interfaces-down': { wan: 4, terminals: 24 },
   };
-  const counts = edgeCounts[scaleScenario] || (scaleScenario === 'single'
+  const counts = edgeCounts[scaleScenario] || (scaleScenario === 'single' || scaleScenario === 'traffic-accumulating'
     ? { wan: 1, terminals: 8 }
     : scaleScenario === 'fleet'
       ? { wan: 64, terminals: 180 }
@@ -2390,7 +3413,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     dynamic: true,
     lastSeen: row.lastSeen,
   }));
-  snapshot.connections.total = scaleScenario === 'fleet' ? 125000 : scaleScenario === 'single' ? 180 : 2400;
+  snapshot.connections.total = scaleScenario === 'fleet' ? 125000 : (scaleScenario === 'single' || scaleScenario === 'traffic-accumulating') ? 180 : 2400;
   snapshot.connections.active = terminals.slice(0, 80).map((row, index) => ({
     src: row.ip,
     localIp: row.ip,
@@ -2452,12 +3475,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     active: row.active,
     comment: '',
   }));
-  const upTotal = wan.reduce((sum, row) => sum + row.upRate, 0);
-  const downTotal = wan.reduce((sum, row) => sum + row.downRate, 0);
-  snapshot.overview.uplinkBps = upTotal;
-  snapshot.overview.downlinkBps = downTotal;
-  snapshot.overview.wanUpRate = upTotal;
-  snapshot.overview.wanDownRate = downTotal;
+  refreshOverviewWanRates(snapshot);
   snapshot.overview.onlineTerminals = terminals.length;
   snapshot.overview.terminalCount = terminals.length;
   snapshot.overview.interfaceCount = snapshot.interfaces.length;
@@ -2487,17 +3505,19 @@ function applyScaleScenario(snapshot, scaleScenario) {
     servers: listScaleMeta(snapshot.dhcp.servers.length, snapshot.dhcp.servers.length),
     clients: listScaleMeta(snapshot.dhcp.clients.length, snapshot.dhcp.clients.length),
   };
-  if (scaleScenario === 'single' || scaleScenario === 'fleet') {
+  if (scaleScenario === 'single' || scaleScenario === 'fleet' || scaleScenario === 'traffic-accumulating') {
     setSnapshotFresh(snapshot);
     setCollectionHealthy(snapshot);
     snapshot.meta.capabilities.restTrusted = true;
     snapshot.meta.capabilities.sshRead = true;
     snapshot.meta.capabilities.sshLabel = 'SSH 只读可用';
   }
-  if (scaleScenario === 'single') {
-    setFixtureFinding(snapshot, 'info', 'Current single WAN snapshot', '单 WAN 1/1 在线，活动默认路由与采集时间均有当前证据。', [
+  if (scaleScenario === 'single' || scaleScenario === 'traffic-accumulating') {
+    setFixtureFinding(snapshot, 'info', 'Current single WAN snapshot', scaleScenario === 'traffic-accumulating'
+      ? '单 WAN 当前读数可用，但只有一个原子流量样本，趋势仍在积累。'
+      : '单 WAN 1/1 在线，活动默认路由与采集时间均有当前证据。', [
       { label: 'WAN', value: '1/1 在线' },
-      { label: '默认路由', value: 'active=true' },
+      { label: '默认路由', value: '当前承载' },
       { label: '采集', value: 'REST + SSH 当前' },
     ]);
   }
@@ -2515,6 +3535,10 @@ function applyScaleScenario(snapshot, scaleScenario) {
   snapshot.statusFindings.topFinding = snapshot.statusFindings.findings[0] || null;
   snapshot.healthFindings = snapshot.statusFindings;
   applyEdgeScenario(snapshot, scaleScenario);
+  if (scaleScenario !== 'no-snapshot') {
+    refreshFixtureTrafficHistory(snapshot, scaleScenario === 'collection-down' ? 'historical' : 'current');
+    if (scaleScenario === 'traffic-accumulating') retainLatestFixtureTrafficSample(snapshot);
+  }
 }
 
 async function main() {
@@ -2523,6 +3547,9 @@ async function main() {
     console.log(usage());
     return;
   }
+  const frameworkAssetIdentity = args.url ? null : assertFrameworkAssetIdentity(ROOT);
+  const worktreeIdentity = gitWorktreeIdentity(ROOT);
+  const browserResumeKey = buildBrowserResumeKey(args, worktreeIdentity);
   await fs.mkdir(args.out, { recursive: true });
   const report = {
     startedAt: new Date().toISOString(),
@@ -2534,7 +3561,24 @@ async function main() {
     browserChecks: [],
     serverExit: null,
     browser: null,
+    frameworkAssetIdentity,
+    browserResumeKey,
   };
+
+  if (args.resume) {
+    const requestedCells = requestedBrowserResumeCellKeys(args);
+    const resumableChecks = await readBrowserResumeChecks(args, browserResumeKey);
+    report.browserChecks = resumableChecks.filter((check) => (
+      requestedCells.has(browserResumeCellKey(check))
+    ));
+    if (report.browserChecks.length) {
+      record(report, 'browser matrix resumed exact passing cells', true, {
+        resumedCells: report.browserChecks.length,
+        partialPath: browserResumePath(args),
+        partialCellDirectory: browserResumeCellDirectory(args),
+      });
+    }
+  }
 
   let server = null;
   const startedByScript = !args.url;
@@ -2568,12 +3612,14 @@ async function main() {
     const serverNoise = serverLogNoiseProbe(report);
     record(report, 'local server logs stay free of socket reset noise', serverNoise.ok, serverNoise);
     report.finishedAt = new Date().toISOString();
-    report.matrix = buildMatrixSummary(report.browserChecks, args);
+    report.matrix = buildMatrixSummary(report.browserChecks, args, worktreeIdentity);
     const matrixSession = matrixSessionKey();
-    const matrixStateFile = matrixStatePath(report.matrix.commit);
+    const matrixStateFile = matrixStatePath(
+      report.matrix.artifactKey || report.matrix.commit,
+      args.out,
+    );
     const matrixStartBatch = report.matrix.requestedScenarios.some((scenario) => ['single', 'fleet'].includes(scenario));
-    const matrixFinishBatch = report.matrix.requestedScenarios.some((scenario) => EDGE_SCALE_SCENARIOS.includes(scenario));
-    const explicitOverviewReleaseMatrix = isOverviewReleaseMatrix(args);
+    const fullRequiredMatrixRequested = requestsRequiredOverviewMatrix(args);
     const currentMatrixRun = summarizeMatrixRun(report, args, {
       ...report.matrix,
       startedAt: report.startedAt,
@@ -2586,11 +3632,18 @@ async function main() {
       currentMatrixRun,
       matrixSession
     );
-    const releaseMatrixComplete = explicitOverviewReleaseMatrix ? report.matrix.complete : matrixAggregate.complete;
+    const releaseMatrixComplete = Boolean(
+      report.matrix.releaseEvidenceEligible &&
+      (fullRequiredMatrixRequested ? report.matrix.complete : matrixAggregate.complete)
+    );
     await writeJson(matrixStateFile, matrixAggregate);
     report.matrix.aggregate = {
       path: matrixStateFile,
       commit: matrixAggregate.commit,
+      worktreeClean: matrixAggregate.worktreeClean,
+      worktreeFingerprint: matrixAggregate.worktreeFingerprint,
+      artifactKey: matrixAggregate.artifactKey,
+      releaseEvidenceEligible: matrixAggregate.releaseEvidenceEligible,
       session: matrixSession,
       outputDir: args.out,
       screenshotDir: args.out,
@@ -2605,47 +3658,75 @@ async function main() {
       scenarioMatrix: matrixAggregate.runs.flatMap((run) => run.scenarioMatrix || []),
       runs: matrixAggregate.runs.length,
     };
-    if (explicitOverviewReleaseMatrix || matrixFinishBatch || report.matrix.complete) {
-      record(report, 'unified release scenario matrix covers required scenarios', releaseMatrixComplete, {
-        commit: matrixAggregate.commit,
-        session: matrixAggregate.session,
-        statePath: matrixStateFile,
-        explicitOverviewReleaseMatrix,
-        requestedScenarios: report.matrix.requestedScenarios,
-        requiredScenarios: matrixAggregate.requiredScenarios,
-        currentCoveredScenarios: report.matrix.coveredScenarios,
-        currentPassedScenarios: report.matrix.passedScenarios,
-        aggregateCoveredScenarios: matrixAggregate.coveredScenarios,
-        aggregatePassedScenarios: matrixAggregate.passedScenarios,
-        currentRequiredCells: report.matrix.requiredCells,
-        currentPassedCells: report.matrix.passedCells,
-        aggregateRequiredCells: matrixAggregate.requiredCells,
-        aggregatePassedCells: matrixAggregate.passedCells,
-        aggregateMissingCells: (matrixAggregate.requiredCells || []).filter((cell) => !(matrixAggregate.passedCells || []).includes(cell)),
-        currentRequestedComplete: report.matrix.requestedComplete,
-        currentRequiredComplete: report.matrix.complete,
-        aggregateComplete: matrixAggregate.complete,
-        releaseMatrixComplete,
-      });
+    const matrixGate = scenarioMatrixGate(args, report.matrix);
+    const matrixGateDetail = {
+      commit: matrixAggregate.commit,
+      worktreeClean: matrixAggregate.worktreeClean,
+      worktreeFingerprint: matrixAggregate.worktreeFingerprint,
+      artifactKey: matrixAggregate.artifactKey,
+      releaseEvidenceEligible: matrixAggregate.releaseEvidenceEligible,
+      session: matrixAggregate.session,
+      statePath: matrixStateFile,
+      fullRequiredMatrixRequested: matrixGate.fullRequiredMatrixRequested,
+      mergeableSubset: matrixGate.mergeableSubset,
+      boundedMatrix: matrixGate.boundedMatrix,
+      requestedScenarios: report.matrix.requestedScenarios,
+      requiredScenarios: matrixAggregate.requiredScenarios,
+      currentCoveredScenarios: report.matrix.coveredScenarios,
+      currentPassedScenarios: report.matrix.passedScenarios,
+      aggregateCoveredScenarios: matrixAggregate.coveredScenarios,
+      aggregatePassedScenarios: matrixAggregate.passedScenarios,
+      requestedRequiredCells: report.matrix.requestedRequiredCells,
+      requestedMissingCells: report.matrix.requestedMissingCells,
+      currentRequiredCells: report.matrix.requiredCells,
+      currentPassedCells: report.matrix.passedCells,
+      aggregateRequiredCells: matrixAggregate.requiredCells,
+      aggregatePassedCells: matrixAggregate.passedCells,
+      aggregateMissingCells: (matrixAggregate.requiredCells || []).filter((cell) => !(matrixAggregate.passedCells || []).includes(cell)),
+      requestedScopeComplete: matrixGate.requestedScopeComplete,
+      currentRequiredComplete: report.matrix.complete,
+      aggregateComplete: matrixAggregate.complete,
+      releaseMatrixComplete,
+    };
+    if (matrixGate.applicable) {
+      record(
+        report,
+        report.matrix.releaseEvidenceEligible
+          ? 'unified release scenario matrix covers required scenarios'
+          : 'complete worktree scenario matrix covers requested scenarios',
+        matrixGate.pass,
+        matrixGateDetail,
+      );
+    } else if (matrixGate.mergeableSubset || matrixGate.boundedMatrix) {
+      recordNotApplicable(
+        report,
+        'unified release scenario matrix covers required scenarios',
+        matrixGate.reason,
+        matrixGateDetail,
+      );
     }
-    const matrixBlocksTopLevelPass = report.matrix.requiredCells.length > 0 && !releaseMatrixComplete;
+    const matrixBlocksTopLevelPass = matrixGate.applicable && matrixGate.pass === false;
     if (matrixBlocksTopLevelPass) {
       warn(report, 'top-level pass suppressed until required release matrix is complete', {
-        explicitOverviewReleaseMatrix,
+        fullRequiredMatrixRequested,
+        requestedScopeComplete: matrixGate.requestedScopeComplete,
         aggregateComplete: matrixAggregate.complete,
         currentRequiredComplete: report.matrix.complete,
-        requiredCells: matrixAggregate.requiredCells,
-        passedCells: matrixAggregate.passedCells,
-        missingCells: report.matrix.aggregate.missingCells,
+        requiredCells: report.matrix.requiredCells,
+        passedCells: report.matrix.passedCells,
+        missingCells: report.matrix.requestedMissingCells,
       });
     }
-    report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;
-    report.exitCodeShouldFail = Boolean(
-      report.failures.length ||
-      ((explicitOverviewReleaseMatrix || matrixFinishBatch || report.matrix.complete) && !report.pass)
-    );
+    finalizeReportTruth(report, matrixBlocksTopLevelPass);
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
+    await writeJsonAtomic(browserResumePath(args), {
+      version: 1,
+      resumeKey: browserResumeKey,
+      updatedAt: report.finishedAt,
+      complete: report.matrix.requestedComplete === true,
+      browserChecks: report.browserChecks.filter((check) => check && check.pass === true),
+    });
   }
 
   console.log(`[INFO] report: ${path.join(args.out, 'report.json')}`);
@@ -2653,7 +3734,33 @@ async function main() {
   process.exitCode = report.exitCodeShouldFail ? 1 : 0;
 }
 
-main().catch((error) => {
-  console.error(error && error.stack ? error.stack : String(error));
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error && error.stack ? error.stack : String(error));
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  OVERVIEW_RELEASE_SCALE_SCENARIOS,
+  PlaywrightSession,
+  analyzeScreenshotAnchorPixels,
+  browserResumeCellKey,
+  buildBrowserResumeKey,
+  buildSnapshot,
+  finalizeReportTruth,
+  buildMatrixSummary,
+  isMergeableScenarioSubset,
+  matrixArtifactKey,
+  matrixStatePath,
+  pendingBrowserSections,
+  readBrowserResumeChecks,
+  recordNotApplicable,
+  requestsRequiredOverviewMatrix,
+  refreshOverviewWanRates,
+  setSnapshotFresh,
+  scenarioMatrixGate,
+  reportNestedPassFalsePaths,
+  setSection,
+  writeBrowserResumeProgress,
+};

@@ -10,6 +10,7 @@ import {
   type RouterConnectionInput,
 } from "./panelApi";
 import {
+  parseRouterConnectionTest,
   snapshotEvidenceTimestamp,
   snapshotHasOperationalEvidence,
   snapshotPollSeconds,
@@ -18,10 +19,20 @@ import {
   type SavedRouterLogin,
   type SnapshotEnvelopeKind,
 } from "./panelRuntimeSchema";
+import { parseRfc3339Timestamp } from "../timeContract";
 
 export type PanelConnectionPhase = "checking" | "unconfigured" | "ready" | "error";
 export type PanelSnapshotPhase = "idle" | "loading" | "current" | "refreshing" | "stale" | "error" | "recovering";
 export type PanelRuntimeView = "panel" | "connection";
+export type BrowserOnlineHintSignal = "offline" | "online" | "same-origin-response";
+
+/**
+ * navigator.onLine is only a browser transport hint. A completed same-origin
+ * response is stronger local evidence and therefore clears an older hint.
+ */
+export function nextBrowserOnlineHint(signal: BrowserOnlineHintSignal): boolean {
+  return signal !== "offline";
+}
 
 export interface PanelConnectionState {
   phase: PanelConnectionPhase;
@@ -33,10 +44,15 @@ export interface PanelConnectionState {
   warning: string;
   lastTest: RouterConnectionTest | null;
   pendingSshHostKey: {
+    kind: "confirmation-required" | "changed";
     host: string;
     sshPort: number;
     fingerprint: string;
+    expectedFingerprint?: string;
     algorithm: string;
+    trustToken?: string;
+    trustExpiresAt?: string;
+    verifiedRestOnlyAvailable: boolean;
   } | null;
 }
 
@@ -51,7 +67,11 @@ export interface PanelSnapshotState {
 
 export interface PanelRuntimeController {
   view: PanelRuntimeView;
-  online: boolean;
+  /**
+   * Browser transport hint only. This is deliberately not a RouterOS or LAN
+   * reachability state; same-origin snapshot requests continue while false.
+   */
+  browserOnlineHint: boolean;
   evidenceAgeSeconds: number | null;
   pollSeconds: number;
   connection: PanelConnectionState;
@@ -63,6 +83,8 @@ export interface PanelRuntimeController {
   refresh: (reason?: "manual" | "poll" | "recovery" | "initial") => Promise<void>;
   showConnection: () => void;
   cancelConnection: () => void;
+  /** True only when the connection screen has an app-owned panel return entry. */
+  canCancelConnection: boolean;
   dismissWarning: () => void;
 }
 
@@ -82,14 +104,66 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
+type ConnectionReturnPoint = {
+  focusId: string | null;
+  windowX: number;
+  windowY: number;
+  scrollOwners: Array<{ id: string; left: number; top: number }>;
+};
+
+type RuntimeHistoryState = Record<string, unknown> & {
+  panelRuntimeView?: PanelRuntimeView;
+  panelRuntimeConnectionReturn?: ConnectionReturnPoint;
+};
+
+function runtimeHistoryState(): RuntimeHistoryState {
+  return typeof window !== "undefined" && isRecord(window.history.state)
+    ? window.history.state as RuntimeHistoryState
+    : {};
+}
+
+function connectionHistoryActive(state = runtimeHistoryState()): boolean {
+  return state.panelRuntimeView === "connection" && isRecord(state.panelRuntimeConnectionReturn);
+}
+
+function connectionReturnPoint(state = runtimeHistoryState()): ConnectionReturnPoint | null {
+  const point = state.panelRuntimeConnectionReturn;
+  if (!isRecord(point) || typeof point.windowX !== "number" || typeof point.windowY !== "number") return null;
+  const scrollOwners = Array.isArray(point.scrollOwners)
+    ? point.scrollOwners.filter((entry): entry is { id: string; left: number; top: number } => (
+      isRecord(entry) && typeof entry.id === "string" && typeof entry.left === "number" && typeof entry.top === "number"
+    ))
+    : [];
+  return { focusId: typeof point.focusId === "string" ? point.focusId : null, windowX: point.windowX, windowY: point.windowY, scrollOwners };
+}
+
 function pendingSshHostKey(error: unknown, input: RouterConnectionInput): PanelConnectionState["pendingSshHostKey"] {
-  if (!(error instanceof PanelApiError) || error.code !== "ssh_host_key_confirmation_required" || !isRecord(error.payload)) return null;
+  if (!(error instanceof PanelApiError) || !isRecord(error.payload)) return null;
+  const confirmationRequired = error.code === "ssh_host_key_confirmation_required";
+  const hostKeyChanged = error.code === "ssh_host_key_changed";
+  if (!confirmationRequired && !hostKeyChanged) return null;
   const test = isRecord(error.payload.test) ? error.payload.test : {};
   const ssh = isRecord(test.ssh) ? test.ssh : {};
+  const rest = isRecord(test.rest) ? test.rest : {};
   const fingerprint = typeof ssh.fingerprint === "string" ? ssh.fingerprint.trim() : "";
+  const expectedFingerprint = typeof ssh.expectedFingerprint === "string" ? ssh.expectedFingerprint.trim() : "";
   const algorithm = typeof ssh.algorithm === "string" ? ssh.algorithm.trim() : "";
+  const trustToken = typeof ssh.trustToken === "string" ? ssh.trustToken.trim() : "";
+  const trustExpiresAt = typeof ssh.trustExpiresAt === "string" ? ssh.trustExpiresAt.trim() : "";
   if (!fingerprint) return null;
-  return { host: input.host, sshPort: input.sshPort, fingerprint, algorithm: algorithm || "SSH" };
+  if (confirmationRequired && (!trustToken || parseRfc3339Timestamp(trustExpiresAt) === null)) return null;
+  if (hostKeyChanged && !expectedFingerprint) return null;
+  return {
+    kind: confirmationRequired ? "confirmation-required" : "changed",
+    host: input.host,
+    sshPort: input.sshPort,
+    fingerprint,
+    ...(expectedFingerprint ? { expectedFingerprint } : {}),
+    algorithm: algorithm || "SSH",
+    ...(trustToken ? { trustToken } : {}),
+    ...(trustExpiresAt ? { trustExpiresAt } : {}),
+    verifiedRestOnlyAvailable: rest.ok === true && rest.scheme === "https" && rest.verifyTls === true,
+  };
 }
 
 const initialSnapshot: PanelSnapshotState = {
@@ -115,7 +189,9 @@ function isSnapshotStale(snapshot: OverviewRawSnapshot, now = Date.now()): boole
 
 export function usePanelRuntime(): PanelRuntimeController {
   const [view, setView] = useState<PanelRuntimeView>("connection");
-  const [online, setOnline] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine));
+  const [browserOnlineHint, setBrowserOnlineHint] = useState(() => (
+    typeof navigator === "undefined" ? true : nextBrowserOnlineHint(navigator.onLine ? "online" : "offline")
+  ));
   const [connection, setConnection] = useState<PanelConnectionState>(initialConnection);
   const [snapshot, setSnapshot] = useState<PanelSnapshotState>(initialSnapshot);
   const [clock, setClock] = useState(() => Date.now());
@@ -124,6 +200,8 @@ export function usePanelRuntime(): PanelRuntimeController {
   const viewRef = useRef(view);
   const bootstrapControllerRef = useRef<AbortController | null>(null);
   const snapshotControllerRef = useRef<AbortController | null>(null);
+  const returnIdRef = useRef(0);
+  const pendingReturnRef = useRef<ConnectionReturnPoint | null>(null);
 
   useEffect(() => {
     connectionRef.current = connection;
@@ -136,6 +214,74 @@ export function usePanelRuntime(): PanelRuntimeController {
   useEffect(() => {
     viewRef.current = view;
   }, [view]);
+
+  const captureConnectionReturn = useCallback((): ConnectionReturnPoint => {
+    const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const ensureId = (element: HTMLElement, prefix: string) => {
+      if (element.id) return element.id;
+      returnIdRef.current += 1;
+      const id = `${prefix}-${returnIdRef.current}`;
+      element.id = id;
+      return id;
+    };
+    const scrollOwners: ConnectionReturnPoint["scrollOwners"] = [];
+    let owner = active?.parentElement || null;
+    while (owner && owner !== document.body) {
+      const style = window.getComputedStyle(owner);
+      const scrollable = /(auto|scroll)/.test(style.overflowY) && owner.scrollHeight > owner.clientHeight + 1;
+      if (scrollable) {
+        scrollOwners.push({ id: ensureId(owner, "panel-runtime-scroll-owner"), left: owner.scrollLeft, top: owner.scrollTop });
+      }
+      owner = owner.parentElement;
+    }
+    return {
+      focusId: active ? ensureId(active, "panel-runtime-connection-source") : null,
+      windowX: window.scrollX,
+      windowY: window.scrollY,
+      scrollOwners,
+    };
+  }, []);
+
+  const restoreConnectionReturn = useCallback((point: ConnectionReturnPoint | null) => {
+    if (!point) return;
+    pendingReturnRef.current = point;
+    setView("panel");
+  }, []);
+
+  useEffect(() => {
+    if (view !== "panel" || !pendingReturnRef.current) return;
+    const point = pendingReturnRef.current;
+    pendingReturnRef.current = null;
+    const focusId = point.focusId;
+    let retry: number | null = null;
+    const restore = () => {
+      point.scrollOwners.forEach((owner) => document.getElementById(owner.id)?.scrollTo({ left: owner.left, top: owner.top, behavior: "auto" }));
+      window.scrollTo({ left: point.windowX, top: point.windowY, behavior: "auto" });
+      const source = focusId ? document.getElementById(focusId) : null;
+      if (source instanceof HTMLElement && source.getClientRects().length) source.focus({ preventScroll: true });
+      else if (focusId) retry = window.setTimeout(() => document.getElementById(focusId)?.focus({ preventScroll: true }), 120);
+    };
+    const frame = window.requestAnimationFrame(restore);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      if (retry !== null) window.clearTimeout(retry);
+    };
+  }, [view]);
+
+  useEffect(() => {
+    const onPopState = (event: PopStateEvent) => {
+      const state = isRecord(event.state) ? event.state as RuntimeHistoryState : {};
+      if (connectionRef.current.phase !== "ready") return;
+      if (connectionHistoryActive(state)) {
+        pendingReturnRef.current = null;
+        setView("connection");
+        return;
+      }
+      restoreConnectionReturn(connectionReturnPoint(state));
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [restoreConnectionReturn]);
 
   const retryConnectionStatus = useCallback(async () => {
     bootstrapControllerRef.current?.abort();
@@ -157,7 +303,8 @@ export function usePanelRuntime(): PanelRuntimeController {
         lastTest: result.routerLogin.lastTest,
         pendingSshHostKey: null,
       });
-      setView(result.routerLogin.configured ? "panel" : "connection");
+      const historyRequestsConnection = connectionHistoryActive();
+      setView(result.routerLogin.configured && !historyRequestsConnection ? "panel" : "connection");
     } catch (error) {
       if (controller.signal.aborted) return;
       setConnection((current) => ({
@@ -188,6 +335,8 @@ export function usePanelRuntime(): PanelRuntimeController {
     try {
       const result = await fetchPanelSnapshot(controller.signal);
       if (controller.signal.aborted) return;
+      // A same-origin response can succeed while navigator.onLine remains stale.
+      setBrowserOnlineHint(nextBrowserOnlineHint("same-origin-response"));
       if (!result.ok) {
         const message = `快照数据不符合契约：${result.issues.join("；")}`;
         setSnapshot((current) => ({
@@ -244,7 +393,7 @@ export function usePanelRuntime(): PanelRuntimeController {
     } catch (error) {
       if (controller.signal.aborted) return;
       const browserOfflineHint = typeof navigator !== "undefined" && !navigator.onLine;
-      if (browserOfflineHint) setOnline(false);
+      if (browserOfflineHint) setBrowserOnlineHint(nextBrowserOnlineHint("offline"));
       setSnapshot((current) => ({
         ...current,
         phase: current.data ? "recovering" : "error",
@@ -289,11 +438,11 @@ export function usePanelRuntime(): PanelRuntimeController {
 
   useEffect(() => {
     const onOffline = () => {
-      setOnline(false);
+      setBrowserOnlineHint(nextBrowserOnlineHint("offline"));
       if (connectionRef.current.phase === "ready" && viewRef.current === "panel") void refresh("recovery");
     };
     const onOnline = () => {
-      setOnline(true);
+      setBrowserOnlineHint(nextBrowserOnlineHint("online"));
       if (connectionRef.current.phase === "ready" && viewRef.current === "panel") void refresh("recovery");
       else if (connectionRef.current.phase === "error") void retryConnectionStatus();
     };
@@ -337,12 +486,18 @@ export function usePanelRuntime(): PanelRuntimeController {
         lastTest: result.test,
         pendingSshHostKey: null,
       }));
-      setView("panel");
+      const returnPoint = connectionReturnPoint();
+      const currentHistory = runtimeHistoryState();
+      if (connectionHistoryActive(currentHistory)) {
+        window.history.replaceState({ ...currentHistory, panelRuntimeView: "panel" }, "", window.location.href);
+      }
+      if (returnPoint) restoreConnectionReturn(returnPoint);
+      else setView("panel");
       return true;
     } catch (error) {
       const pending = pendingSshHostKey(error, input);
-      const payload = error instanceof PanelApiError && isRecord(error.payload) && isRecord(error.payload.test)
-        ? error.payload.test as unknown as RouterConnectionTest
+      const payload = error instanceof PanelApiError && isRecord(error.payload)
+        ? parseRouterConnectionTest(error.payload.test)
         : null;
       setConnection((state) => ({
         ...state,
@@ -353,7 +508,7 @@ export function usePanelRuntime(): PanelRuntimeController {
       }));
       return false;
     }
-  }, []);
+  }, [restoreConnectionReturn]);
 
   const logout = useCallback(async () => {
     const current = connectionRef.current;
@@ -374,6 +529,8 @@ export function usePanelRuntime(): PanelRuntimeController {
         lastTest: null,
         pendingSshHostKey: null,
       }));
+      const currentHistory = runtimeHistoryState();
+      window.history.replaceState({ ...currentHistory, panelRuntimeView: "connection" }, "", window.location.href);
       setView("connection");
     } catch (error) {
       setConnection((state) => ({ ...state, busy: false, error: errorMessage(error) }));
@@ -397,11 +554,36 @@ export function usePanelRuntime(): PanelRuntimeController {
     }
   }, []);
 
-  const showConnection = useCallback(() => setView("connection"), []);
+  const showConnection = useCallback(() => {
+    if (connectionRef.current.phase !== "ready") {
+      setView("connection");
+      return;
+    }
+    const returnPoint = captureConnectionReturn();
+    const panelState: RuntimeHistoryState = {
+      ...runtimeHistoryState(),
+      panelRuntimeView: "panel",
+      panelRuntimeConnectionReturn: returnPoint,
+    };
+    window.history.replaceState(panelState, "", window.location.href);
+    window.history.pushState({ ...panelState, panelRuntimeView: "connection" }, "", window.location.href);
+    pendingReturnRef.current = null;
+    setView("connection");
+  }, [captureConnectionReturn]);
   const cancelConnection = useCallback(() => {
     const current = connectionRef.current;
-    if (current.phase === "ready" && snapshotRef.current.data) setView("panel");
-  }, []);
+    if (current.phase !== "ready") return;
+    const currentHistory = runtimeHistoryState();
+    if (connectionHistoryActive(currentHistory)) {
+      // This is an app-owned connection entry, so Back restores its explicit panel return point.
+      window.history.back();
+      return;
+    }
+    const returnPoint = connectionReturnPoint(currentHistory);
+    window.history.replaceState({ ...currentHistory, panelRuntimeView: "panel" }, "", window.location.href);
+    restoreConnectionReturn(returnPoint);
+  }, [restoreConnectionReturn]);
+  const canCancelConnection = connection.phase === "ready" && connectionHistoryActive();
   const dismissWarning = useCallback(() => setConnection((state) => ({ ...state, warning: "" })), []);
 
   const pollSeconds = snapshotPollSeconds(snapshot.data as Record<string, unknown> | null);
@@ -411,7 +593,7 @@ export function usePanelRuntime(): PanelRuntimeController {
   return useMemo(
     () => ({
       view,
-      online,
+      browserOnlineHint,
       evidenceAgeSeconds,
       pollSeconds,
       connection,
@@ -423,6 +605,7 @@ export function usePanelRuntime(): PanelRuntimeController {
       refresh,
       showConnection,
       cancelConnection,
+      canCancelConnection,
       dismissWarning,
     }),
     [
@@ -434,7 +617,8 @@ export function usePanelRuntime(): PanelRuntimeController {
       evidenceAgeSeconds,
       forgetProfile,
       logout,
-      online,
+      browserOnlineHint,
+      canCancelConnection,
       pollSeconds,
       refresh,
       retryConnectionStatus,

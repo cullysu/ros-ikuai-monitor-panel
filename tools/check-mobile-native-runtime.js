@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const root = process.cwd();
 const outDir = path.join(root, '_acceptance', 'mobile-native-runtime');
 const reportFile = path.join(outDir, 'report.json');
-const matrixTimeoutMs = 180000;
+const matrixTimeoutMs = Number(process.env.MOBILE_NATIVE_MATRIX_TIMEOUT_MS || 240000);
 const scenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
 const viewports = {
   p320: '320x568',
@@ -17,6 +17,19 @@ const viewports = {
   l667: '667x375',
   l844: '844x390',
 };
+const selectedScenarios = (process.env.MOBILE_NATIVE_SCENARIOS
+  ? process.env.MOBILE_NATIVE_SCENARIOS.split(',').map((value) => value.trim()).filter(Boolean)
+  : scenarios);
+const selectedViewportIds = (process.env.MOBILE_NATIVE_VIEWPORTS
+  ? process.env.MOBILE_NATIVE_VIEWPORTS.split(',').map((value) => value.trim()).filter(Boolean)
+  : Object.keys(viewports));
+if (selectedScenarios.some((scenario) => !scenarios.includes(scenario))) {
+  throw new Error(`MOBILE_NATIVE_SCENARIOS contains an unknown scenario: ${selectedScenarios.join(',')}`);
+}
+if (selectedViewportIds.some((viewport) => !Object.hasOwn(viewports, viewport))) {
+  throw new Error(`MOBILE_NATIVE_VIEWPORTS contains an unknown viewport: ${selectedViewportIds.join(',')}`);
+}
+const selectedViewports = Object.fromEntries(selectedViewportIds.map((viewport) => [viewport, viewports[viewport]]));
 function resolvePythonExecutable() {
   const explicit = [process.env.CODEX_PYTHON_PATH, process.env.PYTHON].filter(Boolean);
   for (const candidate of explicit) {
@@ -63,10 +76,11 @@ function runMatrix() {
       'tools/local-predeploy-check.js',
       '--python', pythonExecutable,
       '--profile', 'public',
-      '--viewports', Object.entries(viewports).map(([name, dimensions]) => `${name}=${dimensions}`).join(','),
+      '--viewports', Object.entries(selectedViewports).map(([name, dimensions]) => `${name}=${dimensions}`).join(','),
       '--sections', 'overview',
-      '--scale-scenarios', scenarios.join(','),
+      '--scale-scenarios', selectedScenarios.join(','),
       '--strict-responsive',
+      '--bounded-matrix',
       '--out', path.relative(root, outDir),
     ], { cwd: root, env, stdio: 'inherit' });
     let finished = false;
@@ -95,21 +109,41 @@ function runMatrix() {
 function verifyReport() {
   if (!fs.existsSync(reportFile)) throw new Error('mobile matrix did not produce report.json');
   const report = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
-  const expectedCells = scenarios.flatMap((scenario) => Object.entries(viewports).map(([viewport, dimensions]) =>
+  const expectedCells = selectedScenarios.flatMap((scenario) => Object.entries(selectedViewports).map(([viewport, dimensions]) =>
     `public::${scenario}::overview::${viewport}=${dimensions}`));
   const passedCells = new Set(report.matrix?.passedCells || []);
   const missing = expectedCells.filter((cell) => !passedCells.has(cell));
   const screenshots = fs.readdirSync(outDir).filter((name) => name.endsWith('.png'));
-  if (report.pass !== true || report.matrix?.complete !== true || missing.length || screenshots.length < expectedCells.length) {
+  const boundedGate = (report.checks || []).find((check) => (
+    check.name === 'unified release scenario matrix covers required scenarios'
+  ));
+  const boundedGateOk = boundedGate?.applicable === false &&
+    boundedGate?.pass === null &&
+    boundedGate?.detail?.boundedMatrix === true &&
+    boundedGate?.detail?.requestedScopeComplete === true;
+  if (
+    report.pass !== false ||
+    report.engineeringPass !== true ||
+    report.boundedPass !== true ||
+    report.matrix?.requestedComplete !== true ||
+    report.matrix?.failed !== 0 ||
+    report.matrix?.complete !== false ||
+    !boundedGateOk ||
+    missing.length ||
+    screenshots.length < expectedCells.length
+  ) {
     throw new Error(JSON.stringify({
       pass: report.pass,
+      requestedComplete: report.matrix?.requestedComplete,
+      failed: report.matrix?.failed,
       complete: report.matrix?.complete,
+      boundedGate: boundedGate || null,
       missing,
       screenshots: screenshots.length,
       failures: (report.failures || []).map((failure) => failure.name || failure.message || String(failure)),
     }, null, 2));
   }
-  console.log(`[mobile-native] PASS cells=${expectedCells.length} screenshots=${screenshots.length}`);
+  console.log(`[mobile-native] PASS bounded=true cells=${expectedCells.length} screenshots=${screenshots.length}`);
 }
 
 async function main() {

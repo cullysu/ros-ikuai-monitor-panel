@@ -7,9 +7,13 @@
   background: #f9fbfc;
 }
 
+.section-timeseries.is-embedded {
+  margin: 0;
+  border: 0;
+}
+
 .section-timeseries figcaption {
   display: flex;
-  min-height: 52px;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -18,9 +22,7 @@
   background: #e8eff2;
 }
 
-.section-timeseries figcaption span,
-.section-timeseries figcaption b,
-.section-timeseries figcaption small {
+.section-timeseries figcaption :is(span, b, small) {
   display: block;
   min-width: 0;
 }
@@ -41,10 +43,8 @@
 .section-timeseries figcaption > span:last-child {
   flex: 0 0 auto;
   color: #526d78;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
 }
 
 .section-timeseries-body {
@@ -56,13 +56,13 @@
 
 .section-timeseries-scale {
   display: flex;
-  min-height: 88px;
+  min-height: 104px;
   flex-direction: column;
   justify-content: space-between;
+  padding: 1px 0 20px;
   color: #6a7d86;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
   line-height: 1;
   text-align: right;
 }
@@ -74,31 +74,22 @@
 .section-timeseries svg {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 320 / 88;
-  overflow: visible;
+  height: 104px;
 }
 
-.section-series-grid,
-.section-series-threshold,
-.section-series-line {
+.section-timeseries :is(.section-series-grid, .section-series-threshold, .section-series-line) {
   fill: none;
   vector-effect: non-scaling-stroke;
+  stroke-width: 1;
 }
 
 .section-series-grid {
   stroke: rgba(70, 98, 111, 0.18);
-  stroke-width: 1;
 }
 
 .section-series-threshold {
   stroke: rgba(138, 83, 61, 0.42);
-  stroke-width: 1;
   stroke-dasharray: 4 4;
-}
-
-.section-series-threshold.is-85 {
-  stroke: rgba(130, 100, 48, 0.4);
 }
 
 .section-series-line {
@@ -113,10 +104,12 @@
 
 .section-series-line.is-memory {
   stroke: #71858f;
+  stroke-dasharray: 9 4;
 }
 
 .section-series-line.is-disk {
   stroke: #9a5d4f;
+  stroke-dasharray: 2 4;
 }
 
 .section-timeseries-axis {
@@ -125,10 +118,8 @@
   gap: 12px;
   margin-top: 4px;
   color: #6a7d86;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
 }
 
 .section-timeseries footer {
@@ -149,27 +140,47 @@
   gap: 5px;
 }
 
+.section-timeseries-readouts {
+  display: grid;
+  flex: 1 1 100%;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 4px 16px;
+  padding-top: 3px;
+  border-top: 1px solid rgba(70, 98, 111, 0.14);
+  color: #385967;
+  font-variant-numeric: var(--t);
+}
+
+.section-timeseries-readouts span {
+  display: block;
+  min-width: 0;
+  line-height: 1.45;
+}
+
+.section-timeseries-readouts b {
+  white-space: pre;
+  color: #1c4352;
+}
+
 .section-timeseries footer i {
   width: 13px;
   height: 3px;
-  border-radius: 2px;
   background: #286c89;
 }
 
 .section-timeseries footer i.is-memory {
-  background: #71858f;
+  height: 0;
+  border-top: 3px dashed #71858f;
+  background: transparent;
 }
 
 .section-timeseries footer i.is-disk {
-  background: #9a5d4f;
+  height: 0;
+  border-top: 3px dotted #9a5d4f;
+  background: transparent;
 }
 
-.section-timeseries footer small {
-  color: #74858d;
-  font-size: 12px;
-}
-
-@media (max-width: 1365px) {
+@media (max-width: 1199px) {
   .mdw-list-pane > .section-timeseries {
     margin: 0;
     border: 0;
@@ -177,27 +188,29 @@
     border-radius: 0;
     background: #fbfcfd;
   }
-  .mdw-list-pane > .section-timeseries figcaption {
-    min-height: 50px;
-    border-bottom-color: rgba(38, 72, 90, 0.14);
-    background: #f5f8f9;
-  }
   .section-timeseries-body {
-    padding-right: 11px;
-    padding-left: 11px;
+    padding-inline: 11px;
   }
   .section-timeseries footer {
-    padding-right: 11px;
-    padding-left: 11px;
+    padding-inline: 11px;
   }
 }
 
-@media (max-width: 359px) {
-  .section-timeseries-body {
-    grid-template-columns: 42px minmax(0, 1fr);
-    gap: 6px;
+@media (min-width: 1200px) {
+  .section-timeseries svg {
+    height: clamp(150px, 20vh, 180px);
   }
-  .section-timeseries figcaption small {
-    display: none;
+}
+
+@media (forced-colors: active) {
+  .section-timeseries :is(.section-series-line, .section-series-threshold) {
+    stroke: CanvasText;
+  }
+  .section-timeseries footer i {
+    border-color: ButtonText;
+    background: ButtonText;
+  }
+  .section-timeseries footer i:is(.is-memory, .is-disk) {
+    background: transparent;
   }
 }

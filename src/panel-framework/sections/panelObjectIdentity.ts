@@ -3,7 +3,8 @@ import type { PanelRouteId } from "../routes/panelRoutes";
 type RowValues = Record<string, string>;
 
 function normalizePart(value: unknown): string {
-  return String(value ?? "").replace(/\s+/g, " ").trim().toLocaleLowerCase();
+  // Deep-link identity must be stable across the viewer's locale (including Turkish).
+  return String(value ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 function shortHash(value: string): string {
@@ -54,6 +55,8 @@ export function panelObjectIdentityPartsForRaw(
     parts = [rawIdentityString(row.mac, row.macAddress), rawIdentityString(row.ip, row.address), rawIdentityString(row.hostname, row.displayName, row.name)];
   } else if (route === "dhcp" && table === "地址租约") {
     parts = [rawIdentityString(row.macAddress, row.mac, row.address), rawIdentityString(row.server)];
+  } else if (route === "dhcp" && table === "地址池") {
+    parts = [rawIdentityString(row.id, row[".id"]), rawIdentityString(row.name, row.pool), rawIdentityString(row.ranges, row.range)];
   } else if (route === "dhcp") {
     parts = [rawIdentityString(row.interface), rawIdentityString(row.server)];
   } else if (route === "arp") {
@@ -73,6 +76,8 @@ export function panelObjectIdentityPartsForRaw(
     ];
   } else if (route === "balance" && table === "默认路由") {
     parts = [rawIdentityString(row.dstAddress, row.destination, "0.0.0.0/0"), rawIdentityString(row.gateway), rawIdentityString(row.table, row.routingTable, "main"), rawIdentityString(row.distance), rawIdentityString(row.protocol, row.origin)];
+  } else if (route === "balance" && table === "线路分布") {
+    parts = [rawIdentityString(row.id, row[".id"]), rawIdentityString(row.name, row.interface, row.lineId)];
   } else if (route === "balance") {
     parts = [rawIdentityString(row.chain), rawIdentityString(row.action), rawIdentityString(row.newRoutingMark, row.table, row.routingMark), rawIdentityString(row.inInterface, row.outInterface, row.interface), rawIdentityString(row.comment), rawIdentityString(row.rawOrder, row.order)];
   } else if (route === "trafficLoad" || route === "loadAudit") {
@@ -91,10 +96,14 @@ export function panelObjectIdentityPartsForRaw(
     parts = [rawIdentityString(row.name, row.interface), rawIdentityString(row.type, row.prefix), rawIdentityString(row.value, row.address, row.dnsServers), rawIdentityString(row.route, row.addDefaultRoute)];
   } else if (route === "security" && table === "安全告警") {
     parts = [rawIdentityString(row.time, row.lastConfirmed), rawIdentityString(row.affected, row.topics), rawIdentityString(row.abnormal, row.message)];
+  } else if (route === "security" && table === "地址集") {
+    parts = [rawIdentityString(row.id, row[".id"]), rawIdentityString(row.list, row.name), rawIdentityString(row.address, row.ip), rawIdentityString(row.timeout)];
   } else if (route === "security") {
     parts = [rawIdentityString(row.rawOrder, row.order), rawIdentityString(row.chain), rawIdentityString(row.action), rawIdentityString(row.comment), rawIdentityString(row.srcAddress), rawIdentityString(row.dstAddress), rawIdentityString(row.protocol)];
   } else if (route === "readonlyDiagnostics") {
-    parts = [rawIdentityString(row.group), rawIdentityString(row.name), rawIdentityString(row.at), rawIdentityString(row.message)];
+    // A diagnostic timestamp changes on every collection cycle; including it
+    // would invalidate an otherwise stable object deep link after a reload.
+    parts = [rawIdentityString(row.group), rawIdentityString(row.name), rawIdentityString(row.message)];
   } else {
     parts = [table, JSON.stringify(canonicalRawIdentity(row))];
   }
@@ -124,6 +133,7 @@ export function panelObjectIdentity(
   }
   if (route === "dhcp") {
     if (table === "地址租约") return { kind: "lease", parts: [values._leaseId || values.mac || values.address, values.server] };
+    if (table === "地址池") return { kind: "dhcp-pool", parts: [values.name, values.ranges] };
     return { kind: "dhcp-client", parts: [values.interface] };
   }
   if (route === "arp") {
@@ -135,6 +145,8 @@ export function panelObjectIdentity(
   if (route === "balance") {
     return table === "默认路由"
       ? { kind: "route", parts: [values.gateway, values.table, values.distance] }
+      : table === "线路分布"
+        ? { kind: "balance-distribution", parts: [values.name] }
       : { kind: "policy", parts: [values.chain, values.mark, values.interface, values.comment] };
   }
   if (route === "trafficLoad" || route === "loadAudit") {
@@ -158,6 +170,8 @@ export function panelObjectIdentity(
   if (route === "security") {
     return table === "安全告警"
       ? { kind: "security-alert", parts: [values.time, values.scope, values.message] }
+      : table === "地址集"
+        ? { kind: "security-address-list", parts: [values.list, values.address, values.timeout] }
       : { kind: "firewall-rule", parts: [values.order, values.chain, values.action, values.comment] };
   }
   if (route === "readonlyDiagnostics") {

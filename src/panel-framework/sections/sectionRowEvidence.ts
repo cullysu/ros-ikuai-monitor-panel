@@ -1,8 +1,7 @@
 import type { PanelRouteId } from "../routes/panelRoutes";
 import { parseRfc3339Timestamp } from "../timeContract";
-
-type UnknownRecord = Record<string, unknown>;
-
+import { objectRows, record, type UnknownRecord } from "./rawValue";
+import { logEvidence, serviceLogEvidence } from "./serviceLogEvidence";
 import type {
   InterfaceDefaultRouteEvidence,
   InterfaceRowEvidence,
@@ -10,16 +9,25 @@ import type {
   RouteRowEvidence,
   TerminalRowEvidence,
   EvidenceSeverity,
-  LogNeighborEvidence,
-  LogRowEvidence,
   SecurityRowEvidence,
+  ArpAlertRowEvidence,
+  GenericRowEvidence,
   DnsRowEvidence,
   ResourceRowEvidence,
   ConnectionRowEvidence,
-  GenericRowEvidence,
+  DiagnosticRowEvidence,
+  DhcpClientRowEvidence,
+  DhcpPoolRowEvidence,
+  BalanceRuleRowEvidence,
+  BalanceDistributionRowEvidence,
   SectionRowEvidence,
   SectionEvidenceContext,
 } from "./sectionRowEvidenceTypes";
+import {
+  assessInterfaceOperationalState,
+  directDefaultRoutesForInterface,
+} from "./interfaceOperationalAssessment";
+import { buildDiagnosticRowEvidence } from "./diagnosticRowEvidence";
 export type {
   InterfaceDefaultRouteEvidence,
   InterfaceRowEvidence,
@@ -30,24 +38,19 @@ export type {
   LogNeighborEvidence,
   LogRowEvidence,
   SecurityRowEvidence,
+  ArpAlertRowEvidence,
+  GenericRowEvidence,
   DnsRowEvidence,
   ResourceRowEvidence,
   ConnectionRowEvidence,
-  GenericRowEvidence,
+  DiagnosticRowEvidence,
+  DhcpClientRowEvidence,
+  DhcpPoolRowEvidence,
+  BalanceRuleRowEvidence,
+  BalanceDistributionRowEvidence,
   SectionRowEvidence,
   SectionEvidenceContext,
 } from "./sectionRowEvidenceTypes";
-
-function record(value: unknown): UnknownRecord {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as UnknownRecord : {};
-}
-
-function objectRows(value: unknown): UnknownRecord[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is UnknownRecord => Boolean(item && typeof item === "object" && !Array.isArray(item)))
-    : [];
-}
-
 function stringValue(...values: unknown[]): string | null {
   for (const value of values) {
     if (typeof value === "number" && Number.isFinite(value)) return String(value);
@@ -57,7 +60,6 @@ function stringValue(...values: unknown[]): string | null {
   }
   return null;
 }
-
 function numberValue(...values: unknown[]): number | null {
   for (const value of values) {
     if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -67,47 +69,40 @@ function numberValue(...values: unknown[]): number | null {
   }
   return null;
 }
-
 function booleanValue(value: unknown): boolean | null {
   if (typeof value === "boolean") return value;
   if (typeof value !== "string") return null;
-  const normalized = value.trim().toLocaleLowerCase();
+  const normalized = value.trim().toLowerCase();
   if (["true", "yes", "running", "active", "bound", "online", "enabled", "up"].includes(normalized)) return true;
   if (["false", "no", "stopped", "inactive", "unbound", "offline", "disabled", "down"].includes(normalized)) return false;
   return null;
 }
-
 function stringList(value: unknown): string[] {
   const source = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
   return source
     .map((item) => stringValue(item))
     .filter((item): item is string => Boolean(item));
 }
-
 function observedSum(...values: unknown[]): number | null {
   const observed = values.map((value) => numberValue(value)).filter((value): value is number => value !== null);
   return observed.length ? observed.reduce((sum, value) => sum + value, 0) : null;
 }
-
 function severityFrom(...values: unknown[]): EvidenceSeverity {
-  const source = values.map((value) => stringValue(value)?.toLocaleLowerCase() || "").filter(Boolean).join(" ");
+  const source = values.map((value) => stringValue(value)?.toLowerCase() || "").filter(Boolean).join(" ");
   if (/(?:^|[\s,;:/_-])(critical|fatal|emergency|alert)(?:$|[\s,;:/_-])/.test(source)) return "critical";
   if (/(?:^|[\s,;:/_-])(error|failed|failure)(?:$|[\s,;:/_-])/.test(source)) return "error";
   if (/(?:^|[\s,;:/_-])(warning|warn|degraded)(?:$|[\s,;:/_-])/.test(source)) return "warning";
   if (/(?:^|[\s,;:/_-])(info|notice|debug)(?:$|[\s,;:/_-])/.test(source)) return "info";
   return "unknown";
 }
-
 function isDefaultRoute(row: UnknownRecord): boolean {
   const destination = stringValue(row.dstAddress, row.destination);
   return row.default === true || destination === "0.0.0.0/0" || destination === "::/0";
 }
-
 function exactGatewayMatch(gateway: string | null, interfaceName: string | null): boolean {
   if (!gateway || !interfaceName) return false;
   return gateway === interfaceName || gateway.endsWith(`%${interfaceName}`);
 }
-
 function routeEvidence(row: UnknownRecord): InterfaceDefaultRouteEvidence {
   return {
     destination: stringValue(row.dstAddress, row.destination) || "0.0.0.0/0",
@@ -118,16 +113,10 @@ function routeEvidence(row: UnknownRecord): InterfaceDefaultRouteEvidence {
     disabled: booleanValue(row.disabled),
   };
 }
-
 function interfaceEvidence(title: string, row: UnknownRecord, context: SectionEvidenceContext): InterfaceRowEvidence {
   const name = stringValue(row.name, row.interface, row.lineId);
-  const routesRecord = record(context.routes);
-  const routeCandidates = objectRows(routesRecord.items).length
-    ? objectRows(routesRecord.items)
-    : objectRows(routesRecord.defaultRoutes);
-  const directRoutes = routeCandidates
-    .filter((candidate) => isDefaultRoute(candidate) && exactGatewayMatch(stringValue(candidate.gateway), name))
-    .map(routeEvidence);
+  const directRouteRows = directDefaultRoutesForInterface(name || "", context.routes);
+  const directRoutes = directRouteRows.map(routeEvidence);
   const attachedRoutes = objectRows(row.routes).map((candidate) => ({
     ...routeEvidence(candidate),
     gateway: name || "未取得",
@@ -135,7 +124,11 @@ function interfaceEvidence(title: string, row: UnknownRecord, context: SectionEv
   const uniqueRoutes = [...directRoutes, ...attachedRoutes].filter((candidate, index, items) => (
     items.findIndex((item) => JSON.stringify(item) === JSON.stringify(candidate)) === index
   ));
-
+  const operational = assessInterfaceOperationalState({
+    running: booleanValue(row.running),
+    disabled: booleanValue(row.disabled),
+    directDefaultRoutes: directRouteRows,
+  });
   return {
     kind: "interface",
     sourceTable: title,
@@ -163,9 +156,10 @@ function interfaceEvidence(title: string, row: UnknownRecord, context: SectionEv
     qualitySampleReady: booleanValue(row.qualitySampleReady),
     defaultRouteRelation: uniqueRoutes.length ? "direct" : "unverified",
     defaultRoutes: uniqueRoutes,
+    operationalImpact: operational.impact,
+    operationalReason: operational.reason,
   };
 }
-
 function buildRouteEvidence(
   title: string,
   row: UnknownRecord,
@@ -210,21 +204,20 @@ function buildRouteEvidence(
     relatedInterface,
   };
 }
-
 function terminalEvidence(title: string, row: UnknownRecord, context: SectionEvidenceContext): TerminalRowEvidence {
   const ip = stringValue(row.ip, row.address);
-  const mac = stringValue(row.mac, row.macAddress)?.toLocaleLowerCase() || null;
+  const mac = stringValue(row.mac, row.macAddress)?.toLowerCase() || null;
   const dhcp = record(context.dhcp);
   const lease = objectRows(dhcp.leases).find((candidate) => {
     const candidateIp = stringValue(candidate.address, candidate.ip);
-    const candidateMac = stringValue(candidate.mac, candidate.macAddress)?.toLocaleLowerCase() || null;
+    const candidateMac = stringValue(candidate.mac, candidate.macAddress)?.toLowerCase() || null;
     return Boolean((ip && candidateIp === ip) || (mac && candidateMac === mac));
   });
   const arpRoot = Array.isArray(context.arp) ? {} : record(context.arp);
   const arpItems = Array.isArray(context.arp) ? objectRows(context.arp) : objectRows(arpRoot.items);
   const arp = arpItems.find((candidate) => {
     const candidateIp = stringValue(candidate.ip, candidate.address);
-    const candidateMac = stringValue(candidate.mac, candidate.macAddress)?.toLocaleLowerCase() || null;
+    const candidateMac = stringValue(candidate.mac, candidate.macAddress)?.toLowerCase() || null;
     return Boolean((ip && candidateIp === ip) || (mac && candidateMac === mac));
   });
   const hasConnectionEvidence = [row.connections, row.downRate, row.upRate, row.sessionBytes]
@@ -234,7 +227,6 @@ function terminalEvidence(title: string, row: UnknownRecord, context: SectionEvi
     lease ? "DHCP" : null,
     hasConnectionEvidence ? "连接跟踪" : null,
   ].filter((item): item is string => Boolean(item));
-
   return {
     kind: "terminal",
     sourceTable: title,
@@ -255,66 +247,27 @@ function terminalEvidence(title: string, row: UnknownRecord, context: SectionEvi
     identitySources,
   };
 }
-
-function logEvidence(
-  title: string,
-  row: UnknownRecord,
-  context: SectionEvidenceContext,
-): LogRowEvidence {
-  const time = stringValue(row.time, row.lastConfirmed);
-  const sourceRows = objectRows(record(context.logs).all);
-  const ordered = sourceRows
-    .map((item, sourceIndex) => {
-      const itemTime = stringValue(item.time, item.lastConfirmed);
-      return {
-        item,
-        sourceIndex,
-        timestamp: itemTime ? parseRfc3339Timestamp(itemTime) : null,
-      };
-    })
-    .sort((left, right) => {
-      if (left.timestamp === null && right.timestamp === null) return left.sourceIndex - right.sourceIndex;
-      if (left.timestamp === null) return 1;
-      if (right.timestamp === null) return -1;
-      return right.timestamp - left.timestamp || left.sourceIndex - right.sourceIndex;
-    });
-  const currentIndex = ordered.findIndex((candidate) => candidate.item === row);
-  const neighbors = currentIndex < 0 ? [] : ordered
-    .map((candidate, index) => ({ ...candidate, index }))
-    .filter((candidate) => candidate.item !== row)
-    .sort((left, right) => Math.abs(left.index - currentIndex) - Math.abs(right.index - currentIndex) || left.index - right.index)
-    .slice(0, 2)
-    .sort((left, right) => left.index - right.index)
-    .map((candidate): LogNeighborEvidence => {
-      const candidateTime = stringValue(candidate.item.time, candidate.item.lastConfirmed);
-      return {
-        relation: candidate.index < currentIndex ? "newer" : "older",
-        time: candidateTime,
-        timestamp: candidate.timestamp,
-        topics: stringValue(candidate.item.topics),
-        severity: severityFrom(candidate.item.severity, candidate.item.level, candidate.item.topics),
-        message: stringValue(candidate.item.message, candidate.item.abnormal),
-      };
-    });
+function genericEvidence(title: string): GenericRowEvidence {
+  return { kind: "generic", sourceTable: title };
+}
+function arpAlertEvidence(title: string, row: UnknownRecord): ArpAlertRowEvidence {
   return {
-    kind: "log",
+    kind: "arp-alert",
     sourceTable: title,
-    time,
-    timestamp: time ? parseRfc3339Timestamp(time) : null,
-    topics: stringValue(row.topics),
-    severity: severityFrom(row.severity, row.level, row.topics),
-    source: stringValue(row.group, row.source),
-    message: stringValue(row.message, row.abnormal),
-    neighbors,
+    address: stringValue(row.ip, row.address),
+    mac: stringValue(row.mac, row.macAddress),
+    alertType: stringValue(row.type, row.level, row.kind),
+    detail: stringValue(row.message, row.detail, row.abnormal),
+    severity: severityFrom(row.severity, row.level, row.type, row.message),
+    interfaceName: stringValue(row.interface, row.iface),
   };
 }
-
 function securityEvidence(title: string, row: UnknownRecord): SecurityRowEvidence {
   const time = stringValue(row.time, row.lastConfirmed, row.firstSeen);
   return {
     kind: "security",
     sourceTable: title,
-    objectType: title === "安全告警" ? "alert" : "rule",
+    objectType: title === "安全告警" ? "alert" : title === "地址集" ? "address-list" : "rule",
     time,
     timestamp: time ? parseRfc3339Timestamp(time) : null,
     severity: severityFrom(row.severity, row.level, row.topics),
@@ -326,14 +279,13 @@ function securityEvidence(title: string, row: UnknownRecord): SecurityRowEvidenc
     bytes: numberValue(row.bytes),
     inInterface: stringValue(row.inInterface),
     outInterface: stringValue(row.outInterface),
-    sourceAddress: stringValue(row.srcAddress),
-    destinationAddress: stringValue(row.dstAddress),
+    sourceAddress: stringValue(row.srcAddress, title === "地址集" ? row.list || row.name : undefined),
+    destinationAddress: stringValue(row.dstAddress, title === "地址集" ? row.address || row.ip : undefined),
     comment: stringValue(row.comment),
     affected: stringValue(row.affected, row.scope, row.topics),
     message: stringValue(row.abnormal, row.message),
   };
 }
-
 function dnsEvidence(route: PanelRouteId, title: string, row: UnknownRecord, context: SectionEvidenceContext): DnsRowEvidence {
   const dns = record(context.dns);
   const objectType = route === "dns4"
@@ -363,20 +315,39 @@ function dnsEvidence(route: PanelRouteId, title: string, row: UnknownRecord, con
     verifyDohCert: booleanValue(dns.verifyDohCert),
   };
 }
-
 function resourceEvidence(title: string, row: UnknownRecord): ResourceRowEvidence {
-  const values = Array.isArray(row.values)
-    ? row.values.map((value) => numberValue(value)).filter((value): value is number => value !== null)
-    : [];
+  const rawValues = Array.isArray(row.values) ? row.values : [];
+  const values = rawValues
+    .map((value) => numberValue(value)).filter((value): value is number => value !== null);
+  const sampleSource = Array.isArray(row.sampleSequence)
+    ? row.sampleSequence
+    : Array.isArray(row.timestamps) && row.timestamps.length === rawValues.length
+      ? row.timestamps.map((timestamp, index) => ({ timestamp, value: rawValues[index] }))
+      : [];
+  const timestampedSamples = sampleSource.flatMap((sample) => {
+    if (!sample || typeof sample !== "object") return [];
+    const candidate = sample as UnknownRecord;
+    const timestampValue = stringValue(candidate.timestamp);
+    const timestamp = timestampValue ? parseRfc3339Timestamp(timestampValue) : null;
+    const value = numberValue(candidate.value);
+    if (timestamp === null || value === null || value < 0 || value > 100) return [];
+    return [{ timestamp: new Date(timestamp).toISOString(), value }];
+  });
   return {
     kind: "resource",
     sourceTable: title,
     series: stringValue(row.key, row.series),
     values,
-    sampleCount: values.length,
+    samples: timestampedSamples,
+    sampleCount: timestampedSamples.length,
+    latest: numberValue(row.latest),
+    threshold: numberValue(row.threshold),
+    delta: numberValue(row.delta),
+    trailing: numberValue(row.trailing) ?? 0,
+    durationSeconds: numberValue(row.durationSeconds),
+    evidenceAt: stringValue(row.evidenceAt),
   };
 }
-
 function connectionEvidence(title: string, row: UnknownRecord): ConnectionRowEvidence {
   return {
     kind: "connection",
@@ -391,11 +362,41 @@ function connectionEvidence(title: string, row: UnknownRecord): ConnectionRowEvi
     targetPort: stringValue(row.destinationPort, row.dstPort),
   };
 }
-
-export function emptySectionRowEvidence(sourceTable = ""): GenericRowEvidence {
-  return { kind: "generic", sourceTable, status: null };
+function dhcpClientEvidence(title: string, row: UnknownRecord): DhcpClientRowEvidence {
+  return { kind: "dhcp-client", sourceTable: title, interfaceName: stringValue(row.interface), status: stringValue(row.status, row.state), addDefaultRoute: booleanValue(row.addDefaultRoute), usePeerDns: booleanValue(row.usePeerDns) };
 }
-
+function dhcpPoolEvidence(title: string, row: UnknownRecord): DhcpPoolRowEvidence {
+  return {
+    kind: "dhcp-pool",
+    sourceTable: title,
+    name: stringValue(row.name, row.pool),
+    ranges: stringValue(row.ranges, row.range),
+    used: numberValue(row.used, row.usedCount),
+    total: numberValue(row.total, row.capacity),
+  };
+}
+function balanceRuleEvidence(title: string, row: UnknownRecord): BalanceRuleRowEvidence {
+  return {
+    kind: "balance-rule",
+    sourceTable: title,
+    chain: stringValue(row.chain),
+    mark: stringValue(row.newRoutingMark, row.table, row.routingMark),
+    interfaceName: stringValue(row.inInterface, row.outInterface, row.interface),
+    comment: stringValue(row.comment),
+    status: stringValue(row.status, row.state),
+  };
+}
+function balanceDistributionEvidence(title: string, row: UnknownRecord): BalanceDistributionRowEvidence {
+  return {
+    kind: "balance-distribution",
+    sourceTable: title,
+    name: stringValue(row.name, row.interface, row.lineId),
+    share: numberValue(row.share, row.percent),
+    active: booleanValue(row.active ?? row.running),
+    upRate: numberValue(row.upRate, row.txRate),
+    downRate: numberValue(row.downRate, row.rxRate),
+  };
+}
 export function buildSectionRowEvidence(
   route: PanelRouteId,
   title: string,
@@ -403,14 +404,21 @@ export function buildSectionRowEvidence(
   context: SectionEvidenceContext = {},
 ): SectionRowEvidence {
   if (route === "interfaces" || route === "lineStatus") return interfaceEvidence(title, row, context);
-  if (route === "routes" || (route === "balance" && title === "默认路由")) return buildRouteEvidence(title, row, context);
+  if (route === "routes" || (route === "balance" && title === "默认路由") || (route === "overview" && title === "路由记录")) return buildRouteEvidence(title, row, context);
+  if (route === "balance" && title === "策略规则") return balanceRuleEvidence(title, row);
+  if (route === "balance" && title === "线路分布") return balanceDistributionEvidence(title, row);
   if (route === "terminals") return terminalEvidence(title, row, context);
   if (route === "dhcp" && title === "地址租约") return terminalEvidence(title, row, context);
+  if (route === "dhcp" && title === "DHCP 客户端") return dhcpClientEvidence(title, row);
+  if (route === "dhcp" && title === "地址池") return dhcpPoolEvidence(title, row);
   if (route === "arp" && title === "ARP 对象") return terminalEvidence(title, row, context);
-  if (route === "logs" || route === "serviceLogs") return logEvidence(title, row, context);
+  if (route === "serviceLogs") return serviceLogEvidence(title, row, context);
+  if (route === "logs") return logEvidence(title, row, context);
+  if (route === "arp" && title === "身份告警") return arpAlertEvidence(title, row);
   if (route === "security") return securityEvidence(title, row);
   if (route === "dns4" || route === "dns6") return dnsEvidence(route, title, row, context);
   if (route === "trafficLoad" || route === "loadAudit") return resourceEvidence(title, row);
   if (route === "connections" || route === "trafficAudit") return connectionEvidence(title, row);
-  return { kind: "generic", sourceTable: title, status: stringValue(row.status, row.state) };
+  if (route === "readonlyDiagnostics") return buildDiagnosticRowEvidence(title, row);
+  throw new Error("Unsupported section evidence route/title: " + route + "/" + title);
 }

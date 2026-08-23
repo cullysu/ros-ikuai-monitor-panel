@@ -2,6 +2,7 @@ import base64
 import ast
 import gzip
 import hashlib
+import http.client
 import json
 import os
 import pathlib
@@ -36,12 +37,18 @@ from panel_backend.router_transport import (  # noqa: E402
     build_rest_url,
     normalize_rest_scheme,
     normalize_rest_port,
+    rest_channel_has_verified_identity,
     ssh_key_fingerprint,
     validate_rest_security,
 )
-from panel_backend.config_store import RouterProfileStore  # noqa: E402
+from panel_backend.config_store import RouterProfileStore, RouterProfileStoreCorruptError  # noqa: E402
 from panel_backend.collector_transport import RouterCollectorTransport  # noqa: E402
 from panel_backend.session_security import SessionStore, SlidingWindowRateLimiter  # noqa: E402
+from panel_backend.trust_binding import (  # noqa: E402
+    SshTrustChallengeError,
+    issue_ssh_trust_challenge,
+    verify_ssh_trust_challenge,
+)
 
 import app  # noqa: E402
 
@@ -85,6 +92,21 @@ class FakeRestSession:
 def assert_rest_transport_contract():
     assert app.normalize_router_host("router.lan") == "router.lan"
     assert app.normalize_router_host("[2001:db8::1]") == "2001:db8::1"
+    assert app.normalize_router_host("2001:db8::1") == "2001:db8::1"
+    for unsafe_host in (
+        "router.lan/path",
+        r"router.lan\path",
+        "user@router.lan",
+        "router.lan?x=1",
+        "router.lan#frag",
+        "[2001:db8::1]:443",
+    ):
+        try:
+            app.normalize_router_host(unsafe_host)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"Router address delimiter was accepted: {unsafe_host!r}")
     try:
         app.normalize_router_host("https://router.lan")
     except ValueError as exc:
@@ -103,6 +125,17 @@ def assert_rest_transport_contract():
         {"host": "2001:db8::1", "restScheme": "https", "restPort": 8443},
         "/ip/dns/static",
     ) == "https://[2001:db8::1]:8443/rest/ip/dns/static"
+    assert rest_channel_has_verified_identity(
+        {"ok": True, "scheme": "https", "verifyTls": True}
+    ) is True
+    for unverified in (
+        {"ok": False, "scheme": "https", "verifyTls": True},
+        {"ok": True, "scheme": "https", "verifyTls": False},
+        {"ok": True, "scheme": "http", "verifyTls": False},
+        {"ok": True},
+        None,
+    ):
+        assert rest_channel_has_verified_identity(unverified) is False
 
     validate_rest_security("https", True, False)
     for scheme, verify_tls in (("http", False), ("https", False)):
@@ -140,6 +173,79 @@ def assert_ssh_fingerprint_contract():
         raise AssertionError("changed SSH host key was accepted")
 
 
+def assert_ssh_trust_challenge_contract():
+    secret = b"0123456789abcdef0123456789abcdef"
+    fingerprint = "SHA256:" + "A" * 43
+    issued = issue_ssh_trust_challenge(
+        secret,
+        "session-one",
+        "router.lan",
+        2222,
+        fingerprint,
+        rest_scheme="https",
+        ttl_seconds=120,
+        now=1000,
+    )
+    assert issued["token"]
+    assert issued["expiresAt"] == "1970-01-01T00:18:40Z"
+    verified = verify_ssh_trust_challenge(
+        secret,
+        issued["token"],
+        "session-one",
+        "router.lan",
+        2222,
+        fingerprint,
+        rest_scheme="https",
+        now=1119,
+    )
+    assert verified["host"] == "router.lan"
+    assert verified["sshPort"] == 2222
+    assert verified["restScheme"] == "https"
+    assert verified["fingerprint"] == fingerprint
+
+    invalid_bindings = (
+        ("session-two", "router.lan", 2222, "https", fingerprint, 1010),
+        ("session-one", "other.lan", 2222, "https", fingerprint, 1010),
+        ("session-one", "router.lan", 22, "https", fingerprint, 1010),
+        ("session-one", "router.lan", 2222, "http", fingerprint, 1010),
+        ("session-one", "router.lan", 2222, "https", "SHA256:" + "B" * 43, 1010),
+        ("session-one", "router.lan", 2222, "https", fingerprint, 1120),
+    )
+    for session_id, host, port, rest_scheme, candidate, now in invalid_bindings:
+        try:
+            verify_ssh_trust_challenge(
+                secret,
+                issued["token"],
+                session_id,
+                host,
+                port,
+                candidate,
+                rest_scheme=rest_scheme,
+                now=now,
+            )
+        except SshTrustChallengeError:
+            pass
+        else:
+            raise AssertionError("SSH trust challenge escaped its session, endpoint, fingerprint, or expiry binding")
+
+    tampered = issued["token"][:-1] + ("A" if issued["token"][-1] != "A" else "B")
+    try:
+        verify_ssh_trust_challenge(
+            secret,
+            tampered,
+            "session-one",
+            "router.lan",
+            2222,
+            fingerprint,
+            rest_scheme="https",
+            now=1010,
+        )
+    except SshTrustChallengeError:
+        pass
+    else:
+        raise AssertionError("tampered SSH trust challenge was accepted")
+
+
 def assert_session_and_rate_limit_contract():
     now = [1000.0]
     sessions = SessionStore(ttl_seconds=60, max_sessions=2, clock=lambda: now[0])
@@ -169,7 +275,21 @@ def assert_session_and_rate_limit_contract():
 
 def assert_router_profile_store_contract():
     secret = "must-not-survive"
+    nested_secret = "nested-last-test-secret"
     fingerprint = "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    polluted_test = {
+        "ssh": {
+            "ok": False,
+            "error": f"password={nested_secret}",
+            "headers": {"Authorization": f"Bearer {nested_secret}"},
+        },
+        "rest": {
+            "ok": False,
+            "error": f"https://monitor:{nested_secret}@router.lan/rest/system/resource?token={nested_secret}",
+        },
+        "elapsedMs": 12,
+        "password": nested_secret,
+    }
     with tempfile.TemporaryDirectory() as temp_dir:
         path = pathlib.Path(temp_dir) / "router-logins.json"
         path.write_text(
@@ -182,6 +302,7 @@ def assert_router_profile_store_contract():
                             "user": "monitor",
                             "password": secret,
                             "sshPort": 22,
+                            "lastTest": polluted_test,
                         }
                     ],
                 }
@@ -191,10 +312,14 @@ def assert_router_profile_store_contract():
         store = RouterProfileStore(path, history_limit=2)
         store.sanitize()
         assert secret not in path.read_text(encoding="utf-8")
+        assert nested_secret not in path.read_text(encoding="utf-8")
         legacy = store.public_entries()
+        assert nested_secret not in json.dumps(legacy)
         assert len(legacy) == 1
         assert legacy[0]["passwordSaved"] is False
         assert "password" not in legacy[0]
+        public_config = app.public_router_config({"host": "router.lan", "user": "monitor", "lastTest": polluted_test})
+        assert nested_secret not in json.dumps(public_config)
 
         saved = store.remember(
             "router.lan",
@@ -209,6 +334,29 @@ def assert_router_profile_store_contract():
         assert saved["restPort"] == 8443
         assert saved["sshHostKeyFingerprint"] == fingerprint
         assert store.find(saved["id"])["password"] == ""
+
+        unsafe = store.remember(
+            "unsafe.lan",
+            "monitor",
+            22,
+            rest_scheme="http",
+            rest_port=80,
+            rest_verify_tls=False,
+            insecure_rest_confirmed=True,
+        )
+        assert unsafe["insecureRestConfirmed"] is False
+        assert store.find(unsafe["id"])["insecureRestConfirmed"] is False
+        assert next(row for row in store.public_entries() if row["id"] == unsafe["id"])["insecureRestConfirmed"] is False
+
+        revoked = store.remember(
+            "revoke-router.lan",
+            "monitor",
+            22,
+            ssh_host_key_fingerprint=fingerprint,
+        )
+        assert store.find(revoked["id"])["sshHostKeyFingerprint"] == fingerprint
+        assert store.forget(revoked["id"]) is True
+        assert store.find(revoked["id"]) is None
 
         store.remember("backup.lan", "monitor", 22)
         store.remember("third.lan", "monitor", 22)
@@ -231,6 +379,22 @@ def assert_router_profile_store_contract():
             raise AssertionError("insecure saved transport accepted without explicit confirmation")
 
 
+def assert_router_profile_store_corruption_contract():
+    invalid_payloads = ("{", "[]", json.dumps({"entries": {}}))
+    with tempfile.TemporaryDirectory() as temp_dir:
+        path = pathlib.Path(temp_dir) / "router-logins.json"
+        for payload in invalid_payloads:
+            path.write_text(payload, encoding="utf-8")
+            store = RouterProfileStore(path)
+            try:
+                store.load_unlocked()
+            except RouterProfileStoreCorruptError as exc:
+                assert exc.path == path
+            else:
+                raise AssertionError("corrupt RouterOS profile store was silently accepted")
+            assert path.read_text(encoding="utf-8") == payload
+
+
 def assert_api_schema_contract():
     assert "/api/snapshot" in READ_ONLY_API_PATHS
     assert "/api/router-login" in WRITE_API_PATHS
@@ -251,6 +415,7 @@ def assert_api_schema_contract():
             "username": "monitor",
             "password": "secret",
             "rememberProfile": True,
+            "continueWithVerifiedRestOnly": True,
         }
     )
     assert fresh.host == "router.lan"
@@ -258,13 +423,14 @@ def assert_api_schema_contract():
     assert fresh.rest_scheme == "https"
     assert fresh.rest_verify_tls is True
     assert fresh.remember_profile is True
+    assert fresh.continue_with_verified_rest_only is True
     assert fresh.using_saved_profile is False
 
     saved = parse_router_login_request(
         {
             "savedId": "profile-1",
             "password": "secret",
-            "sshHostKeyFingerprint": "SHA256:NEW",
+            "sshHostKeyFingerprint": "SHA256:" + "A" * 43,
         },
         {
             "host": "saved-router.lan",
@@ -273,17 +439,64 @@ def assert_api_schema_contract():
             "restScheme": "https",
             "restPort": 8443,
             "restVerifyTls": True,
-            "insecureRestConfirmed": False,
-            "sshHostKeyFingerprint": "SHA256:OLD",
+            "insecureRestConfirmed": True,
+            "sshHostKeyFingerprint": "SHA256:" + "A" * 43,
         },
     )
     assert saved.host == "saved-router.lan"
     assert saved.user == "saved-user"
     assert saved.ssh_port == 2222
     assert saved.rest_port == 8443
-    assert saved.ssh_host_key_fingerprint == "SHA256:NEW"
+    assert saved.ssh_host_key_fingerprint == "SHA256:" + "A" * 43
+    assert saved.insecure_rest_confirmed is False
     assert saved.remember_profile is False
+    assert saved.continue_with_verified_rest_only is False
     assert saved.using_saved_profile is True
+
+    try:
+        parse_router_login_request(
+            {
+                "savedId": "profile-1",
+                "password": "secret",
+                "sshHostKeyFingerprint": "SHA256:" + "B" * 43,
+            },
+            {
+                "host": "saved-router.lan",
+                "user": "saved-user",
+                "sshPort": 2222,
+                "restScheme": "https",
+                "restPort": 8443,
+                "restVerifyTls": True,
+                "sshHostKeyFingerprint": "SHA256:" + "A" * 43,
+            },
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("saved SSH trust anchor was replaced by a normal login request")
+
+    first_trust = parse_router_login_request(
+        {
+            "savedId": "profile-2",
+            "password": "secret",
+            "sshHostKeyFingerprint": "SHA256:" + "B" * 43,
+            "sshHostKeyTrustToken": "short-lived-challenge",
+            "insecureRestConfirmed": True,
+        },
+        {
+            "host": "untrusted-router.lan",
+            "user": "saved-user",
+            "sshPort": 22,
+            "restScheme": "http",
+            "restPort": 80,
+            "restVerifyTls": False,
+            "insecureRestConfirmed": True,
+            "sshHostKeyFingerprint": "",
+        },
+    )
+    assert first_trust.ssh_host_key_fingerprint == "SHA256:" + "B" * 43
+    assert first_trust.ssh_host_key_trust_token == "short-lived-challenge"
+    assert first_trust.insecure_rest_confirmed is True
 
 
 def assert_collector_transport_contract():
@@ -401,9 +614,56 @@ def assert_app_security_contract():
     assert all((node.end_lineno - node.lineno) <= 10 for node in transport_methods.values())
 
 
+def assert_source_header_contract():
+    port = app.PANEL_PORT
+    expected_authority = ("http", "127.0.0.1", port)
+    exact_origin = f"http://127.0.0.1:{port}"
+    assert app.parse_panel_origin(exact_origin) == expected_authority
+
+    malformed_origins = (
+        f"http://user@127.0.0.1:{port}",
+        f"http://user:pass@127.0.0.1:{port}",
+        f"http://127.0.0.1:{port}/",
+        f"http://127.0.0.1:{port}/network",
+        f"http://127.0.0.1:{port}?section=network",
+        f"http://127.0.0.1:{port}#network",
+        f"http://127.0.0.1:{port}, https://evil.example",
+        "http://127.0.0.1:0",
+    )
+    parsed_malformed_origins = {
+        value: app.parse_panel_origin(value) for value in malformed_origins
+    }
+    assert all(value is None for value in parsed_malformed_origins.values()), parsed_malformed_origins
+
+    exact_referer = f"http://127.0.0.1:{port}/network?section=interfaces"
+    assert app.parse_panel_referer(exact_referer) == expected_authority
+    malformed_referers = (
+        f"http://user@127.0.0.1:{port}/network",
+        f"http://user:pass@127.0.0.1:{port}/network",
+        f"http://127.0.0.1:{port}/network#interfaces",
+        "http://127.0.0.1:0/network",
+    )
+    parsed_malformed_referers = {
+        value: app.parse_panel_referer(value) for value in malformed_referers
+    }
+    assert all(value is None for value in parsed_malformed_referers.values()), parsed_malformed_referers
+
+    headers = {"Host": f"127.0.0.1:{port}"}
+    assert app.panel_origin_is_allowed(headers, exact_origin) is True
+    assert app.panel_referer_is_allowed(headers, exact_referer) is True
+    assert app.panel_origin_is_allowed(headers, f"http://localhost:{port}") is False
+    assert app.panel_origin_is_allowed(headers, f"https://127.0.0.1:{port}") is False
+    assert app.panel_origin_is_allowed(headers, f"http://127.0.0.1:{port + 1}") is False
+    assert app.panel_referer_is_allowed(headers, f"http://localhost:{port}/network") is False
+    assert app.panel_referer_is_allowed(headers, f"https://127.0.0.1:{port}/network") is False
+    assert app.panel_origin_is_allowed({"Host": f"localhost:{port}"}, f"http://localhost:{port}") is True
+
+
 def assert_live_http_boundary():
     original_public_dir = app.PUBLIC_DIR
     original_bootstrap_limit = app.PANEL_SESSION_BOOTSTRAP_LIMIT
+    original_test_router_credentials = app.test_router_credentials
+    original_router_config = app.get_router_config()
     with tempfile.TemporaryDirectory() as temp_dir:
         public_dir = pathlib.Path(temp_dir)
         (public_dir / "index.html").write_text("<!doctype html><title>fixture</title>", encoding="utf-8")
@@ -466,6 +726,81 @@ def assert_live_http_boundary():
             assert repeat.status_code == 200
             assert app.PANEL_SESSION_STORE.size() == 1
 
+            malformed_origin_statuses = {
+                value: first_client.post(
+                    f"{base}/api/router-login",
+                    headers={"Origin": value},
+                    timeout=3,
+                ).status_code
+                for value in (
+                    f"http://user@127.0.0.1:{server.server_address[1]}",
+                    f"http://user:pass@127.0.0.1:{server.server_address[1]}",
+                    f"{base}/",
+                    f"{base}/network",
+                    f"{base}?section=network",
+                    f"{base}#network",
+                    f"http://localhost:{server.server_address[1]}",
+                    f"https://127.0.0.1:{server.server_address[1]}",
+                    f"{base}, https://evil.example",
+                )
+            }
+            malformed_referer_statuses = {
+                value: first_client.post(
+                    f"{base}/api/router-login",
+                    headers={"Referer": value},
+                    timeout=3,
+                ).status_code
+                for value in (
+                    f"http://user@127.0.0.1:{server.server_address[1]}/network",
+                    f"http://user:pass@127.0.0.1:{server.server_address[1]}/network",
+                    f"{base}/network#interfaces",
+                )
+            }
+            assert all(status == 403 for status in malformed_origin_statuses.values()), malformed_origin_statuses
+            assert all(status == 403 for status in malformed_referer_statuses.values()), malformed_referer_statuses
+
+            no_origin_fallback = first_client.post(
+                f"{base}/api/router-login",
+                headers={
+                    "Origin": f"{base}, https://evil.example",
+                    "Referer": f"{base}/network?section=interfaces",
+                },
+                timeout=3,
+            )
+            assert no_origin_fallback.status_code == 403, no_origin_fallback.text
+
+            duplicate_origin = http.client.HTTPConnection(
+                "127.0.0.1", server.server_address[1], timeout=3
+            )
+            duplicate_origin.putrequest("POST", "/api/router-logout")
+            duplicate_origin.putheader("Host", f"127.0.0.1:{server.server_address[1]}")
+            duplicate_origin.putheader(
+                "Cookie", f"{app.PANEL_SESSION_COOKIE}={first_client.cookies.get(app.PANEL_SESSION_COOKIE)}"
+            )
+            duplicate_origin.putheader("Origin", base)
+            duplicate_origin.putheader("Origin", base)
+            duplicate_origin.endheaders()
+            duplicate_response = duplicate_origin.getresponse()
+            duplicate_body = duplicate_response.read().decode("utf-8", errors="replace")
+            duplicate_origin.close()
+            assert duplicate_response.status == 403, duplicate_body
+
+            duplicate_referer = http.client.HTTPConnection(
+                "127.0.0.1", server.server_address[1], timeout=3
+            )
+            duplicate_referer.putrequest("POST", "/api/router-logout")
+            duplicate_referer.putheader("Host", f"127.0.0.1:{server.server_address[1]}")
+            duplicate_referer.putheader(
+                "Cookie", f"{app.PANEL_SESSION_COOKIE}={first_client.cookies.get(app.PANEL_SESSION_COOKIE)}"
+            )
+            duplicate_referer.putheader("Referer", f"{base}/network?section=interfaces")
+            duplicate_referer.putheader("Referer", f"{base}/network?section=interfaces")
+            duplicate_referer.endheaders()
+            duplicate_referer_response = duplicate_referer.getresponse()
+            duplicate_referer_body = duplicate_referer_response.read().decode("utf-8", errors="replace")
+            duplicate_referer.close()
+            assert duplicate_referer_response.status == 403, duplicate_referer_body
+
             panel_network = first_client.get(f"{base}/api/panel-network", timeout=3)
             assert panel_network.status_code == 200, panel_network.text
             assert panel_network.json().get("panelNetwork", {}).get("currentUrl")
@@ -482,12 +817,167 @@ def assert_live_http_boundary():
             assert invalid_shape.status_code == 400, invalid_shape.text
             assert invalid_shape.json().get("code") == "bad_request"
 
+            trust_fingerprint = "SHA256:" + "C" * 43
+            changed_fingerprint = "SHA256:" + "D" * 43
+
+            def fake_test_router_credentials(
+                host,
+                user,
+                password,
+                ssh_port=22,
+                *,
+                ssh_host_key_fingerprint="",
+                **kwargs,
+            ):
+                del host, user, ssh_port
+                password_text = str(password or "")
+                host_key_changed = password_text == "changed-key"
+                confirmation_required = not ssh_host_key_fingerprint and not host_key_changed
+                rest_scheme = str(kwargs.get("rest_scheme") or "https").lower()
+                rest_verify_tls = rest_scheme == "https" and kwargs.get("rest_verify_tls") is True
+                return {
+                    "ssh": {
+                        "ok": not confirmation_required and not host_key_changed,
+                        "error": (
+                            "host key changed" if host_key_changed
+                            else "confirmation required" if confirmation_required
+                            else None
+                        ),
+                        "elapsedMs": 1,
+                        "fingerprint": changed_fingerprint if host_key_changed else trust_fingerprint,
+                        "expectedFingerprint": trust_fingerprint if host_key_changed else None,
+                        "algorithm": "ssh-ed25519",
+                        "confirmationRequired": confirmation_required,
+                        "hostKeyChanged": host_key_changed,
+                    },
+                    "rest": {
+                        "ok": True,
+                        "error": None,
+                        "elapsedMs": 1,
+                        "scheme": rest_scheme,
+                        "verifyTls": rest_verify_tls,
+                    },
+                    "elapsedMs": 2,
+                }
+
+            app.test_router_credentials = fake_test_router_credentials
+            trust_payload = {
+                "host": "router.lan",
+                "user": "monitor",
+                "password": "secret",
+                "sshPort": 22,
+                "restScheme": "https",
+                "restPort": 443,
+                "restVerifyTls": True,
+                "insecureRestConfirmed": False,
+                "rememberProfile": False,
+            }
+            trust_probe = first_client.post(
+                f"{base}/api/router-login",
+                json=trust_payload,
+                headers={"X-CSRF-Token": first.json()["csrfToken"]},
+                timeout=3,
+            )
+            assert trust_probe.status_code == 409, trust_probe.text
+            trust_test = trust_probe.json().get("test", {}).get("ssh", {})
+            trust_token = trust_test.get("trustToken")
+            assert trust_token
+            assert trust_test.get("trustExpiresAt", "").endswith("Z")
+
+            rest_only = first_client.post(
+                f"{base}/api/router-login",
+                json={**trust_payload, "continueWithVerifiedRestOnly": True},
+                headers={"X-CSRF-Token": first.json()["csrfToken"]},
+                timeout=3,
+            )
+            assert rest_only.status_code == 200, rest_only.text
+            assert rest_only.json().get("test", {}).get("ssh", {}).get("confirmationRequired") is True
+            assert "SSH" in str(rest_only.json().get("warning") or "")
+
+            unverified_rest_only = first_client.post(
+                f"{base}/api/router-login",
+                json={
+                    **trust_payload,
+                    "restScheme": "http",
+                    "restPort": 80,
+                    "restVerifyTls": False,
+                    "insecureRestConfirmed": True,
+                    "continueWithVerifiedRestOnly": True,
+                },
+                headers={"X-CSRF-Token": first.json()["csrfToken"]},
+                timeout=3,
+            )
+            assert unverified_rest_only.status_code == 409, unverified_rest_only.text
+            assert unverified_rest_only.json().get("code") == "verified_rest_only_unavailable"
+
+            changed_probe = first_client.post(
+                f"{base}/api/router-login",
+                json={**trust_payload, "password": "changed-key"},
+                headers={"X-CSRF-Token": first.json()["csrfToken"]},
+                timeout=3,
+            )
+            assert changed_probe.status_code == 409, changed_probe.text
+            assert changed_probe.json().get("code") == "ssh_host_key_changed"
+
+            changed_rest_only = first_client.post(
+                f"{base}/api/router-login",
+                json={
+                    **trust_payload,
+                    "password": "changed-key",
+                    "continueWithVerifiedRestOnly": True,
+                },
+                headers={"X-CSRF-Token": first.json()["csrfToken"]},
+                timeout=3,
+            )
+            assert changed_rest_only.status_code == 200, changed_rest_only.text
+            assert changed_rest_only.json().get("test", {}).get("ssh", {}).get("hostKeyChanged") is True
+            assert "旧指纹" in str(changed_rest_only.json().get("warning") or "")
+
+            wrong_endpoint = first_client.post(
+                f"{base}/api/router-login",
+                json={
+                    **trust_payload,
+                    "host": "other.lan",
+                    "sshHostKeyFingerprint": trust_fingerprint,
+                    "sshHostKeyTrustToken": trust_token,
+                },
+                headers={"X-CSRF-Token": first.json()["csrfToken"]},
+                timeout=3,
+            )
+            assert wrong_endpoint.status_code == 409, wrong_endpoint.text
+            assert wrong_endpoint.json().get("code") == "ssh_trust_binding_mismatch"
+
+            confirmed = first_client.post(
+                f"{base}/api/router-login",
+                json={
+                    **trust_payload,
+                    "sshHostKeyFingerprint": trust_fingerprint,
+                    "sshHostKeyTrustToken": trust_token,
+                },
+                headers={"X-CSRF-Token": first.json()["csrfToken"]},
+                timeout=3,
+            )
+            assert confirmed.status_code == 200, confirmed.text
+
             second = app.requests.get(f"{base}/api/router-login", timeout=3)
             assert second.status_code == 200
             assert app.PANEL_SESSION_STORE.size() == 2
             limited = app.requests.get(f"{base}/api/router-login", timeout=3)
             assert limited.status_code == 429, limited.text
             assert int(limited.headers.get("Retry-After", "0")) >= 1
+
+            valid_referer = first_client.post(
+                f"{base}/api/router-logout",
+                headers={"Referer": f"{base}/network?section=interfaces"},
+                timeout=3,
+            )
+            assert valid_referer.status_code == 200, valid_referer.text
+            valid_origin = first_client.post(
+                f"{base}/api/router-logout",
+                headers={"Origin": base},
+                timeout=3,
+            )
+            assert valid_origin.status_code == 200, valid_origin.text
 
             app.PANEL_SESSION_STORE.clear()
             unauthenticated_write = app.requests.post(
@@ -504,6 +994,10 @@ def assert_live_http_boundary():
             thread.join(timeout=3)
             app.PUBLIC_DIR = original_public_dir
             app.PANEL_SESSION_BOOTSTRAP_LIMIT = original_bootstrap_limit
+            app.test_router_credentials = original_test_router_credentials
+            with app.ROUTER_CONFIG_LOCK:
+                app.ROUTER_CONFIG.clear()
+                app.ROUTER_CONFIG.update(original_router_config)
             app.PANEL_SESSION_STORE.clear()
             app.PANEL_REQUEST_RATE_LIMITER.clear()
 
@@ -511,12 +1005,15 @@ def assert_live_http_boundary():
 def main():
     assert_rest_transport_contract()
     assert_ssh_fingerprint_contract()
+    assert_ssh_trust_challenge_contract()
     assert_session_and_rate_limit_contract()
     assert_router_profile_store_contract()
+    assert_router_profile_store_corruption_contract()
     assert_api_schema_contract()
     assert_collector_transport_contract()
     assert_app_security_contract()
     assert_live_http_boundary()
+    assert_source_header_contract()
     print(
         "backend security contract: PASS https-default explicit-risk ssh-pin bounded-sessions "
         "password-free-profiles api-schema collector-transport headers"

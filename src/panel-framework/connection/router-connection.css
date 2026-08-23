@@ -3,7 +3,6 @@
   --router-connect-muted: #58717c;
   --router-connect-line: #b9ccd4;
   --router-connect-blue: #0c698e;
-  --router-connect-blue-soft: #deedf3;
   --router-connect-surface: #f8fbfc;
   --router-connect-canvas: #eaf1f4;
   --router-connect-danger: #8e3d49;
@@ -36,7 +35,8 @@
 .router-icon-button:hover { background: #e4eef2; }
 .router-icon-button:focus-visible,
 .router-connection button:focus-visible,
-.router-connection input:focus-visible { outline: 2px solid #0b7199; outline-offset: 2px; }
+.router-connection input:focus-visible,
+.router-saved-select select:focus-visible { outline: 2px solid #0b7199; outline-offset: 2px; }
 .router-connection button:disabled,
 .router-connection input:disabled { cursor: not-allowed; opacity: .58; }
 
@@ -134,7 +134,8 @@
 .router-form-group header span { color: var(--router-connect-muted); font-size: 12px; }
 .router-field { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: center; min-height: 50px; padding: 0 13px; border-bottom: 1px solid #d4e0e5; }
 .router-field:last-child { border-bottom: 0; }
-.router-field > span { color: #45636f; font-size: 14px; font-weight: 650; }
+.router-field > span,
+.router-saved-select label > span { color: #45636f; font-size: 14px; font-weight: 650; }
 .router-field input {
   box-sizing: border-box;
   width: 100%;
@@ -146,7 +147,6 @@
   color: #102d39;
   background: #edf4f6;
   font: inherit;
-  font-variant-numeric: tabular-nums;
 }
 .router-field input:hover { border-color: #a8c1cb; }
 
@@ -174,7 +174,6 @@
 .router-segmented-control button[aria-pressed="true"] {
   color: #0f4256;
   background: #f9fcfd;
-  box-shadow: 0 1px 3px rgb(24 63 78 / 18%);
 }
 .router-field-toggle input {
   justify-self: start;
@@ -216,14 +215,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.router-advanced-settings summary > span > svg { flex: 0 0 auto; color: #537482; }
 .router-advanced-settings summary > svg { flex: 0 0 auto; transition: transform 160ms ease-out; }
 .router-advanced-settings[open] summary { border-bottom: 1px solid #c9d8de; background: #eaf1f4; }
 .router-advanced-settings[open] summary > svg { transform: rotate(180deg); }
 .router-advanced-settings summary:focus-visible { outline: 3px solid rgb(47 113 143 / 32%); outline-offset: -3px; }
 .router-advanced-fields { background: var(--router-connect-surface); }
-.router-advanced-fields .router-field:last-child { border-bottom: 0; }
-
 .router-saved-list { display: grid; }
 .router-saved-profile { display: grid; grid-template-columns: minmax(0, 1fr) 48px; border-bottom: 1px solid #d4e0e5; }
 .router-saved-profile:last-child { border-bottom: 0; }
@@ -244,9 +240,7 @@
   background: var(--router-connect-surface);
 }
 .router-saved-select label { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; min-width: 0; }
-.router-saved-select label > span { color: #45636f; font-size: 14px; font-weight: 650; }
 .router-saved-select select { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 6px 28px 6px 8px; border: 1px solid transparent; border-radius: 6px; color: #143541; background: #edf4f6; font: inherit; }
-.router-saved-select select:focus-visible { outline: 2px solid #0b7199; outline-offset: 2px; }
 
 .router-remember-row { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border: 1px solid var(--router-connect-line); border-radius: 8px; background: var(--router-connect-surface); cursor: pointer; }
 .router-remember-row input { width: 19px; height: 19px; margin: 2px 0 0; accent-color: var(--router-connect-blue); }
@@ -302,8 +296,33 @@
   background: #f7fbfc;
   font-size: 12px;
 }
+.router-host-key-expiry { display: block; margin-top: 6px; color: #476773; font-size: 12px; }
 .router-host-key-confirmation label { display: flex; align-items: flex-start; gap: 8px; margin-top: 9px; font-size: 13px; cursor: pointer; }
 .router-host-key-confirmation label input { accent-color: var(--router-connect-blue); }
+.router-host-key-diff { display: grid; gap: 7px; }
+.router-host-key-diff > span { display: grid; gap: 3px; }
+.router-host-key-diff small { color: #476773; font-size: 12px; font-weight: 700; }
+.router-host-key-alternative { display: grid; gap: 4px; margin-top: 10px; }
+.router-host-key-alternative button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #6f9eaf;
+  border-radius: 7px;
+  color: #154b60;
+  background: #f6fbfc;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.router-host-key-alternative button:hover { background: #edf6f8; }
+.router-host-key-alternative button:focus-visible { outline: 3px solid rgb(13 106 142 / 28%); outline-offset: 2px; }
+.router-host-key-alternative button:disabled { cursor: wait; opacity: .6; }
+.router-host-key-alternative > small { color: #476773; font-size: 12px; }
 
 .router-connection-error { display: flex; align-items: flex-start; gap: 9px; padding: 10px 12px; border: 1px solid #d5aab0; border-radius: 7px; color: #6e3039; background: #f7e9eb; }
 .router-connection-error svg { flex: 0 0 auto; margin-top: 2px; }
@@ -336,7 +355,6 @@
   border-radius: 8px;
   color: #f7fbfc;
   background: #0d6a8e;
-  box-shadow: 0 2px 7px rgb(13 74 97 / 18%);
   font: inherit;
   font-weight: 750;
   cursor: pointer;
@@ -376,26 +394,15 @@
 .router-mobile-connection-intro h1 { margin: 4px 0 0; font-size: 26px; line-height: 1.08; letter-spacing: -.03em; }
 .router-mobile-connection-intro p { margin: 5px 0 0; color: #526c77; font-size: 14px; }
 
-@media (max-width: 1365px) {
-  html:has([data-router-connection-screen]),
-  body:has([data-router-connection-screen]),
-  html:has(.router-connection-status.is-mobile),
-  body:has(.router-connection-status.is-mobile) { min-width: 0; min-height: 100%; overflow-x: hidden; background: var(--router-connect-canvas); }
+@media (max-width: 1199px) {
+  :is(html, body):has(:is([data-router-connection-screen], .router-connection-status.is-mobile)) { min-width: 0; min-height: 100%; overflow-x: hidden; background: var(--router-connect-canvas); }
 
-  .app.ik-shell:has([data-router-connection-screen]),
-  .app.ik-shell:has(.router-connection-status.is-mobile) { display: block; min-width: 0; min-height: 100svh; background: var(--router-connect-canvas); }
+  .app.ik-shell:has(:is([data-router-connection-screen], .router-connection-status.is-mobile)) { display: block; min-width: 0; min-height: 100svh; background: var(--router-connect-canvas); }
 
-  .app.ik-shell:has([data-router-connection-screen]) > .ik-rail,
-  .app.ik-shell:has([data-router-connection-screen]) > .sidebar,
-  .app.ik-shell:has([data-router-connection-screen]) .topbar,
-  .app.ik-shell:has(.router-connection-status.is-mobile) > .ik-rail,
-  .app.ik-shell:has(.router-connection-status.is-mobile) > .sidebar,
-  .app.ik-shell:has(.router-connection-status.is-mobile) .topbar { display: none; }
+  .app.ik-shell:has(:is([data-router-connection-screen], .router-connection-status.is-mobile)) > :is(.ik-rail, .sidebar),
+  .app.ik-shell:has(:is([data-router-connection-screen], .router-connection-status.is-mobile)) .topbar { display: none; }
 
-  .app.ik-shell:has([data-router-connection-screen]) .frame,
-  .app.ik-shell:has([data-router-connection-screen]) .content,
-  .app.ik-shell:has(.router-connection-status.is-mobile) .frame,
-  .app.ik-shell:has(.router-connection-status.is-mobile) .content { width: 100%; min-width: 0; min-height: 100%; margin: 0; padding: 0; overflow: visible; }
+  .app.ik-shell:has(:is([data-router-connection-screen], .router-connection-status.is-mobile)) :is(.frame, .content) { width: 100%; min-width: 0; min-height: 100%; margin: 0; padding: 0; overflow: visible; }
 
   .router-connection-form { margin-top: 10px; }
   .router-connection-form.is-compact { gap: 10px; }
@@ -407,7 +414,6 @@
   .router-channel-fact { min-height: 46px; }
   .router-connect-submit { width: 100%; min-height: 50px; }
   .router-logout-button { width: 100%; margin-top: 8px; }
-  .router-saved-select label { grid-template-columns: 96px minmax(0, 1fr); }
 }
 
 @media (max-width: 359px) {
@@ -416,5 +422,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .is-spinning { animation-duration: 1.8s; }
+  .is-spinning { animation: none; }
+  .router-advanced-settings summary > svg { transition: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .router-mobile-connection-bar {
+    background: #f6fafb;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }

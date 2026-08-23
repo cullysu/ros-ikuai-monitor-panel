@@ -127,10 +127,9 @@ def command_cl(args: argparse.Namespace) -> None:
     print(json.dumps({"name": args.name, "status": args.status}))
 
 
-def command_verify(args: argparse.Namespace) -> None:
-    workspace = Path(args.workspace).resolve()
-    path = state_path(workspace, args.state)
-    state = read_json(path)
+def verify_state(workspace: Path, path: Path, state: dict[str, Any], *, final: bool) -> tuple[dict[str, Any], list[str]]:
+    """Validate either resumable progress or the immutable final release identity."""
+
     commit = state["candidate"]["commit"]
     expected_tree = state["candidate"]["tree"]
     actual_tree = str(git(workspace, "show", "-s", "--format=%T", commit))
@@ -147,7 +146,37 @@ def command_verify(args: argparse.Namespace) -> None:
         errors.append(f"remote ref differs from staged commit: {remote['ref']} != {remote['commit']}")
     if any(item.get("status") == "pass" for item in state.get("cl", {}).values()) and not remote.get("ref"):
         errors.append("a CL gate is pass before a remote ref is recorded")
+    if final:
+        actual_head = str(git(workspace, "rev-parse", "HEAD"))
+        if actual_head != commit:
+            errors.append(
+                f"final verification requires HEAD to equal candidate commit: {actual_head} != {commit}"
+            )
+        dirty = str(
+            git(workspace, "status", "--porcelain=v1", "--untracked-files=all")
+        )
+        if dirty:
+            errors.append("final verification requires a clean worktree")
+        for field in ("tree", "commit", "ref"):
+            if not remote.get(field):
+                errors.append(f"final verification requires remote.{field}")
+        if remote.get("commit") and remote["commit"] != commit:
+            errors.append(f"remote commit differs from candidate: {remote['commit']} != {commit}")
+        if remote.get("ref") and remote["ref"] != commit:
+            errors.append(f"remote ref differs from candidate: {remote['ref']} != {commit}")
+        cl = state.get("cl", {})
+        for name in CL_NAMES:
+            gate = cl.get(name)
+            if not isinstance(gate, dict):
+                errors.append(f"final verification requires CL gate {name}")
+                continue
+            if gate.get("status") != "pass":
+                errors.append(f"final verification requires {name} CL pass, got {gate.get('status')}")
+            evidence = gate.get("evidence")
+            if not isinstance(evidence, str) or not evidence.strip():
+                errors.append(f"final verification requires {name} CL evidence")
     result = {
+        "mode": "final" if final else "progress",
         "checkpoint": str(path),
         "candidate": commit,
         "tree": actual_tree,
@@ -157,9 +186,25 @@ def command_verify(args: argparse.Namespace) -> None:
         "cl": state.get("cl", {}),
         "errors": errors,
     }
+    return result, errors
+
+
+def run_verification(args: argparse.Namespace, *, final: bool) -> None:
+    workspace = Path(args.workspace).resolve()
+    path = state_path(workspace, args.state)
+    state = read_json(path)
+    result, errors = verify_state(workspace, path, state, final=final)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if errors:
         raise SystemExit(1)
+
+
+def command_verify_progress(args: argparse.Namespace) -> None:
+    run_verification(args, final=False)
+
+
+def command_verify(args: argparse.Namespace) -> None:
+    run_verification(args, final=True)
 
 
 def command_status(args: argparse.Namespace) -> None:
@@ -195,9 +240,15 @@ def parser() -> argparse.ArgumentParser:
     cl.add_argument("--evidence")
     cl.set_defaults(handler=command_cl)
 
+    verify_progress = commands.add_parser("verify-progress")
+    verify_progress.add_argument("--workspace", required=True)
+    verify_progress.add_argument("--state")
+    verify_progress.set_defaults(handler=command_verify_progress)
+
     verify = commands.add_parser("verify")
     verify.add_argument("--workspace", required=True)
     verify.add_argument("--state")
+    verify.add_argument("--final", action="store_true", required=True)
     verify.set_defaults(handler=command_verify)
 
     status = commands.add_parser("status")

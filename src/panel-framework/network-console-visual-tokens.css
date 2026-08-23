@@ -1,0 +1,33 @@
+:root {
+  --nc-blue: #0d678b;
+  --nc-danger: #8b3f49;
+  --nc-warn: #84602f;
+  --nc-trust: #2d6c60;
+  --nc-missing: #6e8189;
+  --mp-blue: var(--nc-blue);
+  --do-blue: var(--nc-blue);
+  --mp-danger: var(--nc-danger);
+  --do-danger: var(--nc-danger);
+  --mp-warn: var(--nc-warn);
+  --mp-trust: var(--nc-trust);
+  --mp-missing: var(--nc-missing);
+  --do-warn: var(--nc-warn);
+  --do-trust: var(--nc-trust);
+  --do-missing: var(--nc-missing);
+  --nc-canvas: #edf1f3;
+  --nc-surface-primary: #f2f6f7;
+  --nc-surface-raised: #fbfdfe;
+  --nc-surface-quiet: #f7fafb;
+  --nc-surface-focus: #f0f6f8;
+  --nc-accent-wash: #0d678b12;
+  --nc-line: #1d3c4a1f;
+  --nc-line-soft: #1d3c4a12;
+  --nc-surface: transparent;
+  --t: tabular-nums;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
+[data-overview-visual-level="primary"] {
+  --nc-surface: var(--nc-surface-primary);
+}

@@ -12,7 +12,9 @@ from .router_transport import (
     normalize_router_host,
     normalize_router_ssh_port,
     normalize_router_transport,
+    validate_rest_security,
 )
+from .public_diagnostics import sanitize_saved_connection_test
 
 
 ROUTER_PROFILE_STORE_VERSION = 3
@@ -59,9 +61,12 @@ class RouterProfileStore:
                 raw.get("restScheme") or "https",
                 raw.get("restPort"),
                 raw.get("restVerifyTls", True) is True,
-                raw.get("insecureRestConfirmed", False) is True,
+                True,
                 raw.get("sshHostKeyFingerprint") or "",
             )
+            # A saved profile may remember the selected transport, but a past
+            # acknowledgement must never authorize a future credential send.
+            transport["insecureRestConfirmed"] = False
         except Exception:
             return None
         if not user:
@@ -84,7 +89,7 @@ class RouterProfileStore:
             "createdAt": raw.get("createdAt") or raw.get("updatedAt") or now,
             "updatedAt": raw.get("updatedAt") or now,
             "lastUsedAt": raw.get("lastUsedAt") or raw.get("updatedAt") or now,
-            "lastTest": copy.deepcopy(raw.get("lastTest")),
+            "lastTest": sanitize_saved_connection_test(raw.get("lastTest")),
         }
 
     def load_unlocked(self):
@@ -114,9 +119,11 @@ class RouterProfileStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         normalized = []
         seen = set()
-        for raw in entries:
+        for index, raw in enumerate(entries):
             entry = self.normalize_entry(raw)
-            if not entry or entry["id"] in seen:
+            if not entry:
+                raise RouterProfileStoreCorruptError(self.path, f"entry {index} is invalid")
+            if entry["id"] in seen:
                 continue
             seen.add(entry["id"])
             normalized.append(entry)
@@ -155,14 +162,14 @@ class RouterProfileStore:
             "restScheme": normalize_rest_scheme(entry.get("restScheme")),
             "restPort": normalize_rest_port(entry.get("restPort"), entry.get("restScheme")),
             "restVerifyTls": entry.get("restVerifyTls") is True,
-            "insecureRestConfirmed": entry.get("insecureRestConfirmed") is True,
+            "insecureRestConfirmed": False,
             "label": entry.get("label") or entry.get("host") or "",
             "source": entry.get("source") or "saved",
             "createdAt": entry.get("createdAt"),
             "updatedAt": entry.get("updatedAt"),
             "lastUsedAt": entry.get("lastUsedAt"),
             "passwordSaved": False,
-            "lastTest": copy.deepcopy(entry.get("lastTest")),
+            "lastTest": sanitize_saved_connection_test(entry.get("lastTest")),
         }
 
     def public_entries(self):
@@ -193,6 +200,7 @@ class RouterProfileStore:
         last_test=None,
         source="ui",
     ):
+        validate_rest_security(rest_scheme, rest_verify_tls, insecure_rest_confirmed)
         now = _now()
         entry = self.normalize_entry(
             {

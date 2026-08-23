@@ -31,7 +31,7 @@ Initialize durable state with:
 
 ```text
 python scripts/release_checkpoint.py init --workspace <repo> --repository <owner/name> --parent <remote-main-sha> --candidate HEAD
-python scripts/release_checkpoint.py verify --workspace <repo>
+python scripts/release_checkpoint.py verify-progress --workspace <repo>
 ```
 
 ## Phase C — Git Data staging
@@ -55,6 +55,7 @@ Git Data staging is part of one release transaction even though workflows cannot
 4. Wait for exact-remote-SHA Linux validation, Windows packaging, and GHCR/container runs.
 5. Missing, queued, running, cancelled, skipped, or failed checks keep release incomplete.
 6. If a CL fails, diagnose from its logs, return to the owning loop stage, create a new candidate, and repeat the transaction.
+7. After recording the exact remote tree/commit/ref and all three CL evidence URLs, run `python scripts/release_checkpoint.py verify --final --workspace <repo>`. Progress verification is never a final release gate.
 
 ## Long-operation contract
 

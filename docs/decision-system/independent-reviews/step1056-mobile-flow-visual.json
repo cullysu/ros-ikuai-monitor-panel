@@ -1,0 +1,21 @@
+{
+  "review": "independent-mobile-flow-visual-interaction-acceptance",
+  "scope": {
+    "artifact": "_acceptance/mobile-flow-runtime/report.json",
+    "artifactKey": "worktree-ed9195a9a9cd-244947f64392",
+    "commit": "ed9195a9a9cd393b254e3a5daa2af3850e4991ef",
+    "worktreeFingerprint": "244947f64392fd11b27822de368234be81faf6da33d430733f759eef5a069a77",
+    "screenshotsReviewed": 56,
+    "additionalSurfacesReviewed": [
+      "interfaces-phone390-workspace.png",
+      "interfaces-phone390-detail.png",
+      "interfaces-tablet768-detail.png",
+      "connection-phone390-device.png"
+    ]
+  },
+  "verdict": "PASS",
+  "p0": [],
+  "p1": [],
+  "p2": [],
+  "requiredActions": []
+}

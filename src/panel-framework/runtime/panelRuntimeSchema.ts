@@ -23,6 +23,8 @@ export interface RouterChannelTest {
   expectedFingerprint?: string;
   algorithm?: string;
   confirmationRequired?: boolean;
+  trustToken?: string;
+  trustExpiresAt?: string;
   hostKeyChanged?: boolean;
   scheme?: "https" | "http";
   port?: number;
@@ -115,7 +117,7 @@ const SNAPSHOT_RATE_FIELDS = {
 } as const;
 const CONNECTION_RATE_FIELDS = ["upRate", "downRate", "totalRate", "sessionBytes"] as const;
 const MAX_SNAPSHOT_COLLECTION_ROWS = 20_000;
-const TIMESTAMP_FIELD = /^(?:updatedAt|generatedAt|sourceUpdatedAt|cachedAt|lastUsedAt|createdAt|.*UpdatedAt|.*LastErrorAt)$/;
+const TIMESTAMP_FIELD = /^(?:observedAt|timestamp|updatedAt|generatedAt|sourceUpdatedAt|cachedAt|lastUsedAt|createdAt|systemTime|.*At|.*Timestamp)$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -177,7 +179,8 @@ function validateSnapshotTree(
   if (!isRecord(value)) return;
   Object.entries(value).forEach(([key, item]) => {
     const nextPath = path ? `${path}.${key}` : key;
-    if (!(path === "" && key === "updatedAt") && TIMESTAMP_FIELD.test(key) && item !== null && !validTimestamp(item)) {
+    const isLogTime = /^logs\.(?:all|system|firewall|dhcp|dns)\[\d+\]\.time$/.test(nextPath);
+    if (!(path === "" && key === "updatedAt") && (TIMESTAMP_FIELD.test(key) || isLogTime) && item !== null && !validTimestamp(item)) {
       issues.push(`${nextPath} 必须是带时区的 RFC 3339 时间或 null`);
     }
     validateSnapshotTree(item, nextPath, issues, depth + 1);
@@ -218,8 +221,66 @@ function validateNonnegativeRowNumbers(value: unknown, path: string, fields: rea
   });
 }
 
-function channelTest(value: unknown): RouterChannelTest {
+function validateAtomicTrafficSamples(overview: Record<string, unknown>, issues: string[]) {
+  const history = isRecord(overview.history) ? overview.history : null;
+  if (!history || !("trafficSamples" in history)) return;
+  const samples = history.trafficSamples;
+  if (!Array.isArray(samples) || !samples.every((sample) => {
+    if (!isRecord(sample) || !validTimestamp(sample.timestamp) || !stringValue(sample.source)) return false;
+    const mode = sample.evidenceMode;
+    if (mode === "unavailable") return sample.uplink === null && sample.downlink === null;
+    const uplink = finiteNumber(sample.uplink);
+    const downlink = finiteNumber(sample.downlink);
+    return (mode === "current" || mode === "historical") && (uplink ?? -1) >= 0 && (downlink ?? -1) >= 0;
+  })) issues.push("trafficSamples");
+}
+
+function validateAtomicResourceSamples(overview: Record<string, unknown>, issues: string[]) {
+  const history = isRecord(overview.history) ? overview.history : null;
+  if (!history || !("resourceSamples" in history)) return;
+  if (!Array.isArray(history.resourceSamples)) {
+    issues.push("resourceSamples 必须是数组");
+    return;
+  }
+  history.resourceSamples.forEach((sample, index) => {
+    const path = `overview.history.resourceSamples[${index}]`;
+    if (!isRecord(sample)) {
+      issues.push(`${path} 必须是对象`);
+      return;
+    }
+    const mode = String(sample.evidenceMode || "");
+    const source = typeof sample.source === "string" && sample.source.trim();
+    if (!source || !["current", "historical", "unavailable"].includes(mode)) issues.push(`${path} 证据边界无效`);
+    let observedMetrics = 0;
+    for (const field of ["cpu", "memory", "disk"]) {
+      if (sample[field] == null) continue;
+      observedMetrics += 1;
+      const metric = finiteNumber(sample[field]);
+      if (metric === null || metric < 0 || metric > 100) issues.push(`${path}.${field}`);
+    }
+    if (mode === "current" && observedMetrics === 0) issues.push(`${path} 当前资源指标全部缺失`);
+  });
+}
+
+
+function validateResourceHistoryTimestamps(overview: Record<string, unknown>, issues: string[]) {
+  const history = isRecord(overview.history) ? overview.history : null;
+  if (!history || !("timestamps" in history)) return;
+  if (!Array.isArray(history.timestamps)) {
+    issues.push("overview.history.timestamps 必须是数组");
+    return;
+  }
+  history.timestamps.forEach((timestamp, index) => {
+    if (!validTimestamp(timestamp)) {
+      issues.push(`overview.history.timestamps[${index}] 必须是带时区的 RFC 3339 时间`);
+    }
+  });
+}
+
+function channelTest(value: unknown): RouterChannelTest | null {
   const source = isRecord(value) ? value : {};
+  const trustExpiresAt = stringValue(source.trustExpiresAt);
+  if ("trustExpiresAt" in source && !validTimestamp(source.trustExpiresAt)) return null;
   return {
     ok: source.ok === true,
     error: stringValue(source.error),
@@ -230,6 +291,8 @@ function channelTest(value: unknown): RouterChannelTest {
     ...(stringValue(source.expectedFingerprint) ? { expectedFingerprint: stringValue(source.expectedFingerprint) } : {}),
     ...(stringValue(source.algorithm) ? { algorithm: stringValue(source.algorithm) } : {}),
     ...(source.confirmationRequired === true ? { confirmationRequired: true } : {}),
+    ...(stringValue(source.trustToken) ? { trustToken: stringValue(source.trustToken) } : {}),
+    ...(trustExpiresAt ? { trustExpiresAt } : {}),
     ...(source.hostKeyChanged === true ? { hostKeyChanged: true } : {}),
     ...(source.scheme === "https" || source.scheme === "http" ? { scheme: source.scheme } : {}),
     ...(finiteNumber(source.port) !== null ? { port: Math.round(finiteNumber(source.port) as number) } : {}),
@@ -239,11 +302,18 @@ function channelTest(value: unknown): RouterChannelTest {
 
 function connectionTest(value: unknown): RouterConnectionTest | null {
   if (!isRecord(value)) return null;
+  const ssh = channelTest(value.ssh);
+  const rest = channelTest(value.rest);
+  if (!ssh || !rest) return null;
   return {
-    ssh: channelTest(value.ssh),
-    rest: channelTest(value.rest),
+    ssh,
+    rest,
     elapsedMs: finiteNumber(value.elapsedMs),
   };
+}
+
+export function parseRouterConnectionTest(value: unknown): RouterConnectionTest | null {
+  return connectionTest(value);
 }
 
 function routerLoginProfile(value: unknown): RouterLoginProfile | null {
@@ -252,8 +322,10 @@ function routerLoginProfile(value: unknown): RouterLoginProfile | null {
   const restPort = finiteNumber(value.restPort);
   const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
   const updatedAt = stringValue(value.updatedAt);
+  const lastTest = connectionTest(value.lastTest);
   if (port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
   if (value.updatedAt !== null && typeof value.updatedAt !== "undefined" && !validTimestamp(value.updatedAt)) return null;
+  if (value.lastTest !== null && typeof value.lastTest !== "undefined" && !lastTest) return null;
   return {
     configured: value.configured,
     host: stringValue(value.host),
@@ -268,7 +340,7 @@ function routerLoginProfile(value: unknown): RouterLoginProfile | null {
     savedId: stringValue(value.savedId),
     updatedAt,
     passwordSet: value.passwordSet === true,
-    lastTest: connectionTest(value.lastTest),
+    lastTest,
   };
 }
 
@@ -280,8 +352,10 @@ function savedLogin(value: unknown): SavedRouterLogin | null {
   const port = finiteNumber(value.sshPort);
   const restPort = finiteNumber(value.restPort);
   const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
+  const lastTest = connectionTest(value.lastTest);
   if (!id || !host || !user || port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
   if (!validTimestamp(value.updatedAt) || !validTimestamp(value.lastUsedAt)) return null;
+  if (value.lastTest !== null && typeof value.lastTest !== "undefined" && !lastTest) return null;
   return {
     id,
     host,
@@ -295,7 +369,7 @@ function savedLogin(value: unknown): SavedRouterLogin | null {
     label: stringValue(value.label) || host,
     updatedAt: stringValue(value.updatedAt),
     lastUsedAt: stringValue(value.lastUsedAt),
-    lastTest: connectionTest(value.lastTest),
+    lastTest,
   };
 }
 
@@ -338,6 +412,9 @@ export function validatePanelSnapshot(input: unknown): SnapshotValidationResult 
     validatePercentage(overview, "cpuLoad", "overview", issues);
     validatePercentage(overview, "memoryUsage", "overview", issues);
     validatePercentage(overview, "diskUsage", "overview", issues);
+    validateResourceHistoryTimestamps(overview, issues);
+    validateAtomicResourceSamples(overview, issues);
+    validateAtomicTrafficSamples(overview, issues);
   }
   const connections = isRecord(input.connections) ? input.connections : null;
   if (connections && "total" in connections) {
@@ -387,11 +464,13 @@ export function parseRouterLoginMutation(input: unknown): RouterLoginMutation | 
   if (!isRecord(input) || input.ok !== true) return null;
   const profile = routerLoginProfile(input.routerLogin);
   const saved = savedLoginList(input.savedLogins);
+  const test = connectionTest(input.test);
   if (!profile || !saved) return null;
+  if (input.test !== null && typeof input.test !== "undefined" && !test) return null;
   return {
     routerLogin: profile,
     savedLogins: saved,
-    test: connectionTest(input.test),
+    test,
     warning: stringValue(input.warning),
     removed: typeof input.removed === "boolean" ? input.removed : null,
   };

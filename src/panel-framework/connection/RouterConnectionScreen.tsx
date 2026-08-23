@@ -1,23 +1,34 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
-  Check,
   ChevronDown,
   CircleAlert,
-  Fingerprint,
   LoaderCircle,
-  LockKeyhole,
   Router,
-  Settings2,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
 import type { RouterConnectionInput } from "../runtime/panelApi";
 import type { PanelRuntimeController } from "../runtime/usePanelRuntime";
 import type { RouterChannelTest, SavedRouterLogin } from "../runtime/panelRuntimeSchema";
-import "./router-connection.css";
+import { parseRfc3339Timestamp } from "../timeContract";
+import { validateRouterAddress } from "./routerAddress";
+import connectionStyles from "./router-connection.css?inline";
 
-const MOBILE_CONNECTION_QUERY = "(max-width: 1365px)";
+const MOBILE_CONNECTION_QUERY = "(max-width: 1199px)";
+const CONNECTION_STYLE_ID = "router-connection-surface-styles";
+
+function useConnectionStyles() {
+  useLayoutEffect(() => {
+    const existing = document.getElementById(CONNECTION_STYLE_ID);
+    if (existing) return undefined;
+    const style = document.createElement("style");
+    style.id = CONNECTION_STYLE_ID;
+    style.textContent = connectionStyles;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
+}
 
 function useMobileConnectionSurface(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_CONNECTION_QUERY).matches);
@@ -36,7 +47,7 @@ function ChannelFact({ label, test }: { label: string; test: RouterChannelTest |
   const ok = test?.ok === true;
   return (
     <div className={`router-channel-fact ${known ? (ok ? "is-ok" : "is-failed") : "is-unknown"}`}>
-      <span aria-hidden="true">{ok ? <Check size={15} /> : <CircleAlert size={15} />}</span>
+      <span aria-hidden="true">{ok ? <ShieldCheck size={15} /> : <CircleAlert size={15} />}</span>
       <div>
         <b>{label}</b>
         <small>{!known ? "尚未验证" : ok ? `已验证${test?.elapsedMs !== null ? ` · ${test?.elapsedMs} ms` : ""}` : "未通过"}</small>
@@ -63,7 +74,7 @@ function SavedProfileRow({
     <div className={`router-saved-profile ${selected ? "is-selected" : ""}`}>
       <button type="button" aria-pressed={selected} onClick={onSelect} disabled={disabled}>
         <span><b>{profile.label}</b><small>{profile.user} · {profile.restScheme.toUpperCase()} {profile.restPort} · SSH {profile.sshPort}</small></span>
-        {selected ? <Check size={17} aria-hidden="true" /> : null}
+        {selected ? <ShieldCheck size={17} aria-hidden="true" /> : null}
       </button>
       <button type="button" className="router-icon-button" title={`删除 ${profile.label} 的设备资料`} aria-label={`删除 ${profile.label} 的设备资料`} onClick={onForget} disabled={disabled}>
         <Trash2 size={17} aria-hidden="true" />
@@ -81,7 +92,7 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
   const [restScheme, setRestScheme] = useState<"https" | "http">(current?.restScheme || "https");
   const [restPort, setRestPort] = useState(current?.restPort || 443);
   const [restVerifyTls, setRestVerifyTls] = useState(current?.restVerifyTls ?? true);
-  const [insecureRestConfirmed, setInsecureRestConfirmed] = useState(current?.insecureRestConfirmed ?? false);
+  const [insecureRestConfirmed, setInsecureRestConfirmed] = useState(false);
   const [password, setPassword] = useState("");
   const [rememberProfile, setRememberProfile] = useState(false);
   const [confirmSshHostKey, setConfirmSshHostKey] = useState(false);
@@ -94,11 +105,10 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
     setRestScheme(current?.restScheme || "https");
     setRestPort(current?.restPort || 443);
     setRestVerifyTls(current?.restVerifyTls ?? true);
-    setInsecureRestConfirmed(current?.insecureRestConfirmed ?? false);
+    setInsecureRestConfirmed(false);
     setSelectedSavedId(current?.savedId || "");
   }, [
     current?.host,
-    current?.insecureRestConfirmed,
     current?.restPort,
     current?.restScheme,
     current?.restVerifyTls,
@@ -115,19 +125,33 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
     setRestScheme(profile.restScheme);
     setRestPort(profile.restPort);
     setRestVerifyTls(profile.restVerifyTls);
-    setInsecureRestConfirmed(profile.insecureRestConfirmed);
+    setInsecureRestConfirmed(false);
     setConfirmSshHostKey(false);
     setClientError("");
   };
 
   const clearSavedSelection = () => setSelectedSavedId("");
   const pendingHostKey = runtime.connection.pendingSshHostKey;
-  const matchingPendingHostKey = pendingHostKey?.host === host.trim() && pendingHostKey.sshPort === sshPort ? pendingHostKey : null;
+  const pendingHostKeyExpiresAt = pendingHostKey?.trustExpiresAt
+    ? parseRfc3339Timestamp(pendingHostKey.trustExpiresAt)
+    : null;
+  const pendingBindingMatches = pendingHostKey?.host === host.trim() && pendingHostKey.sshPort === sshPort;
+  const pendingChallengeIsValid = pendingHostKey?.kind === "changed" || (
+    pendingHostKeyExpiresAt !== null && pendingHostKeyExpiresAt > Date.now()
+  );
+  const matchingPendingHostKey = pendingBindingMatches && pendingChallengeIsValid ? pendingHostKey : null;
+  const pendingHostKeyExpiryLabel = matchingPendingHostKey?.kind === "confirmation-required"
+    ? new Date(pendingHostKeyExpiresAt as number).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
+    : "";
   const insecureRest = restScheme === "http" || !restVerifyTls;
 
   useEffect(() => {
     setConfirmSshHostKey(false);
-  }, [matchingPendingHostKey?.fingerprint]);
+  }, [matchingPendingHostKey?.fingerprint, matchingPendingHostKey?.kind]);
 
   const changeRestScheme = (scheme: "https" | "http") => {
     if (scheme === restScheme) return;
@@ -140,12 +164,16 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
     clearSavedSelection();
   };
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const connectCurrent = async (continueWithVerifiedRestOnly: boolean) => {
     const cleanHost = host.trim();
     const cleanUser = user.trim();
     if (!cleanHost || !cleanUser || !password.trim()) {
       setClientError("请填写设备地址、用户名和密码");
+      return;
+    }
+    const addressError = validateRouterAddress(cleanHost);
+    if (addressError) {
+      setClientError(addressError);
       return;
     }
     if (!Number.isInteger(sshPort) || sshPort < 1 || sshPort > 65535) {
@@ -160,9 +188,19 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
       setClientError(restScheme === "http" ? "使用 HTTP 前必须确认凭据明文传输风险" : "关闭证书校验前必须确认设备身份风险");
       return;
     }
-    if (matchingPendingHostKey && !confirmSshHostKey) {
-      setClientError("请先核对并确认 SSH 主机密钥指纹");
+    if (continueWithVerifiedRestOnly && !matchingPendingHostKey?.verifiedRestOnlyAvailable) {
+      setClientError("当前请求没有通过 HTTPS 证书校验的 REST 身份证据");
       return;
+    }
+    if (matchingPendingHostKey && !continueWithVerifiedRestOnly) {
+      if (matchingPendingHostKey.kind === "changed") {
+        setClientError("SSH 主机密钥与已固定指纹冲突；不能在普通登录中替换旧指纹");
+        return;
+      }
+      if (!confirmSshHostKey) {
+        setClientError("请先核对并确认 SSH 主机密钥指纹");
+        return;
+      }
     }
     setClientError("");
     const input: RouterConnectionInput = {
@@ -174,12 +212,21 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
       restPort,
       restVerifyTls: restScheme === "https" && restVerifyTls,
       insecureRestConfirmed: insecureRest && insecureRestConfirmed,
-      ...(matchingPendingHostKey && confirmSshHostKey ? { sshHostKeyFingerprint: matchingPendingHostKey.fingerprint } : {}),
+      ...(matchingPendingHostKey?.kind === "confirmation-required" && confirmSshHostKey && !continueWithVerifiedRestOnly ? {
+        sshHostKeyFingerprint: matchingPendingHostKey.fingerprint,
+        sshHostKeyTrustToken: matchingPendingHostKey.trustToken,
+      } : {}),
+      ...(continueWithVerifiedRestOnly ? { continueWithVerifiedRestOnly: true } : {}),
       ...(selectedSavedId ? { savedId: selectedSavedId } : {}),
       rememberProfile,
     };
     const connected = await runtime.connect(input);
     if (connected) setPassword("");
+  };
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void connectCurrent(false);
   };
 
   const test = runtime.connection.lastTest || current?.lastTest || null;
@@ -236,7 +283,12 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
             name="host"
             type="text"
             value={host}
-            onChange={(event) => { setHost(event.target.value); clearSavedSelection(); }}
+            onChange={(event) => {
+              setHost(event.target.value);
+              setInsecureRestConfirmed(false);
+              setConfirmSshHostKey(false);
+              clearSavedSelection();
+            }}
             placeholder="192.168.88.1"
             autoCapitalize="none"
             autoCorrect="off"
@@ -275,7 +327,6 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
         <details className="router-advanced-settings" data-router-advanced-settings>
           <summary>
             <span>
-              <Settings2 aria-hidden="true" size={18} />
               <span>
                 <b>高级连接设置</b>
                 <small>{restScheme.toUpperCase()} {restPort} · SSH {sshPort} · {insecureRest ? "风险模式" : "证书校验"}</small>
@@ -293,7 +344,11 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
                 max={65535}
                 inputMode="numeric"
                 value={sshPort}
-                onChange={(event) => { setSshPort(Number(event.target.value)); clearSavedSelection(); }}
+                onChange={(event) => {
+                  setSshPort(Number(event.target.value));
+                  setConfirmSshHostKey(false);
+                  clearSavedSelection();
+                }}
                 disabled={runtime.connection.busy}
                 required
               />
@@ -314,7 +369,11 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
                 max={65535}
                 inputMode="numeric"
                 value={restPort}
-                onChange={(event) => { setRestPort(Number(event.target.value)); clearSavedSelection(); }}
+                onChange={(event) => {
+                  setRestPort(Number(event.target.value));
+                  setInsecureRestConfirmed(false);
+                  clearSavedSelection();
+                }}
                 disabled={runtime.connection.busy}
                 required
               />
@@ -352,16 +411,51 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
       ) : null}
 
       {matchingPendingHostKey ? (
-        <section className="router-host-key-confirmation" aria-labelledby="ssh-host-key-heading">
-          <Fingerprint size={19} aria-hidden="true" />
+        <section
+          className="router-host-key-confirmation"
+          aria-labelledby="ssh-host-key-heading"
+          data-trust-expires-at={matchingPendingHostKey.trustExpiresAt || ""}
+        >
+          <ShieldCheck size={19} aria-hidden="true" />
           <div>
-            <h2 id="ssh-host-key-heading">确认 SSH 主机密钥</h2>
-            <p>首次连接只读取到以下指纹，尚未发送 SSH 密码。请与设备侧记录核对。</p>
-            <code>{matchingPendingHostKey.algorithm} · {matchingPendingHostKey.fingerprint}</code>
-            <label>
-              <input type="checkbox" checked={confirmSshHostKey} onChange={(event) => setConfirmSshHostKey(event.target.checked)} disabled={runtime.connection.busy} />
-              <span>确认并固定此指纹；以后发生变化时阻断连接</span>
-            </label>
+            <h2 id="ssh-host-key-heading">
+              {matchingPendingHostKey.kind === "changed" ? "SSH 主机密钥已变化" : "确认 SSH 主机密钥"}
+            </h2>
+            {matchingPendingHostKey.kind === "changed" ? (
+              <>
+                <p>本次读取的指纹与设备资料中固定的指纹不同。SSH 已在发送密码前阻断，旧指纹不会被替换。</p>
+                <div className="router-host-key-diff">
+                  <span><small>已固定</small><code>{matchingPendingHostKey.expectedFingerprint}</code></span>
+                  <span><small>本次读取</small><code>{matchingPendingHostKey.algorithm} · {matchingPendingHostKey.fingerprint}</code></span>
+                </div>
+              </>
+            ) : (
+              <>
+                <p>首次连接只读取到以下指纹，尚未发送 SSH 密码。请与设备侧记录核对。</p>
+                <code>{matchingPendingHostKey.algorithm} · {matchingPendingHostKey.fingerprint}</code>
+                <small className="router-host-key-expiry">
+                  本次确认有效至 {pendingHostKeyExpiryLabel}；修改设备地址或 SSH 端口即失效
+                </small>
+                <label>
+                  <input type="checkbox" checked={confirmSshHostKey} onChange={(event) => setConfirmSshHostKey(event.target.checked)} disabled={runtime.connection.busy} />
+                  <span>确认并固定此指纹；以后发生变化时阻断连接</span>
+                </label>
+              </>
+            )}
+            {matchingPendingHostKey.verifiedRestOnlyAvailable ? (
+              <div className="router-host-key-alternative">
+                <button
+                  type="button"
+                  data-verified-rest-only
+                  onClick={() => void connectCurrent(true)}
+                  disabled={runtime.connection.busy}
+                >
+                  <ShieldCheck size={17} aria-hidden="true" />
+                  <span>仅用已验证 HTTPS 继续</span>
+                </button>
+                <small>仅本次请求有效；不固定、不替换或删除 SSH 指纹。</small>
+              </div>
+            ) : null}
           </div>
         </section>
       ) : null}
@@ -389,7 +483,7 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
       ) : null}
 
       <div className="router-transport-boundary">
-        <LockKeyhole size={17} aria-hidden="true" />
+        <ShieldCheck size={17} aria-hidden="true" />
         <p>{restScheme === "https" && restVerifyTls ? "REST 使用 HTTPS 并验证证书；不会自动降级到 HTTP。" : "当前使用已显式确认的风险模式；面板不会静默切换传输方式。"}</p>
       </div>
 
@@ -467,6 +561,7 @@ function DesktopConnectionScreen({ runtime }: { runtime: PanelRuntimeController 
 }
 
 export function RouterConnectionScreen({ runtime }: { runtime: PanelRuntimeController }) {
+  useConnectionStyles();
   const mobile = useMobileConnectionSurface();
   if (runtime.connection.phase === "checking" || runtime.connection.phase === "error") {
     return <ConnectionStatus runtime={runtime} mobile={mobile} />;

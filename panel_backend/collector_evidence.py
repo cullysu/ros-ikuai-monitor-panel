@@ -103,6 +103,8 @@ class ConnectionEvidenceParser:
         dst_ip, dst_port = self.split_endpoint(row.get("dst-address"))
         reply_src_ip, reply_src_port = self.split_endpoint(row.get("reply-src-address"))
         reply_dst_ip, reply_dst_port = self.split_endpoint(row.get("reply-dst-address"))
+        orig_rate = self.integer_parser(row.get("orig-rate"), None)
+        repl_rate = self.integer_parser(row.get("repl-rate"), None)
         return {
             "srcAddress": row.get("src-address", ""),
             "dstAddress": row.get("dst-address", ""),
@@ -119,8 +121,8 @@ class ConnectionEvidenceParser:
             "protocol": row.get("protocol", ""),
             "timeout": row.get("timeout", ""),
             "mark": row.get("connection-mark", "-") or "-",
-            "origRate": self.integer_parser(row.get("orig-rate"), 0),
-            "replRate": self.integer_parser(row.get("repl-rate"), 0),
+            "origRate": orig_rate,
+            "replRate": repl_rate,
             "origBytes": self.integer_parser(row.get("orig-bytes"), 0),
             "replBytes": self.integer_parser(row.get("repl-bytes"), 0),
             "raw": {key: row.get(key, "") for key in self.search_fields},

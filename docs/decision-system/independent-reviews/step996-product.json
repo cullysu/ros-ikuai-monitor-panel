@@ -1,0 +1,57 @@
+{
+  "schema": "independent-review/v1",
+  "step": 996,
+  "role": "product-information-architecture",
+  "scope": "local-independent-scope",
+  "status": "current",
+  "currentEvidence": true,
+  "historicalEvidenceOnly": false,
+  "releaseEligible": false,
+  "reviewerAgentId": "019ffc93-7700-7d53-935f-31272474a1f1",
+  "verdict": "pass",
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/mobile-telemetry-runtime/report.json",
+    "_acceptance/mobile-telemetry-runtime/single-phone390-overview.png",
+    "_acceptance/mobile-telemetry-runtime/fleet-phone390-overview.png",
+    "_acceptance/mobile-telemetry-runtime/all-offline-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/no-snapshot-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/collection-down-tablet768-overview.png",
+    "_acceptance/mobile-telemetry-runtime/resource-full-tablet1199-overview.png",
+    "_acceptance/mobile-telemetry-runtime/interfaces-down-tablet1199-overview.png",
+    "_acceptance/mobile-telemetry-runtime/connection-phone390.png",
+    "_acceptance/mobile-telemetry-runtime/route-more-phone390.png",
+    "_acceptance/mobile-telemetry-runtime/route-interfaces-phone390.png",
+    "_acceptance/mobile-telemetry-runtime/detail-interface-phone390.png",
+    "src/panel-framework/mobile-telemetry/MobileTelemetryPhone.tsx",
+    "src/panel-framework/mobile-telemetry/MobileTelemetryTabletWorkbench.tsx",
+    "src/panel-framework/mobile-telemetry/telemetryModel.ts",
+    "src/panel-framework/mobile-telemetry/styles/telemetry-tablet-workbench.css"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-6aa7d327c022-d17d54c3f05a",
+    "worktreeFingerprint": "d17d54c3f05a95a46b2cdcc7c0059bba43a995c45a0df91152e326badf486e07",
+    "generatedAt": "2026-08-14T13:25:10.680Z",
+    "commit": "6aa7d327c022a5a58b45540bc81c8de103a85d3c",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "scenario-first-judgment-and-boundary",
+      "result": "pass",
+      "summary": "七个场景仍把最高风险或当前承载对象置于首屏：正常与多 WAN 场景先给出口和吞吐，离线、资源和接口场景分别给出可核对对象，无快照和采集降级明确撤回当前业务判断，未把历史或缺失数据伪装为实时结论。"
+    },
+    {
+      "id": "short-landscape-task-continuity-remediated",
+      "result": "pass",
+      "summary": "667 与 844 横屏的所有场景均同时保留选中对象证据和可触发的下一步行动；行动固定在导航上方且为 44px 高，消除了 Step995 中短横屏只能看到对象选择、却无法完成首要核查的问题。"
+    },
+    {
+      "id": "object-evidence-action-architecture",
+      "result": "pass",
+      "summary": "手机以单一任务和关联对象巡检降低判断时间；平板保持对象列表、检查器、证据时间与动作的连续工作区。连接、更多、接口列表和对象详情提供一致的只读边界及对象上下文，因此 Step995 的 Product/IA GO 在本工件上仍成立。"
+    }
+  ]
+}

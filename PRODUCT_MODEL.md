@@ -28,10 +28,15 @@ RouterOS-only behavior even though their packaging differs:
 
 | Delivery mode | Runtime default | Browser access contract | Validation |
 |---------------|-----------------|-------------------------|------------|
-| Docker / Compose | Container binds `0.0.0.0`; host publishes `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Docker host | `docker compose --env-file .env.docker.example config --quiet` |
+| Docker / Compose | Container binds `0.0.0.0`; host publishes `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Docker host | Compose config plus `tools/check-container-host-ingress-smoke.py` |
 | Windows EXE | EXE binds `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Windows host | `tools/build-windows-exe.ps1` packaging check |
 | Linux systemd / VM | Managed service binds `127.0.0.1:28646` as a non-root service user | Open `http://127.0.0.1:28646/` on the systemd host | `bash -n deploy_linux.sh` and unit marker checks |
 | RouterOS Container | Container process binds `0.0.0.0:28646` inside RouterOS container networking and enables localhost Host-forward mode | Open `http://127.0.0.1:28646/` only through a client-local forwarder | `tools/build-routeros-container-archive.sh` archive build |
+
+Docker / Compose enables `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1`; this accepts
+only the container's discovered default gateway peer with a loopback `Host`.
+The image default remains disabled, and sibling-container or non-loopback Host
+requests are still rejected.
 
 In all four modes, public defaults are `routeros_only`,
 `ROS_PANEL_TRUST_PROXY_HEADERS=0`, local IP-alias writes disabled, admin-session

@@ -1,0 +1,68 @@
+{
+  "schema": "independent-review/v1",
+  "step": 995,
+  "role": "engineering-code-review",
+  "scope": "local-independent-scope",
+  "status": "superseded",
+  "currentEvidence": false,
+  "historicalEvidenceOnly": true,
+  "releaseEligible": false,
+  "reviewerAgentId": "codex-engineering-independent-step995",
+  "verdict": "VETO",
+  "p0": 0,
+  "p1": 2,
+  "p2": 0,
+  "evidence": [
+    "_acceptance/mobile-telemetry-runtime/report.json",
+    "_acceptance/mobile-telemetry-runtime/single-phone320-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-phone390-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-phone430-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-landscape667-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-landscape844-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-tablet768-overview.png",
+    "_acceptance/mobile-telemetry-runtime/single-tablet1199-overview.png",
+    "tools/check-mobile-telemetry-runtime.js",
+    "tools/check-mobile-telemetry-architecture.js",
+    "tools/check-surface-asset-isolation.js",
+    "src/panel-framework/mobile/MobilePanelApp.tsx",
+    "src/panel-framework/desktop/DesktopPanelApp.tsx",
+    "src/panel-framework/responsive/panelSurface.ts",
+    "tools/build-framework-inline.mjs",
+    "public/index.html",
+    "public/assets/framework/manifest.json",
+    "package.json",
+    "tools/check-route-supplement-contract.js",
+    ".github/workflows/ci.yml"
+  ],
+  "reviewedArtifact": {
+    "artifactKey": "worktree-6aa7d327c022-5c5d8384a5b1",
+    "worktreeFingerprint": "5c5d8384a5b16604cb6e5fb3cfd107a95788de7fcf3f06ed99bd40d7fb865534",
+    "generatedAt": "2026-08-14T13:02:20.622Z",
+    "commit": "6aa7d327c022a5a58b45540bc81c8de103a85d3c",
+    "pass": true
+  },
+  "findings": [
+    {
+      "id": "runtime-report-fail-closed",
+      "severity": "pass",
+      "summary": "The regenerated report binds the stated worktree identity, completes all 49 matrix cells, sets runtimePass=true, and still keeps top-level pass/releasePass=false with releaseEvidenceEligible=false. This correctly prevents runtime success from becoming release eligibility."
+    },
+    {
+      "id": "surface-ownership-and-responsive-branching",
+      "severity": "pass",
+      "summary": "The mobile and desktop entries mount separate owners, the manifest contains separate mobile/desktop scripts and styles selected by a loader, and the inspected phone, landscape, and tablet originals reflect deliberate responsive branches. Static ownership and asset-isolation checks passed."
+    },
+    {
+      "id": "release-gate-retains-deleted-mobile-workspace-validator",
+      "severity": "P1",
+      "summary": "package.json keeps check:route-supplement-contract in check:release-gates, but tools/check-route-supplement-contract.js reads the deleted src/panel-framework/mobile/mobile-domain.css and MobileDomainWorkspace.tsx. The command currently exits with ENOENT before checking the replacement telemetry owner, so the declared release gate is not runnable after this migration.",
+      "action": "Remove this retired validator from the release chain or port it to the mobile-telemetry owner and its styles; then run check:release-gates successfully. Retire or migrate the remaining package/tool validators that still name the deleted MobileDomainWorkspace and MobileInterfaceFocusContext owners."
+    },
+    {
+      "id": "windows-packaging-ci-retains-legacy-single-bundle-assertions",
+      "severity": "P1",
+      "summary": "The build now emits manifest v3 mobile/desktop assets and index.html references only panel-surface-loader, while .github/workflows/ci.yml still requires style.css, panel-framework.js, and content-addressed style.* / panel-framework.* references in index.html. Those legacy matches are absent from the new entry document, so the Windows packaging workflow will reject the migrated artifact.",
+      "action": "Replace the Windows CI assertions with manifest-v3 validation of the loader plus both declared mobile and desktop script/style assets, and update its legacy node --check target to the emitted surface assets."
+    }
+  ]
+}

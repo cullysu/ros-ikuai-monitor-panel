@@ -1,0 +1,39 @@
+{
+  "schema": "acceptance-report-quarantine-v1",
+  "status": "current",
+  "validForCommit": "current candidate plus local unpublished remediation",
+  "rules": [
+    {
+      "glob": "_acceptance/release-routes-state-*/report.json",
+      "classification": "historical-counterexample",
+      "allowAsCurrentReleaseInput": false,
+      "reason": "These archived route-state reports contain a historical root-pass/child-fail contradiction and must never certify the current candidate."
+    },
+    {
+      "glob": "_acceptance/*/report.json",
+      "classification": "historical-or-worktree-artifact",
+      "allowAsCurrentReleaseInput": false,
+      "reason": "Any acceptance report that claims a green root while declaring an incomplete required matrix or nested failure is quarantined evidence, not a current release input."
+    }
+  ],
+  "currentReleaseInputPolicy": {
+    "quarantinedReports": "forbidden",
+    "candidateCommitMustMatch": true,
+    "mergeMustRejectFailedChildren": true
+  },
+  "artifactIdentityPolicy": {
+    "schema": "acceptance-artifact-identity-v1",
+    "status": "current",
+    "tokens": ["current", "worktree", "working-tree"],
+    "allowAsCurrentReleaseInput": false,
+    "rules": [
+      {
+        "glob": "_acceptance/*/report.json",
+        "classification": "historical-or-worktree-artifact",
+        "allowAsCurrentReleaseInput": false,
+        "reason": "A report directory carrying current/worktree/working-tree naming is an explicit historical or worktree artifact; directory naming never grants current release authority."
+      }
+    ],
+    "currentReferenceMarker": "historical-artifact or worktree-artifact plus releaseEvidenceEligible=false"
+  }
+}

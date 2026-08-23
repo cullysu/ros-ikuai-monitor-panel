@@ -1,0 +1,50 @@
+{
+  "route": "interfaces",
+  "status": "prepared-not-signed",
+  "maturity": "bounded-readonly",
+  "independentAcceptance": "pending",
+  "scope": [
+    "current interface object focus",
+    "default-route relation evidence",
+    "object detail navigation",
+    "current and historical evidence boundary",
+    "failure and unavailable recovery copy"
+  ],
+  "localEvidence": [
+    "tools/check-mobile-interface-evidence-boundary.js",
+    "tools/check-mobile-interface-route-evidence.js",
+    "tools/check-mobile-interface-focus-context.js",
+    "tools/check-mobile-interface-evidence-dedup.js",
+    "tools/check-mobile-interface-risk-object-focus.js",
+    "tools/check-mobile-interface-route-evidence-runtime.js",
+    "tools/check-interfaces-route-maturity-boundary.js"
+  ],
+  "runtimeSamples": [
+    {
+      "viewport": "390x844",
+      "phase": "current",
+      "focusObjectId": "interfaces-interface-pppoe-wan1-316v1b",
+      "routeNavigation": true,
+      "objectDetail": true,
+      "relationEvidence": true,
+      "overflow": 0
+    },
+    {
+      "viewport": "375x667",
+      "phase": "current",
+      "focusObjectId": "interfaces-interface-pppoe-wan1-316v1b",
+      "routeNavigation": true,
+      "objectDetail": true,
+      "relationEvidence": true,
+      "overflow": 0
+    }
+  ],
+  "reviewerChecklist": [
+    "independent reviewer confirms the interface object is not a generic table row",
+    "independent reviewer confirms route and object detail remain read-only",
+    "independent reviewer checks current, historical and unavailable states",
+    "independent reviewer records accessibility result separately from local browser automation",
+    "independent reviewer signs the packet without using local evidence as a substitute for independent acceptance"
+  ],
+  "releaseClaim": "This packet is evidence preparation only. It does not promote the route to complete and does not open GitHub or public release."
+}

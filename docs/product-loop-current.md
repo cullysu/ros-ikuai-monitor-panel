@@ -1,53 +1,84 @@
-# Router Panel Product Loop — Current State
+- validForCommit: false; current worktree is uncommitted and is not a release candidate
+- status: `current-handoff`
+- currentHandoffForStep: `1185`
+- supersededBy: `docs/decision-system/current-state.md`
+- fullHistory: `docs/panel-redesign-decision-log.md`
+- updated: 2026-08-23
+- latestRecordedStep: `1185`
+- latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+- releaseCandidate: none; GitHub publication is closed
+- currentConclusion: **FAIL overall for release / the user-supplied four-screen reference remains the sole phone direction / accepted mobile art is unchanged / current-identity matrices and four-role local signoff are green / clean exact-SHA and GitHub exact-SHA CL remain open / GitHub is closed.**
 
-Updated: 2026-07-18
+## Current handoff: Step 1185
 
-## Authority and freshness
+- Artifact `worktree-c35df77de8ac-9ef6adea85fa` has fresh Edge `22/22`, public overview `28/28`, route-responsive `76/76`, route-state `266/266`, mobile `56/56`, workflows `14/14`, accessibility `11/11` and dirty-worktree engineering readiness.
+- The mobile runtime report now carries `generatedAt`, so structured Product/Visual/Accessibility/Engineering records bind exactly to the same artifact key, fingerprint, commit and report timestamp.
+- All four local isolated-role reviews pass with `P0=0` and `P1=0`. They do not make the dirty worktree release eligible.
+- Wide landscape tablets remain browser/desktop workbench surfaces. The accepted phone composition, color, typography, spacing, chart and navigation art did not change.
+- outcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+- next action: sync the decision mirror, create an exact scoped commit excluding the unrelated skill file, then replay clean exact-SHA release evidence before atomic GitHub publication.
 
-This file is the human-readable loop handoff. `.product-loop/state.json` is the machine state. Current reports, the committed tree, and the remote ref outrank either file when they disagree. A disagreement makes the affected gate stale; it does not permit choosing the greener record.
+## Gate boundary
 
-Inspected baseline before this loop-governance update:
-
-- local commit: `57692bf124e8e65cfce6770960d293fe371c2a38`
-- local Git tree: `78f542ad0f4c80e38c55d0431b92724c262f4392`
-- verified remote `main`: `19497d00e0dbbff4b85a437c09da842cfa8642e3`
-- excluded local state at inspection: unrelated `.agents/skills/router-panel-product-loop/agents/openai.yaml` plus `.impeccable/`. Volatile worktree status belongs in machine state and the release checkpoint, not this tracked non-self-referential handoff.
-
-Final commit SHA is intentionally not written into a tracked self-referential log. The exact current candidate, tree, remote parent, path manifest, publication transaction, and CL states live in `.product-loop/release-checkpoint.json`; release reports carry the final instance identity.
-
-## Objective
-
-Deliver the complete read-only RouterOS/iKuai console with truthful evidence, independent mobile/desktop products, domain-specific object workspaces, production security boundaries, complete state/viewport coverage, and exact-SHA Linux, Windows, and GHCR proof.
-
-## Current decision
-
-The runtime/product corrections after review baseline `19497d0` are materially implemented. On pre-governance candidate `57692bf`, the 28-cell overview matrix, 76-cell route-responsive matrix, 266-cell route-state matrix, runtime browser contract, readiness, release blockers, and LAN defaults passed. Those reports remain historical after the tracked Loop updates and must not be presented as the final candidate's exact-SHA evidence.
-
-The durable release checkpoint and strict matrix report merger are now committed and smoke-tested. The merger accepts only the exact synthetic 'aggregate not complete' checkpoint produced by a fully passing bounded scenario run; all real failures, duplicate cells, missing final cells, candidate mismatches, and browser/matrix disagreement remain fatal. The candidate containing this handoff must now regenerate its own runtime and 28/76/266 evidence.
-
-No GitHub branch or ref was updated. During release exploration, one content-addressed `package.json` blob was staged without a ref; the connector then rejected further public-repository disclosure. No workflow could run and no publication claim is valid. Do not retry through an alternate channel.
-
-The local Docker daemon is unavailable. The container gate remains pending until a local daemon succeeds or the final exact-SHA GHCR job passes.
-
-## Gate table
-
-| Gate | Status | Current evidence / reason |
+| Gate | Status | Meaning |
 |---|---|---|
-| Product | pass | `docs/full-console-product-contract.md` and the current objective define the operator decision, truth boundaries, routes, states, and non-goals. |
-| Spec | pass | Truth, responsive, security, route, matrix, and release contracts map to observable checks. |
-| Design | pending | Current screenshots received an internal construction review, but automated matrices cannot self-award product/aesthetic sign-off. |
-| Architecture | pass with bounded P2 | Mobile/desktop render ownership is separate; domain inspectors and backend dispatcher/collector/snapshot/static seams exist. Remaining debt is recorded, not hidden. |
-| Implementation | pass for runtime scope | Product runtime checks passed on the inspected tree; tracked Loop changes do not inherit those exact-SHA reports and are being reverified on the frozen candidate. |
-| Code review | pass for Loop scope | Release checkpointing, matrix reconstruction, exact synthetic-failure handling, duplicate rejection, missing-cell rejection, and candidate binding were reviewed and smoke-tested. |
-| Visual QA | pending | Human review must inspect the final candidate screenshots independently of DOM/matrix checks. |
-| State matrix | pending | Historical 28/76/266 reports remain valid only for their own SHA; the candidate containing this handoff is regenerating exact-candidate reports through durable bounded checkpoints. |
-| Security | pass for local product boundary | Backend security, collector, strict localhost defaults, and read-only contracts passed; public publication policy is a separate release gate. |
-| Accessibility | pass for inspected runtime | 200% reflow, touch targets, contrast, focus, Back/Forward, and no-overflow runtime checks passed on the inspected tree. |
-| Release hygiene | fail | Exact-candidate evidence is not regenerated; unrelated dirt must remain excluded; public-disclosure connector preflight failed; local Docker is unavailable. |
-| CI Linux | pending | No final remote SHA. |
-| CI Windows | pending | No final remote SHA. |
-| CI container | pending | No final remote SHA and no local Docker daemon. |
+| Current product release | `fail` | Current worktree is not a release candidate. |
+| Mobile baseline ownership | `pass` | One reference image and one isolated mobile presentation owner remain. |
+| Mobile implementation | `pass` | Current owner implements the accepted four-screen grammar and truthful evidence semantics. |
+| Product/Design/Visual | `pass` | Current-identity isolated-role records pass with no P0/P1. |
+| Accessibility / Engineering review | `pass` | Current runtime and structured role receipts bind the same artifact. |
+| Edge toolbar 200% | `pass` | Current identity passes all 22 required real Edge cells. |
+| Release hygiene | `pending` | Worktree is dirty; no clean exact-SHA candidate exists. |
+| Release / GitHub | `closed` | No upload and no Linux/Windows/GHCR exact-SHA CL evidence exist. |
 
-## Current owner and next action
+## One next action
 
-Loop maintainer owns the immediate action: freeze the commit containing this handoff, initialize its durable release checkpoint, regenerate exact-candidate runtime plus 28/76/266 evidence, and then perform human visual QA independently of automation. The repository/D-drive decision logs must remain byte-identical. Release Engineering may resume only if the public-disclosure capability gate is satisfied without a workaround.
+Synchronize and verify the decision repository, then prepare the exact scoped clean commit and replay clean-SHA release evidence. Do not change phone art, use `rg.exe`, start subagents, include the unrelated skill file, or publish before all gates close.
+
+## Previous handoff: Step 1163
+
+- The only accepted mobile visual baseline is `docs/mobile-reference-baseline.md` and `_design/accepted-mobile-reference/accepted-four-screen.png`.
+- The only active phone presentation owner is `src/panel-framework/mobile-reference-ui/`; wide landscape tablets use the separate desktop/browser render/style tree and are not a phone baseline.
+- Deleted mobile presentation trees, contracts, screenshots and naming are not candidates and must not be restored.
+- The accepted composition is a compact mobile header, shallow status banner, primary WAN object, dual traffic chart, grouped route/collection facts, distinct resource/interface incident lists, object detail evidence and four stable roots.
+- Evidence semantics remain strict: no arbitrary default-route fallback; missing rates remain unavailable; explicit offline zero is labelled as a last observation rather than current traffic.
+- Four 390×844 object-detail captures cover interface, route, resource and terminal evidence from real rows.
+- Historical engineering reports exist for mobile 56/56, accessibility 11/11, overview 28/28, route-responsive 76/76 and route-state 266/266. After later Step1135 changes they are not current-identity release evidence. A single bounded Edge toolbar 200% smoke cell passed on an earlier worktree, but the full current Edge replay is unproven. None of these reports is independent Product/Visual/Accessibility/Engineering signoff.
+- Step1118 added typed interface detail evidence, a real resource trend chart and explainable workspace search/filter/sort/pagination while leaving the accepted composition unchanged. Step1121 then verified one bounded Edge smoke cell after the UIA timeout-budget fix; it did not promote the full historical 22/22 report.
+- Step1129 reduced only the normal WAN chart's vertical footprint (132px to 124px, with proportional compact-phone and landscape overrides) so the existing current-state evidence can enter the 390×844 viewport; the accepted mobile visual grammar and detail/resource chart sizes remain unchanged. Build, model, architecture and bounded 8-cell mobile smoke are green; the smoke is not a full matrix.
+- Step1130 changed only the 600–899px portrait tablet composition: full-width status, primary WAN object on the left, and route/link, collection and current-status evidence on the right. Build and bounded 8-cell mobile smoke are green; the 768×1024 and 390×844 captures remain clear. No `rg.exe` scan or full browser matrix was run.
+- Step1131 changed only the ≤360px evidence grouping: route/link and collection remain a two-column pair with a 6px gap, while large-text mode retains one-column stacking. Build and bounded 8-cell mobile smoke are green; the 320×568 capture now exposes both evidence categories before the fixed navigation.
+- Step1132 removes only the repeated route/terminal detail summary card; object-evidence and source ledgers remain, while resource detail keeps its diagnostic summary and trend chart. Build and fresh route/terminal/resource captures are green; no full browser matrix was run.
+- Step1133 changes only the lower exception source row from repeated `采集通道` to typed `证据模式`; normal overview collection facts remain unchanged. Build and bounded 8-cell mobile smoke are green; the collection-down capture now exposes historical evidence explicitly.
+- Step1134 reran current release readiness. Structural mobile/security/route contracts pass, but the full current-identity overview/route/route-state matrices and Edge toolbar report are stale or incomplete; no historical evidence is reused and no full browser matrix is run under the CPU-safety boundary.
+- Step1135 preserves the locked art direction and fixes WAN detail back navigation so Overview and Network each regain their own entry context. Model/architecture/security/type checks pass; no browser matrix was run.
+- Step1136 removes the last current-table false-green: complete matrices and Edge 200% are pending until exact current-identity replay.
+- Step1137 renders today/yesterday/full-date mobile evidence labels from strict RFC 3339 input; no visual grammar changed.
+- Step1138 adds identity-bound single-cell matrix batching; filtered runs remain top-level fail until all 56 cells and 14 workflows exist.
+- Step1139 added bounded whole-system CPU admission before browser launch, every cell and interactions.
+- Step1140 tightens admission to 55%, requires the one-core below-normal Windows wrapper, and records `single × phone320` as current-identity cell 1/56. The report remains top-level fail until all 56 cells and 14 workflows exist.
+- Step1141 appends `single × phone360` with whole-system samples of 42.3% and 43.6%; the current matrix is 2/56, top-level fail, with 54 cells and all workflows remaining.
+- Step1142 appends `single × phone375` with whole-system samples of 39.4% and 43.8%; the current matrix is 3/56, top-level fail, with 53 cells and all workflows remaining.
+- Step1143 stops replay after visually detecting the still-empty tablet lower half, adds a tablet-only four-destination object patrol workspace, and leaves phone composition/art unchanged. Architecture red-to-green, types/build and fresh tablet/phone captures pass. Product changes reset current evidence to 2/56 with 54 cells and all workflows remaining.
+- Step1144 completes all eight `single` viewports for the corrected current identity. The 55% gate rejected high samples before capture; phone320 inspection confirms phone art remains isolated. Matrix truth is 8/56, top-level fail, with 48 cells and all workflows remaining.
+- Step1145 catches and fixes the Fleet false label: twelve mixed comparison rows are “接口状态”, while the alert alone states three affected interfaces. Model/runtime red-to-green, types/build and fresh Fleet/tablet cells pass. Identity reset leaves 2/56; focused scenario review now precedes full replay.
+- Step1146 catches and fixes the all-offline scope contradiction: eight offline WAN lines are no longer paired with an ambiguous `未运行接口 0 项`; the row now says `其他接口未运行`. Model/runtime red-to-green, types/build and fresh 390px visual pass. Identity reset leaves 1/56.
+- Step1147 rejects unused no-snapshot whitespace because real recovery tasks existed, then adds connection, service-log and read-only-diagnostic destinations without restoring any untrusted number. Model/runtime red-to-green, types/build and fresh 390px visual pass. Identity reset remains 1/56.
+- Step1148 adds the missing collection-plane boundary: REST/SSH failed, forwarding is `未测量`, and current business data is unverifiable. Model/runtime red-to-green, types/build and fresh 390px visual pass. Identity reset remains 1/56.
+- Step1149 appends and visually adjudicates resource-full phone390. CPU/memory/disk proof order, thresholds, sample/trend semantics, non-duplicated impact boundaries and deeper resource detail all pass without an art change. Current identity is 2/56.
+- Step1150 appends and visually adjudicates interfaces-down phone390. Three failed objects precede two healthy comparisons, mixed rows are truthfully labelled, risk/default detail aligns, and focused seven-scenario adjudication closes. Current identity is 3/56; full responsive replay is next.
+- Step1151 uses a one-core scenario wrapper to reach 56/56 and 14/14, but visual inspection vetoes the artifact because non-normal tablet pages still end in a mechanical two-column empty shell.
+- Step1152 makes the real four-destination tablet patrol workspace available to every scene and bounds historical/unavailable task states without zeros. Phone art remains isolated. Current identity is 1/56; full replay is next.
+- Step1153 rejects the remaining opposite-column whitespace: interface/Fleet use a left object list with right evidence/task rail, while outage uses left impact/task context with right affected-WAN/source evidence. Phone art remains unchanged. Current identity is 3/56.
+- Step1154 completes current mobile evidence: 56/56 responsive cells, all 14 real workflows and all 11 accessibility stages including actual 200% text scaling pass. Cross-surface/public and route evidence plus independent signoff remain pending.
+- Step1155–1159 add a hard 55% admission / 70% termination envelope, fix synchronous route-click CDP blocking, and close current overview 28/28, route-responsive 76/76 and route-state 266/266.
+- Step1160–1161 make actual Windows Edge toolbar 200% evidence resumable and complete all 22/22 cells after the hard CPU stop correctly interrupted an unsafe system-wide spike.
+- Step1162 changes the safety contract: external CPU load no longer pauses the goal. Step1163 moves wide landscape tablets to the browser owner; focused runtime is green, while the owner-split Edge 200% matrix and fixed-name 28/76/266 replay follow under dynamic `1.00% / 0.25% / 0.05%` quotas.
+- Never use normal `git push`. No publication before a clean exact SHA and Linux, Windows and GHCR CL all pass for that exact uploaded SHA.
+
+## References
+
+- Sole current authority: `docs/decision-system/current-state.md`
+- Complete historical process: `docs/panel-redesign-decision-log.md`
+- Mobile visual baseline: `docs/mobile-reference-baseline.md`
+- Mobile owner: `src/panel-framework/mobile-reference-ui/`

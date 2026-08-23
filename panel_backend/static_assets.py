@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import mimetypes
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -84,26 +85,59 @@ def etag_matches(header: str | None, etag: str) -> bool:
     return False
 
 
+def _resolve_contained_file(root: Path, candidate: Path, name: str) -> Path:
+    resolved = candidate.resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise StaticAssetNotFound(name) from exc
+    if not resolved.is_file():
+        raise StaticAssetNotFound(name)
+    return resolved
+
+
+def _resolve_public_root(public_dir: Path) -> Path:
+    """Resolve the serving root only after rejecting a root symlink."""
+    candidate = Path(public_dir)
+    try:
+        lexical = Path(os.path.abspath(candidate))
+        resolved_candidate = Path(os.path.realpath(candidate))
+        if candidate.is_symlink() or os.path.normcase(lexical) != os.path.normcase(resolved_candidate) or not candidate.is_dir():
+            raise StaticAssetNotFound(str(public_dir))
+        root = candidate.resolve()
+    except OSError as exc:
+        raise StaticAssetNotFound(str(public_dir)) from exc
+    if not root.is_dir():
+        raise StaticAssetNotFound(str(public_dir))
+    return root
+
+
+def _optional_contained_sidecar(root: Path, identity_path: Path, suffix: str, name: str) -> Path | None:
+    candidate = Path(f"{identity_path}.{suffix}")
+    if candidate.is_symlink():
+        # Sidecars are build outputs, never indirections. Reject even an
+        # in-root link so a later replacement cannot redirect a compressed
+        # variant after the identity asset has passed containment checks.
+        raise StaticAssetNotFound(name)
+    if not candidate.exists():
+        return None
+    return _resolve_contained_file(root, candidate, name)
+
+
 def resolve_static_asset(
     public_dir: Path,
     request_path: str,
     accept_encoding: str = "",
 ) -> StaticAsset:
-    root = Path(public_dir).resolve()
+    root = _resolve_public_root(public_dir)
     name = static_asset_name(request_path)
-    identity_path = (root / name).resolve()
-    try:
-        identity_path.relative_to(root)
-    except ValueError as exc:
-        raise StaticAssetNotFound(name) from exc
-    if not identity_path.is_file():
-        raise StaticAssetNotFound(name)
+    identity_path = _resolve_contained_file(root, root / name, name)
 
-    variants = [
-        ("br", Path(f"{identity_path}.br")),
-        ("gzip", Path(f"{identity_path}.gz")),
-    ]
-    available = [(encoding, path) for encoding, path in variants if path.is_file()]
+    available = []
+    for encoding, suffix in (("br", "br"), ("gzip", "gz")):
+        sidecar = _optional_contained_sidecar(root, identity_path, suffix, f"{name}.{suffix}")
+        if sidecar is not None:
+            available.append((encoding, sidecar))
     selected_encoding = None
     selected_path = identity_path
     for encoding, variant_path in available:

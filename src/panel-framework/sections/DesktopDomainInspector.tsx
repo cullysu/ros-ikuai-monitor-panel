@@ -1,6 +1,10 @@
 import type { RefObject, ReactNode } from "react";
+import { formatRfc3339Local } from "../timeContract";
+import { panelRiskOriginLabel, type PanelRiskContext } from "../routes/panelRoutes";
+import { diagnosticChannelLabel, diagnosticFailureLabel } from "./diagnosticFailureModel";
 import type { SectionModel } from "./sectionModels";
-import type { WorkspaceRow } from "../mobile/mobileDomainWorkspaceModel";
+import type { WorkspaceRow } from "../domain-workspace/workspaceRows";
+import { resourceEvidencePresentation } from "./resourceEvidencePresentation";
 
 interface Fact { label: string; value: string; }
 
@@ -52,6 +56,7 @@ function InterfaceEvidence({ row }: { row: WorkspaceRow }) {
     <EvidenceBlock title="状态与身份" facts={[
       { label: "运行标志", value: booleanOf(evidence.running, "运行", "未运行") },
       { label: "管理状态", value: booleanOf(evidence.disabled, "已禁用", "已启用") },
+      { label: "影响判断", value: evidence.operationalImpact === "risk" ? "配置依赖受影响" : evidence.operationalImpact === "unverified" ? "影响未判定" : evidence.operationalReason === "administratively-disabled" ? "不作为故障" : "未发现风险依据" },
       { label: "角色 / 类型", value: [evidence.role, evidence.interfaceType].filter(Boolean).join(" · ") || "未取得" },
       { label: "地址", value: evidence.addresses.join(" · ") || "未取得" },
       { label: "父级 / VLAN", value: [evidence.parent, evidence.vlanId].filter(Boolean).join(" · ") || "未取得" },
@@ -128,7 +133,7 @@ function LogEvidence({ row }: { row: WorkspaceRow }) {
   return <>
     <EvidenceBlock title="事件" facts={[
       { label: "时间", value: valueOf(evidence.time) }, { label: "级别 / 主题", value: `${evidence.severity} / ${valueOf(evidence.topics)}` },
-      { label: "来源", value: valueOf(evidence.source) }, { label: "正文", value: valueOf(evidence.message) },
+      { label: "来源", value: valueOf(evidence.source) }, { label: "记录身份", value: row.id },
     ]} />
     <EvidenceBlock title="相邻事件" note="按带时区 RFC 3339 时间排序">
       <ol className="ddi-timeline">{evidence.neighbors.length ? evidence.neighbors.map((item, index) => (
@@ -173,12 +178,36 @@ function DnsEvidence({ row }: { row: WorkspaceRow }) {
   </>;
 }
 
+function DiagnosticEvidence({ row, current }: { row: WorkspaceRow; current: boolean }) {
+  if (row.evidence.kind !== "diagnostic") return null;
+  const evidence = row.evidence;
+  return <>
+    <EvidenceBlock title={`${diagnosticFailureLabel(current)}证据`} facts={[
+      { label: "传输", value: evidence.transport },
+      { label: "记录时间", value: valueOf(formatRfc3339Local(evidence.recordedAt)) },
+      { label: "端点错误", value: valueOf(evidence.message) },
+    ]} />
+    <EvidenceBlock title="失败范围与边界" note="不证明转发面或外部业务中断" facts={[
+      { label: "同通道失败", value: `${evidence.sameChannelFailureCount} 个端点` },
+      { label: "全部已记录失败", value: `${evidence.totalFailureCount} 个端点` },
+      { label: "通道错误", value: valueOf(evidence.channelError, "未记录通道级错误") },
+      { label: "对象身份", value: row.id },
+    ]} />
+  </>;
+}
+
 function OtherEvidence({ row }: { row: WorkspaceRow }) {
   if (row.evidence.kind === "resource") {
-    const values = row.evidence.values;
-    return <EvidenceBlock title="资源样本" note="没有时间戳时不连接成趋势" facts={[
-      { label: "最近值", value: values.length ? `${values[values.length - 1]}%` : "未取得" }, { label: "样本数", value: `${row.evidence.sampleCount} 个` },
-      { label: "下界 / 上界", value: values.length ? `${Math.min(...values)}% / ${Math.max(...values)}%` : "未取得" }, { label: "对象身份", value: row.id },
+    const evidence = row.evidence;
+    const presentation = resourceEvidencePresentation(evidence);
+    return <EvidenceBlock title="当前越阈判断" note="只描述当前资源指标；不推断网络中断" facts={[
+      { label: "当前值", value: presentation.current },
+      { label: "策略阈值", value: presentation.threshold },
+      { label: "高出阈值", value: presentation.delta },
+      { label: "连续证据", value: presentation.continuity },
+      { label: "证据时间", value: presentation.evidenceAt },
+      { label: "样本范围", value: `${presentation.minimum} / ${presentation.maximum}` },
+      { label: "对象身份", value: row.id },
     ]} />;
   }
   if (row.evidence.kind === "connection") return <EvidenceBlock title="连接证据" facts={[
@@ -193,13 +222,22 @@ function OtherEvidence({ row }: { row: WorkspaceRow }) {
   ]} />;
 }
 
-export function DesktopDomainInspector({ row, model, pinned, onUnpin, titleRef }: {
-  row: WorkspaceRow | null; model: SectionModel; pinned: boolean; onUnpin: () => void; titleRef: RefObject<HTMLHeadingElement>;
+export function DesktopDomainInspector({ row, riskRows, model, pinned, originRisk, originEvidenceAt, onUnpin, onReturn, titleRef }: {
+  row: WorkspaceRow | null; model: SectionModel; pinned: boolean; originRisk: PanelRiskContext | null;
+  riskRows: WorkspaceRow[];
+  originEvidenceAt: string | null; onUnpin: () => void; onReturn: () => void;
+  titleRef: RefObject<HTMLHeadingElement>;
 }) {
-  if (!row) return <aside className="ddw-inspector is-empty" aria-label="对象证据"><div className="ddi-boundary"><b>{model.evidenceMode === "current" ? "当前证据" : model.evidenceMode === "historical" ? "历史证据" : "证据不可用"}</b><span>{model.updatedAt || "未记录成功时间"}</span></div><h2>当前没有可检查对象</h2><p>{model.tables[0]?.empty || model.status}</p></aside>;
-  return <aside className="ddw-inspector" data-desktop-object-detail={row.id} data-domain-inspector-kind={row.evidence.kind} aria-labelledby="desktop-domain-title">
-    <div className="ddi-boundary"><span><b>{model.evidenceMode === "current" ? "当前证据" : model.evidenceMode === "historical" ? "历史证据" : "证据不可用"}</b>{model.updatedAt || "未记录成功时间"}</span>{pinned ? <button type="button" onClick={onUnpin}>返回自动预览</button> : <em>自动预览</em>}</div>
-    <header className="ddi-heading"><span>{row.table}</span><h2 id="desktop-domain-title" tabIndex={-1} ref={titleRef}>{row.primary}</h2><p>{row.secondary}</p><b className={row.meta.attention ? "is-attention" : ""}>{row.trailing}</b></header>
-    <div className="ddi-body"><InterfaceEvidence row={row} /><RouteEvidence row={row} /><TerminalEvidence row={row} /><LogEvidence row={row} /><SecurityEvidence row={row} /><DnsEvidence row={row} />{!["interface", "route", "terminal", "log", "security", "dns"].includes(row.evidence.kind) ? <OtherEvidence row={row} /> : null}</div>
+  const evidenceLabel = model.evidenceMode === "current" ? "当前证据" : model.evidenceMode === "historical" ? "历史证据" : "证据不可用";
+  if (!row) return <aside className="ddw-inspector is-empty" data-investigation-risk={originRisk || undefined} aria-label="对象证据"><div className="ddi-boundary"><span><b>{evidenceLabel}</b>{originRisk ? panelRiskOriginLabel(originRisk, originEvidenceAt) : model.updatedAt || "未记录成功时间"}</span>{originRisk ? <button type="button" onClick={onReturn}>返回运行概览</button> : null}</div><h2>{originRisk ? "选择风险对象" : "未选择对象"}</h2><p>{originRisk ? `${riskRows.length} 个匹配对象；未自动选择。` : "从列表打开证据"}</p>{originRisk && riskRows.length ? <dl className="ddi-facts"><div><dt>匹配对象</dt><dd>{riskRows.map((item) => item.primary).join(" · ")}</dd></div><div><dt>选择方式</dt><dd>从左侧列表打开对象证据</dd></div></dl> : null}</aside>;
+  const isLog = row.evidence.kind === "log";
+  const diagnosticEvidence = row.evidence.kind === "diagnostic" ? row.evidence : null;
+  const headingTitle = diagnosticEvidence ? diagnosticEvidence.objectName : row.primary;
+  const headingSubtitle = diagnosticEvidence ? valueOf(diagnosticEvidence.endpoint) : isLog ? `${row.trailing} · ${row.secondary}` : row.secondary;
+  const headingState = diagnosticEvidence ? diagnosticChannelLabel(diagnosticEvidence.channel) : row.trailing;
+  return <aside className="ddw-inspector" data-desktop-object-detail={row.id} data-domain-inspector-kind={row.evidence.kind} data-investigation-risk={originRisk || undefined} aria-labelledby="desktop-domain-title">
+    <div className="ddi-boundary"><span><b>{evidenceLabel}</b>{originRisk ? `${panelRiskOriginLabel(originRisk, originEvidenceAt)} · ${row.id}` : model.updatedAt || "未记录成功时间"}</span>{pinned ? <button type="button" onClick={originRisk ? onReturn : onUnpin}>{originRisk ? "返回运行概览" : "取消固定"}</button> : <em>语义预览</em>}</div>
+    <header className="ddi-heading"><span>{row.table}</span><h2 id="desktop-domain-title" tabIndex={-1} ref={titleRef}>{headingTitle}</h2><p>{headingSubtitle}</p><b className={row.meta.attention ? "is-attention" : ""}>{headingState}</b></header>
+    <div className="ddi-body"><InterfaceEvidence row={row} /><RouteEvidence row={row} /><TerminalEvidence row={row} /><LogEvidence row={row} /><SecurityEvidence row={row} /><DnsEvidence row={row} /><DiagnosticEvidence row={row} current={model.evidenceMode === "current"} />{!["interface", "route", "terminal", "log", "security", "dns", "diagnostic"].includes(row.evidence.kind) ? <OtherEvidence row={row} /> : null}</div>
   </aside>;
 }

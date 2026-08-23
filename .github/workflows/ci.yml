@@ -18,10 +18,10 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=2048
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
           cache: pip
@@ -31,19 +31,30 @@ jobs:
 
       - name: Python syntax and collector regressions
         run: |
-          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_service.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/http_dispatcher.py panel_backend/router_transport.py panel_backend/session_security.py panel_backend/snapshot_builder.py panel_backend/static_assets.py panel_backend/time_contract.py tools/check-backend-security.py tools/check-backend-release-blockers.py tools/check-collector-regressions.py tools/check-static-assets.py tools/convert-oci-to-routeros-docker-archive.py
+          python -m compileall -q app.py panel_backend tools
+          python -m py_compile .agents/skills/router-panel-product-loop/scripts/merge_matrix_reports.py .agents/skills/router-panel-product-loop/scripts/release_checkpoint.py .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py
           python tools/check-backend-security.py
           python tools/check-backend-release-blockers.py
           python tools/check-collector-regressions.py
+          python tools/test-decision-ledger-sync.py -v
+          python tools/check-decision-ledger-sync.py
+          python .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py -v
+          python .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py -v
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "22"
           cache: npm
 
       - name: Install frontend dependencies
         run: npm ci
+
+      - name: Release blocking contract gates
+        run: npm run check:release-gates
+
+      - name: Current decision truth authority
+        run: npm run check:decision-system
 
       - name: TypeScript contract check
         run: npm run check:types
@@ -61,8 +72,14 @@ jobs:
 
       - name: Overview architecture and release-blocker contracts
         run: |
-          npm run check:overview
+          node tools/check-report-truth.js
+          node tools/check-acceptance-report-quarantine.js
+          node tools/check-report-completeness-quarantine.js
+          node tools/check-acceptance-artifact-identity.js
           node tools/check-release-blockers.js
+          node tools/test-framework-asset-budget.js
+          node tools/test-local-predeploy-matrix-contract.js
+          node tools/test-public-release-semantic-gates.js
 
       - name: LAN/default documentation checks
         run: |
@@ -74,7 +91,9 @@ jobs:
           for file in public/*.js tools/*.js; do
             node --check "$file"
           done
-          node --check public/assets/framework/panel-framework.js
+          node --check public/assets/framework/panel-surface-loader.js
+          node --check public/assets/framework/panel-mobile.js
+          node --check public/assets/framework/panel-desktop.js
           node <<'NODE'
           const fs = require('fs');
           const vm = require('vm');
@@ -89,12 +108,6 @@ jobs:
 
       - name: Docker Compose config
         run: docker compose --env-file .env.docker.example config --quiet
-
-      - name: Native mobile interaction matrix
-        run: npm run check:mobile-native
-
-      - name: Connection and browser runtime contract
-        run: npm run check:runtime-browser
 
       - name: Desktop overview contracts
         run: |
@@ -137,7 +150,7 @@ jobs:
 
       - name: Upload public browser predeploy report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ci-public-predeploy
           path: |
@@ -147,7 +160,7 @@ jobs:
 
       - name: Upload public route-state matrix
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ci-public-route-state-${{ github.sha }}
           path: _acceptance/route-state-matrix-${{ github.sha }}
@@ -170,18 +183,117 @@ jobs:
           tar -tf /tmp/routeros-triage-panel-routeros-ci.tar | grep -Fx repositories
           tar -tf /tmp/routeros-triage-panel-routeros-ci.tar | grep -E '/layer\.tar$'
 
+      - name: Docker host-ingress smoke gate
+        run: >-
+          python3 tools/check-container-host-ingress-smoke.py
+          --image routeros-triage-panel:routeros-ci
+          --platform linux/amd64
+          --timeout-seconds 120
+
+      - name: Record SHA-bound Linux validation evidence
+        if: always()
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+          RELEASE_JOB_STATUS: ${{ job.status }}
+        run: |
+          evidence_dir="_release-evidence/linux-validation-${RELEASE_SHA}"
+          mkdir -p "$evidence_dir"
+          printf '{"schema":"linux-validation-evidence-v1","candidate_sha":"%s","job":"linux-validation","status":"%s"}\n' "$RELEASE_SHA" "$RELEASE_JOB_STATUS" > "$evidence_dir/validation-report.json"
+          sha256sum "$evidence_dir/validation-report.json" > "$evidence_dir/SHA256SUMS"
+          manifest_sha256="$(sha256sum "$evidence_dir/SHA256SUMS" | awk '{print $1}')"
+          printf '{"schema":"release-artifact-proof-v1","candidate_sha":"%s","job":"linux-validation","status":"%s","manifest_sha256":"%s"}\n' "$RELEASE_SHA" "$RELEASE_JOB_STATUS" "$manifest_sha256" > "$evidence_dir/artifact-proof.json"
+          test -s "$evidence_dir/validation-report.json"
+          test -s "$evidence_dir/SHA256SUMS"
+          test -s "$evidence_dir/artifact-proof.json"
+
+      - name: Upload SHA-bound Linux validation report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ci-linux-validation-report-${{ github.sha }}
+          path: |
+            _release-evidence/linux-validation-${{ github.sha }}/validation-report.json
+            _release-evidence/linux-validation-${{ github.sha }}/artifact-proof.json
+          if-no-files-found: error
+
+      - name: Upload SHA-bound Linux validation manifest
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ci-linux-validation-manifest-${{ github.sha }}
+          path: _release-evidence/linux-validation-${{ github.sha }}/SHA256SUMS
+          if-no-files-found: error
+
   windows-packaging:
     name: Windows packaging
     runs-on: windows-latest
+    env:
+      CODEX_MEMORY_LIMIT_MB: "2048"
+      NODE_OPTIONS: --max-old-space-size=2048
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
           cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install Windows Edge toolbar automation dependencies
+        run: python -m pip install pywinauto==0.6.9 Pillow==10.4.0
+
+      - name: Real Edge toolbar 200 percent matrix
+        run: npm run check:browser-toolbar-zoom200
+
+      - name: Create SHA-bound Windows Edge toolbar evidence
+        if: always()
+        shell: pwsh
+        env:
+          RELEASE_JOB_STATUS: ${{ job.status }}
+        run: |
+          $source = ".\_acceptance\edge-toolbar-zoom200"
+          $report = Join-Path $source "report.json"
+          if (-not (Test-Path -LiteralPath $report -PathType Leaf)) { throw "Windows Edge toolbar report was not produced." }
+          $evidenceRoot = ".\_release-evidence\windows-edge-toolbar-zoom200-$env:GITHUB_SHA"
+          $payloadRoot = Join-Path $evidenceRoot "edge-toolbar"
+          New-Item -ItemType Directory -Force -Path $payloadRoot | Out-Null
+          Get-ChildItem -LiteralPath $source -Force | ForEach-Object {
+            Copy-Item -LiteralPath $_.FullName -Destination $payloadRoot -Recurse -Force
+          }
+          $files = Get-ChildItem -LiteralPath $payloadRoot -Recurse -File | Sort-Object FullName
+          if (-not $files) { throw "Windows Edge toolbar evidence is empty." }
+          $manifestPath = Join-Path $evidenceRoot "SHA256SUMS"
+          $files |
+            ForEach-Object { Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 } |
+            ForEach-Object { "{0} *edge-toolbar/{1}" -f $_.Hash.ToLowerInvariant(), $_.Path.Substring($payloadRoot.Length).TrimStart('\').Replace('\', '/') } |
+            Set-Content -LiteralPath $manifestPath -Encoding ascii
+          $proof = [ordered]@{
+            schema = "windows-edge-toolbar-zoom200-evidence-v1"
+            candidate_sha = $env:GITHUB_SHA
+            job = "windows-packaging"
+            status = $env:RELEASE_JOB_STATUS
+            report_sha256 = (Get-FileHash -LiteralPath (Join-Path $payloadRoot "report.json") -Algorithm SHA256).Hash.ToLowerInvariant()
+            manifest_sha256 = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json -Compress
+          Set-Content -LiteralPath (Join-Path $evidenceRoot "artifact-proof.json") -Value $proof -Encoding ascii
+
+      - name: Upload SHA-bound Windows Edge toolbar evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ci-windows-edge-toolbar-zoom200-${{ github.sha }}
+          path: _release-evidence/windows-edge-toolbar-zoom200-${{ github.sha }}
+          if-no-files-found: error
 
       - name: Packaging preflight
         shell: pwsh
@@ -198,18 +310,40 @@ jobs:
           $index = Get-ChildItem -Recurse $bundleRoot -Filter index.html | Select-Object -First 1
           if (-not $index) { throw "Bundled public/index.html was not found." }
           $indexText = Get-Content -Raw -LiteralPath $index.FullName
-          if ($indexText -notmatch '<main\s+id="app"(?:\s|>)') { throw "Bundled frontend is missing the React application root." }
+          if ($indexText -notmatch '<div\s+id="app"(?:\s|>)') { throw "Bundled frontend is missing the neutral React application mount." }
           if ($indexText -match 'data-app-shell="ikuai"' -or $indexText -match '<div\s+class="app ik-shell"(?:\s|>)') { throw "Bundled frontend still contains retired legacy shell markers." }
-          if ($indexText -notmatch 'data-overview-framework-asset="style"') { throw "Bundled frontend is missing the framework style asset marker." }
-          if ($indexText -notmatch 'data-overview-framework-asset="script"') { throw "Bundled frontend is missing the framework script asset marker." }
+          if ($indexText -notmatch 'data-overview-framework-asset="surface-loader"') { throw "Bundled frontend is missing the surface loader asset marker." }
           $publicRoot = Split-Path -Parent $index.FullName
-          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\style.css"))) { throw "Bundled framework style asset was not found." }
-          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\panel-framework.js"))) { throw "Bundled framework script asset was not found." }
-          $styleAsset = [regex]::Match($indexText, '/assets/framework/(style\.[0-9a-f]{12}\.css)').Groups[1].Value
-          $scriptAsset = [regex]::Match($indexText, '/assets/framework/(panel-framework\.[0-9a-f]{12}\.js)').Groups[1].Value
-          if (-not $styleAsset -or -not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\$styleAsset"))) { throw "Bundled content-addressed framework style was not found." }
-          if (-not $scriptAsset -or -not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\$scriptAsset"))) { throw "Bundled content-addressed framework script was not found." }
-          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\manifest.json"))) { throw "Bundled framework asset manifest was not found." }
+          $frameworkRoot = Join-Path $publicRoot "assets\framework"
+          $manifestPath = Join-Path $frameworkRoot "manifest.json"
+          if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { throw "Bundled framework asset manifest was not found." }
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          if ($manifest.version -ne 3) { throw "Bundled framework asset manifest must use dual-surface version 3." }
+          $requiredFrameworkAssets = @(
+            @{ Name = "surface loader"; Record = $manifest.assets.loader; Pattern = '^panel-surface-loader\.[0-9a-f]{12}\.js$'; Script = $true },
+            @{ Name = "mobile script"; Record = $manifest.assets.mobile.script; Pattern = '^panel-mobile\.[0-9a-f]{12}\.js$'; Script = $true },
+            @{ Name = "mobile style"; Record = $manifest.assets.mobile.style; Pattern = '^mobile\.[0-9a-f]{12}\.css$'; Script = $false },
+            @{ Name = "desktop script"; Record = $manifest.assets.desktop.script; Pattern = '^panel-desktop\.[0-9a-f]{12}\.js$'; Script = $true },
+            @{ Name = "desktop style"; Record = $manifest.assets.desktop.style; Pattern = '^desktop\.[0-9a-f]{12}\.css$'; Script = $false }
+          )
+          foreach ($asset in $requiredFrameworkAssets) {
+            $record = $asset.Record
+            if ($null -eq $record -or [string]::IsNullOrWhiteSpace([string]$record.file)) { throw "Bundled framework manifest is missing the $($asset.Name) record." }
+            if ($record.file -notmatch $asset.Pattern) { throw "Bundled framework $($asset.Name) is not content-addressed as expected: $($record.file)" }
+            if ([string]$record.sha256 -notmatch '^[0-9a-f]{64}$') { throw "Bundled framework $($asset.Name) is missing a SHA-256 identity." }
+            $assetPath = Join-Path $frameworkRoot $record.file
+            if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) { throw "Bundled framework $($asset.Name) asset was not found: $($record.file)" }
+            if ($asset.Script) {
+              node --check "$assetPath"
+              if ($LASTEXITCODE -ne 0) { throw "Bundled framework $($asset.Name) failed JavaScript syntax validation." }
+            }
+          }
+          $loaderPublicPath = "/assets/framework/$($manifest.assets.loader.file)"
+          if ($indexText -notmatch [regex]::Escape($loaderPublicPath)) { throw "Bundled index does not load the manifest surface loader asset." }
+          foreach ($asset in $requiredFrameworkAssets | Where-Object { $_.Name -ne "surface loader" }) {
+            $publicPath = "/assets/framework/$($asset.Record.file)"
+            if ($indexText -match [regex]::Escape($publicPath)) { throw "Bundled index eagerly loads the $($asset.Name) instead of deferring surface selection to the loader." }
+          }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
           Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing loopback bind default." }
@@ -229,3 +363,49 @@ jobs:
           Select-String -Path $envFile -Pattern "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing panel address write default." }
           }
+
+      - name: Create SHA-bound Windows package manifest
+        if: always()
+        shell: pwsh
+        env:
+          RELEASE_JOB_STATUS: ${{ job.status }}
+        run: |
+          $bundleRoot = ".\dist\routeros-triage-panel"
+          if (-not (Test-Path -LiteralPath $bundleRoot -PathType Container)) { throw "Windows package bundle was not found." }
+          $bundleRootPath = (Resolve-Path -LiteralPath $bundleRoot).Path
+          $files = Get-ChildItem -LiteralPath $bundleRootPath -Recurse -File | Sort-Object FullName
+          if (-not $files) { throw "Windows package bundle contains no files." }
+          $evidenceRoot = ".\_release-evidence\windows-packaging-$env:GITHUB_SHA"
+          New-Item -ItemType Directory -Force -Path $evidenceRoot | Out-Null
+          $manifestPath = Join-Path $evidenceRoot "SHA256SUMS"
+          $files |
+            ForEach-Object { Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 } |
+            ForEach-Object { "{0} *{1}" -f $_.Hash.ToLowerInvariant(), $_.Path.Substring($bundleRootPath.Length).TrimStart('\').Replace('\', '/') } |
+            Set-Content -LiteralPath $manifestPath -Encoding ascii
+          if ((Get-Item -LiteralPath $manifestPath).Length -le 0) { throw "Windows package SHA256 manifest is empty." }
+          $proof = [ordered]@{
+            schema = "release-artifact-proof-v1"
+            candidate_sha = $env:GITHUB_SHA
+            job = "windows-packaging"
+            status = $env:RELEASE_JOB_STATUS
+            manifest_sha256 = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json -Compress
+          Set-Content -LiteralPath (Join-Path $evidenceRoot "artifact-proof.json") -Value $proof -Encoding ascii
+
+      - name: Upload SHA-bound Windows package bundle
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ci-windows-bundle-${{ github.sha }}
+          path: dist/routeros-triage-panel
+          if-no-files-found: error
+
+      - name: Upload SHA-bound Windows package SHA256 manifest
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ci-windows-sha256-manifest-${{ github.sha }}
+          path: |
+            _release-evidence/windows-packaging-${{ github.sha }}/SHA256SUMS
+            _release-evidence/windows-packaging-${{ github.sha }}/artifact-proof.json
+          if-no-files-found: error

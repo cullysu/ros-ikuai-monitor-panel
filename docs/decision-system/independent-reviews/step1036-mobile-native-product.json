@@ -1,0 +1,72 @@
+{
+  "role": "independent-mobile-product-reviewer",
+  "artifact": {
+    "contract": "mobile-native-runtime-v1",
+    "artifactKey": "worktree-ed9195a9a9cd-871d2d50a41f",
+    "commit": "ed9195a9a9cd393b254e3a5daa2af3850e4991ef",
+    "evidence": [
+      "docs/mobile-native-ui-contract.md",
+      "docs/ikuai4-ui-study.md",
+      "_acceptance/mobile-native-runtime/report-smoke.json",
+      "_acceptance/mobile-native-runtime/{single,resource-full,interfaces-down}-{phone320,phone390,landscape667,tablet768}-overview.png",
+      "_acceptance/mobile-native-runtime/interfaces-phone390-workspace.png",
+      "_acceptance/mobile-native-runtime/interfaces-phone390-detail.png",
+      "_acceptance/mobile-native-runtime/connection-phone390-device.png"
+    ],
+    "scope": "current mobile-native artifact only"
+  },
+  "verdict": "fail",
+  "score": 54,
+  "p0": [],
+  "p1": [
+    {
+      "id": "tablet-task-board-does-not-use-the-workspace",
+      "evidence": "single-tablet768-overview.png, resource-full-tablet768-overview.png, and interfaces-down-tablet768-overview.png all end their meaningful overview content around the upper half of the 768x1024 canvas; the lower workspace is largely blank. The 768 layout adds a vertical rail but no persistent selected-object inspector, comparison set, or aggregation that earns the tablet surface.",
+      "impact": "This is a mechanically widened phone overview rather than the contract's iPad task board. It reduces comparison efficiency precisely where the larger screen could shorten investigation.",
+      "verification": "At 768x1024, every overview scenario must use the post-header work area for either an explicit selected-object list/detail pair or a scenario-relevant comparison/aggregation panel. A screenshot review must show no unexplained blank main-workspace region taller than 160px before the footer."
+    },
+    {
+      "id": "resource-incident-queue-repeats-copy-and-truncates-decision-values",
+      "evidence": "resource-full-phone320-overview.png hides part of the three-item queue behind the persistent tab bar; resource-full-phone390-overview.png truncates the decisive value strings to '96% · 阈值 8…', '97% · 阈值 9…', and repeats the same '当前样本已越过策略阈值；趋势与持续性…' explanation for CPU, disk, and memory.",
+      "impact": "The affected object is identifiable, but the operator cannot compare the complete current/threshold/delta evidence at a glance. Repeated prose consumes the phone's scarce vertical space without adding a distinct decision layer.",
+      "verification": "At 320x568 and 390x844, each visible resource risk row must render its full current value, threshold, and delta without ellipsis; the initial view must expose the first actionable risk and a clear continuation affordance without content being obscured by the tab bar. Distinct evidence (for example sustained samples) may appear only when actually observed."
+    },
+    {
+      "id": "object-detail-has-insufficient-fresh-inspection-evidence",
+      "evidence": "interfaces-phone390-detail.png for ether9 contains a status grid whose unobserved counters read '未取得 / 未取得' and one raw field, '上级 switch1'. It does not show the sample time, evidence source, dependency chain, or a second usable object-level fact beyond the overview's failed-state summary.",
+      "impact": "The push destination is visually clean but provides too little additional inspection value to justify the tap. It weakens evidence trust because the reader cannot judge freshness or trace the configured dependency from this screen.",
+      "verification": "For an interface incident with the supplied data, the detail must show compact sample freshness/source plus at least two non-duplicative object evidence dimensions selected from dependency/route relation, parent/peer, configuration state, counter availability, or raw fields. If a datum is absent, label it unavailable rather than inventing a value."
+    }
+  ],
+  "p2": [
+    {
+      "id": "short-landscape-has-excess-control-clearance",
+      "evidence": "single-landscape667-overview.png and both incident landscape screenshots leave a conspicuous empty band between the floating tab control and the device header while the lower incident queue is cut by the short viewport.",
+      "impact": "The layout is horizontally composed and avoids a desktop rail, but its first-screen vertical budget is not yet tuned for a short phone.",
+      "verification": "At 667x375, reduce non-content clearance above the device header and prove that the primary scene's first actionable object is fully readable without hiding key decision content."
+    },
+    {
+      "id": "overview-object-identity-still-starts-with-a-generic-device-header",
+      "evidence": "The phone overview leads with 'RouterOS 7.15-smoke · 目标 127.0.0.1' and 'smoke-router'; the outlet object and its state become readable only after the decision strip and signal strip.",
+      "impact": "The information is truthful, but the first scan is device-centric rather than the iKuai-style operational object/state comparison requested by the study.",
+      "verification": "In normal and incident phone screenshots, make the active WAN or highest-risk object identifiable in the initial title/decision region without adding a second hero block or repeating its full row."
+    }
+  ],
+  "passes": [
+    "No P0 evidence was found in the reviewed artifact: current traffic is withheld in resource and interface incident scenes, and the screenshots do not fabricate a zero-rate or arbitrary active route.",
+    "The 390px normal overview has a compact device header, a bounded decision pulse, same-line route/WAN/collection signals, a real time-and-unit traffic instrument, and a tappable outlet before the four-root floating tab bar.",
+    "Resource and interface scenarios structurally replace the normal traffic instrument with a risk queue instead of merely recoloring a normal dashboard; the interface scene names each affected dependency object.",
+    "The 390px interface workspace provides a usable mobile list with search, state filters, clear object names, and status comparison; the detail is a real pushed surface rather than a duplicate modal.",
+    "The connection flow is appropriately phone-native: a three-step progression, explicit local-session boundary, and one clear bottom continuation action keep setup focused without pretending that desktop controls fit on a phone.",
+    "The four stable roots remain discoverable and the short-landscape layout keeps top controls floating rather than converting the phone into a desktop side-rail.",
+    "The smoke report confirms the reviewed cells are mobile-native owned, have no horizontal overflow, retain 44px-or-larger navigation targets, and do not retain the retired presentation owner."
+  ],
+  "requiredActions": [
+    "Close all P1 items with new exact screenshots and a product re-review; a green smoke report alone is not a product signoff.",
+    "Implement a real 600-899px task-board behavior that spends tablet space on object comparison or inspection, not on a widened overview plus empty canvas.",
+    "Repack the resource incident rows around complete comparable values and remove repeated explanatory text from the first decision layer.",
+    "Increase the information gain of interface detail with explicit freshness/source and verified object-level evidence while preserving unavailable values as unavailable.",
+    "Retune 667x375 vertical spacing and make the first operational object identifiable earlier in the phone scan path.",
+    "Re-run the complete 56-cell matrix after remediation; this review does not treat report-smoke.json's 8 completed cells as release evidence."
+  ]
+}
