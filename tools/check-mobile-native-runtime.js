@@ -13,10 +13,12 @@ const viewports = {
   p375: '375x667',
   p390: '390x844',
   p430: '430x932',
+  l568: '568x320',
   tablet: '768x1024',
-  l667: '667x375',
-  l844: '844x390',
 };
+if (scenarios.length !== 7 || Object.keys(viewports).length !== 7) {
+  throw new Error('mobile native runtime must remain a 7 scenario x 7 viewport contract');
+}
 const selectedScenarios = (process.env.MOBILE_NATIVE_SCENARIOS
   ? process.env.MOBILE_NATIVE_SCENARIOS.split(',').map((value) => value.trim()).filter(Boolean)
   : scenarios);

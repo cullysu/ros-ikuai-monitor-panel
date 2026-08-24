@@ -50,6 +50,17 @@ assert.equal(current.evidence.evidenceMode, "current");
 assert.ok(current.mobile.traffic, "current evidence with a verified route must expose the WAN chart");
 assert.equal(current.mobile.wan?.verifiedDefault, true, "normal WAN must be bound to explicit route evidence");
 
+const staleSshSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+const channelNow = Date.parse("2026-08-20T08:00:00Z");
+staleSshSnapshot.meta.realtimeUpdatedAt = "2026-08-20T07:59:58Z";
+staleSshSnapshot.meta.slowRestUpdatedAt = "2026-08-20T07:59:58Z";
+staleSshSnapshot.meta.staticUpdatedAt = "2026-08-19T08:00:00Z";
+staleSshSnapshot.meta.pollSeconds = 60;
+const staleSshState = deriveOverviewState(staleSshSnapshot, { scenarioHint: "single", now: channelNow });
+assert.equal(staleSshState.facts.collection.rest.status, "current", "fresh REST evidence must remain current");
+assert.equal(staleSshState.facts.collection.ssh.status, "degraded", "SSH evidence older than max(300s,poll*5) must not be called current");
+assert.equal(staleSshState.facts.collection.channelDegraded, true, "a stale SSH channel must degrade the collection truth boundary");
+
 const absentTraffic = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 absentTraffic.wan[0].downRate = null;
 absentTraffic.wan[0].upRate = null;
@@ -71,6 +82,15 @@ missingRoute.routes = { defaultRoutes: [] };
 const routeUnknown = modelFor(missingRoute, "single").mobile;
 assert.notEqual(routeUnknown.wan?.verifiedDefault, true, "missing route evidence must not be presented as verified");
 assert.equal(routeUnknown.traffic, null, "unverified route must withdraw the current WAN chart");
+
+const reorderedRoutes = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+reorderedRoutes.routes.defaultRoutes = [
+  { ...reorderedRoutes.routes.defaultRoutes[0], active: false, distance: 1, gateway: "198.51.100.1" },
+  { ...reorderedRoutes.routes.defaultRoutes[0], active: true, distance: 2, gateway: "203.0.113.1" },
+];
+const reorderedRouteState = deriveOverviewState(reorderedRoutes, { scenarioHint: "single" });
+assert.equal(reorderedRouteState.facts.route.selected?.gateway, "203.0.113.1", "route selection must rank explicit active evidence ahead of input order");
+assert.equal(reorderedRouteState.facts.route.verified, true, "the active explicit default route remains verifiable after input reordering");
 assert.doesNotMatch(surfaceSource, /(?:rows|defaultRoutes)\s*\[\s*0\s*\]/, "route selection must not fall back to an arbitrary first row");
 assert.match(surfaceSource, /const backRoute = navigationContext\?\.returnRoute \|\| "overview";/, "WAN detail must preserve its originating mobile route");
 assert.match(surfaceSource, /onNavigate\(backRoute, \{ objectId: null, replace: true \}\)/, "WAN detail back action must return to the originating mobile route without retaining the selected object");

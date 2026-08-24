@@ -35,9 +35,12 @@ const resourceHistorySource = source('src/panel-framework/overview/evidence-mode
 const resourceTimeSeriesSource = source('src/panel-framework/sections/resourceTimeSeries.ts');
 const connectionSource = source('src/panel-framework/mobile-reference-ui/MobileReferenceConnection.tsx');
 const apiSchemaSource = source('panel_backend/api_schema.py');
-const browserGateSource = source('tools/check-panel-runtime-browser.js');
-const browserLifecycleSource = source('tools/check-runtime-browser-lifecycle.js');
+const currentRuntimeMockSource = source('tools/acceptance/current-runtime-mock.js');
 const browserLifecycleV2Source = source('tools/acceptance/browser-lifecycle-v2/browser-lifecycle.js');
+const mobileAccessibilitySource = source('tools/check-mobile-reference-accessibility-runtime.js');
+const routeDeepSource = source('tools/check-route-deep-interactions-v2.js');
+const responsiveBoundarySource = source('tools/check-responsive-boundary-contract.js');
+const wideLandscapeSource = source('tools/check-wide-landscape-browser-owner.js');
 const desktopBrowserGateSource = source('tools/check-resource-trend-balance.js');
 const desktopRuntimeWrapperSource = [
   source('tools/check-desktop-v1030-runtime.js'),
@@ -161,27 +164,40 @@ check(
   'the matrix must use the real Python runtime and one managed browser with bounded per-cell cleanup'
 );
 check(
-  'runtime browser gate uses Playwright with a bounded lifecycle',
-  browserGateSource.includes('launchManagedBrowser') &&
-     /const testTimeout\s*=\s*Number\.isFinite\(configuredTestTimeout\)[\s\S]*?:\s*480000;/.test(browserGateSource) &&
-     /Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*480000\)/.test(browserGateSource) &&
-    browserGateSource.includes('Promise.race([main(), timeout])') &&
-    browserGateSource.includes('cleanupRuntime') &&
-    browserGateSource.includes('context.close') &&
-    browserGateSource.includes('Promise.allSettled') &&
-    browserGateSource.includes('browserRuntime.close') &&
-    browserLifecycleV2Source.includes("require('playwright-core')") &&
+  'current runtime chain uses bounded lifecycle-v2 and a mock-only shared helper',
+  browserLifecycleV2Source.includes("require('playwright-core')") &&
     browserLifecycleV2Source.includes('process-tree.verify') &&
-    !browserGateSource.includes('new WebSocket') &&
-    !browserGateSource.includes('remote-debugging-port'),
-  'runtime validation must use one bounded Playwright lifecycle with explicit cleanup'
+    browserLifecycleV2Source.includes('launchManagedBrowser') &&
+    currentRuntimeMockSource.includes('module.exports = { actionTimeout, startMock, browserExecutable };') &&
+    !/\b(?:async\s+)?function\s+main\b|require\.main\s*===\s*module/.test(currentRuntimeMockSource) &&
+    !/data-mobile-overview|data-mobile-domain-workspace|RUNTIME_SCREENSHOT_CONTRACT/.test(currentRuntimeMockSource),
+  'the active browser lifecycle must be lifecycle-v2, while the shared mock remains non-executable and free of retired owner evidence'
 );
 check(
-  'runtime browser lifecycle contract is independently gated',
-  browserLifecycleSource.includes("runtime-browser-lifecycle-v1") &&
-    browserLifecycleSource.includes('process\\.exit') &&
-    packageJson.scripts['check:runtime-browser-lifecycle'] === 'node --max-old-space-size=2048 tools/check-runtime-browser-lifecycle.js',
-  'the runtime gate must verify process completion separately from report contents'
+  'release aggregate names every current runtime evidence owner',
+  packageJson.scripts['check:runtime-browser'].includes('tools/run-mobile-reference-runtime.js --smoke') &&
+    packageJson.scripts['check:runtime-browser'].includes('test:current-runtime-mock') &&
+    packageJson.scripts['test:current-runtime-mock'].includes('test-current-runtime-mock-architecture.js') &&
+    packageJson.scripts['test:current-runtime-mock'].includes('test-current-runtime-mock-lifecycle.js') &&
+    packageJson.scripts['check:runtime-browser'].includes('tools/check-browser-lifecycle-v2.js') &&
+    packageJson.scripts['check:runtime-browser'].includes('check:route-deep-interactions-v2') &&
+    packageJson.scripts['check:runtime-browser'].includes('tools/check-responsive-boundary-contract.js') &&
+    packageJson.scripts['check:runtime-browser'].includes('tools/check-wide-landscape-browser-owner.js') &&
+    packageJson.scripts['check:release-gates'].includes('check:mobile-accessibility-runtime-v2') &&
+    packageJson.scripts['check:release-gates'].includes('test:focused-source-runtime-evidence') &&
+    packageJson.scripts['check:release-gates'].indexOf('test:focused-source-runtime-evidence') < packageJson.scripts['check:release-gates'].indexOf('check:desktop-resource-density-v2') &&
+    packageJson.scripts['check:release-gates'].indexOf('test:focused-source-runtime-evidence') < packageJson.scripts['check:release-gates'].indexOf('check:wan-axis-label-integrity-v1') &&
+    packageJson.scripts['check:release-gates'].includes('check:desktop-resource-density-v2') &&
+    packageJson.scripts['check:release-gates'].includes('check:wan-axis-label-integrity-v1') &&
+    mobileAccessibilitySource.includes('CURRENT_MOBILE_REFERENCE_ROUTE_STAGE') &&
+    mobileAccessibilitySource.includes('page.goBack') &&
+    mobileAccessibilitySource.includes('page.goForward') &&
+    routeDeepSource.includes('runBrowserLifecycle') &&
+    responsiveBoundarySource.includes('id: "landscape599Tall", width: 599, height: 550, owner: "mobile-reference"') &&
+    wideLandscapeSource.includes('{ id: "landscape600", width: 600, height: 320 }') &&
+    !responsiveBoundarySource.includes('searchParams.set("surface"') &&
+    !wideLandscapeSource.includes('searchParams.set("surface"'),
+  'release blockers must fail when any current mobile, accessibility, route, responsive, wide-landscape, or focused desktop owner leaves the active chain'
 );
 check(
   'Mobile Reference blocks false-current values and keeps route uncertainty explicit',
@@ -212,7 +228,7 @@ check(
   'the Mobile Reference owner must keep four stable navigation roots, More, object workspaces, and evidence-backed WAN detail actionable'
 );
 check(
-  'runtime browser invokes the Mobile Reference smoke aggregate exactly once and retains a full 7x8 matrix command',
+  'runtime browser invokes the Mobile Reference smoke runner directly and retains a full matrix command',
   packageJson.scripts['check:mobile-incident-lens'] === undefined &&
     packageJson.scripts['check:mobile-linkboard'] === undefined &&
   packageJson.scripts['check:mobile-pocket-console'] === undefined &&
@@ -227,10 +243,13 @@ check(
     typeof packageJson.scripts['check:mobile-telemetry:full'] === 'string' &&
     packageJson.scripts['check:mobile-telemetry:full'].includes('npm run check:mobile-telemetry-model') &&
     packageJson.scripts['check:mobile-telemetry:full'].includes('tools/run-mobile-reference-runtime.js') &&
-    ikuaiMobileRuntimeLauncherSource.includes('run-mobile-reference-runtime-low-load.cmd') &&
+    ikuaiMobileRuntimeLauncherSource.includes('run-low-load.py') &&
+    ikuaiMobileRuntimeLauncherSource.includes('"--browser", process.execPath, runtime') &&
+    !ikuaiMobileRuntimeLauncherSource.includes('ComSpec') &&
     ikuaiMobileRuntimeLauncherSource.includes('process.env.CI !== "true"') &&
-    packageJson.scripts['check:runtime-browser'].includes('npm run check:mobile-telemetry'),
-  'runtime browser must use iKuai 4 once for smoke and retain a separate required full-matrix command'
+    packageJson.scripts['check:runtime-browser'].includes('tools/run-mobile-reference-runtime.js --smoke') &&
+    !/npm run check:mobile-telemetry(?:\s*(?:&&|$))/.test(packageJson.scripts['check:runtime-browser']),
+  'runtime browser must invoke the current Mobile Reference smoke runner directly and retain a separate required full-matrix command'
 );
 check(
   'Mobile Reference full runtime report is identity-bound, includes deep workflows, and is fail-closed',

@@ -15,7 +15,7 @@ import { parseRfc3339Timestamp } from "../timeContract";
 import { validateRouterAddress } from "./routerAddress";
 import connectionStyles from "./router-connection.css?inline";
 
-const MOBILE_CONNECTION_QUERY = "(max-width: 1199px)";
+const MOBILE_CONNECTION_QUERY = "(max-width: 1199px) and (orientation: portrait), (max-width: 599px)";
 const CONNECTION_STYLE_ID = "router-connection-surface-styles";
 
 function useConnectionStyles() {

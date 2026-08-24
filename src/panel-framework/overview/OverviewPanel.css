@@ -3,7 +3,7 @@
   background: #eaf0f2;
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 599px), (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .router-overview-framework {
     min-height: 100dvh;
     background: #f7f8f9;

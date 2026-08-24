@@ -29,8 +29,24 @@ requireMarkers(mobileStyle, 'mobile style', ['.ref-mobile', '.ref-navigation', '
 forbidMarkers(mobileStyle, 'mobile style', ['.mop-overview', '.mop-tabbar', '.legacy-desktop-shell', '.desktop-domain-workspace', '.panel-runtime-bar-desktop']);
 requireMarkers(desktopStyle, 'desktop style', ['.legacy-desktop-shell', '.panel-runtime-bar-desktop']);
 forbidMarkers(desktopStyle, 'desktop style', ['.ref-mobile', '.ref-navigation', '.inspection-topbar', '.minspection-navigation', '.inspection-detail']);
-requireMarkers(loader, 'surface loader', [manifest.assets?.mobile?.script?.file, manifest.assets?.mobile?.style?.file, manifest.assets?.desktop?.script?.file, manifest.assets?.desktop?.style?.file, 'URLSearchParams', 'sessionStorage', 'pointer:coarse']);
-forbidMarkers(loader, 'surface loader', ['addEventListener("resize"', "addEventListener('resize'", 'panel-framework.js', 'style.css']);
+requireMarkers(loader, 'surface loader', [
+  manifest.assets?.mobile?.script?.file,
+  manifest.assets?.mobile?.style?.file,
+  manifest.assets?.desktop?.script?.file,
+  manifest.assets?.desktop?.style?.file,
+  'URLSearchParams',
+  'matchMedia',
+  '(max-width: 1199px) and (orientation: portrait), (max-width: 599px)',
+  'surfaceMedia.addEventListener("change",()=>location.reload())',
+]);
+forbidMarkers(loader, 'surface loader', [
+  'sessionStorage',
+  'pointer:coarse',
+  'addEventListener("resize"',
+  "addEventListener('resize'",
+  'panel-framework.js',
+  'style.css',
+]);
 
 const report = { pass: reasons.length === 0, manifestVersion: manifest.version, assets: { mobileScript: manifest.assets?.mobile?.script?.file, mobileStyle: manifest.assets?.mobile?.style?.file, desktopScript: manifest.assets?.desktop?.script?.file, desktopStyle: manifest.assets?.desktop?.style?.file, loader: manifest.assets?.loader?.file }, reasons };
 console.log(JSON.stringify(report, null, 2));

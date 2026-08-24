@@ -4,7 +4,7 @@ import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
 import type { PanelRuntimeController, PanelSnapshotPhase } from "./usePanelRuntime";
 import "./panel-runtime.css";
 
-const MOBILE_RUNTIME_QUERY = "(max-width: 1199px)";
+const MOBILE_RUNTIME_QUERY = "(max-width: 1199px) and (orientation: portrait), (max-width: 599px)";
 
 function useRuntimeMedia(query: string): boolean {
   const [matches, setMatches] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);

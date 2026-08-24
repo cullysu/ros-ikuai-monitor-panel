@@ -151,8 +151,12 @@ export function routeMaturityV1(route: string): RouteMaturityContract | undefine
 
 const currentAutomatedEvidence = [
   "tools/check-section-models.js",
-  "tools/check-panel-runtime-browser.js",
+  "tools/check-mobile-reference-accessibility-runtime.js",
+  "tools/acceptance/mobile-reference-route-manifest.js",
 ] as const;
+
+const currentAccessibilitySource = "tools/check-mobile-reference-accessibility-runtime.js";
+const currentAccessibilityStage = "CURRENT_MOBILE_REFERENCE_ROUTE_STAGE";
 
 const automatedAccessibilityRoutes = [
   "overview",
@@ -190,16 +194,14 @@ const sectionEvidence = (
   objectDetailToken: "ref-object-list",
   failureRecoverySource: "src/panel-framework/sections/sectionModels.ts",
   failureRecoveryToken: "function applyEvidenceBoundary",
-  accessibilitySource: "tools/check-mobile-telemetry-runtime.js",
-  accessibilityToken: automatedAccessibilityRoutes.includes(route as (typeof automatedAccessibilityRoutes)[number])
-    ? `{ route: '${route}', selector: '[data-panel-route-content=\"${route}\"]' }`
-    : "",
+  accessibilitySource: currentAccessibilitySource,
+  accessibilityToken: currentAccessibilityStage,
   dataDepth: "domain-specific",
   objectDetail: "novel",
   failureRecovery: "route-specific",
   accessibility: automatedAccessibilityRoutes.includes(route as (typeof automatedAccessibilityRoutes)[number]) ? "automated-only" : "pending",
   independentAcceptance: "pending",
-  automatedAccessibilityRoutes,
+  automatedAccessibilityRoutes: [route],
   acceptanceRefs: [],
   evidenceRefs: [
     "src/panel-framework/sections/sectionModels.ts",
@@ -225,8 +227,8 @@ const fallbackEvidence = (
   objectDetailToken: "ref-object-list",
   failureRecoverySource: "src/panel-framework/sections/sectionModels.ts",
   failureRecoveryToken: "function applyEvidenceBoundary",
-  accessibilitySource: "tools/check-panel-runtime-browser.js",
-  accessibilityToken: "",
+  accessibilitySource: currentAccessibilitySource,
+  accessibilityToken: currentAccessibilityStage,
   dataDepth: "shared",
   objectDetail: "bounded",
   failureRecovery: "bounded",
@@ -275,8 +277,8 @@ export const PANEL_ROUTE_MATURITY_EVIDENCE: Record<PanelRouteId, PanelRouteMatur
     objectDetailToken: "ref-card-link",
     failureRecoverySource: "src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts",
     failureRecoveryToken: "function verdictFor",
-    accessibilitySource: "src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx",
-    accessibilityToken: "data-mobile-reference-home",
+    accessibilitySource: currentAccessibilitySource,
+    accessibilityToken: currentAccessibilityStage,
     dataDepth: "domain-specific",
     objectDetail: "novel",
     failureRecovery: "route-specific",
@@ -336,8 +338,8 @@ export const PANEL_ROUTE_MATURITY_EVIDENCE: Record<PanelRouteId, PanelRouteMatur
     objectDetailToken: "data-mobile-reference-directory",
     failureRecoverySource: "src/panel-framework/routes/panelRoutes.ts",
     failureRecoveryToken: 'maturity: "unavailable"',
-    accessibilitySource: "tools/check-panel-runtime-browser.js",
-    accessibilityToken: "",
+    accessibilitySource: currentAccessibilitySource,
+    accessibilityToken: currentAccessibilityStage,
     dataDepth: "none",
     objectDetail: "none",
     failureRecovery: "none",
@@ -398,6 +400,19 @@ export function validatePanelRouteMaturity(
     }
     if (evidence.acceptanceRefs.length > 0) {
       violations.push(`${route}: route-local acceptance refs cannot prove public-release acceptance`);
+    }
+    if (evidence.accessibilitySource !== currentAccessibilitySource) {
+      violations.push(`${route}: accessibility evidence must use the current Mobile Reference runtime`);
+    }
+    if (evidence.accessibilityToken !== currentAccessibilityStage) {
+      violations.push(`${route}: accessibility evidence must name the current route stage`);
+    }
+    if (definition.maturity !== "unavailable") {
+      if (evidence.automatedAccessibilityRoutes.length !== 1 || evidence.automatedAccessibilityRoutes[0] !== route) {
+        violations.push(`${route}: accessibility route claim must contain exactly itself`);
+      }
+    } else if (evidence.automatedAccessibilityRoutes.length !== 0) {
+      violations.push(`${route}: unavailable route cannot enter the operational accessibility manifest`);
     }
     if (definition.maturity === "complete") {
       if (evidence.renderer === "directory") violations.push(`${route}: complete route cannot use directory renderer`);

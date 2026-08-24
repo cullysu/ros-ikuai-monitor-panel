@@ -13,6 +13,14 @@ const {
   verifyFrameworkAssetIdentity,
 } = require('./framework-asset-identity');
 
+const builderSource = fs.readFileSync(path.join(__dirname, 'build-framework-inline.mjs'), 'utf8');
+assert.match(builderSource, /checkpoint\?\.schema !== "framework-build-checkpoint-v1"[\s\S]*checkpoint\?\.inputDigest !== frameworkInputsBeforeBuild\.digest[\s\S]*rmSync\(buildCheckpointPath, \{ force: true \}\)/, 'stale or malformed build checkpoints must fail closed');
+assert.match(builderSource, /evidence\.scriptSha256 === fileSha256\(scriptPath\)[\s\S]*evidence\.styleSha256 === fileSha256\(stylePath\)/, 'surface reuse must verify both canonical asset hashes');
+assert.match(builderSource, /if \(validSurfaceCheckpoint\(buildCheckpoint, surface\)\)[\s\S]*reusing verified \$\{surface\} build stage[\s\S]*continue;/, 'verified surface stages must be resumable without rebuilding');
+assert.match(builderSource, /checkpointSurface\(buildCheckpoint, surface\)/, 'each completed surface stage must be checkpointed');
+assert.match(builderSource, /frameworkInputs\.digest !== frameworkInputsBeforeBuild\.digest[\s\S]*inputs changed while the bundle was being generated/, 'input drift during a resumed build must fail closed');
+assert.match(builderSource, /execFileSync\(process\.execPath, \["--check", scriptPath\][\s\S]*rmSync\(buildCheckpointPath, \{ force: true \}\);/, 'the build checkpoint must be removed only after generated script validation');
+
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'framework-identity-v3-'));
 
 function write(relative, body) {

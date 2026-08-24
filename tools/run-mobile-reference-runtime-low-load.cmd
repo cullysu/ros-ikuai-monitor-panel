@@ -14,6 +14,6 @@ set GOMAXPROCS=1
 set UV_THREADPOOL_SIZE=2
 set MOBILE_MAX_CPU_PERCENT=55
 set MOBILE_CPU_AFFINITY_ENFORCED=1
-start "" /affinity 1 /belownormal /wait /b node tools\check-mobile-reference-runtime.js %*
+node tools\run-mobile-reference-runtime.js %*
 set RESULT=%ERRORLEVEL%
 endlocal & exit /b %RESULT%

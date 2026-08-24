@@ -31,6 +31,35 @@ fs.mkdirSync(acceptanceRoot, { recursive: true });
 const temporary = fs.mkdtempSync(path.join(acceptanceRoot, '.release-candidate-evidence-'));
 const testWorkspaceBoundary = path.join(root, 'src');
 try {
+  assert.equal(checker.managedChildTimeoutMs(30_000, {}), 30_000, 'normal execution must preserve the strict child timeout');
+  const ownerEnvironment = {
+    CODEX_LOW_LOAD_MANAGED: '1',
+    CODEX_LOW_LOAD_TIMEOUT_OWNER: checker.LOW_LOAD_TIMEOUT_OWNER,
+    CODEX_LOW_LOAD_JOB_NAME: `Local\\CodexLowLoad-123-${'a'.repeat(32)}`,
+    CODEX_LOW_LOAD_OWNER_PID: '123',
+  };
+  assert.equal(checker.hasManagedTimeoutOwnerDescriptor(ownerEnvironment), true, 'timeout ownership requires a complete bounded Job descriptor');
+  assert.equal(
+    checker.managedChildTimeoutMs(30_000, ownerEnvironment, () => true),
+    undefined,
+    'a verified pause-aware Job owner must be the sole timeout owner for an ordinary managed tree',
+  );
+  assert.equal(
+    checker.managedChildTimeoutMs(30_000, ownerEnvironment, () => false),
+    180_000,
+    'an unverified or forged owner descriptor must retain a bounded nested timeout',
+  );
+  assert.equal(
+    checker.hasManagedTimeoutOwnerDescriptor({ CODEX_LOW_LOAD_MANAGED: '1', CODEX_LOW_LOAD_TIMEOUT_OWNER: checker.LOW_LOAD_TIMEOUT_OWNER }),
+    false,
+    'bare environment markers must never disable nested timeouts',
+  );
+  if (process.platform === 'win32' && process.env.CODEX_LOW_LOAD_TIMEOUT_OWNER === checker.LOW_LOAD_TIMEOUT_OWNER) {
+    assert.equal(checker.verifyManagedTimeoutOwner(process.env), true, 'the live candidate fixture must verify membership in its named runner Job');
+  }
+  assert.equal(checker.managedChildTimeoutMs(30_000, { CODEX_LOW_LOAD_MANAGED: '1' }), 180_000, 'managed low-load execution must cover the complete pause budget');
+  assert.equal(checker.managedChildTimeoutMs(240_000, { CODEX_LOW_LOAD_MANAGED: '1' }), 240_000, 'a larger bounded verifier timeout must be preserved');
+  assert.equal(checker.managedChildTimeoutMs(900_000, { CODEX_LOW_LOAD_MANAGED: '1' }), 600_000, 'managed child wall time must retain an absolute upper bound');
   const reviews = path.join(temporary, 'reviews');
   const soakPath = path.join(temporary, 'soak.json');
   fs.mkdirSync(reviews);
@@ -50,6 +79,27 @@ try {
   const roles = ['product-information-architecture', 'visual-interaction', 'accessibility-interaction', 'engineering-code-review', 'route-owner'];
   roles.forEach((role, index) => writeJson(path.join(reviews, `${index}.json`), review(role, `reviewer-${index}`, candidateRuntimeIdentity, manifest.manifest)));
   writeJson(soakPath, soak());
+  assert.deepEqual(
+    checker.inspectEvidenceBundleSize(checker.MAX_EVIDENCE_BUNDLE_BYTES, 0),
+    { pass: true, failures: [], totalBytes: checker.MAX_EVIDENCE_BUNDLE_BYTES },
+    'the exact combined evidence budget must remain valid without allocating a maximum-size fixture',
+  );
+  assert.deepEqual(
+    checker.inspectEvidenceBundleSize(checker.MAX_EVIDENCE_BUNDLE_BYTES, 1),
+    { pass: false, failures: ['evidence_bundle_size_exceeded'], totalBytes: checker.MAX_EVIDENCE_BUNDLE_BYTES + 1 },
+    'review and soak bytes must share one 64 MiB total budget',
+  );
+  assert.equal(checker.MAX_SOAK_REPORT_BYTES, checker.MAX_EVIDENCE_BUNDLE_FILE_BYTES, 'soak must obey the same 4 MiB per-file evidence limit');
+  assert.equal(checker.reviewEvidenceReadLimit(0), checker.MAX_EVIDENCE_BUNDLE_FILE_BYTES, 'an empty review bundle may use the complete per-file budget');
+  assert.equal(checker.reviewEvidenceReadLimit(checker.MAX_EVIDENCE_BUNDLE_BYTES - 1), 1, 'the next review file must be limited by the remaining total budget before allocation');
+  assert.equal(checker.reviewEvidenceReadLimit(checker.MAX_EVIDENCE_BUNDLE_BYTES), 0, 'an exhausted review bundle must not allocate another non-empty file');
+  assert.equal(
+    checker.readSoakWithinEvidenceBudget(testWorkspaceBoundary, soakPath, {
+      files: [{ bytes: { length: checker.MAX_EVIDENCE_BUNDLE_BYTES - 1 } }],
+    }).reason,
+    'evidence_bundle_size_exceeded',
+    'soak reading must fail at the remaining combined budget before allocating a larger snapshot',
+  );
   const baseOptions = {
     candidateCommit: candidate,
     independentReviewDir: reviews,
@@ -62,6 +112,114 @@ try {
   assert.equal(snapshot.ok, true, 'external review and soak inputs must snapshot once');
   const digest = checker.computeEvidenceDigestFromSnapshot(snapshot).evidenceDigest;
   assert.match(digest, /^sha256:[0-9a-f]{64}$/);
+
+  const depthRoot = path.join(temporary, 'depth-limit');
+  fs.mkdirSync(depthRoot);
+  let depthCursor = depthRoot;
+  for (let depth = 0; depth <= checker.MAX_EVIDENCE_BUNDLE_DEPTH; depth += 1) {
+    depthCursor = path.join(depthCursor, `d${depth}`);
+    fs.mkdirSync(depthCursor);
+  }
+  assert.equal(
+    checker.snapshotExternalReviewDirectory(testWorkspaceBoundary, depthRoot).reason,
+    'evidence_bundle_depth_exceeded',
+    'review evidence traversal must reject excessive directory depth before recursive resource exhaustion',
+  );
+
+  const directoryCountRoot = path.join(temporary, 'directory-count-limit');
+  fs.mkdirSync(directoryCountRoot);
+  for (let index = 0; index < checker.MAX_EVIDENCE_BUNDLE_DIRECTORIES; index += 1) {
+    fs.mkdirSync(path.join(directoryCountRoot, `d-${String(index).padStart(3, '0')}`));
+  }
+  assert.equal(
+    checker.snapshotExternalReviewDirectory(testWorkspaceBoundary, directoryCountRoot).reason,
+    'evidence_bundle_directory_count_exceeded',
+    'review evidence traversal must reject excessive directory fanout before walking the complete tree',
+  );
+
+  const entryCountRoot = path.join(temporary, 'entry-count-limit');
+  fs.mkdirSync(entryCountRoot);
+  for (let index = 0; index <= checker.MAX_EVIDENCE_BUNDLE_ENTRIES; index += 1) {
+    fs.writeFileSync(path.join(entryCountRoot, `f-${String(index).padStart(3, '0')}.txt`), '');
+  }
+  assert.equal(
+    checker.snapshotExternalReviewDirectory(testWorkspaceBoundary, entryCountRoot).reason,
+    'evidence_bundle_entry_count_exceeded',
+    'review evidence traversal must stop reading a directory once the bounded entry budget is exhausted',
+  );
+
+  const fileSizeRoot = path.join(temporary, 'file-size-limit');
+  const oversizedEvidence = path.join(fileSizeRoot, 'oversized-evidence.bin');
+  fs.mkdirSync(fileSizeRoot);
+  const oversizedHandle = fs.openSync(oversizedEvidence, 'w');
+  try {
+    fs.ftruncateSync(oversizedHandle, checker.MAX_EVIDENCE_BUNDLE_FILE_BYTES + 1);
+  } finally {
+    fs.closeSync(oversizedHandle);
+  }
+  assert.equal(
+    checker.snapshotExternalReviewDirectory(testWorkspaceBoundary, fileSizeRoot).reason,
+    'evidence_bundle_file_too_large',
+    'one evidence file must fail closed before immutable byte-array expansion can exceed the per-file memory budget',
+  );
+  assert.equal(
+    checker.readExternalFileSnapshot(testWorkspaceBoundary, oversizedEvidence, 'soak_report', checker.MAX_SOAK_REPORT_BYTES).reason,
+    'soak_report_too_large',
+    'a soak report must fail from file metadata before exceeding the shared 4 MiB single-file budget',
+  );
+  assert.equal(
+    checker.snapshotExternalReviewDirectory(testWorkspaceBoundary, path.join(temporary, 'missing-review-directory')).reason,
+    'independent_review_dir_unreadable',
+    'unknown filesystem failures must not expose locale-dependent paths or messages as contract reasons',
+  );
+
+  const junctionRaceRoot = path.join(temporary, 'junction-race');
+  const junctionInternal = path.join(junctionRaceRoot, 'slot');
+  const junctionExternal = path.join(temporary, 'junction-external');
+  fs.mkdirSync(junctionInternal, { recursive: true });
+  fs.mkdirSync(junctionExternal);
+  const internalEvidence = path.join(junctionInternal, 'proof.txt');
+  const externalEvidence = path.join(junctionExternal, 'proof.txt');
+  fs.writeFileSync(internalEvidence, 'inside');
+  fs.writeFileSync(externalEvidence, 'outside');
+  const internalRealPath = fs.realpathSync(internalEvidence);
+  const internalStat = fs.statSync(internalEvidence);
+  const externalStat = fs.statSync(externalEvidence);
+  const frozenMetadata = (stat) => ({ dev: stat.dev, ino: stat.ino, size: stat.size, mtimeMs: stat.mtimeMs, ctimeMs: stat.ctimeMs });
+  const internalFrozen = { metadata: frozenMetadata(internalStat) };
+  const externalFrozen = { metadata: frozenMetadata(externalStat) };
+  assert.throws(
+    () => checker.assertFrozenReviewFile(junctionRaceRoot, internalEvidence, internalRealPath, externalFrozen),
+    /evidence_bundle_file_identity_changed/,
+    'restoring the original path after reading a different file must fail native file identity binding',
+  );
+  assert.throws(
+    () => checker.assertFrozenReviewFile(junctionRaceRoot, internalEvidence, internalRealPath, { metadata: { dev: 0, ino: 0 } }),
+    /evidence_bundle_file_identity_unavailable/,
+    'release evidence must fail closed when the platform cannot provide a native file identity',
+  );
+  assert.throws(
+    () => checker.assertFrozenExternalFile(internalEvidence, internalRealPath, { metadata: { ...internalFrozen.metadata, size: internalFrozen.metadata.size + 1 } }),
+    /evidence_bundle_file_metadata_changed/,
+    'in-place mutation after a file snapshot must fail the final metadata revalidation',
+  );
+  assert.doesNotThrow(
+    () => checker.assertFrozenExternalFile(internalEvidence, internalRealPath, internalFrozen),
+    'an unchanged external evidence file must retain its native identity and metadata',
+  );
+  const junctionBackup = path.join(junctionRaceRoot, 'slot-original');
+  fs.renameSync(junctionInternal, junctionBackup);
+  fs.symlinkSync(junctionExternal, junctionInternal, process.platform === 'win32' ? 'junction' : 'dir');
+  try {
+    assert.throws(
+      () => checker.assertFrozenReviewFile(junctionRaceRoot, path.join(junctionInternal, 'proof.txt'), internalRealPath, externalFrozen),
+      /evidence_bundle_path_escape/,
+      'a parent directory changed to a junction outside the review root must fail containment after the file read',
+    );
+  } finally {
+    fs.unlinkSync(junctionInternal);
+    fs.renameSync(junctionBackup, junctionInternal);
+  }
 
   assert.equal(checker.inspectCandidateCommit('a'.repeat(39)).pass, false, 'wrong SHA must fail');
   const canonicalReviews = roles.map((role, index) => review(role, `reviewer-${index}`, candidateRuntimeIdentity, manifest.manifest));

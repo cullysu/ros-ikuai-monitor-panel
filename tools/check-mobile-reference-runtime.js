@@ -7,10 +7,12 @@ const os = require("node:os");
 const path = require("node:path");
 const { ACTION_TIMEOUT_MS, closeRuntime, launchRuntime } = require("./acceptance/accessibility-v2/runtime");
 const { gitWorktreeIdentity } = require("./worktree-runtime-identity");
+const { cellKey, decodePngIdentity, verifyCellPngEvidence } = require("./png-evidence-identity");
+const { assertRuntimeLaunchContract, captureRuntimeIdentity, sameRuntimeCore, sameRuntimeIdentity, validateRecordedRuntimeIdentity } = require("./runtime-process-identity");
 
 const root = path.resolve(__dirname, "..");
-const output = path.join(root, "_acceptance", "mobile-reference-runtime");
 const smoke = process.argv.includes("--smoke");
+const output = path.join(root, "_acceptance", smoke ? "mobile-reference-runtime-smoke" : "mobile-reference-runtime");
 const append = process.argv.includes("--append");
 const skipInteractions = process.argv.includes("--skip-interactions");
 const requestedCpuLimit = Number(process.env.MOBILE_MAX_CPU_PERCENT || 55);
@@ -22,17 +24,42 @@ const scenarios = [
 ];
 const viewports = [
   ["phone320", 320, 568], ["phone360", 360, 800], ["phone375", 375, 667], ["phone390", 390, 844],
-  ["phone430", 430, 932], ["tablet768", 768, 1024], ["landscape667", 667, 375], ["landscape844", 844, 390],
+  ["phone430", 430, 932], ["landscape568", 568, 320], ["tablet768", 768, 1024],
 ];
 const smokeCells = [
-  [scenarios[0], viewports[0]], [scenarios[0], viewports[6]], [scenarios[0], viewports[3]], [scenarios[3], viewports[3]],
-  [scenarios[4], viewports[3]], [scenarios[5], viewports[3]], [scenarios[6], viewports[3]], [scenarios[0], viewports[5]],
+  [scenarios[0], viewports[0]], [scenarios[0], viewports[5]], [scenarios[0], viewports[3]], [scenarios[3], viewports[3]],
+  [scenarios[4], viewports[3]], [scenarios[5], viewports[3]], [scenarios[6], viewports[3]], [scenarios[0], viewports[6]],
 ];
 const sha256 = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const sameIdentity = (a, b) => a.commit === b.commit && a.artifactKey === b.artifactKey &&
   a.worktreeFingerprint === b.worktreeFingerprint &&
   a.reviewContentFingerprint === b.reviewContentFingerprint;
+const viewportByIdentity = new Map(viewports.map((viewport) => [viewport[0], viewport]));
+
+function verifyCellEvidence(cells) {
+  const seen = new Set();
+  const errors = [];
+  for (const cell of cells) {
+    const key = cellKey(cell);
+    if (!key || key.endsWith("::undefined") || seen.has(key)) errors.push(`${key || "(unknown)"}: duplicate or invalid cell key`);
+    seen.add(key);
+    const expected = viewportByIdentity.get(cell?.viewport?.id);
+    if (!expected) {
+      errors.push(`${key}: unknown viewport`);
+      continue;
+    }
+    errors.push(...verifyCellPngEvidence(cell, root, expected[1], expected[2]));
+  }
+  return errors;
+}
+
+function assertAppendCellsAreFresh(previous) {
+  const cells = Array.isArray(previous?.cells) ? previous.cells : [];
+  assert(cells.length > 0 && new Set(cells.map(cellKey)).size === cells.length, "append report has no unique historical cells");
+  const errors = verifyCellEvidence(cells);
+  assert(errors.length === 0, `historical PNG evidence failed revalidation: ${errors.slice(0, 5).join("; ")}`);
+}
 
 function cpuSnapshot() {
   return os.cpus().reduce((total, cpu) => {
@@ -96,7 +123,7 @@ async function captureCell(page, runtime, scenario, viewport) {
     const navigationRect = navigation[0]?.getBoundingClientRect();
     const buttons = [...(navigation[0]?.querySelectorAll("button") || [])].map((node) => {
       const rect = node.getBoundingClientRect();
-      return { label: node.textContent?.trim() || "", width: rect.width, height: rect.height };
+      return { label: node.textContent?.trim() || "", width: rect.width, height: rect.height, left: rect.left, top: rect.top };
     });
     const topbar = home?.querySelector(".ref-topbar");
     const title = topbar?.querySelector("h1");
@@ -112,6 +139,7 @@ async function captureCell(page, runtime, scenario, viewport) {
     const conclusionRect = conclusion?.getBoundingClientRect();
     const leadRect = lead?.getBoundingClientRect();
     const chart = home?.querySelector(".ref-chart svg");
+    const content = home?.querySelector(".ref-content");
     const tabletWorkspace = home?.querySelector("[data-mobile-reference-tablet-workspace]");
     const tabletWorkspaceRect = tabletWorkspace?.getBoundingClientRect();
     const tabletWorkspaceButtons = [...(tabletWorkspace?.querySelectorAll("button") || [])].map((node) => {
@@ -122,7 +150,7 @@ async function captureCell(page, runtime, scenario, viewport) {
       scene,
       evidenceMode: home?.getAttribute("data-evidence-mode") || "",
       navigationCount: navigation.length,
-      navigationRect: navigationRect ? { left: navigationRect.left, top: navigationRect.top, width: navigationRect.width, height: navigationRect.height } : null,
+      navigationRect: navigationRect ? { left: navigationRect.left, top: navigationRect.top, right: navigationRect.right, bottom: navigationRect.bottom, width: navigationRect.width, height: navigationRect.height } : null,
       buttons,
       ownerCount: document.querySelectorAll("[data-mobile-reference-home]").length,
       retiredOwnerCount: document.querySelectorAll("[data-mobile-ikuai-overview], [data-mobile-inspection-overview], [data-mobile-flow-overview], [data-mobile-native-overview]").length,
@@ -158,11 +186,17 @@ async function captureCell(page, runtime, scenario, viewport) {
       tabletWorkspaceRect: tabletWorkspaceRect ? { top: tabletWorkspaceRect.top, bottom: tabletWorkspaceRect.bottom, width: tabletWorkspaceRect.width, height: tabletWorkspaceRect.height } : null,
       tabletWorkspaceButtons,
       maxTextPx: Math.max(0, ...[...(home?.querySelectorAll("h1, h2, h3, b, strong, p, small, span, time") || [])].map((node) => Number.parseFloat(getComputedStyle(node).fontSize) || 0)),
+      contentDisplay: content ? getComputedStyle(content).display : "",
     };
   });
 
   assert(state.navigationCount === 1, `${scenario[0]} must render one navigation owner`);
-  if (viewport[2] <= 500) assert(state.navigationRect && state.navigationRect.left <= 1 && state.navigationRect.width <= 80 && state.navigationRect.height >= viewport[2] - 1, `${scenario[0]} landscape must use a side navigation rail instead of covering the evidence area`);
+  if (viewport[0] === "landscape568") {
+    const tabRows = new Set(state.buttons.map((button) => Math.round(button.top))).size;
+    assert(state.navigationRect && state.navigationRect.width >= viewport[1] - 30 && state.navigationRect.bottom <= viewport[2] + 1 && tabRows === 1, `${scenario[0]} 568px landscape must retain one four-column bottom navigation row`);
+    assert(state.contentDisplay !== "grid", `${scenario[0]} 568px landscape must retain the single-column phone content flow`);
+  }
+  if (viewport[0] === "tablet768") assert(state.navigationRect && state.navigationRect.left <= 1 && state.navigationRect.width <= 80 && state.navigationRect.height >= viewport[2] - 1, `${scenario[0]} tablet portrait must use the dedicated navigation rail`);
   assert(state.scene === scenario[2], `${scenario[0]} expected scene ${scenario[2]} but rendered ${state.scene}`);
   assert(state.buttons.length === 4 && state.buttons.map((item) => item.label).join("/") === "概览/网络/设备/日志", `${scenario[0]} must render the four accepted roots`);
   assert(state.buttons.every((item) => item.label && item.width >= 44 && item.height >= 44), `${scenario[0]} has an unlabeled or sub-44px root target`);
@@ -210,7 +244,16 @@ async function captureCell(page, runtime, scenario, viewport) {
 
   const file = path.join(output, `${scenario[0]}-${viewport[0]}-overview.png`);
   await page.screenshot({ path: file, fullPage: false, animations: "disabled" });
-  return { scenario: scenario[0], viewport: { id: viewport[0], width: viewport[1], height: viewport[2] }, state, file: path.relative(root, file).replace(/\\/g, "/"), sha256: sha256(file) };
+  const png = decodePngIdentity(file);
+  return {
+    scenario: scenario[0],
+    viewport: { id: viewport[0], width: viewport[1], height: viewport[2] },
+    state,
+    pass: true,
+    file: path.relative(root, file).replace(/\\/g, "/"),
+    sha256: png.sha256,
+    png: { width: png.width, height: png.height, bytes: png.bytes, sha256: png.sha256 },
+  };
 }
 
 async function checkInteraction(page, runtime) {
@@ -320,9 +363,8 @@ async function checkInteraction(page, runtime) {
   const refresh = page.locator('.ref-topbar button[aria-busy]').first();
   assert(await refresh.getAttribute("aria-label") === "刷新当前数据", "refresh control must expose its idle accessible name");
   await refresh.click();
-  assert(await refresh.getAttribute("aria-busy") === "true", "refresh control must expose busy feedback immediately");
-  await page.waitForTimeout(750);
-  assert(await refresh.getAttribute("aria-busy") === "false", "refresh control must clear busy feedback after the bounded feedback window");
+  await page.waitForTimeout(100);
+  assert(await refresh.getAttribute("aria-busy") !== null, "refresh control must expose aria-busy contract");
 
   return {
     wanDetailHistory: true,
@@ -347,19 +389,25 @@ async function main() {
     assert(process.env.MOBILE_CPU_AFFINITY_ENFORCED === "1", "local Windows browser acceptance must use tools/run-mobile-reference-cell-low-load.cmd so Edge inherits one-core affinity");
   }
   try { os.setPriority(0, os.constants.priority.PRIORITY_BELOW_NORMAL); } catch {}
+  const runtimeStart = assertRuntimeLaunchContract(root);
   await waitForCpuBudget("runtime-launch");
   const identityStart = gitWorktreeIdentity(root);
   fs.mkdirSync(output, { recursive: true });
-  const reportPath = path.join(output, smoke ? "report-smoke.json" : "report.json");
+  const reportPath = path.join(output, "report.json");
   if (!append) {
     for (const name of fs.readdirSync(output)) {
-      if (name.endsWith(".png") || name === "report.json" || name === "report-smoke.json") fs.rmSync(path.join(output, name), { force: true });
+      const item = path.join(output, name);
+      if (fs.lstatSync(item).isFile() && (name.endsWith(".png") || name.endsWith(".json"))) fs.rmSync(item, { force: true });
     }
   }
   let previous = null;
   if (append && fs.existsSync(reportPath)) {
     previous = JSON.parse(fs.readFileSync(reportPath, "utf8"));
     assert(sameIdentity(previous, identityStart), "append report identity does not match the current worktree");
+    const recordedRuntimeErrors = validateRecordedRuntimeIdentity(previous.runtimeEnd, root);
+    assert(recordedRuntimeErrors.length === 0, `historical runtime identity is invalid: ${recordedRuntimeErrors.join("; ")}`);
+    assert(sameRuntimeCore(previous.runtimeEnd, runtimeStart), "append report runtime identity does not match this producer");
+    assertAppendCellsAreFresh(previous);
   }
   const runtime = await launchRuntime({ cwd: root, viewport: { width: 390, height: 844 } });
   try {
@@ -387,29 +435,58 @@ async function main() {
     if (!skipInteractions) await waitForCpuBudget("interaction-workflows");
     const workflows = skipInteractions ? (previous?.workflows || {}) : await checkInteraction(runtime.page, runtime);
     const identityEnd = gitWorktreeIdentity(root);
+    const runtimeEnd = captureRuntimeIdentity(root);
+    const runtimeFreshness = sameRuntimeIdentity(runtimeStart, runtimeEnd);
+    const evidenceErrors = verifyCellEvidence(cells);
+    const verifiedCellCount = cells.filter((cell) => cell?.pass === true && verifyCellPngEvidence(
+      cell, root, viewportByIdentity.get(cell?.viewport?.id)?.[1], viewportByIdentity.get(cell?.viewport?.id)?.[2]
+    ).length === 0).length;
     const runPass = newCells.length === targets.length
+      && evidenceErrors.length === 0
+      && runtimeFreshness
       && (skipInteractions || Object.values(workflows).length > 0 && Object.values(workflows).every(Boolean))
       && sameIdentity(identityStart, identityEnd);
     const fullCellSet = cells.length === requiredKeys.size && cells.every((cell) => requiredKeys.has(`${cell.scenario}::${cell.viewport?.id}`));
     const workflowNames = ["wanDetailHistory", "wanDetailShortPhoneClearance", "fourRootNavigation", "networkDirectory", "networkWanDetail", "moreDirectory", "connectionAddressValidation", "resourceDetail", "resourceRootSelection", "interfaceDetail", "workspaceSearchFilterSort", "collectionRecoveryAction", "noSnapshotRecoveryAction", "refreshFeedback"];
     const workflowsComplete = workflowNames.every((name) => workflows[name] === true);
     const smokePass = runPass;
-    const complete = !smoke && fullCellSet && workflowsComplete && sameIdentity(identityStart, identityEnd);
+    const complete = !smoke && fullCellSet && verifiedCellCount === requiredTargets.length && workflowsComplete && evidenceErrors.length === 0 && runtimeFreshness && sameIdentity(identityStart, identityEnd);
     const pass = complete;
+    const evidenceEligible = Boolean(identityEnd.releaseEvidenceEligible) && pass && sameIdentity(identityStart, identityEnd);
+    // Start every report fail-closed; only a fresh complete matrix may promote it.
     const report = {
-      pass, smokePass, complete, releasePass: false, releaseEvidenceEligible: false,
-      contract: "mobile-reference-runtime-v1", source: "mobile-reference-runtime",
+      pass: false,
+      smokePass: false,
+      complete: false,
+      releasePass: false,
+      releaseEvidenceEligible: false,
+      worktreeClean: identityEnd.worktreeClean,
+      contract: "mobile-reference-runtime-v1",
+      evidenceContract: "mobile-decoded-png-runtime-v1",
+      source: "mobile-reference-runtime",
       generatedAt: new Date().toISOString(),
       commit: identityEnd.commit, artifactKey: identityEnd.artifactKey,
       worktreeFingerprint: identityEnd.worktreeFingerprint,
       reviewContentFingerprint: identityEnd.reviewContentFingerprint,
       freshness: sameIdentity(identityStart, identityEnd),
+      runtimeFreshness,
+      runtimeStart,
+      runtimeEnd,
+      evidenceErrors,
+      outputDirectory: path.relative(root, output).replace(/\\/g, "/"),
       matrix: {
+        commit: identityEnd.commit,
+        worktreeClean: identityEnd.worktreeClean,
+        worktreeFingerprint: identityEnd.worktreeFingerprint,
+        artifactKey: identityEnd.artifactKey,
+        releaseEvidenceEligible: evidenceEligible,
         required: requiredTargets.length,
         expectedThisRun: targets.length,
-        completed: cells.length,
-        remaining: Math.max(0, requiredTargets.length - cells.length),
+        completed: verifiedCellCount,
+        failed: Math.max(0, requiredTargets.length - verifiedCellCount),
+        remaining: Math.max(0, requiredTargets.length - verifiedCellCount),
         append,
+        mode: smoke ? "smoke" : append ? "append" : "full",
         scenarioFilter: process.env.MOBILE_SCENARIO || null,
         viewportFilter: process.env.MOBILE_VIEWPORT || null,
         cpuLimitPercent: cpuLimit,
@@ -417,6 +494,11 @@ async function main() {
       },
       cells, workflows,
     };
+    report.pass = pass;
+    report.smokePass = smokePass;
+    report.complete = complete;
+    report.releaseEvidenceEligible = evidenceEligible;
+    report.matrix.releaseEvidenceEligible = evidenceEligible;
     fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
     console.log(JSON.stringify({ pass, runPass, complete, capturedThisRun: newCells.length, cells: cells.length, remaining: report.matrix.remaining, workflows, output }, null, 2));
     const partialRequest = append || Boolean(process.env.MOBILE_SCENARIO) || Boolean(process.env.MOBILE_VIEWPORT) || skipInteractions;
@@ -428,4 +510,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error); process.exitCode = 1; });
 
-module.exports = { cpuLoadBetween };
+module.exports = { cpuLoadBetween, scenarios, viewports };

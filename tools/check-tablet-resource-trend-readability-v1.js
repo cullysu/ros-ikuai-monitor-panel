@@ -2,7 +2,7 @@
 'use strict';
 
 const { chromium } = require('playwright-core');
-const { startMock, browserExecutable } = require('./check-panel-runtime-browser');
+const { startMock, browserExecutable } = require('./acceptance/current-runtime-mock');
 
 /**
  * Write-ahead visual contract for the narrow resource workbench.

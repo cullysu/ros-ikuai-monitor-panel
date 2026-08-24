@@ -2,6 +2,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   isPanelEvidenceTimestamp,
   navigationContextFromLocation,
+  panelWorkspaceStateFromHistoryState,
   PANEL_ROUTES,
   routeFromLocation,
   routeUrl,
@@ -48,7 +49,19 @@ function captureMobileScroll(): MobileScrollState {
 }
 
 function stateWithCapturedScroll(state: Record<string, unknown>) {
-  return { ...state, panelMobileScroll: captureMobileScroll() };
+  const currentRoute = routeFromLocation(window.location);
+  const workspace = panelWorkspaceStateFromHistoryState(state, currentRoute);
+  const workspaceScroll = document.querySelector<HTMLElement>(`[data-panel-workspace-scroll="${currentRoute}"]`);
+  return {
+    ...state,
+    panelMobileScroll: captureMobileScroll(),
+    ...(workspace ? {
+      panelWorkspace: {
+        ...workspace,
+        scrollY: Math.max(0, Math.trunc(workspaceScroll?.scrollTop ?? workspace.scrollY)),
+      },
+    } : {}),
+  };
 }
 
 function restoreMobileScroll(state: unknown) {
@@ -119,7 +132,7 @@ export function usePanelRoute() {
       ? state.panelFocus
       : route === "overview" ? overviewReturnFocusRef.current : null;
     const selector = typeof state.panelObject === "string"
-      ? "[data-origin-space-detail-title]"
+      ? "[data-origin-space-detail-title], [data-panel-route-title]"
       : "[data-panel-route-title]";
     const disconnect = focusWhenMounted(selector, focusId);
     restoreMobileScroll(window.history.state);
@@ -163,10 +176,11 @@ export function usePanelRoute() {
     const currentState = (window.history.state || {}) as Record<string, unknown>;
     const currentScroll = captureMobileScroll();
     routeScrollMemory.set(route, currentScroll);
+    const sourceState = stateWithCapturedScroll({ ...currentState, panelFocus: focusId });
     // A detail entry is a real history entry. Store focus and every owned scroll
     // region on the source entry so Back and Forward restore the same task state.
-    if (!options.replace) window.history.replaceState(stateWithCapturedScroll({ ...currentState, panelFocus: focusId }), "", currentUrl);
-    const previousState = next === route ? currentState : withoutPanelWorkspaceHistoryState(currentState);
+    if (!options.replace) window.history.replaceState(sourceState, "", currentUrl);
+    const previousState = next === route ? sourceState : withoutPanelWorkspaceHistoryState(sourceState);
     const state = {
       ...previousState,
       panelRoute: next,
@@ -191,5 +205,5 @@ export function usePanelRoute() {
   const context = typeof window === "undefined"
     ? { objectId: null, query: null, risk: null, returnRoute: null, evidenceAt: null }
     : navigationContextFromLocation(window.location);
-  return { route, navigate, context, definition: PANEL_ROUTES[route] };
+  return { route, navigate, context, definition: PANEL_ROUTES[route], entryKey };
 }

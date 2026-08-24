@@ -7,7 +7,7 @@ const {
   bounded,
   launchManagedBrowser,
 } = require("../browser-lifecycle-v2/browser-lifecycle");
-const { startMock, browserExecutable } = require("../../check-panel-runtime-browser");
+const { startMock, browserExecutable } = require("../current-runtime-mock");
 
 const VIEWPORT = { width: 390, height: 844 };
 const configuredLowLoadTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);

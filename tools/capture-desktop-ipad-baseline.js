@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { chromium } = require('playwright-core');
-const { startMock, browserExecutable } = require('./check-panel-runtime-browser');
+const { startMock, browserExecutable } = require('./acceptance/current-runtime-mock');
 
 const root = path.resolve(__dirname, '..');
 const outDir = path.join(root, '_acceptance', 'desktop-ipad-baseline');

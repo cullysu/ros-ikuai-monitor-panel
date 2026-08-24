@@ -1,6 +1,8 @@
 import childProcess from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  existsSync,
+  mkdirSync,
   readFileSync,
   readdirSync,
   rmSync,
@@ -47,6 +49,75 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(rootDir, "..");
 const frameworkDir = resolve(projectRoot, "public/assets/framework");
 const frameworkInputsBeforeBuild = computeFrameworkInputIdentity(projectRoot);
+const buildCheckpointDir = resolve(projectRoot, "_acceptance");
+const buildCheckpointPath = resolve(buildCheckpointDir, "framework-build-checkpoint.json");
+
+const surfaceDefinitions = {
+  mobile: {
+    entry: "src/panel-framework/mobile/main.tsx",
+    name: "PanelMobile",
+    script: "panel-mobile.js",
+    style: "mobile.css",
+  },
+  desktop: {
+    entry: "src/panel-framework/desktop/main.tsx",
+    name: "PanelDesktop",
+    script: "panel-desktop.js",
+    style: "desktop.css",
+  },
+};
+
+function fileSha256(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+function readBuildCheckpoint() {
+  if (!existsSync(buildCheckpointPath)) return null;
+  try {
+    const checkpoint = JSON.parse(readFileSync(buildCheckpointPath, "utf8"));
+    if (
+      checkpoint?.schema !== "framework-build-checkpoint-v1" ||
+      checkpoint?.inputDigest !== frameworkInputsBeforeBuild.digest
+    ) {
+      rmSync(buildCheckpointPath, { force: true });
+      return null;
+    }
+    return checkpoint;
+  } catch {
+    rmSync(buildCheckpointPath, { force: true });
+    return null;
+  }
+}
+
+function validSurfaceCheckpoint(checkpoint, surface) {
+  const definition = surfaceDefinitions[surface];
+  const evidence = checkpoint?.surfaces?.[surface];
+  if (!evidence) return false;
+  const scriptPath = resolve(frameworkDir, definition.script);
+  const stylePath = resolve(frameworkDir, definition.style);
+  return (
+    existsSync(scriptPath) &&
+    existsSync(stylePath) &&
+    evidence.scriptSha256 === fileSha256(scriptPath) &&
+    evidence.styleSha256 === fileSha256(stylePath)
+  );
+}
+
+function checkpointSurface(previous, surface) {
+  const definition = surfaceDefinitions[surface];
+  const checkpoint = {
+    schema: "framework-build-checkpoint-v1",
+    inputDigest: frameworkInputsBeforeBuild.digest,
+    surfaces: { ...(previous?.surfaces || {}) },
+  };
+  checkpoint.surfaces[surface] = {
+    scriptSha256: fileSha256(resolve(frameworkDir, definition.script)),
+    styleSha256: fileSha256(resolve(frameworkDir, definition.style)),
+  };
+  mkdirSync(buildCheckpointDir, { recursive: true });
+  writeFileSync(buildCheckpointPath, `${JSON.stringify(checkpoint, null, 2)}\n`, "utf8");
+  return checkpoint;
+}
 
 async function buildSurface({ entry, name, script, style }) {
   await build(defineConfig({
@@ -79,18 +150,15 @@ async function buildSurface({ entry, name, script, style }) {
   }));
 }
 
-await buildSurface({
-  entry: "src/panel-framework/mobile/main.tsx",
-  name: "PanelMobile",
-  script: "panel-mobile.js",
-  style: "mobile.css",
-});
-await buildSurface({
-  entry: "src/panel-framework/desktop/main.tsx",
-  name: "PanelDesktop",
-  script: "panel-desktop.js",
-  style: "desktop.css",
-});
+let buildCheckpoint = readBuildCheckpoint();
+for (const surface of ["mobile", "desktop"]) {
+  if (validSurfaceCheckpoint(buildCheckpoint, surface)) {
+    console.log(`reusing verified ${surface} build stage for ${frameworkInputsBeforeBuild.digest.slice(0, 12)}`);
+    continue;
+  }
+  await buildSurface(surfaceDefinitions[surface]);
+  buildCheckpoint = checkpointSurface(buildCheckpoint, surface);
+}
 
 const frameworkInputs = computeFrameworkInputIdentity(projectRoot);
 if (frameworkInputs.digest !== frameworkInputsBeforeBuild.digest) {
@@ -340,7 +408,8 @@ assets.mobile.style = emitOwnedAsset({ kind: "style", source: "mobile.css", pref
 assets.desktop.script = emitOwnedAsset({ kind: "script", source: "panel-desktop.js", prefix: "panel-desktop", extension: "js" });
 assets.desktop.style = emitOwnedAsset({ kind: "style", source: "desktop.css", prefix: "desktop", extension: "css" });
 
-const loaderSource = `(()=>{const q=new URLSearchParams(location.search).get("surface");const valid=q==="mobile"||q==="desktop";let s=valid?q:null;try{if(!s){const remembered=sessionStorage.getItem("router-panel-surface");if(remembered==="mobile"||remembered==="desktop")s=remembered}}catch{}if(!s){const coarse=matchMedia("(pointer:coarse)").matches||navigator.maxTouchPoints>0;s=coarse||screen.width<=1023?"mobile":"desktop"}try{sessionStorage.setItem("router-panel-surface",s)}catch{}document.documentElement.dataset.panelSurface=s;const a=${JSON.stringify(assets)}[s];const l=document.createElement("link");l.rel="stylesheet";l.href="/assets/framework/"+a.style.file;l.dataset.panelSurfaceAsset=s+"-style";document.head.append(l);const j=document.createElement("script");j.src="/assets/framework/"+a.script.file;j.dataset.panelSurfaceAsset=s+"-script";j.async=false;document.head.append(j);window.dispatchEvent(new CustomEvent("router-panel-surface-selected",{detail:{surface:s,explicit:valid}}))})();`;
+const panelSurfaceQuery = "(max-width: 1199px) and (orientation: portrait), (max-width: 599px)";
+const loaderSource = `(()=>{const q=new URLSearchParams(location.search).get("surface");const valid=q==="mobile"||q==="desktop";const panelSurfaceQuery=${JSON.stringify(panelSurfaceQuery)};const surfaceMedia=matchMedia(panelSurfaceQuery);const s=valid?q:surfaceMedia.matches?"mobile":"desktop";document.documentElement.dataset.panelSurface=s;const a=${JSON.stringify(assets)}[s];const l=document.createElement("link");l.rel="stylesheet";l.href="/assets/framework/"+a.style.file;l.dataset.panelSurfaceAsset=s+"-style";document.head.append(l);const j=document.createElement("script");j.src="/assets/framework/"+a.script.file;j.dataset.panelSurfaceAsset=s+"-script";j.async=false;document.head.append(j);if(!valid)surfaceMedia.addEventListener("change",()=>location.reload());window.dispatchEvent(new CustomEvent("router-panel-surface-selected",{detail:{surface:s,explicit:valid}}))})();`;
 writeFileSync(resolve(frameworkDir, "panel-surface-loader.js"), loaderSource, "utf8");
 assets.loader = emitOwnedAsset({ kind: "script", source: "panel-surface-loader.js", prefix: "panel-surface-loader", extension: "js" });
 
@@ -375,3 +444,4 @@ for (const scriptPath of [
     stdio: "inherit",
   });
 }
+rmSync(buildCheckpointPath, { force: true });

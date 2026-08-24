@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
+require('./test-browser-lifecycle-lowload-timeout');
+
 /*
  * Deep interaction contract for the accepted Mobile Reference owner.
  *
@@ -161,6 +163,8 @@ async function workspaceState(page, route) {
     const selects = [...(workspace?.querySelectorAll('.ref-workspace-selects select') || [])];
     const pagination = workspace?.querySelector('.ref-pagination');
     const focused = document.activeElement?.closest?.('[data-panel-object-row]');
+    const scroll = workspace?.querySelector(`[data-panel-workspace-scroll="${targetRoute}"]`);
+    const historyWorkspace = history.state?.panelWorkspace || null;
     const url = new URL(location.href);
     return {
       route: url.searchParams.get('section'),
@@ -175,6 +179,9 @@ async function workspaceState(page, route) {
       selects: selects.map((select) => select.value),
       pagination: pagination?.textContent?.replace(/\s+/g, ' ').trim() || '',
       focusId: focused?.getAttribute('data-panel-object-row') || '',
+      scrollTop: scroll instanceof HTMLElement ? Math.trunc(scroll.scrollTop) : 0,
+      scrollMax: scroll instanceof HTMLElement ? Math.max(0, Math.trunc(scroll.scrollHeight - scroll.clientHeight)) : 0,
+      historyWorkspace,
       overflowX: Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0) - innerWidth,
     };
   }, route);
@@ -187,8 +194,20 @@ function uniqueSearchTerm(texts) {
     || '';
 }
 
+function pageNumberFromPagination(text) {
+  const match = String(text || '').match(/第\s*(\d+)\s*\/\s*\d+\s*页/);
+  return match ? Number.parseInt(match[1], 10) : 1;
+}
+
 async function exerciseControls(page, route, workspace, initial) {
-  const evidence = { search: false, selects: 0, pagination: false };
+  const evidence = {
+    search: false,
+    retainedSearch: false,
+    selects: 0,
+    retainedFilter: false,
+    retainedSort: false,
+    pagination: false,
+  };
   const search = workspace.locator('input[type="search"]');
   if (await search.count()) {
     const term = uniqueSearchTerm(initial.rowPrimaries);
@@ -202,7 +221,7 @@ async function exerciseControls(page, route, workspace, initial) {
     assert(searched.rowIds.length > 0 && searched.rowIds.length <= initial.rowIds.length,
       '搜索没有保留匹配的真实对象', { route, term, initial: initial.rowIds, searched: searched.rowIds });
     evidence.search = true;
-    await search.fill('');
+    evidence.retainedSearch = true;
   }
 
   const selects = workspace.locator('.ref-workspace-selects select');
@@ -210,12 +229,21 @@ async function exerciseControls(page, route, workspace, initial) {
     const select = selects.nth(index);
     const current = await select.inputValue();
     const options = await select.locator('option').evaluateAll((nodes) => nodes.map((node) => node.value));
-    const next = options.find((value) => value !== current);
-    if (!next) continue;
-    await select.selectOption(next);
-    assert(await select.inputValue() === next, '筛选或排序控件没有更新真实选择状态', { route, index, current, next });
-    evidence.selects += 1;
-    await select.selectOption(current);
+    let retained = false;
+    for (const next of options.filter((value) => value !== current)) {
+      await select.selectOption(next);
+      assert(await select.inputValue() === next, '筛选或排序控件没有更新真实选择状态', { route, index, current, next });
+      const changed = await workspaceState(page, route);
+      if (changed.rowIds.length > 0) {
+        retained = true;
+        evidence.selects += 1;
+        if (index === 0) evidence.retainedFilter = true;
+        if (index === 1) evidence.retainedSort = true;
+        break;
+      }
+      await select.selectOption(current);
+    }
+    if (!retained) await select.selectOption(current);
   }
 
   const pagination = workspace.locator('.ref-pagination');
@@ -236,7 +264,17 @@ async function exerciseControls(page, route, workspace, initial) {
 
 async function exerciseHistory(page, baseUrl, route) {
   let workspace = await waitForWorkspace(page, route);
-  const row = workspace.locator('[data-panel-object-row]').first();
+  const scroll = workspace.locator(`[data-panel-workspace-scroll="${route}"]`);
+  if (await scroll.count()) {
+    await scroll.evaluate((element) => { element.scrollTop = Math.max(0, element.scrollHeight - element.clientHeight); });
+    await page.waitForFunction((targetRoute) => {
+      const element = document.querySelector(`[data-panel-workspace-scroll="${targetRoute}"]`);
+      return element instanceof HTMLElement
+        && (element.scrollHeight <= element.clientHeight + 1 || element.scrollTop > 0);
+    }, route);
+  }
+  const before = await workspaceState(page, route);
+  const row = workspace.locator('[data-panel-object-row]').last();
   const objectId = await row.getAttribute('data-panel-object-row');
   assert(objectId, '对象列表没有可深链的真实对象标识', { route });
   await row.focus();
@@ -249,8 +287,25 @@ async function exerciseHistory(page, baseUrl, route) {
   await page.goBack({ waitUntil: 'domcontentloaded' });
   workspace = await waitForWorkspace(page, route);
   state = canonicalState(page);
+  const afterBack = await workspaceState(page, route);
   assert(state.route === route && state.object === null && state.surface === null && state.hash === '',
     '浏览器 Back 没有恢复对象列表 URL', { route, objectId, state });
+  assert(afterBack.search === before.search
+    && JSON.stringify(afterBack.selects) === JSON.stringify(before.selects)
+    && afterBack.pagination === before.pagination
+    && JSON.stringify(afterBack.rowIds) === JSON.stringify(before.rowIds),
+  '浏览器 Back 没有恢复筛选、排序或分页状态', { route, objectId, before, afterBack });
+  assert(Math.abs(afterBack.scrollTop - before.scrollTop) <= 2,
+    '浏览器 Back 没有恢复 Mobile Reference 内层滚动位置', { route, objectId, before, afterBack });
+  assert(afterBack.focusId === objectId,
+    '浏览器 Back 没有把焦点恢复到来源对象', { route, objectId, before, afterBack });
+  assert(afterBack.historyWorkspace?.route === route
+    && afterBack.historyWorkspace?.search === afterBack.search
+    && afterBack.historyWorkspace?.filter === afterBack.selects[0]
+    && afterBack.historyWorkspace?.sort === afterBack.selects[1]
+    && afterBack.historyWorkspace?.page === pageNumberFromPagination(afterBack.pagination)
+    && Math.abs(Number(afterBack.historyWorkspace?.scrollY) - afterBack.scrollTop) <= 2,
+  '浏览器历史没有保存有界 Workspace 状态', { route, objectId, before, afterBack });
 
   await page.goForward({ waitUntil: 'domcontentloaded' });
   await waitForWorkspace(page, route, true);
@@ -263,7 +318,39 @@ async function exerciseHistory(page, baseUrl, route) {
   state = canonicalState(page);
   assert(state.route === route && state.object === objectId && state.surface === null && state.hash === '',
     '对象 direct link 没有打开真实详情', { route, objectId, state });
-  return { objectId, back: true, forward: true, direct: true };
+  return {
+    objectId,
+    back: true,
+    forward: true,
+    direct: true,
+    workspaceHistory: {
+      search: afterBack.search,
+      selects: afterBack.selects,
+      pagination: afterBack.pagination,
+      scrollTop: afterBack.scrollTop,
+      focusId: afterBack.focusId,
+    },
+  };
+}
+
+async function exercisePaginationHistory(page, baseUrl, route) {
+  await page.goto(routeUrl(baseUrl, route), { waitUntil: 'domcontentloaded' });
+  const workspace = await waitForWorkspace(page, route);
+  const pagination = workspace.locator('.ref-pagination');
+  assert(await pagination.count() === 1, '确定性分页工作区没有分页控件', { route });
+  const next = pagination.getByRole('button', { name: '下一页' });
+  assert(await next.count() === 1 && !await next.isDisabled(), '确定性分页工作区没有可进入的下一页', { route });
+  const beforeText = await pagination.innerText();
+  await next.click();
+  await page.waitForFunction(({ targetRoute, previous }) => {
+    const node = document.querySelector(`main[data-mobile-reference-workspace="${targetRoute}"] .ref-pagination`);
+    return Boolean(node && node.textContent !== previous);
+  }, { targetRoute: route, previous: beforeText });
+  const paged = await workspaceState(page, route);
+  assert(pageNumberFromPagination(paged.pagination) > 1 && paged.rowIds.length > 0,
+    '分页控件没有形成可验证的非首页对象集合', { route, paged });
+  const history = await exerciseHistory(page, baseUrl, route);
+  return { retainedPagination: true, history };
 }
 
 async function inspectRoute(page, baseUrl, route) {
@@ -275,7 +362,10 @@ async function inspectRoute(page, baseUrl, route) {
   assert(initial.overflowX <= 1, '移动工作区存在横向溢出', { route, initial });
   const controls = await exerciseControls(page, route, workspace, initial);
   const history = await exerciseHistory(page, baseUrl, route);
-  return { route, rows: initial.rowIds.length, controls, history };
+  const paginationHistory = route === 'interfaces'
+    ? await exercisePaginationHistory(page, baseUrl, route)
+    : null;
+  return { route, rows: initial.rowIds.length, controls, history, paginationHistory };
 }
 
 async function inspectNetworkDirectory(page, baseUrl) {
@@ -328,6 +418,17 @@ async function main() {
     await runtime.page.addInitScript((value) => { window.__PANEL_TEST_SNAPSHOT__ = value; }, snapshot);
     const routeResults = [];
     for (const route of routes) routeResults.push(await inspectRoute(runtime.page, server.url, route));
+    assert(routeResults.some((entry) => entry.controls.retainedSearch),
+      '没有工作区保留非空搜索状态进入历史详情', { routeResults });
+    assert(routeResults.some((entry) => entry.controls.retainedFilter),
+      '没有工作区保留非默认筛选状态进入历史详情', { routeResults });
+    assert(routeResults.some((entry) => entry.controls.retainedSort),
+      '没有工作区保留非默认排序状态进入历史详情', { routeResults });
+    assert(routeResults.some((entry) => entry.paginationHistory?.retainedPagination),
+      '没有工作区保留非首页分页状态进入历史详情', { routeResults });
+    const histories = routeResults.flatMap((entry) => [entry.history, entry.paginationHistory?.history].filter(Boolean));
+    assert(histories.some((entry) => entry.workspaceHistory.scrollTop > 0),
+      '没有工作区形成可验证的非零内层滚动恢复证据', { routeResults });
     const emptyDiagnostics = await inspectEmptyDiagnostics(runtime.page, server.url);
     const network = await inspectNetworkDirectory(runtime.page, server.url);
     return { routeResults, emptyDiagnostics, network };

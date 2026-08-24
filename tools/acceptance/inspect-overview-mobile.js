@@ -1,8 +1,14 @@
-+'use strict';
+'use strict';
+
+function mobileReferenceOwnsViewport(width, height) {
+  return width <= 599 || (width <= 1199 && height >= width);
+}
 
 /** Browser-side contract for the sole accepted Mobile Reference owner. */
 async function inspectOverviewMobileInteraction({ sectionName, viewport }) {
-  if (sectionName !== 'overview' || Number(viewport?.width || innerWidth) >= 900) {
+  const width = Number(viewport?.width || innerWidth);
+  const height = Number(viewport?.height || innerHeight);
+  if (sectionName !== 'overview' || !mobileReferenceOwnsViewport(width, height)) {
     return {
       mobileReferenceInteractionOk: true,
       mobileReferenceInteractionProbe: { applicable: false },
@@ -35,8 +41,7 @@ async function inspectOverviewMobileInteraction({ sectionName, viewport }) {
 function inspectMobileNativeOverview(context) {
   const width = Number(context.viewport?.width || innerWidth);
   const height = Number(context.viewport?.height || innerHeight);
-  const wideLandscapeBrowserOwner = width >= 600 && width > height;
-  if (context.sectionName !== 'overview' || width >= 900 || wideLandscapeBrowserOwner) return null;
+  if (context.sectionName !== 'overview' || !mobileReferenceOwnsViewport(width, height)) return null;
   const root = document.querySelector('[data-mobile-reference-home]');
   const navigation = document.querySelector('[data-mobile-reference-navigation]');
   const evidenceMode = root?.getAttribute('data-evidence-mode') || '';
@@ -103,4 +108,4 @@ function inspectMobileNativeOverview(context) {
   };
 }
 
-module.exports = { inspectMobileNativeOverview, inspectOverviewMobileInteraction };
+module.exports = { inspectMobileNativeOverview, inspectOverviewMobileInteraction, mobileReferenceOwnsViewport };

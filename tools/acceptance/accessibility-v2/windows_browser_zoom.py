@@ -19,6 +19,57 @@ def emit(payload: dict, code: int) -> None:
     raise SystemExit(code)
 
 
+def window_text(handle: int) -> str:
+    user32 = ctypes.windll.user32
+    length = user32.GetWindowTextLengthW(handle)
+    if length <= 0:
+        return ""
+    buffer = ctypes.create_unicode_buffer(length + 1)
+    user32.GetWindowTextW(handle, buffer, length + 1)
+    return buffer.value
+
+
+def window_class_name(handle: int) -> str:
+    buffer = ctypes.create_unicode_buffer(256)
+    ctypes.windll.user32.GetClassNameW(handle, buffer, len(buffer))
+    return buffer.value
+
+
+def process_image_name(process_id: int) -> str:
+    kernel32 = ctypes.windll.kernel32
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
+    kernel32.QueryFullProcessImageNameW.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+    process = kernel32.OpenProcess(0x1000, False, process_id)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not process:
+        raise RuntimeError("could not open the owned Edge process for identity verification")
+    try:
+        size = wintypes.DWORD(32768)
+        buffer = ctypes.create_unicode_buffer(size.value)
+        if not kernel32.QueryFullProcessImageNameW(process, 0, buffer, ctypes.byref(size)):
+            raise RuntimeError("could not read the owned Edge process image")
+        return Path(buffer.value).name.lower()
+    finally:
+        kernel32.CloseHandle(process)
+
+
+def validate_owned_edge_window(handle: int, title: str) -> int:
+    user32 = ctypes.windll.user32
+    if not user32.IsWindow(handle) or not user32.IsWindowVisible(handle):
+        raise RuntimeError("owned Edge window handle is no longer valid and visible")
+    if title not in window_text(handle):
+        raise RuntimeError("owned Edge window title no longer matches the unique task title")
+    if not window_class_name(handle).startswith("Chrome_WidgetWin"):
+        raise RuntimeError("owned window is not an Edge Chromium top-level window")
+    process_id = owned_process_id_for_window(handle)
+    if process_image_name(process_id) != "msedge.exe":
+        raise RuntimeError("owned window process image is not msedge.exe")
+    return process_id
+
+
 def find_owned_window_handle(title: str, timeout_seconds: float) -> int:
     """Find the uniquely titled headed Edge window without asking UIA to scan every Edge tab."""
     user32 = ctypes.windll.user32
@@ -31,13 +82,11 @@ def find_owned_window_handle(title: str, timeout_seconds: float) -> int:
         def collect(hwnd, _lparam):
             if not user32.IsWindowVisible(hwnd):
                 return True
-            length = user32.GetWindowTextLengthW(hwnd)
-            if length <= 0:
-                return True
-            buffer = ctypes.create_unicode_buffer(length + 1)
-            user32.GetWindowTextW(hwnd, buffer, length + 1)
-            if title in buffer.value:
+            try:
+                validate_owned_edge_window(int(hwnd), title)
                 matches.append(int(hwnd))
+            except RuntimeError:
+                pass
             return True
 
         user32.EnumWindows(collect, 0)
@@ -68,11 +117,6 @@ def focus_owned_window(handle: int, timeout_seconds: float) -> None:
         user32.AllowSetForegroundWindow(-1)
         deadline = time.time() + min(timeout_seconds, 3)
         while time.time() < deadline:
-            # Windows grants the foreground right to the last input queue. A
-            # neutral Alt tap is the documented UI-automation bridge before
-            # foregrounding a separately launched owned process.
-            user32.keybd_event(0x12, 0, 0, 0)
-            user32.keybd_event(0x12, 0, 0x0002, 0)
             user32.BringWindowToTop(handle)
             user32.SetForegroundWindow(handle)
             user32.SwitchToThisWindow(handle, True)
@@ -86,18 +130,66 @@ def focus_owned_window(handle: int, timeout_seconds: float) -> None:
             user32.AttachThreadInput(current_thread, thread_id, False)
 
 
-def send_chord(*virtual_keys: int) -> None:
-    """Send a physical virtual-key chord to the verified foreground Edge HWND."""
+def owned_process_id_for_window(handle: int) -> int:
+    process_id = ctypes.c_ulong(0)
+    ctypes.windll.user32.GetWindowThreadProcessId(handle, ctypes.byref(process_id))
+    value = int(process_id.value)
+    if value <= 0:
+        raise RuntimeError("could not resolve the owned Edge process")
+    return value
+
+
+def require_owned_foreground_process(owned_process_id: int, owned_window_handle: int) -> int:
+    """Fail closed unless foreground is the original Edge HWND or its owned popup."""
     user32 = ctypes.windll.user32
-    for key in virtual_keys:
-        user32.keybd_event(key, 0, 0, 0)
-    # A zero-duration key chord is intermittently dropped by headed Edge when
-    # the foreground token has just crossed from Playwright to this helper.
-    # Keep the input physical and bounded, but give Edge one small key-hold
-    # interval so the chord is not lost under normal desktop contention.
-    time.sleep(0.04)
-    for key in reversed(virtual_keys):
-        user32.keybd_event(key, 0, 0x0002, 0)
+    foreground = int(user32.GetForegroundWindow())
+    if foreground <= 0:
+        raise RuntimeError("no foreground window is available for the owned Edge UIA action")
+    if not window_is_owned_by(foreground, owned_window_handle):
+        raise RuntimeError("foreground ownership moved outside the original Edge HWND chain")
+    foreground_process_id = owned_process_id_for_window(foreground)
+    if foreground_process_id != owned_process_id:
+        raise RuntimeError("foreground ownership changed before the Edge UIA action")
+    return foreground
+
+
+def window_is_owned_by(candidate_handle: int, owned_window_handle: int) -> bool:
+    if candidate_handle == owned_window_handle:
+        return True
+    if candidate_handle <= 0:
+        return False
+    user32 = ctypes.windll.user32
+    if int(user32.GetAncestor(candidate_handle, 3) or 0) == owned_window_handle:  # GA_ROOTOWNER
+        return True
+    current = candidate_handle
+    for _ in range(8):
+        current = int(user32.GetWindow(current, 4) or 0)  # GW_OWNER
+        if current == owned_window_handle:
+            return True
+        if current <= 0:
+            break
+    return False
+
+
+def control_top_level_handle(control) -> int:
+    try:
+        return int(control.top_level_parent().handle or 0)
+    except Exception as error:
+        raise RuntimeError(f"could not resolve UIA control top-level HWND: {error}") from error
+
+
+def invoke_owned_control(control, owned_process_id: int, owned_window_handle: int, label: str) -> None:
+    """Invoke one UIA control only after binding it to the exact Edge window."""
+    control_process_id = int(getattr(control.element_info, "process_id", 0) or 0)
+    if control_process_id != owned_process_id:
+        raise RuntimeError(f"{label} is not owned by the expected Edge process")
+    if not window_is_owned_by(control_top_level_handle(control), owned_window_handle):
+        raise RuntimeError(f"{label} is not owned by the original Edge HWND")
+    require_owned_foreground_process(owned_process_id, owned_window_handle)
+    if not control.is_enabled():
+        raise RuntimeError(f"{label} is disabled")
+    control.invoke()
+    require_owned_foreground_process(owned_process_id, owned_window_handle)
 
 
 def non_sensitive_window_identity(handle: int, owned_process_id: int) -> dict:
@@ -442,7 +534,7 @@ def capture_owned_edge(handle: int, target: Path, focus_timeout_seconds: float) 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--title", required=True)
-    parser.add_argument("--action", choices=("reset", "oem-plus", "numpad-plus", "menu-plus"), default="reset")
+    parser.add_argument("--action", choices=("inspect", "menu-plus"), default="inspect")
     parser.add_argument("--timeout-seconds", type=float, default=20)
     parser.add_argument("--settle-milliseconds", type=int, default=300)
     parser.add_argument("--capture-path")
@@ -460,11 +552,9 @@ def main() -> None:
         try:
             user32 = ctypes.windll.user32
             handle = int(args.window_handle)
-            if not user32.IsWindow(handle):
-                raise RuntimeError("owned Edge window handle is no longer valid")
-            focus_owned_window(handle, args.timeout_seconds)
-            send_chord(0x1B)  # Dismiss any Edge chrome menu left by the real Zoom control.
-            time.sleep(0.1)
+            validate_owned_edge_window(handle, args.title)
+            if find_owned_window_handle(args.title, args.timeout_seconds) != handle:
+                raise RuntimeError("capture handle differs from the uniquely titled original Edge window")
             focus_owned_window(handle, args.timeout_seconds)
             time.sleep(args.settle_milliseconds / 1000)
             target = Path(args.capture_path).resolve()
@@ -490,42 +580,38 @@ def main() -> None:
                 "elapsedMs": round((time.time() - started_at) * 1000),
             }, 1)
 
-    if importlib.util.find_spec("pywinauto") is None:
-        # No protocol/CDP fallback: the real Edge menu path remains a required
-        # capability even when the physical key path works for a given step.
+    if args.action == "menu-plus" and importlib.util.find_spec("pywinauto") is None:
+        # No protocol/CDP or global-input fallback: the process-owned Edge
+        # UI Automation path is the required zoom capability.
         emit({"pass": False, "code": "PYWINAUTO_REQUIRED", "message": "pywinauto is not installed"}, 2)
 
     started_at = time.time()
     try:
         handle = find_owned_window_handle(args.title, args.timeout_seconds)
+        validate_owned_edge_window(handle, args.title)
+        if args.window_handle and int(args.window_handle) != handle:
+            raise RuntimeError("UIA action handle differs from the original Edge window")
         focus_owned_window(handle, args.timeout_seconds)
         if not args.capture_only:
-            # This helper performs one real toolbar operation at a time.  The
-            # Node gate observes page DPR/layout after every invocation; a UIA
-            # success result alone is never treated as browser-zoom proof.
-            if args.action == "reset":
-                send_chord(0x11, 0x30)  # Ctrl + 0
-            elif args.action == "oem-plus":
-                # The physical '=' key needs Shift to become '+'.  Ctrl+Plus
-                # is not equivalent to Ctrl+=' on layouts where '+' is shifted.
-                send_chord(0x11, 0x10, 0xBB)  # Ctrl + Shift + OEM_PLUS
-            elif args.action == "numpad-plus":
-                send_chord(0x11, 0x6B)  # Ctrl + Numpad Add
-            elif args.action == "menu-plus":
+            # This helper performs one process-owned toolbar operation at a
+            # time. The Node gate observes DPR/layout after every invocation;
+            # UIA success alone is never accepted as browser-zoom proof.
+            if args.action == "menu-plus":
                 from pywinauto import Desktop  # type: ignore
 
-                # UIA is deliberately only used once a verified key path did
-                # not change page geometry; handle lookup/focus stay bounded
-                # Win32 operations rather than a global UIA desktop scan.
+                # Handle lookup and control invocation stay bound to the
+                # uniquely titled Edge window and its owning process. Never
+                # emit global keyboard or physical mouse input.
                 desktop = Desktop(backend="uia")
                 window = desktop.window(handle=handle)
-                process_id = ctypes.c_ulong(0)
-                ctypes.windll.user32.GetWindowThreadProcessId(handle, ctypes.byref(process_id))
-                owned_process_id = int(process_id.value)
+                owned_process_id = owned_process_id_for_window(handle)
+                if int(window.process_id()) != owned_process_id:
+                    raise RuntimeError("UIA window is not bound to the expected Edge process")
                 more_tokens = ("settings and more", "settings", "设置及更多", "设置和更多", "更多")
                 zoom_in_tokens = ("zoom in", "放大", "增大")
 
-                def find_button(containers, tokens):
+                def find_buttons(containers, tokens):
+                    matches = {}
                     for container in containers:
                         try:
                             buttons = [
@@ -540,8 +626,15 @@ def main() -> None:
                             except Exception:
                                 continue
                             if name and any(token in name for token in tokens):
-                                return button
-                    return None
+                                info = button.element_info
+                                runtime_id = tuple(getattr(info, "runtime_id", ()) or ())
+                                key = runtime_id or (
+                                    int(getattr(info, "handle", 0) or 0),
+                                    str(getattr(info, "automation_id", "") or ""),
+                                    name,
+                                )
+                                matches[key] = button
+                    return list(matches.values())
 
                 more = None
                 for auto_id in ("SettingsAndMoreButton", "MoreButton", "AppMenuButton"):
@@ -553,7 +646,10 @@ def main() -> None:
                     except Exception:
                         continue
                 if more is None:
-                    more = find_button((window,), more_tokens)
+                    more_matches = find_buttons((window,), more_tokens)
+                    if len(more_matches) != 1:
+                        raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
+                    more = more_matches[0]
                 if more is None:
                     observed = []
                     try:
@@ -566,7 +662,7 @@ def main() -> None:
                     except Exception as inspect_error:
                         observed.append({"inspectError": str(inspect_error)[:120]})
                     raise RuntimeError("could not locate the real Edge Settings and more button for menu zoom fallback; observed=" + json.dumps(observed[:30], ensure_ascii=False))
-                more.click_input()
+                invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
                 time.sleep(args.settle_milliseconds / 1000)
                 # Do not scan every visible UIA window on the desktop here.
                 # A headed Edge run can coexist with many unrelated Edge
@@ -575,12 +671,27 @@ def main() -> None:
                 # product failure.  The menu popup is owned by the same Edge
                 # process, so keep the search bounded to that process and the
                 # already-owned window.
-                owned_windows = desktop.windows(process=owned_process_id, visible_only=True)
-                zoom_in = find_button((window, *owned_windows), zoom_in_tokens)
-                if zoom_in is None:
-                    raise RuntimeError("could not locate the real Edge Zoom in menu button for menu zoom fallback")
-                zoom_in.click_input()
-                send_chord(0x1B)
+                owned_windows = [
+                    candidate for candidate in desktop.windows(process=owned_process_id, visible_only=True)
+                    if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
+                ]
+                zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens)
+                if len(zoom_matches) != 1:
+                    raise RuntimeError(f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)}")
+                zoom_control = zoom_matches[0]
+                invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control")
+                time.sleep(args.settle_milliseconds / 1000)
+                # Edge normally keeps its Settings menu open after the Zoom
+                # in control is invoked. Close it through the same owned UIA
+                # toolbar control so the next increment and the Windows
+                # capture never inherit a stale popup. No global Escape key
+                # or physical mouse event is emitted.
+                try:
+                    menu_remains_open = bool(zoom_control.is_visible())
+                except Exception:
+                    menu_remains_open = False
+                if menu_remains_open:
+                    invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more close control")
             time.sleep(args.settle_milliseconds / 1000)
 
         capture = None

@@ -5,11 +5,10 @@
 // a registry object; the fixture transport keeps the same checks testable offline.
 const fs = require('node:fs');
 const crypto = require('node:crypto');
+const zlib = require('node:zlib');
 const { ArtifactZipError, MAX_ARCHIVE_BYTES, readBoundedZip } = require('./lib/bounded-artifact-zip.js');
 const {
-  TOOLBAR_200_REQUIRED_CELLS,
-  TOOLBAR_INCREMENTS,
-  validWindowsCapture,
+  validateToolbarReportEvidence,
 } = require('./check-browser-toolbar-zoom200.js');
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/i;
@@ -32,6 +31,14 @@ const REQUIRED_CI_ARTIFACTS = [
   'ci-windows-edge-toolbar-zoom200',
 ];
 const REQUIRED_IMAGE_PLATFORMS = ['amd64', 'arm64'];
+
+function cleanWorktreeFingerprint(sha) {
+  const hash = crypto.createHash('sha256');
+  hash.update(sha);
+  hash.update('\0runtime-tracked\0');
+  hash.update('\0runtime-untracked\0');
+  return hash.digest('hex');
+}
 const REQUIRED_CONTAINER_IMAGE_EVIDENCE = 'ghcr-image-evidence';
 const OCI_DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/i;
 const PRODUCTION_ENDPOINTS = Object.freeze({
@@ -363,6 +370,83 @@ function sha256(data) {
   return crypto.createHash('sha256').update(data).digest('hex');
 }
 
+const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+const PNG_CRC_TABLE = Uint32Array.from({ length: 256 }, (_, value) => {
+  let crc = value;
+  for (let bit = 0; bit < 8; bit += 1) crc = (crc & 1) ? (0xedb88320 ^ (crc >>> 1)) : (crc >>> 1);
+  return crc >>> 0;
+});
+
+function pngCrc32(data) {
+  let crc = 0xffffffff;
+  for (const byte of data) crc = PNG_CRC_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function decodePngEvidence(data, label) {
+  const fail = (detail) => {
+    throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', `${label} is not a complete decodable PNG: ${detail}.`);
+  };
+  if (!Buffer.isBuffer(data) || data.length < 45 || !data.subarray(0, 8).equals(PNG_SIGNATURE)) fail('signature is invalid');
+  let offset = 8;
+  let ihdr = null;
+  let seenIend = false;
+  const idat = [];
+  while (offset < data.length) {
+    if (offset + 12 > data.length) fail('chunk header is truncated');
+    const length = data.readUInt32BE(offset);
+    const chunkEnd = offset + 12 + length;
+    if (!Number.isSafeInteger(chunkEnd) || chunkEnd > data.length) fail('chunk length escapes the file');
+    const type = data.toString('ascii', offset + 4, offset + 8);
+    const chunkData = data.subarray(offset + 8, offset + 8 + length);
+    const expectedCrc = data.readUInt32BE(offset + 8 + length);
+    const actualCrc = pngCrc32(data.subarray(offset + 4, offset + 8 + length));
+    if (actualCrc !== expectedCrc) fail(`${type || 'unknown'} chunk CRC is invalid`);
+    if (!ihdr && type !== 'IHDR') fail('IHDR is not the first chunk');
+    if (type === 'IHDR') {
+      if (ihdr || length !== 13) fail('IHDR is duplicated or malformed');
+      ihdr = {
+        width: chunkData.readUInt32BE(0),
+        height: chunkData.readUInt32BE(4),
+        bitDepth: chunkData[8],
+        colorType: chunkData[9],
+        compression: chunkData[10],
+        filter: chunkData[11],
+        interlace: chunkData[12],
+      };
+    } else if (type === 'IDAT') {
+      idat.push(chunkData);
+    } else if (type === 'IEND') {
+      if (length !== 0) fail('IEND is malformed');
+      seenIend = true;
+      offset = chunkEnd;
+      break;
+    }
+    offset = chunkEnd;
+  }
+  if (!ihdr || !seenIend || idat.length === 0 || offset !== data.length) fail('required chunks are missing or trailing bytes exist');
+  if (!Number.isInteger(ihdr.width) || !Number.isInteger(ihdr.height) || ihdr.width < 1 || ihdr.height < 1 ||
+      ihdr.width > 8192 || ihdr.height > 8192 || ihdr.width * ihdr.height > 20_000_000) fail('dimensions are outside the bounded evidence range');
+  const channels = new Map([[0, 1], [2, 3], [3, 1], [4, 2], [6, 4]]).get(ihdr.colorType);
+  const allowedDepths = new Map([[0, [1, 2, 4, 8, 16]], [2, [8, 16]], [3, [1, 2, 4, 8]], [4, [8, 16]], [6, [8, 16]]]).get(ihdr.colorType) || [];
+  if (!channels || !allowedDepths.includes(ihdr.bitDepth) || ihdr.compression !== 0 || ihdr.filter !== 0 || ihdr.interlace !== 0) {
+    fail('pixel format is unsupported or malformed');
+  }
+  const rowBytes = Math.ceil((ihdr.width * channels * ihdr.bitDepth) / 8);
+  const expectedInflatedBytes = ihdr.height * (rowBytes + 1);
+  let pixels;
+  try {
+    pixels = zlib.inflateSync(Buffer.concat(idat), { maxOutputLength: expectedInflatedBytes + 1 });
+  } catch {
+    fail('IDAT stream cannot be decoded within its declared dimensions');
+  }
+  if (pixels.length !== expectedInflatedBytes) fail('decoded pixel byte count differs from IHDR dimensions');
+  for (let row = 0; row < ihdr.height; row += 1) {
+    if (pixels[row * (rowBytes + 1)] > 4) fail('scanline filter is invalid');
+  }
+  return { width: ihdr.width, height: ihdr.height };
+}
+
 function artifactFiles(buffer, label) {
   try {
     return readBoundedZip(buffer);
@@ -508,36 +592,38 @@ function verifyWindowsToolbarEvidence(files, sha) {
     throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', 'Windows Edge toolbar proof does not bind a successful Windows job, report, manifest, and requested SHA.');
   }
   const parsed = parseJson(report, 'Windows Edge toolbar report');
-  const expectedCells = TOOLBAR_200_REQUIRED_CELLS.map(({ viewport, scenario }) => ({
-    id: `${viewport.id}::${scenario}`,
-    viewport: viewport.cssViewport,
-  }));
-  const expectedById = new Map(expectedCells.map((cell) => [cell.id, cell]));
+  const validation = validateToolbarReportEvidence(parsed);
   const cells = Array.isArray(parsed?.cells) ? parsed.cells : [];
-  const actualCells = cells.map((cell) => `${cell?.viewport?.id || ''}::${cell?.scenario || ''}`);
-  if (parsed?.pass !== true || parsed?.contract !== 'edge-toolbar-zoom200-windows-v5' || parsed?.identity?.commit !== sha || parsed?.identity?.worktreeClean !== true || parsed?.identity?.releaseEvidenceEligible !== true || parsed?.matrix?.complete !== true ||
-      cells.length !== expectedCells.length || expectedCells.some(({ id }) => !actualCells.includes(id)) || actualCells.some((id) => !expectedById.has(id))) {
-    throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', 'Windows Edge toolbar report is not a complete successful exact-SHA 22-cell matrix.');
+  if (!validation.pass || parsed?.identity?.commit !== sha || parsed?.identity?.worktreeClean !== true ||
+      parsed?.identity?.releaseEvidenceEligible !== true || parsed?.identity?.artifactKey !== sha ||
+      parsed?.identity?.worktreeFingerprint !== cleanWorktreeFingerprint(sha) || parsed?.stableIdentity?.commit !== sha) {
+    throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', `Windows Edge toolbar report is not a complete successful exact-SHA v10 matrix: ${validation.errors.join('; ')}`);
   }
+  const visualHashes = new Map();
   for (const cell of cells) {
-    const cellId = `${cell?.viewport?.id || ''}::${cell?.scenario || ''}`;
-    const expected = expectedById.get(cellId);
-    const steps = Array.isArray(cell?.windowsAutomation?.steps) ? cell.windowsAutomation.steps : [];
     const screenshot = cell?.surface?.screenshot;
     const diagnosticScreenshot = cell?.surface?.playwrightDiagnosticScreenshot;
-    const windowsCapture = cell?.surface?.windowsCapture;
     const screenshotName = String(screenshot?.file || '').split(/[\\/]/u).pop();
     const diagnosticName = String(diagnosticScreenshot?.file || '').split(/[\\/]/u).pop();
-    if (!expected || cell?.viewport?.cssViewport?.width !== expected.viewport.width || cell?.viewport?.cssViewport?.height !== expected.viewport.height ||
-        cell?.zoomLevel?.verified !== true || cell?.zoomLevel?.expectedPercent !== 200 || cell?.zoomLevel?.toolbarIncrements !== TOOLBAR_INCREMENTS ||
-        cell?.windowsAutomation?.pass !== true || steps.length !== TOOLBAR_INCREMENTS ||
-        steps.some((step) => !step?.attempts?.some((attempt) => attempt?.action === step?.acceptedAction && attempt?.changed === true)) ||
-        !Array.isArray(cell?.surface?.clippedOperationalText) || cell.surface.clippedOperationalText.length !== 0 ||
-        !Array.isArray(cell?.surface?.unreadableOperationalText) || cell.surface.unreadableOperationalText.length !== 0 ||
-        !validWindowsCapture(windowsCapture, windowsCapture?.windowHandle) ||
-        !screenshotName || !payload.has(`edge-toolbar/${screenshotName}`) || sha256(payload.get(`edge-toolbar/${screenshotName}`)) !== screenshot?.sha256 ||
-        !diagnosticName || !payload.has(`edge-toolbar/${diagnosticName}`) || sha256(payload.get(`edge-toolbar/${diagnosticName}`)) !== diagnosticScreenshot?.sha256) {
+    const screenshotData = screenshotName ? payload.get(`edge-toolbar/${screenshotName}`) : null;
+    const diagnosticData = diagnosticName ? payload.get(`edge-toolbar/${diagnosticName}`) : null;
+    if (!screenshotName || !screenshotData || sha256(screenshotData) !== screenshot?.sha256 ||
+        !diagnosticName || !diagnosticData || sha256(diagnosticData) !== diagnosticScreenshot?.sha256) {
       throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', `Windows Edge toolbar cell ${cell?.viewport?.id || '?'}::${cell?.scenario || '?'} lacks complete zoom or screenshot evidence.`);
+    }
+    const cellId = `${cell?.viewport?.id || '?'}::${cell?.scenario || '?'}`;
+    const decodedScreenshot = decodePngEvidence(screenshotData, `${cellId} Windows screenshot`);
+    const decodedDiagnostic = decodePngEvidence(diagnosticData, `${cellId} renderer screenshot`);
+    if (decodedScreenshot.width !== Number(screenshot?.dimensions?.width) || decodedScreenshot.height !== Number(screenshot?.dimensions?.height) ||
+        decodedDiagnostic.width !== Number(diagnosticScreenshot?.dimensions?.width) || decodedDiagnostic.height !== Number(diagnosticScreenshot?.dimensions?.height)) {
+      throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', `Windows Edge toolbar cell ${cellId} declares screenshot dimensions that differ from the decoded PNG bytes.`);
+    }
+    for (const [kind, data] of [['Windows', screenshotData], ['renderer', diagnosticData]]) {
+      const digest = sha256(data);
+      if (visualHashes.has(digest)) {
+        throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', `${cellId} ${kind} screenshot reuses visual evidence from ${visualHashes.get(digest)}.`);
+      }
+      visualHashes.set(digest, `${cellId} ${kind}`);
     }
   }
 }

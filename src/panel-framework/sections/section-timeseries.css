@@ -180,7 +180,7 @@
   background: transparent;
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 599px), (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .mdw-list-pane > .section-timeseries {
     margin: 0;
     border: 0;
@@ -196,7 +196,7 @@
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1200px), (min-width: 600px) and (max-width: 1199px) and (orientation: landscape) {
   .section-timeseries svg {
     height: clamp(150px, 20vh, 180px);
   }

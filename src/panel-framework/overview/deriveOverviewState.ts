@@ -361,7 +361,7 @@ function businessEvidenceState(snapshot: OverviewRawSnapshot) {
   };
 }
 
-function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState, failures = failedEndpointSummary(snapshot)): OverviewCollectionState {
+function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState, failures = failedEndpointSummary(snapshot), now = Date.now()): OverviewCollectionState {
   const meta = snapshot.meta || {};
   const noSnapshot = isSnapshotUnavailable(snapshot);
   const coreRestErrors = uniqueErrorPhrases([meta.realtimeError, meta.slowRestError]);
@@ -370,17 +370,23 @@ function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFresh
   const sshErrors = uniqueErrorPhrases([meta.staticError]);
   const restSuccessAt = latestTimestamp([meta.realtimeUpdatedAt, meta.slowRestUpdatedAt, meta.connectionDetailUpdatedAt, meta.connectionProtocolUpdatedAt]);
   const sshSuccessAt = latestTimestamp([meta.staticUpdatedAt]);
+  const poll = Math.max(1, toNumber(meta.pollSeconds, 60));
+  const staleBoundaryMs = Math.max(300, poll * 5) * 1000;
   const channelStatus = (coreErrors: string[], auxiliaryErrors: string[], successAt: string) => {
-    if (coreErrors.length) return "failed" as const;
-    if (auxiliaryErrors.length) return "degraded" as const;
-    if (successAt) return "current" as const;
-    return "unavailable" as const;
+    if (coreErrors.length) return { status: "failed" as const, stale: false };
+    if (auxiliaryErrors.length) return { status: "degraded" as const, stale: false };
+    const successTime = parseRfc3339Timestamp(successAt);
+    if (successTime === null) return { status: "unavailable" as const, stale: false };
+    const stale = Math.max(0, now - successTime) >= staleBoundaryMs;
+    return { status: stale ? "degraded" as const : "current" as const, stale };
   };
-  const restStatus = channelStatus(coreRestErrors, auxiliaryRestErrors, restSuccessAt);
-  const sshStatus = channelStatus(sshErrors, [], sshSuccessAt);
-  const channelLabel = (status: typeof restStatus) => status === "current" ? "可用" : status === "degraded" ? "降级" : status === "failed" ? "失败" : "未记录";
-  const restLabel = channelLabel(restStatus);
-  const sshLabel = channelLabel(sshStatus);
+  const restChannel = channelStatus(coreRestErrors, auxiliaryRestErrors, restSuccessAt);
+  const sshChannel = channelStatus(sshErrors, [], sshSuccessAt);
+  const restStatus = restChannel.status;
+  const sshStatus = sshChannel.status;
+  const channelLabel = (channel: typeof restChannel) => channel.status === "current" ? "可用" : channel.status === "degraded" ? channel.stale ? "偏旧" : "降级" : channel.status === "failed" ? "失败" : "未记录";
+  const restLabel = channelLabel(restChannel);
+  const sshLabel = channelLabel(sshChannel);
   const rest = { status: restStatus, label: restLabel, successAt: restSuccessAt, error: restErrors.join("；") };
   const ssh = { status: sshStatus, label: sshLabel, successAt: sshSuccessAt, error: sshErrors.join("；") };
   const channelText = `REST ${restLabel} / SSH ${sshLabel}`;
@@ -660,9 +666,10 @@ function topbarState(snapshot: OverviewRawSnapshot, verdict: OverviewVerdict, fa
 
 export function classifyOverviewScenario(snapshot: OverviewRawSnapshot | null | undefined, options: DeriveOverviewOptions = {}): OverviewScenarioKey {
   const raw = snapshot || {};
-  const freshness = freshnessState(raw, options.now ?? Date.now());
+  const now = options.now ?? Date.now();
+  const freshness = freshnessState(raw, now);
   const failures = failedEndpointSummary(raw);
-  const collection = collectionState(raw, freshness, failures);
+  const collection = collectionState(raw, freshness, failures, now);
   const resource = resourceState(raw);
   const wan = wanState(raw);
   const interfaces = interfaceState(raw);
@@ -673,9 +680,10 @@ export function classifyOverviewScenario(snapshot: OverviewRawSnapshot | null | 
 
 export function deriveOverviewState(snapshot: OverviewRawSnapshot | null | undefined, options: DeriveOverviewOptions = {}): OverviewDerivedState {
   const raw = snapshot || {};
-  const freshness = freshnessState(raw, options.now ?? Date.now());
+  const now = options.now ?? Date.now();
+  const freshness = freshnessState(raw, now);
   const failures = failedEndpointSummary(raw);
-  const collection = collectionState(raw, freshness, failures);
+  const collection = collectionState(raw, freshness, failures, now);
   const facts: OverviewFacts = { device: deviceFacts(raw), freshness, collection, route: routeState(raw, freshness), resource: resourceState(raw), wan: wanState(raw), interfaces: interfaceState(raw), failures, connections: connectionState(raw) };
   const counts = countsOf(facts.wan, facts.interfaces, failures, facts.connections);
   const scenario = scenarioOf(raw, counts, facts.resource, collection, options);

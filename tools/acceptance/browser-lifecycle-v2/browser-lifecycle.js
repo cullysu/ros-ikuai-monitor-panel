@@ -7,7 +7,8 @@ const { spawn } = require('node:child_process');
 const { chromium } = require('playwright-core');
 
 const MIN_GLOBAL_TIMEOUT_MS = 3_000;
-const MAX_GLOBAL_TIMEOUT_MS = 120_000;
+const DEFAULT_MAX_GLOBAL_TIMEOUT_MS = 120_000;
+const MAX_LOW_LOAD_GLOBAL_TIMEOUT_MS = 600_000;
 const MIN_STEP_TIMEOUT_MS = 100;
 // Low-load headed Edge acceptance may need a longer bounded step while the
 // managed browser is deliberately restricted to a tiny CPU quota. Ordinary
@@ -35,6 +36,15 @@ class LifecycleError extends Error {
 function clamp(value, minimum, maximum, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.min(Math.max(parsed, minimum), maximum) : fallback;
+}
+
+function browserLifecycleGlobalTimeoutCeilingMs(env = process.env) {
+  const configured = Number(env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);
+  if (!Number.isFinite(configured) || configured <= 0) return DEFAULT_MAX_GLOBAL_TIMEOUT_MS;
+  return Math.min(
+    MAX_LOW_LOAD_GLOBAL_TIMEOUT_MS,
+    Math.max(DEFAULT_MAX_GLOBAL_TIMEOUT_MS, configured * 4),
+  );
 }
 
 function delay(milliseconds) {
@@ -409,7 +419,8 @@ async function launchManagedBrowser(options) {
 
 async function runBrowserLifecycle(options, task) {
   const settings = options || {};
-  const globalTimeoutMs = clamp(settings.globalTimeoutMs, MIN_GLOBAL_TIMEOUT_MS, MAX_GLOBAL_TIMEOUT_MS, 12_000);
+  const maxGlobalTimeoutMs = browserLifecycleGlobalTimeoutCeilingMs();
+  const globalTimeoutMs = clamp(settings.globalTimeoutMs, MIN_GLOBAL_TIMEOUT_MS, maxGlobalTimeoutMs, 12_000);
   const stepTimeoutMs = clamp(settings.stepTimeoutMs, MIN_STEP_TIMEOUT_MS, MAX_STEP_TIMEOUT_MS, 4_000);
   const launchTimeoutMs = clamp(settings.launchTimeoutMs, MIN_STEP_TIMEOUT_MS, MAX_STEP_TIMEOUT_MS, stepTimeoutMs);
   const setupTimeoutMs = clamp(settings.setupTimeoutMs, MIN_STEP_TIMEOUT_MS, MAX_STEP_TIMEOUT_MS, stepTimeoutMs);
@@ -488,7 +499,7 @@ async function runBrowserLifecycle(options, task) {
       clamp(
         requestedTimeoutMs,
         MIN_CLEANUP_TIMEOUT_MS,
-        allowFullRemaining ? MAX_GLOBAL_TIMEOUT_MS : MAX_CLEANUP_TIMEOUT_MS + MANAGED_CLOSE_GRACE_MS,
+        allowFullRemaining ? maxGlobalTimeoutMs : MAX_CLEANUP_TIMEOUT_MS + MANAGED_CLOSE_GRACE_MS,
         cleanupTimeoutMs,
       ),
       available,
@@ -598,6 +609,7 @@ function writeDiagnostic(filePath, payload) {
 module.exports = {
   LifecycleError,
   bounded,
+  browserLifecycleGlobalTimeoutCeilingMs,
   browserExecutable,
   launchManagedBrowser,
   processExists,

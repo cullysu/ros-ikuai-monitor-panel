@@ -3,9 +3,21 @@ const fsp = require("node:fs/promises");
 const http = require("node:http");
 const path = require("node:path");
 const { chromium } = require("playwright-core");
+const {
+  FOCUSED_REQUIRED_RUNTIME_FILES,
+  WAN_AXIS_REPORT_CONTRACT,
+  captureProjectIdentity,
+  createSourceRuntimeReportIdentity,
+  readAttestedRuntimeFile,
+  readJsonReport,
+  validateCurrentSourceRuntimeReport,
+} = require("./source-runtime-report-identity");
 
 const root = path.resolve(__dirname, "..");
 const outputDirectory = path.join(root, "_acceptance", "wan-axis-label-integrity-v1");
+const attestationPath = path.join(outputDirectory, "source-runtime-attestation.json");
+const REPORT_CONTRACT = WAN_AXIS_REPORT_CONTRACT;
+const REQUIRED_RUNTIME_FILES = FOCUSED_REQUIRED_RUNTIME_FILES;
 const browserCandidates = [
   "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
   "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
@@ -55,7 +67,7 @@ async function buildSourceRuntime() {
     build: {
       outDir: runtimeDirectory, emptyOutDir: true, minify: false,
       lib: {
-        entry: path.join(root, "src", "panel-framework", "main.tsx"), name: "PanelFramework", formats: ["iife"],
+        entry: path.join(root, "src", "panel-framework", "desktop", "main.tsx"), name: "PanelFramework", formats: ["iife"],
         fileName: () => "panel-framework.js", cssFileName: "style",
       },
     },
@@ -69,18 +81,27 @@ async function buildSourceRuntime() {
   return runtimeDirectory;
 }
 
-function createRuntimeServer(runtimeDirectory) {
+function createRuntimeServer(runtimeDirectory, sourceRuntime) {
   return http.createServer((request, response) => {
     const pathname = new URL(request.url || "/", "http://127.0.0.1").pathname;
+    if (pathname === "/favicon.ico") {
+      response.writeHead(200, { "Content-Type": "image/x-icon", "Cache-Control": "no-store" });
+      response.end();
+      return;
+    }
     if (pathname === "/") {
       response.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
       response.end("<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"stylesheet\" href=\"/style.css\"><link rel=\"stylesheet\" href=\"/desktop-overview.css\" media=\"(min-width:1200px)\"></head><body><div id=\"app\"></div><script src=\"/panel-framework.js\"></script></body></html>");
       return;
     }
-    const file = path.resolve(runtimeDirectory, `.${pathname}`);
-    if (!file.startsWith(runtimeDirectory + path.sep) || !fs.existsSync(file)) { response.writeHead(404); response.end(); return; }
-    response.writeHead(200, { "Content-Type": pathname.endsWith(".css") ? "text/css; charset=utf-8" : "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
-    fs.createReadStream(file).pipe(response);
+    try {
+      const body = readAttestedRuntimeFile(runtimeDirectory, pathname, sourceRuntime);
+      response.writeHead(200, { "Content-Type": pathname.endsWith(".css") ? "text/css; charset=utf-8" : "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
+      response.end(body);
+    } catch (error) {
+      response.writeHead(409, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+      response.end(String(error?.message || error));
+    }
   });
 }
 
@@ -89,20 +110,126 @@ async function listen(server) {
   return `http://127.0.0.1:${server.address().port}/`;
 }
 
+function buildAttestation(runtimeDirectory, startIdentity, buildIdentity, endIdentity) {
+  const report = {
+    contract: REPORT_CONTRACT,
+    phase: "build-only",
+    generatedAt: new Date().toISOString(),
+    stagePass: true,
+    pass: false,
+    complete: false,
+    pageErrors: [],
+    consoleErrors: [],
+    requestErrors: [],
+    requestFailures: [],
+    identity: createSourceRuntimeReportIdentity({
+      runtimeDirectory,
+      requiredFiles: REQUIRED_RUNTIME_FILES,
+      start: startIdentity,
+      build: buildIdentity,
+      end: endIdentity,
+    }),
+  };
+  const validation = validateCurrentSourceRuntimeReport(report, {
+    rootDir: root,
+    runtimeDirectory,
+    requiredFiles: REQUIRED_RUNTIME_FILES,
+    expectedContract: REPORT_CONTRACT,
+    requireFinal: false,
+    requireBrowserPhase: false,
+    currentIdentity: endIdentity,
+  });
+  report.stagePass = validation.pass;
+  report.identityValidation = validation;
+  return report;
+}
+
+function validateBrowserOnlyAttestation(runtimeDirectory, currentIdentity = captureProjectIdentity(root), reportPath = attestationPath) {
+  const loaded = readJsonReport(reportPath);
+  if (!loaded.report) return { pass: false, report: null, reasons: [loaded.error || "build attestation is missing"] };
+  const validation = validateCurrentSourceRuntimeReport(loaded.report, {
+    rootDir: root,
+    runtimeDirectory,
+    requiredFiles: REQUIRED_RUNTIME_FILES,
+    expectedContract: REPORT_CONTRACT,
+    requireFinal: false,
+    requireBrowserPhase: false,
+    currentIdentity,
+  });
+  return { ...validation, report: loaded.report };
+}
+
 async function main() {
+  const buildOnly = process.argv.includes("--build-only");
+  const browserOnly = process.argv.includes("--browser-only");
+  if (buildOnly && browserOnly) throw new Error("--build-only and --browser-only are mutually exclusive");
+  const startIdentity = captureProjectIdentity(root);
   await fsp.mkdir(outputDirectory, { recursive: true });
-  const runtimeDirectory = await buildSourceRuntime();
-  const server = createRuntimeServer(runtimeDirectory);
+  const runtimeDirectory = path.join(outputDirectory, "source-runtime");
+  let attestation;
+  if (!browserOnly) {
+    await buildSourceRuntime();
+    const buildIdentity = captureProjectIdentity(root);
+    const buildEndIdentity = captureProjectIdentity(root);
+    attestation = buildAttestation(runtimeDirectory, startIdentity, buildIdentity, buildEndIdentity);
+    await fsp.writeFile(attestationPath, JSON.stringify(attestation, null, 2), "utf8");
+    if (!attestation.stagePass) throw new Error(`source runtime attestation failed: ${attestation.identityValidation.reasons.join('; ')}`);
+    if (buildOnly) {
+      console.log(JSON.stringify(attestation, null, 2));
+      return;
+    }
+  }
+
+  const browserIdentity = captureProjectIdentity(root);
+  const attestationValidation = validateBrowserOnlyAttestation(runtimeDirectory, browserIdentity);
+  if (!attestationValidation.pass) {
+    throw new Error(`browser-only source runtime attestation is missing, stale, or tampered: ${attestationValidation.reasons.join('; ')}`);
+  }
+  attestation = attestationValidation.report;
+  const server = createRuntimeServer(runtimeDirectory, attestation.identity.sourceRuntime);
   const url = await listen(server);
   let browser;
   let context;
   try {
     const browserPath = browserCandidates.find((candidate) => fs.existsSync(candidate));
     if (!browserPath) throw new Error("Edge/Chrome executable not found");
-    browser = await chromium.launch({ executablePath: browserPath, headless: true });
+    browser = await chromium.launch({
+      executablePath: browserPath,
+      headless: true,
+      args: [
+        "--renderer-process-limit=1",
+        "--disable-gpu",
+        "--disable-extensions",
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--disable-default-apps",
+        "--disable-domain-reliability",
+        "--disable-sync",
+        "--metrics-recording-only",
+        "--no-first-run",
+      ],
+    });
     context = await browser.newContext({ viewport: { width: 1366, height: 768 }, deviceScaleFactor: 1 });
     await context.addInitScript((snapshot) => { window.__PANEL_TEST_SNAPSHOT__ = snapshot; }, wanSnapshot());
     const page = await context.newPage();
+    const pageErrors = [];
+    const consoleErrors = [];
+    const requestErrors = [];
+    const requestFailures = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+    page.on("response", (response) => {
+      if (response.status() >= 400) requestErrors.push({
+        url: response.url(),
+        status: response.status(),
+        statusText: response.statusText(),
+      });
+    });
+    page.on("requestfailed", (request) => requestFailures.push({
+      url: request.url(),
+      method: request.method(),
+      errorText: request.failure()?.errorText || "request failed",
+    }));
     await page.goto(url, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => document.querySelector("[data-chart-peak-label]"));
     await page.waitForTimeout(120);
@@ -135,7 +262,41 @@ async function main() {
       domRectInsideChartContainer: everyGeometry((item) => Boolean(item.labelRect && item.chartRect && item.labelRect.left >= item.chartRect.left - 0.5 && item.labelRect.right <= item.chartRect.right + 0.5)),
       labelHasPositiveAxisGap: everyGeometry((item) => item.axisLeft > item.axisLabelGap && item.axisLabelGap >= 12),
     };
-    const report = { pass: Object.values(checks).every(Boolean), contract: "wan-axis-label-integrity-v2-legacy-ipad", runtime: "vite-source-playwright", geometry, checks };
+    const stagePass = Object.values(checks).every(Boolean) &&
+      pageErrors.length === 0 && consoleErrors.length === 0 &&
+      requestErrors.length === 0 && requestFailures.length === 0;
+    const endIdentity = captureProjectIdentity(root);
+    const report = {
+      pass: stagePass,
+      complete: stagePass,
+      stagePass,
+      contract: REPORT_CONTRACT,
+      phase: "browser",
+      generatedAt: new Date().toISOString(),
+      runtime: "vite-source-playwright",
+      identity: createSourceRuntimeReportIdentity({
+        runtimeDirectory,
+        requiredFiles: REQUIRED_RUNTIME_FILES,
+        start: attestation.identity.start,
+        build: attestation.identity.build,
+        browser: browserIdentity,
+        end: endIdentity,
+        sourceRuntime: attestation.identity.sourceRuntime,
+      }),
+      pageErrors, consoleErrors, requestErrors, requestFailures,
+      geometry,
+      checks,
+    };
+    const identityValidation = validateCurrentSourceRuntimeReport(report, {
+      rootDir: root,
+      runtimeDirectory,
+      requiredFiles: REQUIRED_RUNTIME_FILES,
+      expectedContract: REPORT_CONTRACT,
+      currentIdentity: endIdentity,
+    });
+    report.pass = identityValidation.pass;
+    report.complete = identityValidation.complete;
+    report.identityValidation = identityValidation;
     await fsp.writeFile(path.join(outputDirectory, "report.json"), JSON.stringify(report, null, 2), "utf8");
     console.log(JSON.stringify(report, null, 2));
     if (!report.pass) process.exitCode = 1;
@@ -146,7 +307,16 @@ async function main() {
   }
 }
 
-main().then(
-  () => process.exit(process.exitCode || 0),
-  (error) => { console.error(error.stack || String(error)); process.exit(1); },
-);
+if (require.main === module) {
+  main().then(
+    () => process.exit(process.exitCode || 0),
+    (error) => { console.error(error.stack || String(error)); process.exit(1); },
+  );
+}
+
+module.exports = {
+  REPORT_CONTRACT,
+  REQUIRED_RUNTIME_FILES,
+  buildAttestation,
+  validateBrowserOnlyAttestation,
+};

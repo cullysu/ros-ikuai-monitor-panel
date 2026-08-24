@@ -2,6 +2,8 @@ const { spawnSync } = require("node:child_process");
 const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
+const browserGates = new Set(["check-wan-axis-label-integrity-v1.js"]);
+const staticOnly = process.argv.includes("--static-only");
 const gates = [
   "check-overview-architecture.js",
   "check-overview-ikuai-static.js",
@@ -16,29 +18,39 @@ const gates = [
   "check-desktop-overview-focus-context.js",
   "check-wan-axis-label-integrity-v1.js",
 ];
+const selectedGates = staticOnly ? gates.filter((gate) => !browserGates.has(gate)) : gates;
 
-for (const gate of gates) {
+for (const gate of selectedGates) {
   console.log(`\n[overview] ${gate}`);
-  const result = spawnSync(process.execPath, [path.join(__dirname, gate)], {
-    cwd: root,
-    env: {
-      ...process.env,
-      CODEX_MEMORY_LIMIT_MB: "2048",
-      NODE_OPTIONS: "--max-old-space-size=2048",
-    },
-    stdio: "inherit",
-    windowsHide: true,
-  });
-  if (result.error) {
-    console.error(`[overview] ${gate}: ERROR ${result.error.message}`);
-    process.exit(1);
-  }
-  if (result.status !== 0) {
-    console.error(`[overview] ${gate}: FAIL (${result.status})`);
-    process.exit(result.status || 1);
+  const localWindowsBrowserGate = browserGates.has(gate) && process.platform === "win32" && process.env.CI !== "true";
+  const invocations = localWindowsBrowserGate
+    ? [
+        { command: "py", args: ["-3", path.join(__dirname, "run-low-load.py"), process.execPath, path.join(__dirname, gate), "--build-only"] },
+        { command: "py", args: ["-3", path.join(__dirname, "run-low-load.py"), "--browser", process.execPath, path.join(__dirname, gate), "--browser-only"] },
+      ]
+    : [{ command: process.execPath, args: [path.join(__dirname, gate)] }];
+  for (const invocation of invocations) {
+    const result = spawnSync(invocation.command, invocation.args, {
+      cwd: root,
+      env: {
+        ...process.env,
+        CODEX_MEMORY_LIMIT_MB: "2048",
+        NODE_OPTIONS: "--max-old-space-size=2048",
+      },
+      stdio: "inherit",
+      windowsHide: true,
+    });
+    if (result.error) {
+      console.error(`[overview] ${gate}: ERROR ${result.error.message}`);
+      process.exit(1);
+    }
+    if (result.status !== 0) {
+      console.error(`[overview] ${gate}: FAIL (${result.status})`);
+      process.exit(result.status || 1);
+    }
   }
 }
 
-console.log(`\noverview current contract: PASS (${gates.length} gates)`);
+console.log(`\noverview current contract: PASS (${selectedGates.length} gates${staticOnly ? ", static-only" : ""})`);
 console.log("mobile-telemetry model, isolated semantic ownership, accessibility structure, truth, desktop continuity, and source-built WAN geometry are all required.");
 console.log("LIMITATION: mobile telemetry runtime, original-image Product/Visual sign-off, and full release matrices remain separate release gates.");

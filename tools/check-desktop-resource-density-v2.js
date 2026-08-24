@@ -1,11 +1,21 @@
-const fs = require("node:fs");
 const fsp = require("node:fs/promises");
 const http = require("node:http");
 const path = require("node:path");
 const { LifecycleError, bounded, runBrowserLifecycle } = require("./acceptance/browser-lifecycle-v2/browser-lifecycle");
+const {
+  DESKTOP_RESOURCE_REPORT_CONTRACT,
+  FOCUSED_REQUIRED_RUNTIME_FILES,
+  captureProjectIdentity,
+  createSourceRuntimeReportIdentity,
+  readAttestedRuntimeFile,
+  sourceRuntimeFileIdentity,
+  validateCurrentSourceRuntimeReport,
+} = require("./source-runtime-report-identity");
 
 const root = path.resolve(__dirname, "..");
 const outputDirectory = path.join(root, "_acceptance", "desktop-resource-density-v2");
+const REPORT_CONTRACT = DESKTOP_RESOURCE_REPORT_CONTRACT;
+const REQUIRED_RUNTIME_FILES = FOCUSED_REQUIRED_RUNTIME_FILES;
 const GLOBAL_TIMEOUT_MS = 90_000;
 const STEP_TIMEOUT_MS = 15_000;
 const SOURCE_BUILD_TIMEOUT_MS = 25_000;
@@ -69,7 +79,7 @@ async function buildSourceRuntime() {
     build: {
       outDir: runtimeDirectory, emptyOutDir: true, minify: false,
       lib: {
-        entry: path.join(root, "src", "panel-framework", "main.tsx"), name: "PanelFramework", formats: ["iife"],
+        entry: path.join(root, "src", "panel-framework", "desktop", "main.tsx"), name: "PanelFramework", formats: ["iife"],
         fileName: () => "panel-framework.js", cssFileName: "style",
       },
     },
@@ -83,7 +93,7 @@ async function buildSourceRuntime() {
   return runtimeDirectory;
 }
 
-function createRuntimeServer(runtimeDirectory) {
+function createRuntimeServer(runtimeDirectory, sourceRuntime) {
   const sockets = new Set();
   const server = http.createServer((request, response) => {
     const pathname = new URL(request.url || "/", "http://127.0.0.1").pathname;
@@ -92,10 +102,14 @@ function createRuntimeServer(runtimeDirectory) {
       response.end("<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"stylesheet\" href=\"/style.css\"><link rel=\"stylesheet\" href=\"/desktop-overview.css\" media=\"(min-width:1200px)\"></head><body><div id=\"app\"></div><script src=\"/panel-framework.js\"></script></body></html>");
       return;
     }
-    const file = path.resolve(runtimeDirectory, `.${pathname}`);
-    if (!file.startsWith(runtimeDirectory + path.sep) || !fs.existsSync(file)) { response.writeHead(404); response.end(); return; }
-    response.writeHead(200, { "Content-Type": pathname.endsWith(".css") ? "text/css; charset=utf-8" : "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
-    fs.createReadStream(file).pipe(response);
+    try {
+      const body = readAttestedRuntimeFile(runtimeDirectory, pathname, sourceRuntime);
+      response.writeHead(200, { "Content-Type": pathname.endsWith(".css") ? "text/css; charset=utf-8" : "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
+      response.end(body);
+    } catch (error) {
+      response.writeHead(409, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+      response.end(String(error?.message || error));
+    }
   });
   server.on("connection", (socket) => {
     sockets.add(socket);
@@ -170,26 +184,44 @@ async function inspectViewport(page, viewport, screenshotPath) {
 }
 
 async function main() {
+  const startIdentity = captureProjectIdentity(root);
   await bounded("desktop.output.mkdir", () => fsp.mkdir(outputDirectory, { recursive: true }), STEP_TIMEOUT_MS);
   // A source build already consumed 12.5s on this machine. It is preparation,
   // not browser scenario work, so keeping it inside scenario.run made the 15s
   // runtime bound fail before either viewport could be inspected.
   const sourceBuild = await bounded("desktop.source.build", () => buildSourceRuntime(), SOURCE_BUILD_TIMEOUT_MS);
   const runtimeDirectory = sourceBuild.value;
+  const sourceRuntime = sourceRuntimeFileIdentity(runtimeDirectory, REQUIRED_RUNTIME_FILES);
+  const buildIdentity = captureProjectIdentity(root);
+  const browserIdentity = captureProjectIdentity(root);
   const outcome = await runBrowserLifecycle({
     globalTimeoutMs: GLOBAL_TIMEOUT_MS,
     stepTimeoutMs: STEP_TIMEOUT_MS,
     cleanupTimeoutMs: CLEANUP_TIMEOUT_MS,
   }, async ({ context, page, registerCleanup, signal }) => {
     if (signal.aborted) throw signal.reason || new LifecycleError("STEP_ABORTED", "desktop source build aborted");
-    const server = createRuntimeServer(runtimeDirectory);
+    const server = createRuntimeServer(runtimeDirectory, sourceRuntime);
     registerCleanup("runtime-server.close", () => server.close(), CLEANUP_TIMEOUT_MS);
     const url = (await bounded("desktop.runtime.listen", () => listen(server), STEP_TIMEOUT_MS)).value;
     await bounded("desktop.snapshot.inject", () => context.addInitScript((snapshot) => { window.__PANEL_TEST_SNAPSHOT__ = snapshot; }, resourceFullSnapshot()), STEP_TIMEOUT_MS);
     const pageErrors = [];
     const consoleErrors = [];
+    const requestErrors = [];
+    const requestFailures = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+    page.on("response", (response) => {
+      if (response.status() >= 400) requestErrors.push({
+        url: response.url(),
+        status: response.status(),
+        statusText: response.statusText(),
+      });
+    });
+    page.on("requestfailed", (request) => requestFailures.push({
+      url: request.url(),
+      method: request.method(),
+      errorText: request.failure()?.errorText || "request failed",
+    }));
     await bounded("desktop.page.goto", () => page.goto(url, { waitUntil: "domcontentloaded" }), STEP_TIMEOUT_MS);
     const viewports = [{ width: 1366, height: 768 }, { width: 1440, height: 900 }];
     const results = [];
@@ -204,15 +236,42 @@ async function main() {
     } catch (error) {
       throw new Error(`${error.message}\npageErrors=${JSON.stringify(pageErrors)}\nconsoleErrors=${JSON.stringify(consoleErrors)}`);
     }
+    const stagePass = results.every((result) => result.pass) &&
+      pageErrors.length === 0 && consoleErrors.length === 0 &&
+      requestErrors.length === 0 && requestFailures.length === 0;
+    const endIdentity = captureProjectIdentity(root);
     const report = {
-      pass: results.every((result) => result.pass),
-      contract: "desktop-resource-density-v3-legacy-ipad",
+      pass: stagePass,
+      complete: stagePass,
+      stagePass,
+      contract: REPORT_CONTRACT,
+      phase: "browser",
+      generatedAt: new Date().toISOString(),
       runtime: "vite-source-playwright",
       source: "src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx",
       sourceBuildElapsedMs: sourceBuild.elapsedMs,
-      pageErrors, consoleErrors,
+      identity: createSourceRuntimeReportIdentity({
+        runtimeDirectory,
+        requiredFiles: REQUIRED_RUNTIME_FILES,
+        start: startIdentity,
+        build: buildIdentity,
+        browser: browserIdentity,
+        end: endIdentity,
+        sourceRuntime,
+      }),
+      pageErrors, consoleErrors, requestErrors, requestFailures,
       results,
     };
+    const identityValidation = validateCurrentSourceRuntimeReport(report, {
+      rootDir: root,
+      runtimeDirectory,
+      requiredFiles: REQUIRED_RUNTIME_FILES,
+      expectedContract: REPORT_CONTRACT,
+      currentIdentity: endIdentity,
+    });
+    report.pass = identityValidation.pass;
+    report.complete = identityValidation.complete;
+    report.identityValidation = identityValidation;
     await bounded("desktop.report.write", () => fsp.writeFile(path.join(outputDirectory, "report.json"), JSON.stringify(report, null, 2), "utf8"), STEP_TIMEOUT_MS);
     return report;
   });
@@ -223,7 +282,11 @@ async function main() {
   if (!outcome.result.pass) process.exitCode = 1;
 }
 
-main().then(
-  () => process.exit(process.exitCode || 0),
-  (error) => { console.error(error.stack || String(error)); process.exit(1); },
-);
+if (require.main === module) {
+  main().then(
+    () => process.exit(process.exitCode || 0),
+    (error) => { console.error(error.stack || String(error)); process.exit(1); },
+  );
+}
+
+module.exports = { REPORT_CONTRACT, REQUIRED_RUNTIME_FILES };

@@ -8,6 +8,12 @@ const path = require("node:path");
 const ts = require("typescript");
 const { TextDecoder } = require("node:util");
 const { readBoundedFileSnapshotSync } = require("./lib/bounded-file-snapshot");
+const {
+  CURRENT_MOBILE_REFERENCE_ROUTE_IDS,
+  CURRENT_MOBILE_REFERENCE_ROUTES,
+  validateCurrentMobileReferenceRouteManifest,
+  validateCurrentMobileReferenceAccessibilitySource,
+} = require("./acceptance/mobile-reference-route-manifest");
 
 const root = process.cwd();
 const EXTERNAL_ACCEPTANCE_REPOSITORY = "cullysu/ros-ikuai-monitor-panel";
@@ -413,14 +419,26 @@ for (const [route, evidence] of Object.entries(maturity.PANEL_ROUTE_MATURITY_EVI
   assert.equal(evidence.acceptanceRefs.length, 0, `${route}: route-local acceptance refs cannot establish public-release acceptance`);
 }
 
-const accessibilityRuntime = fs.readFileSync(path.join(root, "tools", "check-mobile-telemetry-runtime.js"), "utf8");
-const accessibilityBlock = accessibilityRuntime.match(/const accessibilityRoutes = \[(.*?)\];/s);
-assert.ok(accessibilityBlock, "runtime checker must expose its accessibility route scope");
-const actualAccessibilityRoutes = [...accessibilityBlock[1].matchAll(/route:\s*'([^']+)'/g)].map((match) => match[1]).sort();
-const declaredAccessibilityRoutes = [...new Set(
-  Object.values(maturity.PANEL_ROUTE_MATURITY_EVIDENCE).flatMap((evidence) => evidence.automatedAccessibilityRoutes),
-)].sort();
-assert.deepEqual(declaredAccessibilityRoutes, actualAccessibilityRoutes, "registry accessibility scope must equal the real checker scope");
+const expectedAccessibilityRoutes = routes.PANEL_ROUTE_IDS.filter((route) => route !== "more");
+const manifestReport = validateCurrentMobileReferenceRouteManifest(CURRENT_MOBILE_REFERENCE_ROUTES, expectedAccessibilityRoutes);
+assert.equal(manifestReport.pass, true, JSON.stringify(manifestReport.violations, null, 2));
+assert.deepEqual(CURRENT_MOBILE_REFERENCE_ROUTE_IDS, expectedAccessibilityRoutes, "current accessibility manifest order must match the operational route registry");
+const accessibilityRuntime = fs.readFileSync(path.join(root, "tools", "check-mobile-reference-accessibility-runtime.js"), "utf8");
+const accessibilitySourceReport = validateCurrentMobileReferenceAccessibilitySource(accessibilityRuntime);
+assert.equal(accessibilitySourceReport.pass, true, JSON.stringify(accessibilitySourceReport.violations, null, 2));
+const declaredAccessibilityRoutes = Object.values(maturity.PANEL_ROUTE_MATURITY_EVIDENCE)
+  .flatMap((evidence) => evidence.automatedAccessibilityRoutes);
+assert.deepEqual(declaredAccessibilityRoutes, expectedAccessibilityRoutes, "registry accessibility scope must equal the shared current route manifest");
+assert.equal(validateCurrentMobileReferenceRouteManifest(CURRENT_MOBILE_REFERENCE_ROUTES.slice(1), expectedAccessibilityRoutes).pass, false, "a missing accessibility route must fail closed");
+assert.equal(validateCurrentMobileReferenceRouteManifest([...CURRENT_MOBILE_REFERENCE_ROUTES, CURRENT_MOBILE_REFERENCE_ROUTES[0]], expectedAccessibilityRoutes).pass, false, "a duplicate accessibility route must fail closed");
+assert.equal(validateCurrentMobileReferenceAccessibilitySource(accessibilityRuntime.replace("run(CURRENT_MOBILE_REFERENCE_ROUTE_STAGE", "run(\"retired-route-stage\"")).pass, false, "a missing current runtime stage must fail closed");
+
+const retiredAccessibilityEvidence = { ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE, overview: {
+  ...maturity.PANEL_ROUTE_MATURITY_EVIDENCE.overview,
+  accessibilitySource: "tools/check-mobile-telemetry-runtime.js",
+} };
+const retiredAccessibilityReport = maturity.validatePanelRouteMaturity(routes.PANEL_ROUTES, routes.PANEL_ROUTE_IDS, retiredAccessibilityEvidence);
+assert.ok(retiredAccessibilityReport.violations.some((item) => item.includes("current Mobile Reference runtime")), "a retired accessibility source must fail closed");
 
 const completeClaim = structuredClone(routes.PANEL_ROUTES);
 completeClaim.overview.maturity = "complete";

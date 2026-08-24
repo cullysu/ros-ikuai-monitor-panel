@@ -4,7 +4,7 @@
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("playwright-core");
-const { startMock, browserExecutable } = require("./check-panel-runtime-browser");
+const { startMock, browserExecutable } = require("./acceptance/current-runtime-mock");
 
 const root = path.resolve(__dirname, "..");
 const outDir = path.join(root, "_acceptance", "panel-runtime-browser");

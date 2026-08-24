@@ -2,7 +2,7 @@
 "use strict";
 
 // A separate proof from CDP page-scale and injected CSS: this headed Edge run
-// uses Windows UI Automation, then verifies physical toolbar increments from
+// uses process-owned Windows UI Automation, then verifies toolbar increments from
 // the page's real DPR and layout viewport before accepting them.
 
 const crypto = require("node:crypto");
@@ -26,16 +26,9 @@ const partialReportPath = path.join(artifactDir, "partial-report.json");
 const pythonHelper = path.join(root, "tools", "acceptance", "accessibility-v2", "windows_browser_zoom.py");
 const RATIO_TOLERANCE = 0.12;
 const UI_TIMEOUT_MS = 60_000;
-// A non-responsive Windows UIA action must fail quickly.  Three bounded input
-// attempts plus the geometry settle window must fit inside one cell's budget;
-// no UIA action is accepted without an observed DPR/layout change.
+// A non-responsive Windows UIA action must fail quickly. No UIA action is
+// accepted without an observed DPR/layout change.
 const UI_ACTION_TIMEOUT_MS = ACTION_TIMEOUT_MS;
-// Keep the physical-key probe bounded, but give the helper enough time to
-// finish its foreground hand-off and return.  A six-second parent timeout can
-// kill the helper just after it has dispatched the key, leaving a delayed
-// second key in Edge's input queue; the next fallback then overshoots 200% to
-// 250%.  This remains bounded and does not change the product surface.
-const KEYBOARD_UI_ACTION_TIMEOUT_MS = Math.min(15_000, Math.max(8_000, UI_ACTION_TIMEOUT_MS));
 const GEOMETRY_TRANSITION_TIMEOUT_MS = Math.max(3_500, Math.min(15_000, ACTION_TIMEOUT_MS));
 const CELL_TIMEOUT_MS = Math.max(180_000, ACTION_TIMEOUT_MS * 15);
 const GLOBAL_TIMEOUT_MS = 75 * 60_000;
@@ -50,10 +43,10 @@ const TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS = Object.freeze([
   "resource-full",
   "interfaces-down-overview",
 ]);
-const KEYBOARD_ZOOM_ACTIONS = Object.freeze(["oem-plus", "numpad-plus"]);
+const TOOLBAR_ZOOM_ACTION = "menu-plus";
 const OWNED_LIFECYCLE_DIAGNOSTIC = "tools/acceptance/browser-lifecycle-v2/.artifacts/latest-report.json";
 const OWNED_TOOLBAR_ARTIFACT_PREFIX = "_acceptance/edge-toolbar-zoom200/";
-const TOOLBAR_CONTRACT = "edge-toolbar-zoom200-windows-v9-variable-increment-mobile-reference";
+const TOOLBAR_CONTRACT = "edge-toolbar-zoom200-windows-v10-process-owned-uia-mobile-reference";
 const MOBILE_ORIGIN_OWNER = Object.freeze({
   overview: "main[data-mobile-reference-home]",
   route: "main[data-mobile-reference-workspace=\"interfaces\"]",
@@ -65,8 +58,9 @@ const DESKTOP_ORIGIN_OWNER = Object.freeze({
   navigation: ".panel-task-navigation",
 });
 
-// The browser is opened at double the target CSS viewport. After Ctrl+0, the
-// verifier applies at most five real toolbar probes and stops as soon as the
+// Each fresh browser is opened at double the target CSS viewport and must
+// prove an unzoomed 100% baseline before any automation. The verifier applies
+// at most five process-owned Edge menu invocations and stops as soon as the
 // page reports the requested 200% geometry. Edge's built-in zoom ladder can
 // vary by version/input path (some builds reach 200% in four increments and
 // others in five), so a fixed increment count is not a valid contract.
@@ -77,6 +71,7 @@ const TOOLBAR_200_MATRIX = Object.freeze([
   { id: "phone-390", cssViewport: { width: 390, height: 844 }, orientation: "portrait" },
   { id: "phone-430", cssViewport: { width: 430, height: 932 }, orientation: "portrait" },
   { id: "tablet-768", cssViewport: { width: 768, height: 1024 }, orientation: "portrait" },
+  { id: "landscape-568x320", cssViewport: { width: 568, height: 320 }, orientation: "landscape" },
   { id: "landscape-667x375", cssViewport: { width: 667, height: 375 }, orientation: "landscape" },
   { id: "landscape-844x390", cssViewport: { width: 844, height: 390 }, orientation: "landscape" },
 ]);
@@ -99,7 +94,7 @@ function toolbarScenarioConfig(scenario) {
 }
 
 function toolbarReportReadiness(report, currentIdentity = null) {
-    const actionable = "Run: node tools/check-browser-toolbar-zoom200.js (headed Microsoft Edge; bounded v9 variable-increment matrix).";
+  const actionable = "Run: node tools/check-browser-toolbar-zoom200.js (headed Microsoft Edge; strict v10 variable-increment matrix).";
   if (!report || typeof report !== "object") return { pass: false, code: "V8_REPORT_MISSING", reason: `Current-owner real Edge 200% evidence is missing. ${actionable}` };
   if (report.contract !== TOOLBAR_CONTRACT) return { pass: false, code: "V8_CONTRACT_STALE", reason: `Toolbar report contract is ${report.contract || "missing"}, expected ${TOOLBAR_CONTRACT}. ${actionable}` };
   if (currentIdentity) {
@@ -124,6 +119,8 @@ function toolbarReportReadiness(report, currentIdentity = null) {
   }
   const failedCell = report.cells.find((cell) => cell?.surface?.main?.maxLeft !== 0 || cell?.surface?.keyboardTraversal?.complete !== true || cell?.surface?.keyboardTraversal?.visitedCount !== cell?.surface?.keyboardTraversal?.expectedCount);
   if (failedCell) return { pass: false, code: "V8_CELL_ACCESSIBILITY_FAILED", reason: `A current-owner 200% cell lacks zero-horizontal-overflow or complete keyboard evidence. ${actionable}`, cell: `${failedCell?.viewport?.id || "unknown"}::${failedCell?.scenario || "unknown"}` };
+  const strict = validateToolbarReportEvidence(report, currentIdentity);
+  if (!strict.pass) return { pass: false, code: "V10_EVIDENCE_INVALID", reason: `Current-owner real Edge 200% evidence failed strict validation: ${strict.errors.join("; ")}. ${actionable}` };
   return { pass: true, code: "V8_CURRENT_OWNER_READY", reason: "Current-owner real Edge 200% evidence is complete." };
 }
 
@@ -200,6 +197,222 @@ function toolbarCellId(cell) {
   return `${cell?.viewport?.id || ""}::${cell?.scenario || ""}`;
 }
 
+function expectedToolbarSurface(viewport) {
+  return viewport?.orientation === "landscape" && viewport?.cssViewport?.width >= 600 ? "desktop" : "mobile";
+}
+
+function sameStringList(left, right) {
+  return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function validScreenshotEvidence(screenshot) {
+  return Boolean(
+    screenshot && typeof screenshot.file === "string" && screenshot.file.length > 0 &&
+    /^[0-9a-f]{64}$/i.test(String(screenshot.sha256 || "")) &&
+    Number(screenshot.dimensions?.width) > 0 && Number(screenshot.dimensions?.height) > 0
+  );
+}
+
+function sameScreenshotDimensions(left, right) {
+  return Boolean(
+    Number.isInteger(Number(left?.width)) && Number(left?.width) > 0 &&
+    Number.isInteger(Number(left?.height)) && Number(left?.height) > 0 &&
+    Number(left.width) === Number(right?.width) && Number(left.height) === Number(right?.height)
+  );
+}
+
+function samePageGeometry(left, right) {
+  return Boolean(
+    left && right &&
+    Math.abs(Number(left.innerWidth) - Number(right.innerWidth)) <= 1 &&
+    Math.abs(Number(left.innerHeight) - Number(right.innerHeight)) <= 1 &&
+    Math.abs(Number(left.devicePixelRatio) - Number(right.devicePixelRatio)) <= 0.01
+  );
+}
+
+function toolbarCellEvidenceErrors(cell, expected, stableIdentity = null) {
+  const errors = [];
+  const id = toolbarCellId(cell);
+  const expectedId = toolbarCellId(expected);
+  const expectedViewport = expected?.viewport || {};
+  const observedViewport = cell?.viewport || {};
+  if (id !== expectedId) errors.push(`${id || "unknown"}: identity differs from ${expectedId}`);
+  if (observedViewport.orientation !== expectedViewport.orientation ||
+      observedViewport.cssViewport?.width !== expectedViewport.cssViewport?.width ||
+      observedViewport.cssViewport?.height !== expectedViewport.cssViewport?.height) {
+    errors.push(`${expectedId}: viewport contract mismatch`);
+  }
+  const expectedSurface = expectedToolbarSurface(expectedViewport);
+  if (cell?.expectedBaselineSurface !== expectedSurface || cell?.browserSurface !== expectedSurface) {
+    errors.push(`${expectedId}: rendered owner ${cell?.browserSurface || "missing"} differs from ${expectedSurface}`);
+  }
+  const steps = Array.isArray(cell?.windowsAutomation?.steps) ? cell.windowsAutomation.steps : [];
+  const incrementCount = Number(cell?.zoomLevel?.toolbarIncrements);
+  if (cell?.zoomLevel?.verified !== true || cell?.zoomLevel?.expectedPercent !== 200 ||
+      !Number.isInteger(incrementCount) || incrementCount < 1 || incrementCount > TOOLBAR_INCREMENTS ||
+      steps.length !== incrementCount || cell?.windowsAutomation?.pass !== true) {
+    errors.push(`${expectedId}: variable-increment 200% Edge evidence is incomplete`);
+  }
+  const windowHandle = cell?.windowsAutomation?.windowHandle;
+  const baselineInspection = cell?.windowsAutomation?.baselineInspection;
+  if (!Number.isInteger(windowHandle) || windowHandle <= 0 || baselineInspection?.pass !== true ||
+      baselineInspection?.contract !== "windows-edge-toolbar-zoom-v1" || baselineInspection?.action !== "inspect" ||
+      baselineInspection?.windowHandle !== windowHandle) {
+    errors.push(`${expectedId}: original Edge HWND binding is missing`);
+  }
+  let previousGeometry = cell?.baseline;
+  for (const [index, step] of steps.entries()) {
+    const accepted = Array.isArray(step?.attempts)
+      ? step.attempts.find((attempt) => attempt?.action === step?.acceptedAction && attempt?.changed === true)
+      : null;
+    const input = accepted?.input;
+    const continuous = samePageGeometry(step?.before, previousGeometry) && samePageGeometry(accepted?.before, step?.before) &&
+      samePageGeometry(accepted?.after, step?.after) && geometryChanged(step?.before, step?.after) &&
+      Number(step?.after?.innerWidth) <= Number(step?.before?.innerWidth) + 1 &&
+      Number(step?.after?.innerHeight) <= Number(step?.before?.innerHeight) + 1 &&
+      Number(step?.after?.devicePixelRatio) + 0.01 >= Number(step?.before?.devicePixelRatio);
+    if (step?.step !== index + 1 || step?.acceptedAction !== TOOLBAR_ZOOM_ACTION || !accepted ||
+        input?.pass !== true || input?.contract !== "windows-edge-toolbar-zoom-v1" ||
+        input?.action !== TOOLBAR_ZOOM_ACTION || input?.captureOnly !== false || input?.windowHandle !== windowHandle || !continuous) {
+      errors.push(`${expectedId}: toolbar step ${step?.step || "?"} is not a geometry-confirmed process-owned menu action on the original HWND`);
+    }
+    previousGeometry = step?.after;
+  }
+  const baseline = cell?.baseline;
+  const zoomed = cell?.zoomed;
+  const expectedBaseline = baselineViewportFor(expectedViewport.cssViewport || {});
+  const baselineGeometryValid = Number.isFinite(Number(baseline?.innerWidth)) && Number.isFinite(Number(baseline?.innerHeight)) &&
+    Number.isFinite(Number(baseline?.devicePixelRatio)) &&
+    isExpectedViewport({ width: Number(baseline?.innerWidth), height: Number(baseline?.innerHeight) }, expectedBaseline) &&
+    Math.abs(Number(baseline?.devicePixelRatio) - 1) <= 0.1;
+  const zoomedGeometryValid = Number.isFinite(Number(zoomed?.innerWidth)) && Number.isFinite(Number(zoomed?.innerHeight)) &&
+    Number.isFinite(Number(zoomed?.devicePixelRatio)) &&
+    isExpectedViewport({ width: Number(zoomed?.innerWidth), height: Number(zoomed?.innerHeight) }, expectedViewport.cssViewport || {}) &&
+    Math.abs(Number(zoomed?.devicePixelRatio) - 2) <= RATIO_TOLERANCE;
+  if (!baselineGeometryValid || !zoomedGeometryValid || !samePageGeometry(previousGeometry, zoomed) ||
+      !samePageGeometry(cell?.windowsAutomation?.final, zoomed)) {
+    errors.push(`${expectedId}: baseline or 200% viewport geometry is invalid`);
+  }
+  if (stableIdentity && (cell?.stableIdentity?.commit !== stableIdentity.commit || cell?.stableIdentity?.fingerprint !== stableIdentity.fingerprint)) {
+    errors.push(`${expectedId}: stable worktree identity differs from the report`);
+  }
+  const surface = cell?.surface;
+  const keyboard = surface?.keyboardTraversal;
+  const keyboardComplete = keyboard?.complete === true && Number(keyboard?.expectedCount) > 0 &&
+    keyboard?.visitedCount === keyboard?.expectedCount && Array.isArray(keyboard?.sequence) &&
+    keyboard.sequence.length === keyboard.expectedCount && keyboard.sequence.every((entry) =>
+      entry?.focusVisible === true && Number(entry?.outlineWidth) >= 2 && entry?.outlineStyle !== "none" &&
+      entry?.fullyVisible === true && entry?.withinMain === true && entry?.obscuredByNavigation === false
+    );
+  const overflowX = Number(surface?.overflowX);
+  if (!surface || !Number.isFinite(overflowX) || overflowX > 1 || surface.main?.horizontalOverflow !== 0 || surface.main?.maxLeft !== 0 ||
+      surface.primary?.present !== true || surface.primary?.visible !== true || surface.primary?.reachable !== true ||
+      surface.primary?.withinMain !== true || surface.primary?.obscuredByNavigation !== false ||
+      !Array.isArray(surface.clippedOperationalText) || surface.clippedOperationalText.length !== 0 ||
+      !Array.isArray(surface.unreadableOperationalText) || surface.unreadableOperationalText.length !== 0 || !keyboardComplete) {
+    errors.push(`${expectedId}: task, overflow, clipping, navigation clearance, or keyboard evidence is incomplete`);
+  }
+  const expectedScreenshot = `${expectedViewport.id}-${expected?.scenario}-edge-toolbar-zoom200.png`;
+  const expectedDiagnostic = `${expectedViewport.id}-${expected?.scenario}-edge-toolbar-zoom200-playwright-diagnostic.png`;
+  const screenshotName = String(surface?.screenshot?.file || "").split(/[\\/]/).pop();
+  const diagnosticName = String(surface?.playwrightDiagnosticScreenshot?.file || "").split(/[\\/]/).pop();
+  if (!validScreenshotEvidence(surface?.screenshot) || !validScreenshotEvidence(surface?.playwrightDiagnosticScreenshot) ||
+      screenshotName !== expectedScreenshot || diagnosticName !== expectedDiagnostic) {
+    errors.push(`${expectedId}: screenshot hash/dimension evidence is incomplete`);
+  }
+  const captureDimensions = surface?.windowsCapture?.capture;
+  const diagnosticDimensions = surface?.playwrightDiagnosticScreenshot?.dimensions;
+  if (!sameScreenshotDimensions(surface?.screenshot?.dimensions, captureDimensions) ||
+      Number(surface?.screenshot?.dimensions?.width) < Number(expectedViewport.cssViewport?.width) ||
+      Number(surface?.screenshot?.dimensions?.height) < Number(expectedViewport.cssViewport?.height)) {
+    errors.push(`${expectedId}: Windows screenshot dimensions do not match its owned capture or cover the target viewport`);
+  }
+  if (Number(diagnosticDimensions?.width) !== Number(expectedViewport.cssViewport?.width) ||
+      !Number.isInteger(Number(diagnosticDimensions?.height)) ||
+      Number(diagnosticDimensions?.height) < Number(expectedViewport.cssViewport?.height)) {
+    errors.push(`${expectedId}: renderer screenshot dimensions do not cover the target CSS viewport`);
+  }
+  if (String(surface?.screenshot?.sha256 || "").toLowerCase() === String(surface?.playwrightDiagnosticScreenshot?.sha256 || "").toLowerCase()) {
+    errors.push(`${expectedId}: Windows and renderer screenshots reuse the same visual evidence hash`);
+  }
+  if (!validWindowsCapture(surface?.windowsCapture, windowHandle)) {
+    errors.push(`${expectedId}: Windows-owned capture is invalid or bound to a different HWND`);
+  }
+  return errors;
+}
+
+function validateToolbarCells(cells, { requireComplete = true, stableIdentity = null } = {}) {
+  const errors = [];
+  if (!Array.isArray(cells)) return { pass: false, errors: ["cells must be an array"] };
+  const requiredById = new Map(TOOLBAR_200_REQUIRED_CELLS.map((cell) => [toolbarCellId(cell), cell]));
+  const ids = cells.map(toolbarCellId);
+  const duplicates = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
+  const unexpected = ids.filter((id) => !requiredById.has(id));
+  const missing = [...requiredById.keys()].filter((id) => !ids.includes(id));
+  if (duplicates.length) errors.push(`duplicate required cell IDs: ${duplicates.join(", ")}`);
+  if (unexpected.length) errors.push(`unexpected cell IDs: ${unexpected.join(", ")}`);
+  if (requireComplete && missing.length) errors.push(`missing required cell IDs: ${missing.join(", ")}`);
+  if (requireComplete && cells.length !== requiredById.size) errors.push(`required cell count is ${cells.length}/${requiredById.size}`);
+  const visualHashes = new Map();
+  for (const cell of cells) {
+    const expected = requiredById.get(toolbarCellId(cell));
+    if (expected) errors.push(...toolbarCellEvidenceErrors(cell, expected, stableIdentity));
+    for (const [kind, evidence] of [
+      ["Windows", cell?.surface?.screenshot],
+      ["renderer", cell?.surface?.playwrightDiagnosticScreenshot],
+    ]) {
+      const hash = String(evidence?.sha256 || "").toLowerCase();
+      if (!/^[0-9a-f]{64}$/.test(hash)) continue;
+      const owner = `${toolbarCellId(cell)} ${kind}`;
+      if (visualHashes.has(hash)) errors.push(`${owner}: screenshot hash is reused from ${visualHashes.get(hash)}`);
+      else visualHashes.set(hash, owner);
+    }
+  }
+  return { pass: errors.length === 0, errors };
+}
+
+function validateToolbarReportEvidence(report, currentIdentity = null) {
+  const errors = [];
+  if (!report || typeof report !== "object") return { pass: false, errors: ["report is missing"] };
+  if (report.contract !== TOOLBAR_CONTRACT) errors.push(`contract is ${report.contract || "missing"}, expected ${TOOLBAR_CONTRACT}`);
+  if (report.pass !== true || report.matrix?.complete !== true) errors.push("top-level pass and matrix.complete must both be true");
+  const expectedIds = TOOLBAR_200_REQUIRED_CELLS.map(toolbarCellId);
+  if (!sameStringList(report.matrix?.requiredCellIds, expectedIds)) errors.push("matrix.requiredCellIds must exactly match the ordered required matrix");
+  const owner = report.ownerContract || {};
+  if (owner.overview !== MOBILE_ORIGIN_OWNER.overview || owner.route !== MOBILE_ORIGIN_OWNER.route || owner.navigation !== MOBILE_ORIGIN_OWNER.navigation ||
+      owner.desktopOverview !== DESKTOP_ORIGIN_OWNER.overview || owner.desktopRoute !== DESKTOP_ORIGIN_OWNER.route || owner.desktopNavigation !== DESKTOP_ORIGIN_OWNER.navigation) {
+    errors.push("owner contract differs from the accepted mobile and wide-landscape browser owners");
+  }
+  const stable = report.stableIdentity || {};
+  if (!/^[0-9a-f]{40}$/i.test(String(stable.commit || "")) || !/^[0-9a-f]{64}$/i.test(String(stable.fingerprint || ""))) {
+    errors.push("stable worktree identity is missing or malformed");
+  }
+  const identity = report.identity || {};
+  if (!/^[0-9a-f]{40}$/i.test(String(identity.commit || "")) || !/^[0-9a-f]{64}$/i.test(String(identity.worktreeFingerprint || "")) ||
+      typeof identity.artifactKey !== "string" || identity.artifactKey.length === 0 || stable.commit !== identity.commit) {
+    errors.push("report identity is malformed or differs from the stable cell identity");
+  }
+  const stableOfficial = stable.official || {};
+  if (stableOfficial.commit !== identity.commit || stableOfficial.worktreeFingerprint !== identity.worktreeFingerprint ||
+      stableOfficial.artifactKey !== identity.artifactKey || stableOfficial.worktreeClean !== identity.worktreeClean ||
+      stableOfficial.releaseEvidenceEligible !== identity.releaseEvidenceEligible) {
+    errors.push("stable evidence identity is not bound to the official worktree identity");
+  }
+  if (report.platform !== "win32") errors.push("toolbar evidence must be produced by Windows");
+  if (currentIdentity) {
+    if (identity.commit !== currentIdentity.commit || identity.worktreeFingerprint !== currentIdentity.worktreeFingerprint ||
+        identity.artifactKey !== currentIdentity.artifactKey || identity.worktreeClean !== true || identity.releaseEvidenceEligible !== true ||
+        currentIdentity.worktreeClean !== true || currentIdentity.releaseEvidenceEligible !== true) {
+      errors.push("report is not bound to the current clean exact SHA");
+    }
+  }
+  const cells = validateToolbarCells(report.cells, { requireComplete: true, stableIdentity: stable });
+  errors.push(...cells.errors);
+  const boundary = String(report.proofBoundary?.doesNotProve || "");
+  if (!boundary.includes("iOS Dynamic Type") || !boundary.includes("CDP pageScale")) errors.push("proof boundary is incomplete");
+  return { pass: errors.length === 0, errors };
+}
+
 function pendingToolbarCells(completedCells = []) {
   const completed = new Set(completedCells.map(toolbarCellId));
   return TOOLBAR_200_REQUIRED_CELLS.filter((cell) => !completed.has(toolbarCellId(cell)));
@@ -219,13 +432,16 @@ function loadPartialCells(stableIdentity) {
     const partial = JSON.parse(fs.readFileSync(partialReportPath, "utf8"));
     if (partial.contract !== TOOLBAR_CONTRACT) return [];
     if (!sameStableEvidenceIdentity(partial.stableIdentity, stableIdentity)) return [];
-    return Array.isArray(partial.cells) ? partial.cells : [];
+    const validation = validateToolbarCells(partial.cells, { requireComplete: false, stableIdentity });
+    return validation.pass ? partial.cells : [];
   } catch (_) {
     return [];
   }
 }
 
 function writePartialCells(identity, stableIdentity, cells) {
+  const validation = validateToolbarCells(cells, { requireComplete: false, stableIdentity });
+  assert(validation.pass, "refusing to persist invalid or duplicate partial Edge evidence", validation);
   fs.writeFileSync(partialReportPath, `${JSON.stringify({
     contract: TOOLBAR_CONTRACT,
     generatedAt: new Date().toISOString(),
@@ -260,14 +476,15 @@ function validWindowsCapture(capture, expectedHandle) {
     Number(segment?.sampledColorCount) >= 4 && Number(segment?.channelSpan) >= 24;
   return Boolean(
     Number.isInteger(expectedHandle) && expectedHandle > 0 &&
-    capture?.pass === true && capture?.captureOnly === true &&
+    capture?.pass === true && capture?.contract === "windows-edge-toolbar-zoom-v1" &&
+    capture?.action === "capture" && capture?.captureOnly === true &&
     capture?.windowHandle === expectedHandle &&
     state?.foregroundHandle === expectedHandle && (screenProof || ownedRenderProof || visibleSegmentProof) &&
     Number(state?.sampleCount) >= 9 && state?.windowRect?.right > state?.windowRect?.left && state?.windowRect?.bottom > state?.windowRect?.top
   );
 }
 
-function runPythonToolbarZoom(title, { action = "reset", capturePath = "", captureOnly = false, windowHandle = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
+function runPythonToolbarZoom(title, { action = "inspect", capturePath = "", captureOnly = false, windowHandle = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
   return new Promise((resolve, reject) => {
     const pythonCommand = process.env.PYTHON_EXECUTABLE || "python";
     const args = ["-B", pythonHelper, "--title", title, "--action", action, "--timeout-seconds", String(Math.ceil(timeoutMs / 1000))];
@@ -387,65 +604,27 @@ function reachedTargetToolbarZoom(geometryState, baseline) {
 }
 
 async function applyActualToolbarZoom(page, title, baseline) {
-  const reset = await runPythonToolbarZoom(title, { action: "reset" });
-  await page.waitForTimeout(150);
-  const resetGeometry = await geometry(page);
+  const baselineInspection = await runPythonToolbarZoom(title, { action: "inspect" });
+  const baselineGeometry = await geometry(page);
   assert(
-    Math.abs(resetGeometry.devicePixelRatio - 1) <= 0.1 &&
-      isExpectedViewport({ width: resetGeometry.innerWidth, height: resetGeometry.innerHeight }, { width: baseline.innerWidth, height: baseline.innerHeight }),
-    "real Edge Ctrl+0 reset did not restore the baseline page geometry",
-    { baseline, resetGeometry, reset },
+    Math.abs(baselineGeometry.devicePixelRatio - 1) <= 0.1 &&
+      isExpectedViewport({ width: baselineGeometry.innerWidth, height: baselineGeometry.innerHeight }, { width: baseline.innerWidth, height: baseline.innerHeight }),
+    "fresh owned Edge window did not retain its verified 100% baseline geometry",
+    { baseline, baselineGeometry, baselineInspection },
   );
   const steps = [];
-  let current = resetGeometry;
+  let current = baselineGeometry;
   for (let step = 1; step <= TOOLBAR_INCREMENTS && !reachedTargetToolbarZoom(current, baseline); step += 1) {
-    const attempts = [];
-    let accepted = null;
-    for (const action of [...KEYBOARD_ZOOM_ACTIONS, "menu-plus"]) {
-      let input;
-      let transition = { before: current, after: current, changed: false };
-      try {
-        input = await runPythonToolbarZoom(title, {
-          action,
-          timeoutMs: action === "menu-plus" ? UI_ACTION_TIMEOUT_MS : KEYBOARD_UI_ACTION_TIMEOUT_MS,
-        });
-        transition = await waitForGeometryChange(page, current);
-      } catch (error) {
-        // A failed OEM/numpad dispatch is an input-path failure, not a cell
-        // failure. The Windows key may still arrive after the helper's bounded
-        // UIA timeout, so observe one short grace window before trying a
-        // fallback. Otherwise a delayed real key plus the fallback would be
-        // counted as one step while physically advancing Edge twice.
-        input = {
-          pass: false,
-          code: error?.code || "EDGE_UI_AUTOMATION_FAILED",
-          message: String(error?.message || error),
-        };
-        transition = await waitForGeometryChange(
-          page,
-          current,
-          // A timed-out UIA helper may have already dispatched the physical
-          // key while its focus/return path is still unwinding. Observe a
-          // longer bounded grace period before sending a fallback key; a
-          // shorter window can accept the fallback and the delayed original
-          // as two browser zoom increments.
-          Math.min(9_000, GEOMETRY_TRANSITION_TIMEOUT_MS),
-        );
-      }
-      const attempt = { action, input, ...transition };
-      attempts.push(attempt);
-      const acceptedAttempt = acceptedZoomAttempt(attempts);
-      if (acceptedAttempt) {
-        accepted = acceptedAttempt;
-        current = transition.after;
-        break;
-      }
-    }
-    assert(accepted, "real Edge toolbar input did not change page DPR or layout; UIA key dispatch is not accepted as zoom proof", { step, current, attempts });
+    const input = await runPythonToolbarZoom(title, { action: TOOLBAR_ZOOM_ACTION, windowHandle: baselineInspection.windowHandle });
+    const transition = await waitForGeometryChange(page, current);
+    const attempts = [{ action: TOOLBAR_ZOOM_ACTION, input, ...transition }];
+    const accepted = acceptedZoomAttempt(attempts);
+    assert(accepted, "process-owned Edge Zoom in invocation did not change page DPR or layout", { step, current, attempts });
+    current = transition.after;
     steps.push({ step, attempts, acceptedAction: accepted.action, before: accepted.before, after: accepted.after });
   }
   assert(reachedTargetToolbarZoom(current, baseline), "real Edge toolbar probes did not reach the required 200% geometry within the bounded increment budget", { current, baseline, steps });
-  return { pass: true, reset, steps, final: current };
+  return { pass: true, baselineInspection, windowHandle: baselineInspection.windowHandle, steps, final: current };
 }
 
 function toolbarZoomEvidence({ baseline, zoomed, automation, targetCssViewport }) {
@@ -462,9 +641,9 @@ function toolbarZoomEvidence({ baseline, zoomed, automation, targetCssViewport }
     Math.abs(layoutHeightRatio - 2) <= RATIO_TOLERANCE &&
     isExpectedViewport(observedViewport, expectedViewport);
   return {
-    mechanism: "Windows UI Automation: Ctrl+0, then each increment is accepted only after the owned headed Edge page reports a real DPR/layout change; invalid keyboard paths fall back to the actual Edge menu Zoom in button",
+    mechanism: "Process-owned Windows UI Automation: a fresh headed Edge window first proves 100% geometry, then each Edge menu Zoom in invocation is accepted only after that page reports a real DPR/layout change",
     expectedPercent: 200,
-    toolbarResetPercent: 100,
+    verifiedBaselinePercent: 100,
     toolbarIncrements: steps.length,
     steps,
     observedFromPageGeometry: {
@@ -787,16 +966,16 @@ async function runCell(viewport, scenario) {
     const zoomLevel = toolbarZoomEvidence({ baseline, zoomed, automation: windowsAutomation, targetCssViewport: viewport.cssViewport });
     assert(zoomLevel.verified, "Edge toolbar did not produce the required verified 200% browser zoom level and target CSS viewport", { viewport, baseline, zoomed, zoomLevel, windowsAutomation });
 
-    // Browser zoom changes the CSS viewport. A tablet landscape baseline is
-    // desktop at 100%, but its reflowed 200% CSS viewport may legitimately
-    // select the mobile render tree. Resolve the owner after zoom instead of
-    // forcing the pre-zoom owner onto the reflowed document.
+    // Browser zoom changes the CSS viewport, so resolve the owner after zoom.
+    // The resulting owner must still match the shared responsive contract;
+    // wide landscape tablet cells are browser/workbench cells, never a sticky
+    // mobile session carried across orientation or viewport changes.
     const browserSurface = await runtime.page.evaluate(() => {
       if (document.querySelector("main[data-desktop-overview], main[data-desktop-route]")) return "desktop";
       if (document.querySelector("main[data-mobile-reference-home], main[data-mobile-reference-workspace]")) return "mobile";
       return "unknown";
     });
-    assert(browserSurface !== "unknown", "Edge zoomed document did not expose a recognized render owner", { viewport, expectedBaselineSurface, zoomed });
+    assert(browserSurface === expectedBaselineSurface, "Edge zoomed document did not expose the responsive-contract render owner", { viewport, expectedBaselineSurface, browserSurface, zoomed });
     const owner = browserSurface === "desktop" ? DESKTOP_ORIGIN_OWNER : MOBILE_ORIGIN_OWNER;
 
     runtime.mock.state.scenario = scenarioConfig.fixtureScenario;
@@ -816,7 +995,7 @@ async function runCell(viewport, scenario) {
           : `${owner.route} .ref-object-list > button`,
       screenshotName: `${viewport.id}-${scenario}-edge-toolbar-zoom200.png`,
       windowTitle: title,
-      windowHandle: windowsAutomation.reset.windowHandle,
+      windowHandle: windowsAutomation.windowHandle,
       identity: identityAtEvidenceStart,
       viewport: viewport.cssViewport,
     });
@@ -889,7 +1068,8 @@ async function runMatrix() {
   const orderedCells = TOOLBAR_200_REQUIRED_CELLS
     .map((required) => cells.find((cell) => toolbarCellId(cell) === toolbarCellId(required)))
     .filter(Boolean);
-  const matrixComplete = orderedCells.length === TOOLBAR_200_REQUIRED_CELLS.length && orderedCells.every((cell) => cell.surface);
+  const cellValidation = validateToolbarCells(orderedCells, { requireComplete: true, stableIdentity: stableIdentityAfter });
+  const matrixComplete = cellValidation.pass;
   const report = {
     pass: matrixComplete,
     contract: TOOLBAR_CONTRACT,
@@ -908,15 +1088,21 @@ async function runMatrix() {
       complete: matrixComplete,
     },
     proofBoundary: {
-      proves: "For each independent viewport/scenario cell, actual Microsoft Edge browser-toolbar 200% zoom: a headed owned Edge window was focused through Windows UI Automation, reset to 100%, and each of five increments was accepted only after the page reported a real DPR or layout change. Ctrl+Shift+OEM_PLUS and Ctrl+Numpad Add fall back to Edge's real menu Zoom in button when they do not change geometry. The page then verified DPR≈2, 2x layout ratios, the target CSS viewport, worktree identity, zero horizontal scroll range, visible operational-text clipping, main-scroll-root reachability, fixed-navigation clearance, complete ordered keyboard traversal, and Windows-owned visual evidence. The visual proof is an unobscured full-window screen grab when physically possible, an owner-rendered Windows DC image when supported, or a substantial unobscured physical monitor segment plus a separately hashed full Edge renderer screenshot for an oversized window.",
+      proves: "For each independent viewport/scenario cell, actual Microsoft Edge browser-toolbar 200% zoom: a fresh headed Edge window proved its 100% baseline geometry, then process-owned UI Automation invoked Edge's real menu Zoom in control. Every increment was accepted only after the owned page reported a real DPR or layout change; no global keyboard or physical mouse input was emitted. The page then verified DPR≈2, 2x layout ratios, the target CSS viewport, worktree identity, zero horizontal scroll range, visible operational-text clipping, main-scroll-root reachability, fixed-navigation clearance, complete ordered keyboard traversal, and Windows-owned visual evidence. The visual proof is an unobscured full-window screen grab when physically possible, an owner-rendered Windows DC image when supported, or a substantial unobscured physical monitor segment plus a separately hashed full Edge renderer screenshot for an oversized window.",
       doesNotProve: "iOS Dynamic Type, Android system font size, Windows OS font size, CSS-injected text resize, CDP pageScale, or behavior on a physical mobile device. A screen-visible-segment cell does not claim that the entire oversized OS window was simultaneously visible on one physical monitor; full-viewport geometry and the separately hashed Edge renderer screenshot provide the complementary evidence.",
     },
     timeout: { globalMs: GLOBAL_TIMEOUT_MS, perCellMs: CELL_TIMEOUT_MS, uiAutomationActionMs: UI_ACTION_TIMEOUT_MS, geometryTransitionMs: GEOMETRY_TRANSITION_TIMEOUT_MS },
     cells: orderedCells,
   };
+  const reportValidation = validateToolbarReportEvidence(report);
+  if (!reportValidation.pass) {
+    report.pass = false;
+    report.matrix.complete = false;
+    report.validationErrors = reportValidation.errors;
+  }
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
-  process.stdout.write(`${JSON.stringify({ pass: matrixComplete, reportPath, artifactKey: identityAfter.artifactKey, cells: orderedCells.map(toolbarCellId), remaining: pendingToolbarCells(orderedCells).map(toolbarCellId) }, null, 2)}\n`);
-  if (!matrixComplete) process.exitCode = 1;
+  process.stdout.write(`${JSON.stringify({ pass: report.pass, reportPath, artifactKey: identityAfter.artifactKey, cells: orderedCells.map(toolbarCellId), remaining: pendingToolbarCells(orderedCells).map(toolbarCellId) }, null, 2)}\n`);
+  if (!report.pass) process.exitCode = 1;
 }
 
 async function main() {
@@ -952,7 +1138,7 @@ module.exports = {
   TOOLBAR_200_REQUIRED_CELLS,
   TOOLBAR_SCENARIOS,
   TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS,
-  KEYBOARD_ZOOM_ACTIONS,
+  TOOLBAR_ZOOM_ACTION,
   TOOLBAR_INCREMENTS,
   GLOBAL_TIMEOUT_MS,
   CELL_TIMEOUT_MS,
@@ -967,6 +1153,10 @@ module.exports = {
   geometryChanged,
   acceptedZoomAttempt,
   toolbarZoomEvidence,
+  expectedToolbarSurface,
+  toolbarCellEvidenceErrors,
+  validateToolbarCells,
+  validateToolbarReportEvidence,
   stableEvidenceIdentity,
   pendingToolbarCells,
   parseMaxCells,

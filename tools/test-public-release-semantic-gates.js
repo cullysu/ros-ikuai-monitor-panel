@@ -8,6 +8,8 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const {
   MATRIX_REPORT_ALIAS_NAMES,
+  MOBILE_MATRIX_CELLS,
+  MOBILE_WORKFLOW_NAMES,
   MOBILE_REFERENCE_REQUIRED_CHECKS,
   assertEvidenceModeEligibility,
   assertMatrixEvidenceIdentity,
@@ -18,9 +20,11 @@ const {
   reportNameMatchesKind,
   ROUTE_STATE_MATRIX_CELLS,
   validateMatrixReport,
+  validateMobileRuntimeReport,
 } = require('./check-public-release-readiness');
+const { crc32, decodePngIdentity } = require('./png-evidence-identity');
+const zlib = require('node:zlib');
 const { isGovernancePath } = require('./worktree-runtime-identity');
-const { RUNTIME_CHECK_CONTRACT } = require('./runtime-screenshot-contract');
 const { inspectIndependentReviewRecords } = require('./check-independent-review-records');
 
 function mobileReport(checks, requiredChecks = Object.keys(checks)) {
@@ -191,8 +195,10 @@ assert.equal(packageJson.scripts['check:mobile-pocket-console'], undefined);
 assert.equal(packageJson.scripts['check:mobile-incident-lens'], undefined);
 assert.equal(typeof packageJson.scripts['check:mobile-telemetry'], 'string');
 assert(packageJson.scripts['check:mobile-telemetry'].includes('check:mobile-telemetry-model'));
-assert(packageJson.scripts['check:mobile-telemetry'].includes('tools/check-mobile-reference-runtime.js'));
-assert.equal((packageJson.scripts['check:runtime-browser'].match(/check:mobile-telemetry/g) || []).length, 1);
+assert(packageJson.scripts['check:mobile-telemetry'].includes('tools/run-mobile-reference-runtime.js'));
+assert.equal((packageJson.scripts['check:runtime-browser'].match(/run-mobile-reference-runtime\.js --smoke/g) || []).length, 1);
+assert.equal(/npm run check:mobile-telemetry(?:\s*(?:&&|$))/.test(packageJson.scripts['check:runtime-browser']), false);
+assert(packageJson.scripts['check:runtime-browser'].includes('tools/check-wide-landscape-browser-owner.js'));
 assert.equal(fs.existsSync(path.join(__dirname, 'check-pocket-console-runtime.js')), false);
 assert.equal(fs.existsSync(path.join(__dirname, 'lib', 'pocket-console-runtime', 'runtime.js')), false);
 assert.equal(fs.existsSync(path.join(__dirname, 'check-mobile-next-runtime.js')), false);
@@ -235,12 +241,14 @@ const currentIdentity = {
   worktreeClean: false,
   worktreeFingerprint: 'same',
   artifactKey: 'worktree-abc123-same',
+  reviewContentFingerprint: 'review-same',
   releaseEvidenceEligible: false,
 };
 const sameIdentity = {
   overview: matrixEvidence('same'),
   routeResponsive: matrixEvidence('same'),
   routeState: matrixEvidence('same'),
+  mobileReference: matrixEvidence('same'),
 };
 assert.equal(assertMatrixEvidenceIdentity(sameIdentity, currentIdentity).releaseEvidenceEligible, false);
 assert.match(matrixEvidenceStatusMessage(currentIdentity), /worktree engineering matrix evidence is complete; release ineligible/);
@@ -274,51 +282,25 @@ assert.throws(
   /require --release-candidate/,
   'candidate evidence cannot be smuggled into an ordinary readiness run'
 );
-assert.equal(
-  RUNTIME_CHECK_CONTRACT?.tabletSparseWorkbench,
-  '768px tablet domain workspace exposes a split object task with semantic preview',
-  'runtime and readiness must share the current tablet capability check name'
-);
-assert.notEqual(
-  RUNTIME_CHECK_CONTRACT?.tabletSparseWorkbench,
-  '768px tablet stacks a two-row list above an equally wide semantic preview',
-  'the retired short-stack contract must not remain release evidence'
-);
-assert.notEqual(
-  RUNTIME_CHECK_CONTRACT?.tabletSparseWorkbench,
-  '768px tablet preserves a split object list and semantic evidence workspace',
-  'the superseded squeezed split-workspace contract must not remain release evidence'
-);
-
-const step184RequiredChecks = {
-  historicalLogPreview: 'historical log preview identifies the event in its heading and keeps body evidence novel',
-  reflow320LogDetail: '320x568 log detail keeps event evidence and temporal context without clipped text or controls',
-  syntheticLogDetail: '390x844 log detail survives synthetic text stress with event evidence and temporal context',
-  browserZoomIncident: 'physical 768x1024 at browser 200 percent zoom keeps the interface incident operable in a 384x512 CSS viewport',
-  browserZoomResource: 'physical 768x1024 resource evidence at browser 200 percent zoom keeps chart truth in a 384x512 CSS viewport',
-};
-for (const [key, checkName] of Object.entries(step184RequiredChecks)) {
-  assert.equal(RUNTIME_CHECK_CONTRACT?.[key], checkName, `runtime contract must expose ${key}`);
-}
-
-const runtimeBrowserSource = fs.readFileSync(path.join(__dirname, 'check-panel-runtime-browser.js'), 'utf8');
-const zoomProbeStart = runtimeBrowserSource.indexOf('const result = await accessibilityPage.evaluate(async');
-const zoomProbeEnd = runtimeBrowserSource.indexOf('if (expandResource) result.resourceHistory', zoomProbeStart);
-const zoomProbeSource = runtimeBrowserSource.slice(zoomProbeStart, zoomProbeEnd);
-const settleLoopIndex = zoomProbeSource.indexOf('for (let index = 0; index < 8; index += 1)');
-const controlsSnapshotIndex = zoomProbeSource.indexOf('const controls = [...document.querySelectorAll');
-assert(settleLoopIndex >= 0, 'browser zoom overlap probe must keep a bounded settle loop');
+const currentAccessibilityGateSource = fs.readFileSync(path.join(__dirname, 'check-mobile-reference-accessibility-runtime.js'), 'utf8');
+const responsiveBoundaryGateSource = fs.readFileSync(path.join(__dirname, 'check-responsive-boundary-contract.js'), 'utf8');
+const toolbarGateSource = fs.readFileSync(path.join(__dirname, 'check-browser-toolbar-zoom200.js'), 'utf8');
+assert(currentAccessibilityGateSource.includes('CURRENT_MOBILE_REFERENCE_ROUTE_STAGE'), 'public readiness must retain the current 18-route accessibility stage');
+assert(currentAccessibilityGateSource.includes('page.goBack') && currentAccessibilityGateSource.includes('page.goForward'), 'current accessibility evidence must fail closed without Back/Forward restoration');
+assert(currentAccessibilityGateSource.includes('danglingAriaTargets.length === 0') && currentAccessibilityGateSource.includes('duplicateIds.length === 0'), 'current accessibility evidence must reject broken ARIA targets and duplicate ids');
+assert(responsiveBoundaryGateSource.includes('id: "landscape599Tall", width: 599, height: 550, owner: "mobile-reference"'), 'current boundary evidence must retain the tall narrow phone owner');
+assert(responsiveBoundaryGateSource.includes('id: "landscape600", width: 600, height: 320, owner: "desktop"'), 'current boundary evidence must switch to desktop at 600px landscape');
+assert.equal(responsiveBoundaryGateSource.includes('searchParams.set("surface"'), false, 'responsive evidence must not force an owner query');
+assert(toolbarGateSource.includes('main[data-mobile-reference-home]') && toolbarGateSource.includes('main[data-desktop-overview]'), 'toolbar 200% evidence must target both current owners');
+assert.equal(/data-mobile-overview|data-mobile-domain-workspace/.test(toolbarGateSource), false, 'toolbar 200% evidence must not accept retired mobile owners');
 assert(
-  controlsSnapshotIndex > settleLoopIndex,
-  'browser zoom overlap probe must enumerate controls only after layout settling'
+  readinessSource.includes("collect('mobileReference'") &&
+  readinessSource.includes('assertMobileRuntimeReport'),
+  'public readiness must require the dedicated mobile producer report',
 );
 assert(
-  zoomProbeSource.includes('settled: layoutSettled'),
-  'browser zoom overlap evidence must report whether bounded settling actually converged'
-);
-assert(
-  runtimeBrowserSource.includes('bottomGeometry.settled === true'),
-  'browser zoom checks must fail closed when layout did not settle'
+  readinessSource.includes('MOBILE_MATRIX_CELL_IDS'),
+  'public readiness must own an explicit 49-cell mobile expectation',
 );
 assert.equal(MATRIX_REPORT_ALIAS_NAMES.overview.has('panel-runtime-browser'), false);
 assert.equal(reportNameMatchesKind('panel-runtime-browser', 'overview'), false);
@@ -333,6 +315,127 @@ assert.throws(
   /do not share the current runtime worktree identity/,
   'mixed dirty fingerprints must never be merged into readiness evidence'
 );
+
+{
+  const pngChunk = (type, data) => {
+  const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
+  const chunk = Buffer.alloc(12 + data.length);
+  chunk.writeUInt32BE(data.length, 0);
+  body.copy(chunk, 4);
+  chunk.writeUInt32BE(crc32(body), 8 + data.length);
+  return chunk;
+};
+  const pngFor = (width, height) => {
+    const header = Buffer.alloc(13);
+    header.writeUInt32BE(width, 0);
+    header.writeUInt32BE(height, 4);
+    header.set([8, 0, 0, 0, 0], 8);
+    const row = Buffer.alloc(1 + width);
+    const image = Buffer.concat(Array.from({ length: height }, () => row));
+    return Buffer.concat([
+      Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      pngChunk('IHDR', header),
+      pngChunk('IDAT', zlib.deflateSync(image)),
+      pngChunk('IEND', Buffer.alloc(0)),
+    ]);
+  };
+  const evidenceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'mobile-release-evidence-'));
+  const outputDirectory = path.join(evidenceRoot, '_acceptance', 'mobile-reference-runtime');
+  fs.mkdirSync(outputDirectory, { recursive: true });
+  const cells = MOBILE_MATRIX_CELLS.map(({ scenario, viewport }) => {
+    const fileName = `${scenario}-${viewport.id}-overview.png`;
+    const filePath = path.join(outputDirectory, fileName);
+    fs.writeFileSync(filePath, pngFor(viewport.width, viewport.height));
+    return {
+      scenario,
+      viewport: { id: viewport.id, width: viewport.width, height: viewport.height },
+      pass: true,
+      file: `_acceptance/mobile-reference-runtime/${fileName}`,
+      png: decodePngIdentity(filePath),
+    };
+  });
+  const workflows = Object.fromEntries(MOBILE_WORKFLOW_NAMES.map((name) => [name, true]));
+  const shared = {
+    commit: 'abc123',
+    worktreeClean: false,
+    worktreeFingerprint: 'same',
+    artifactKey: 'worktree-abc123-same',
+    reviewContentFingerprint: 'review-same',
+    releaseEvidenceEligible: false,
+  };
+  const runtimePhase = {
+    schema: 'mobile-node-runtime-identity-v1',
+    execPath: process.execPath,
+    version: process.version,
+    nodeVersion: process.versions.node,
+    platform: process.platform,
+    arch: process.arch,
+    pid: process.pid,
+    entrypoint: path.join(evidenceRoot, 'tools', 'check-mobile-reference-runtime.js'),
+    projectRoot: evidenceRoot,
+    launcherId: path.join(evidenceRoot, 'tools', 'run-mobile-reference-runtime.js'),
+  };
+  const report = {
+    pass: true, smokePass: true, complete: true, releasePass: false, releaseEvidenceEligible: false,
+    ...shared,
+    contract: 'mobile-reference-runtime-v1',
+    evidenceContract: 'mobile-decoded-png-runtime-v1',
+    generatedAt: new Date().toISOString(),
+    freshness: true, runtimeFreshness: true,
+    runtimeStart: runtimePhase, runtimeEnd: runtimePhase, evidenceErrors: [],
+    outputDirectory: '_acceptance/mobile-reference-runtime',
+    workflows,
+    matrix: { ...shared, mode: 'full', append: false, required: 49, completed: 49, failed: 0, remaining: 0, cells },
+  };
+  const reportPath = path.join(outputDirectory, 'report.json');
+  try {
+    fs.writeFileSync(reportPath, JSON.stringify(report));
+    assert.deepEqual(validateMobileRuntimeReport(reportPath, currentIdentity).errors, []);
+
+    const incomplete = JSON.parse(JSON.stringify(report));
+    incomplete.matrix.cells.pop();
+    incomplete.matrix.completed = 48;
+    incomplete.matrix.remaining = 1;
+    fs.writeFileSync(reportPath, JSON.stringify(incomplete));
+    let errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
+    assert(errors.some((item) => item.startsWith('matrix is not exactly 49')), 'a 48-cell mobile matrix must fail readiness');
+    assert(errors.some((item) => item.includes('missing=1')), 'every required mobile cell must be explicit');
+
+    const staleHash = JSON.parse(JSON.stringify(report));
+    staleHash.matrix.cells[0].png.sha256 = '0'.repeat(64);
+    fs.writeFileSync(reportPath, JSON.stringify(staleHash));
+    errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
+    assert(errors.some((item) => item.includes('sha256 does not match')), 'recorded screenshot hashes must be re-read from files');
+
+    const corruptFile = JSON.parse(JSON.stringify(report));
+    fs.writeFileSync(path.join(evidenceRoot, corruptFile.matrix.cells[1].file), Buffer.from('not-a-png'));
+    fs.writeFileSync(reportPath, JSON.stringify(corruptFile));
+    errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
+    assert(errors.some((item) => item.includes('file is not a PNG')), 'release validation must decode every screenshot');
+
+    const smokeMixed = JSON.parse(JSON.stringify(report));
+    smokeMixed.outputDirectory = '_acceptance/mobile-reference-runtime-smoke';
+    fs.writeFileSync(reportPath, JSON.stringify(smokeMixed));
+    errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
+    assert(errors.some((item) => item.includes('mixed with smoke evidence')), 'smoke evidence must never satisfy the full release gate');
+
+    const staleSource = JSON.parse(JSON.stringify(report));
+    staleSource.worktreeFingerprint = 'old';
+    staleSource.matrix.worktreeFingerprint = 'old';
+    fs.writeFileSync(reportPath, JSON.stringify(staleSource));
+    errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
+    assert(errors.some((item) => item.includes('current runtime worktree identity')), 'stale source identity must fail readiness');
+
+    const falseComplete = JSON.parse(JSON.stringify(report));
+    falseComplete.complete = false;
+    falseComplete.matrix.complete = false;
+    fs.writeFileSync(reportPath, JSON.stringify(falseComplete));
+    errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
+    assert(errors.some((item) => /not a passing complete run|complete/.test(item)), 'top-level truth must remain fail-closed');
+  } finally {
+    fs.rmSync(evidenceRoot, { recursive: true, force: true });
+  }
+}
 
 function routeStateReportFixture(commit) {
   const cells = ROUTE_STATE_MATRIX_CELLS.map((expected) => ({

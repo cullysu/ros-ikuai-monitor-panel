@@ -11,14 +11,14 @@ import { useEffect, useState } from "react";
 export const MOBILE_PANEL_QUERY = "(max-width: 1199px) and (orientation: portrait), (max-width: 599px)";
 export const NARROW_PHONE_QUERY = "(max-width: 359px)";
 /**
- * 600–767px can host the compact master/detail workbench only when it also
- * has enough vertical task space. Short landscape viewports retain the
- * continuous phone patrol flow rather than promoting a cramped split pane.
+ * 600–767px portrait viewports can host the compact master/detail workbench
+ * only when they also have enough vertical task space. Landscape viewports
+ * in this width range belong to the browser/workbench surface instead.
  */
-export const COMPACT_WORKBENCH_QUERY = "(min-width: 600px) and (max-width: 767px) and (min-height: 700px)";
+export const COMPACT_WORKBENCH_QUERY = "(min-width: 600px) and (max-width: 767px) and (min-height: 700px) and (orientation: portrait)";
 export const COMPACT_TASK_QUERY = COMPACT_WORKBENCH_QUERY;
-export const TABLET_WORKBENCH_QUERY = "(min-width: 768px) and (max-width: 1199px) and (min-height: 700px)";
-export const DOMAIN_TABLET_WORKBENCH_QUERY = "(min-width: 768px) and (max-width: 1199px) and (min-height: 700px)";
+export const TABLET_WORKBENCH_QUERY = "(min-width: 768px) and (max-width: 1199px) and (min-height: 700px) and (orientation: portrait)";
+export const DOMAIN_TABLET_WORKBENCH_QUERY = TABLET_WORKBENCH_QUERY;
 export function useMediaCapability(query: string): boolean {
   const [matches, setMatches] = useState(
     () => typeof window !== "undefined" && window.matchMedia(query).matches,

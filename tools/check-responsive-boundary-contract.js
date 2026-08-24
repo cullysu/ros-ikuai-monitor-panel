@@ -18,17 +18,21 @@ const { ACTION_TIMEOUT_MS, closeRuntime, launchRuntime, login, withTimeout } = r
 const root = path.resolve(__dirname, "..");
 const artifactDir = path.join(root, "_acceptance", "responsive-boundary-contract");
 const reportPath = path.join(artifactDir, "report.json");
-const contract = "responsive-mobile-reference-boundary-runtime-v3";
+const contract = "responsive-mobile-reference-boundary-runtime-v4";
 const RUNTIME_BOUNDARY_TIMEOUT_MS = process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS ? 900_000 : 180_000;
 const cells = [
   { id: "phone320", width: 320, height: 568, owner: "mobile-reference" },
   { id: "phone390", width: 390, height: 844, owner: "mobile-reference" },
   { id: "phone430", width: 430, height: 932, owner: "mobile-reference" },
+  { id: "landscape568", width: 568, height: 320, owner: "mobile-reference", landscape: true },
+  { id: "landscape599", width: 599, height: 320, owner: "mobile-reference", landscape: true },
+  { id: "landscape599Tall", width: 599, height: 550, owner: "mobile-reference", landscape: true },
+  { id: "landscape600", width: 600, height: 320, owner: "desktop", landscape: true },
   { id: "landscape667", width: 667, height: 375, owner: "desktop", landscape: true },
   { id: "landscape844", width: 844, height: 390, owner: "desktop", landscape: true },
   { id: "tablet768", width: 768, height: 1024, owner: "mobile-reference", tablet: true },
-  { id: "tablet1199", width: 1199, height: 900, owner: "mobile-reference", tablet: true },
-  { id: "desktop1200", width: 1200, height: 900, owner: "desktop" },
+  { id: "tablet1199", width: 1199, height: 1366, owner: "mobile-reference", tablet: true },
+  { id: "desktop1200", width: 1200, height: 1366, owner: "desktop" },
 ];
 
 function serialise(error) {
@@ -44,18 +48,13 @@ function overviewUrl(baseUrl) {
   url.hash = "";
   return url.toString();
 }
-function surfaceUrl(baseUrl, owner) {
-  const url = new URL(baseUrl);
-  url.searchParams.set("surface", owner === "mobile-reference" ? "mobile" : "desktop");
-  return url.toString();
-}
 function sameIdentity(a, b) {
   return a.commit === b.commit && a.artifactKey === b.artifactKey && a.worktreeFingerprint === b.worktreeFingerprint;
 }
 
-async function inspectCell(page, cell) {
+async function inspectCell(page, baseUrl, cell) {
   await page.setViewportSize({ width: cell.width, height: cell.height });
-  await page.goto(overviewUrl(page.__mockUrl), { waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
+  await page.goto(overviewUrl(baseUrl), { waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
   const expected = cell.owner === "mobile-reference" ? "[data-mobile-reference-home]" : "[data-desktop-overview]";
   await page.locator(expected).waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
   const evidence = await page.evaluate(({ expectedOwner, landscape, tablet }) => {
@@ -77,12 +76,14 @@ async function inspectCell(page, cell) {
       return { text: (node.textContent || "").trim().slice(0, 72), clipped: style.textOverflow === "ellipsis" && node.scrollWidth > node.clientWidth + 1, left: box.left, right: box.right };
     }) : [];
     const canvas = mobileReference;
+    const content = mobileReference?.querySelector(".ref-content");
     const facts = active ? [...active.querySelectorAll("[data-mobile-reference-tablet-workspace] button")].filter(visible).map(rect) : [];
     const mobileMains = [...document.querySelectorAll('[data-panel-surface="mobile"] main')].filter(visible);
     return {
       inner: { width: innerWidth, height: innerHeight }, expectedOwner,
       mobileReference: visible(mobileReference), desktop: visible(desktop), unexpectedMobileMains: mobileReference ? mobileMains.filter((node) => node !== mobileReference).length : mobileMains.length, nav: nav ? rect(nav) : null, tabs,
       canvas: canvas ? rect(canvas) : null, facts, critical,
+      contentDisplay: content ? getComputedStyle(content).display : "",
       overflowX: Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0) - innerWidth,
       tabRows: tabs.length ? new Set(tabs.map((tab) => Math.round(tab.rect.top))).size : 0,
       landscape, tablet,
@@ -95,7 +96,10 @@ async function inspectCell(page, cell) {
     assert(evidence.canvas && evidence.canvas.width > 0, "Mobile Reference layout is missing", evidence);
     assert(evidence.tabs.length === 4 && evidence.tabs.every((tab) => tab.label && tab.rect.width >= 44 && tab.rect.height >= 44), "Mobile Reference navigation must provide four labelled 44px task tabs", evidence);
     assert(evidence.nav.bottom <= evidence.inner.height + 1, "bottom navigation falls outside the viewport", evidence);
-    if (cell.landscape) assert(evidence.tabRows <= 2, "landscape must retain a horizontal bottom tab bar", evidence);
+    if (cell.landscape) {
+      assert(evidence.tabRows === 1 && evidence.nav && evidence.nav.width >= evidence.inner.width - 30 && evidence.nav.bottom <= evidence.inner.height + 1, "narrow landscape must retain one four-column bottom tab bar", evidence);
+      assert(evidence.contentDisplay !== "grid", "narrow landscape must retain the single-column phone content flow", evidence);
+    }
     if (cell.id === "phone320") assert(evidence.critical.every((node) => !node.clipped && node.left >= -1 && node.right <= evidence.inner.width + 1), "320px clips or ellipsizes critical Mobile Reference evidence", evidence);
     if (cell.tablet) assert(evidence.canvas.width >= 240 && evidence.facts.length >= 3 && evidence.facts.every((fact) => fact.width >= 110), "tablet lost Mobile Reference capability continuity", evidence);
   } else {
@@ -108,27 +112,13 @@ async function main() {
   const started = Date.now();
   const identityStart = gitWorktreeIdentity(root);
   const results = [];
-  const surfaceGroups = [
-    cells.filter((cell) => cell.owner === "mobile-reference"),
-    cells.filter((cell) => cell.owner === "desktop"),
-  ];
-  for (const group of surfaceGroups) {
-    if (!group.length) continue;
+  for (const cell of cells) {
     let runtime = null;
     try {
-      const initial = group[0];
-      // The production loader chooses a single surface during initial load;
-      // resizing a mobile page must not masquerade as a desktop remount.
-      runtime = await launchRuntime({ viewport: { width: initial.width, height: initial.height }, screen: { width: initial.width, height: initial.height } });
-      // The acceptance context is touch-enabled at every viewport. Select the
-      // production loader's explicit surface route so desktop coverage remains
-      // a real desktop mount instead of inheriting the touch default.
-      runtime.page.__mockUrl = surfaceUrl(runtime.mock.url, initial.owner);
-      await login(runtime.page, runtime.page.__mockUrl);
-      for (const cell of group) {
-        try { results.push({ ...cell, pass: true, evidence: await inspectCell(runtime.page, cell) }); }
-        catch (error) { results.push({ ...cell, pass: false, error: serialise(error) }); }
-      }
+      runtime = await launchRuntime({ viewport: { width: cell.width, height: cell.height }, screen: { width: cell.width, height: cell.height }, isMobile: false, hasTouch: false });
+      await login(runtime.page, overviewUrl(runtime.mock.url));
+      try { results.push({ ...cell, pass: true, evidence: await inspectCell(runtime.page, runtime.mock.url, cell) }); }
+      catch (error) { results.push({ ...cell, pass: false, error: serialise(error) }); }
     } finally { if (runtime) await closeRuntime(runtime); }
   }
   const identityEnd = gitWorktreeIdentity(root);

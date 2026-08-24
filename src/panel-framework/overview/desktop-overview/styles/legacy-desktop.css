@@ -125,9 +125,11 @@ body,
   transition: transform 140ms ease-out, background 140ms ease-out, border-color 140ms ease-out;
 }
 
-.panel-runtime-bar-desktop .panel-runtime-actions button:hover {
-  border-color: #bed4fa;
-  background: var(--legacy-blue-soft);
+@media (hover: hover) and (pointer: fine) {
+  .panel-runtime-bar-desktop .panel-runtime-actions button:hover {
+    border-color: #bed4fa;
+    background: var(--legacy-blue-soft);
+  }
 }
 
 .panel-runtime-bar-desktop .panel-runtime-actions button:active {
@@ -162,9 +164,11 @@ body,
   transition: transform 140ms ease-out, color 140ms ease-out, background 140ms ease-out;
 }
 
-.panel-app-desktop .panel-task-navigation button:hover {
-  color: var(--legacy-blue);
-  background: #f2f7ff;
+@media (hover: hover) and (pointer: fine) {
+  .panel-app-desktop .panel-task-navigation button:hover {
+    color: var(--legacy-blue);
+    background: #f2f7ff;
+  }
 }
 
 .panel-app-desktop .panel-task-navigation button:focus-visible {

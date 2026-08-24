@@ -23,9 +23,9 @@ set UV_THREADPOOL_SIZE=2
 set MOBILE_MAX_CPU_PERCENT=55
 set MOBILE_CPU_AFFINITY_ENFORCED=1
 if /i "%MOBILE_BATCH_MODE%"=="first" (
-  start "" /affinity 1 /belownormal /wait /b node tools\check-mobile-reference-runtime.js --skip-interactions
+  node tools\run-mobile-reference-runtime.js --skip-interactions
 ) else (
-  start "" /affinity 1 /belownormal /wait /b node tools\check-mobile-reference-runtime.js --append --skip-interactions
+  node tools\run-mobile-reference-runtime.js --append --skip-interactions
 )
 set RESULT=%ERRORLEVEL%
 endlocal & exit /b %RESULT%

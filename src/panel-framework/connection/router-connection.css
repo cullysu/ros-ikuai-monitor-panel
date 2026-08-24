@@ -394,7 +394,7 @@
 .router-mobile-connection-intro h1 { margin: 4px 0 0; font-size: 26px; line-height: 1.08; letter-spacing: -.03em; }
 .router-mobile-connection-intro p { margin: 5px 0 0; color: #526c77; font-size: 14px; }
 
-@media (max-width: 1199px) {
+@media (max-width: 599px), (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   :is(html, body):has(:is([data-router-connection-screen], .router-connection-status.is-mobile)) { min-width: 0; min-height: 100%; overflow-x: hidden; background: var(--router-connect-canvas); }
 
   .app.ik-shell:has(:is([data-router-connection-screen], .router-connection-status.is-mobile)) { display: block; min-width: 0; min-height: 100svh; background: var(--router-connect-canvas); }
@@ -414,6 +414,12 @@
   .router-channel-fact { min-height: 46px; }
   .router-connect-submit { width: 100%; min-height: 50px; }
   .router-logout-button { width: 100%; margin-top: 8px; }
+}
+
+@media (min-width: 600px) and (max-width: 1199px) and (orientation: landscape) {
+  .router-connection-desktop { grid-template-columns: minmax(200px, 34%) minmax(0, 1fr); }
+  .router-connection-context { padding: clamp(20px, 4vw, 48px); }
+  .router-connection-workspace { min-width: 0; padding: clamp(20px, 3vw, 42px); }
 }
 
 @media (max-width: 359px) {

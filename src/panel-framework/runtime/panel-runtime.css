@@ -54,7 +54,7 @@
 .panel-runtime-notice button:focus-visible,
 .panel-runtime-empty button:focus-visible { outline: 2px solid #0a7098; outline-offset: 2px; }
 .panel-runtime-actions button:disabled { cursor: not-allowed; opacity: .45; }
-@media (min-width: 1200px) { .panel-runtime-bar-desktop { grid-template-columns: minmax(180px, 1fr) auto auto minmax(136px, max-content); } .panel-runtime-bar-desktop .panel-runtime-phase { grid-column: 3; grid-row: 1; justify-self: end; } .panel-runtime-bar-desktop .panel-runtime-actions { grid-column: 4; grid-row: 1; justify-self: end; min-width: max-content; } }
+@media (min-width: 1200px), (min-width: 600px) and (max-width: 1199px) and (orientation: landscape) { .panel-runtime-bar-desktop { grid-template-columns: minmax(180px, 1fr) auto auto minmax(136px, max-content); } .panel-runtime-bar-desktop .panel-runtime-phase { grid-column: 3; grid-row: 1; justify-self: end; } .panel-runtime-bar-desktop .panel-runtime-actions { grid-column: 4; grid-row: 1; justify-self: end; min-width: max-content; } }
 .panel-runtime-notice {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -105,7 +105,7 @@
     white-space: normal;
   }
 }
-@media (max-width: 1199px) {
+@media (max-width: 599px), (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .panel-runtime-live { min-height: 100svh; }
   .panel-runtime-bar-mobile {
     position: relative;
@@ -181,7 +181,8 @@
   }
 }
 
-@media (prefers-reduced-transparency: reduce) and (max-width: 1199px) {
+@media (prefers-reduced-transparency: reduce) and (max-width: 599px),
+  (prefers-reduced-transparency: reduce) and (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .panel-runtime-bar-mobile {
     border-color: #b9c8cf;
     background: #f5f8f8;
@@ -190,7 +191,8 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) and (max-width: 1199px) {
+@media (prefers-reduced-motion: reduce) and (max-width: 599px),
+  (prefers-reduced-motion: reduce) and (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .panel-runtime-bar-mobile .panel-runtime-actions button { transition: none; }
   .panel-runtime-bar-mobile .panel-runtime-actions button:active { transform: none; }
 }
@@ -202,7 +204,7 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1199px) {
+@media (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .panel-runtime-notice {
     margin-inline-start: 0;
   }

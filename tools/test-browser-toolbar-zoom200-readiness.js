@@ -2,16 +2,17 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { TOOLBAR_200_REQUIRED_CELLS, TOOLBAR_INCREMENTS, TOOLBAR_CONTRACT, MOBILE_ORIGIN_OWNER, DESKTOP_ORIGIN_OWNER, toolbarReportReadiness } = require('./check-browser-toolbar-zoom200');
-const { actionTimeout: panelRuntimeActionTimeout } = require('./check-panel-runtime-browser');
+const { actionTimeout: panelRuntimeActionTimeout } = require('./acceptance/current-runtime-mock');
 
 const runnerSource = fs.readFileSync(path.join(__dirname, 'check-browser-toolbar-zoom200.js'), 'utf8');
 const windowsZoomSource = fs.readFileSync(path.join(__dirname, 'acceptance', 'accessibility-v2', 'windows_browser_zoom.py'), 'utf8');
-const panelRuntimeSource = fs.readFileSync(path.join(__dirname, 'check-panel-runtime-browser.js'), 'utf8');
+const currentRuntimeMockSource = fs.readFileSync(path.join(__dirname, 'acceptance', 'current-runtime-mock.js'), 'utf8');
 const accessibilityRuntimeSource = fs.readFileSync(path.join(__dirname, 'acceptance', 'accessibility-v2', 'runtime.js'), 'utf8');
 assert.match(runnerSource, /main\[data-mobile-reference-home\]/, 'the toolbar fixture must bind to the accepted Mobile Reference overview owner');
 assert.match(runnerSource, /data-mobile-reference-workspace/, 'the toolbar fixture must bind route checks to the accepted Mobile Reference owner');
@@ -24,16 +25,17 @@ assert.match(runnerSource, /maxLeft === 0/, 'the toolbar fixture must fail on an
 assert.match(runnerSource, /process\.env\.PYTHON_EXECUTABLE \|\| "python"/, 'toolbar automation must use the setup-python interpreter from PATH unless explicitly overridden');
 assert.doesNotMatch(runnerSource, /spawn\("py"|\["-3", "-B"/, 'toolbar automation must not bypass setup-python through the Windows launcher');
 assert.doesNotMatch(runnerSource, /data-mobile-pulse|\.oc-objects|data-mobile-ops-overview|mop-route-row/, 'the toolbar fixture must not retain retired mobile selector fallbacks');
-assert.match(windowsZoomSource, /send_chord\(0x11, 0x30\).*Ctrl \+ 0/, 'toolbar reset must use a real bounded Win32 Ctrl+0 input without importing the full UIA tree');
-assert.match(windowsZoomSource, /elif args\.action == "menu-plus":[\s\S]*from pywinauto import Desktop/, 'pywinauto must be loaded only for the real Edge menu fallback');
-assert.doesNotMatch(windowsZoomSource, /from pywinauto import Desktop, keyboard/, 'simple physical key actions must not pay the full UIA import cost');
+assert.doesNotMatch(windowsZoomSource, /keybd_event|SendInput|send_chord|\.click_input\s*\(/, 'toolbar automation must never emit global keyboard or physical mouse input');
+assert.match(windowsZoomSource, /if args\.action == "menu-plus":[\s\S]*from pywinauto import Desktop/, 'pywinauto must be loaded only for the process-owned Edge menu action');
+assert.match(windowsZoomSource, /def invoke_owned_control[\s\S]*control_process_id != owned_process_id[\s\S]*require_owned_foreground_process[\s\S]*control\.invoke\(\)/, 'Edge controls must be process-bound and invoked through UIA only');
+assert.match(windowsZoomSource, /menu_remains_open[\s\S]*invoke_owned_control\(more, owned_process_id, handle, "Edge Settings and more close control"\)/, 'the owned Edge menu must be closed through UIA before the next increment or capture');
 const configuredPanelRuntimeTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);
 const expectedPanelRuntimeTimeout = Number.isFinite(configuredPanelRuntimeTimeout) && configuredPanelRuntimeTimeout > 0
   ? Math.min(300_000, Math.max(8_000, configuredPanelRuntimeTimeout))
   : 8_000;
 assert.equal(panelRuntimeActionTimeout, expectedPanelRuntimeTimeout, 'mock pipe transport must share the bounded low-load browser action budget');
-assert.match(panelRuntimeSource, /beginStop:[\s\S]*stopping = true/, 'mock transport must expose an explicit teardown boundary');
-assert.match(panelRuntimeSource, /accepted: stopping \|\| Boolean\(browserFailure\)/, 'pipe resets must retain whether browser cancellation or teardown owned them');
+assert.match(currentRuntimeMockSource, /beginStop:[\s\S]*stopping = true/, 'mock transport must expose an explicit teardown boundary');
+assert.match(currentRuntimeMockSource, /accepted: stopping \|\| Boolean\(browserFailure\)/, 'pipe resets must retain whether browser cancellation or teardown owned them');
 assert.match(accessibilityRuntimeSource, /runtime\.mock\?\.beginStop\?\.\(\);[\s\S]*runtime\.context/, 'accessibility cleanup must mark mock teardown before closing the browser context');
 assert.match(runnerSource, /pipeResets\.every\(\(item\) => item\.accepted === true\)/, 'toolbar evidence must reject any active mock pipe reset after cleanup');
 
@@ -70,7 +72,12 @@ const identity = {
   releaseEvidenceEligible: false,
 };
 
-function surface(label) {
+function surface(label, handle, viewport) {
+  const dimensions = {
+    width: viewport.cssViewport.width,
+    height: viewport.cssViewport.height,
+  };
+  const evidenceHash = (kind) => crypto.createHash('sha256').update(`${label}:${kind}`).digest('hex');
   return {
     label,
     overflowX: 0,
@@ -82,20 +89,23 @@ function surface(label) {
       { order: 1, id: 'control-0', focusVisible: true, outlineWidth: 2, outlineStyle: 'solid', fullyVisible: true, withinMain: true, obscuredByNavigation: false },
       { order: 2, id: 'control-1', focusVisible: true, outlineWidth: 2, outlineStyle: 'solid', fullyVisible: true, withinMain: true, obscuredByNavigation: false },
     ] },
-    screenshot: { file: `${label}.png`, sha256: 'c'.repeat(64) },
-    playwrightDiagnosticScreenshot: { file: `${label}-playwright-diagnostic.png`, sha256: 'd'.repeat(64) },
+    screenshot: { file: `${label}-edge-toolbar-zoom200.png`, sha256: evidenceHash('windows'), dimensions },
+    playwrightDiagnosticScreenshot: { file: `${label}-edge-toolbar-zoom200-playwright-diagnostic.png`, sha256: evidenceHash('renderer'), dimensions },
     windowsCapture: {
       pass: true,
-      windowHandle: 31415,
+      contract: 'windows-edge-toolbar-zoom-v1',
+      action: 'capture',
+      windowHandle: handle,
       captureOnly: true,
-      captureState: { foregroundHandle: 31415, captureMode: 'screen-unobscured', unobscured: true, sampleCount: 9, blockedSamples: [], windowRect: { left: 1, top: 1, right: 2, bottom: 2 } },
+      capture: dimensions,
+      captureState: { foregroundHandle: handle, captureMode: 'screen-unobscured', unobscured: true, sampleCount: 9, blockedSamples: [], windowRect: { left: 1, top: 1, right: 2, bottom: 2 } },
     },
   };
 }
 
 function assertCurrentOwnerReport(report, expectedIdentity = null) {
   assert.equal(report.pass, true, 'current-owner toolbar evidence must explicitly pass');
-  assert.equal(report.contract, 'edge-toolbar-zoom200-windows-v9-variable-increment-mobile-reference', 'current-owner toolbar evidence must use the current variable-increment Mobile Reference contract');
+  assert.equal(report.contract, TOOLBAR_CONTRACT, 'current-owner toolbar evidence must use the current process-owned UIA Mobile Reference contract');
   assert.equal(report.matrix.complete, true, 'current-owner toolbar matrix must be complete');
   assert.equal(report.cells.length, TOOLBAR_200_REQUIRED_CELLS.length, 'current-owner toolbar matrix cell count must match');
   if (expectedIdentity) assert.equal(report.identity.worktreeFingerprint, expectedIdentity.worktreeFingerprint, 'current-owner toolbar evidence must not be stale');
@@ -114,8 +124,8 @@ function assertCurrentOwnerReport(report, expectedIdentity = null) {
   }
 }
 
-function passingReport() {
-  const stableIdentity = { commit: identity.commit, fingerprint: 'd'.repeat(64) };
+function passingReport(reportIdentity = identity) {
+  const stableIdentity = { commit: reportIdentity.commit, fingerprint: 'd'.repeat(64), official: reportIdentity };
   return {
     pass: true,
     contract: TOOLBAR_CONTRACT,
@@ -125,29 +135,60 @@ function passingReport() {
       desktopRoute: DESKTOP_ORIGIN_OWNER.route,
       desktopNavigation: DESKTOP_ORIGIN_OWNER.navigation,
     },
-    identity,
+    identity: reportIdentity,
     stableIdentity,
+    platform: 'win32',
     proofBoundary: { doesNotProve: 'iOS Dynamic Type, Android system font size, Windows OS font size, CSS-injected text resize, CDP pageScale, or behavior on a physical mobile device.' },
-    matrix: { complete: true },
-    cells: TOOLBAR_200_REQUIRED_CELLS.map(({ viewport, scenario }) => ({
-      viewport,
-      scenario,
-      stableIdentity,
-      zoomLevel: { verified: true, expectedPercent: 200, toolbarIncrements: TOOLBAR_INCREMENTS },
-      windowsAutomation: {
-        pass: true,
-        steps: Array.from({ length: TOOLBAR_INCREMENTS }, (_, index) => ({
+    matrix: {
+      complete: true,
+      requiredCellIds: TOOLBAR_200_REQUIRED_CELLS.map(({ viewport, scenario }) => `${viewport.id}::${scenario}`),
+    },
+    cells: TOOLBAR_200_REQUIRED_CELLS.map(({ viewport, scenario }, cellIndex) => {
+      const handle = 31415 + cellIndex;
+      const expectedSurface = viewport.orientation === 'landscape' && viewport.cssViewport.width >= 600 ? 'desktop' : 'mobile';
+      const incrementCount = Math.min(4, TOOLBAR_INCREMENTS);
+      const baseline = { innerWidth: viewport.cssViewport.width * 2, innerHeight: viewport.cssViewport.height * 2, devicePixelRatio: 1 };
+      const zoomed = { innerWidth: viewport.cssViewport.width, innerHeight: viewport.cssViewport.height, devicePixelRatio: 2 };
+      const ladder = Array.from({ length: incrementCount + 1 }, (_, ladderIndex) => {
+        const ratio = 1 + ladderIndex / incrementCount;
+        return { innerWidth: baseline.innerWidth / ratio, innerHeight: baseline.innerHeight / ratio, devicePixelRatio: ratio };
+      });
+      const steps = Array.from({ length: incrementCount }, (_, index) => {
+        const before = ladder[index];
+        const after = ladder[index + 1];
+        return {
           step: index + 1,
           acceptedAction: 'menu-plus',
-          attempts: [
-            { action: 'oem-plus', input: { pass: true }, changed: false },
-            { action: 'numpad-plus', input: { pass: true }, changed: false },
-            { action: 'menu-plus', input: { pass: true }, changed: true },
-          ],
-        })),
-      },
-      surface: surface(`${viewport.id}-${scenario}`),
-    })),
+          before,
+          after,
+          attempts: [{
+            action: 'menu-plus',
+            input: { pass: true, contract: 'windows-edge-toolbar-zoom-v1', action: 'menu-plus', captureOnly: false, windowHandle: handle },
+            changed: true,
+            before,
+            after,
+          }],
+        };
+      });
+      return {
+        viewport,
+        scenario,
+        expectedBaselineSurface: expectedSurface,
+        browserSurface: expectedSurface,
+        stableIdentity,
+        baseline,
+        zoomed,
+        zoomLevel: { verified: true, expectedPercent: 200, toolbarIncrements: incrementCount },
+        windowsAutomation: {
+          pass: true,
+          windowHandle: handle,
+          baselineInspection: { pass: true, contract: 'windows-edge-toolbar-zoom-v1', action: 'inspect', windowHandle: handle },
+          steps,
+          final: zoomed,
+        },
+        surface: surface(`${viewport.id}-${scenario}`, handle, viewport),
+      };
+    }),
   };
 }
 
@@ -166,8 +207,7 @@ try {
     worktreeClean: true,
     releaseEvidenceEligible: true,
   };
-  const exactReport = passingReport();
-  exactReport.identity = cleanCurrentIdentity;
+  const exactReport = passingReport(cleanCurrentIdentity);
   assert.equal(toolbarReportReadiness(exactReport, cleanCurrentIdentity).pass, true);
   const differentCurrentSha = {
     ...cleanCurrentIdentity,
@@ -184,6 +224,14 @@ try {
   incompleteKeyboard.cells[0].surface.keyboardTraversal.complete = false;
   incompleteKeyboard.cells[0].surface.keyboardTraversal.visitedCount = 1;
   assert.equal(toolbarReportReadiness(incompleteKeyboard).code, 'V8_CELL_ACCESSIBILITY_FAILED');
+
+  const missingCaptureDimensions = passingReport();
+  delete missingCaptureDimensions.cells[0].surface.windowsCapture.capture;
+  assert.equal(toolbarReportReadiness(missingCaptureDimensions).code, 'V10_EVIDENCE_INVALID');
+
+  const reusedVisualEvidence = passingReport();
+  reusedVisualEvidence.cells[1].surface.screenshot.sha256 = reusedVisualEvidence.cells[0].surface.screenshot.sha256;
+  assert.equal(toolbarReportReadiness(reusedVisualEvidence).code, 'V10_EVIDENCE_INVALID');
 
   const ownerRendered = passingReport();
   ownerRendered.cells[0].surface.windowsCapture.captureState = {

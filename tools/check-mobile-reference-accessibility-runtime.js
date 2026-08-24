@@ -5,6 +5,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { gitWorktreeIdentity } = require("./worktree-runtime-identity");
 const { ACTION_TIMEOUT_MS, ABORT_CLEANUP_TIMEOUT_MS, boundedAbortCleanup, closeRuntime, launchRuntime, withTimeout } = require("./acceptance/accessibility-v2/runtime");
+const {
+  CURRENT_MOBILE_REFERENCE_ROUTE_STAGE,
+  CURRENT_MOBILE_REFERENCE_ROUTES,
+  validateCurrentMobileReferenceRouteManifest,
+} = require("./acceptance/mobile-reference-route-manifest");
 
 const root = path.resolve(__dirname, "..");
 const artifactDir = path.join(root, "_acceptance", "mobile-reference-accessibility");
@@ -14,6 +19,8 @@ const CONTROL_SELECTOR = "button:not([disabled]),a[href]:not([aria-disabled='tru
 const HOME_SELECTOR = "[data-mobile-reference-home]";
 const NAVIGATION_SELECTOR = "[data-mobile-reference-navigation]";
 const CONNECTION_SELECTOR = "[data-mobile-reference-connection]";
+const DEFAULT_GLOBAL_TIMEOUT_MS = 210_000;
+const MAX_LOW_LOAD_GLOBAL_TIMEOUT_MS = 600_000;
 const SOURCE_FILES = [
   "src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx",
   "src/panel-framework/mobile-reference-ui/MobileReferenceConnection.tsx",
@@ -25,6 +32,15 @@ const SOURCE_FILES = [
 const assert = (condition, message, evidence) => { if (!condition) throw new Error(`${message}${evidence ? `\n${JSON.stringify(evidence, null, 2)}` : ""}`); };
 const serialise = (error) => ({ name: error?.name || "Error", code: error?.code || "", message: String(error?.message || error), stack: String(error?.stack || "").split("\n").slice(0, 7).join("\n") });
 const sameIdentity = (a, b) => a.commit === b.commit && a.artifactKey === b.artifactKey && a.worktreeFingerprint === b.worktreeFingerprint;
+
+function accessibilityGlobalTimeoutMs(env = process.env) {
+  const configured = Number(env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);
+  if (!Number.isFinite(configured) || configured <= 0) return DEFAULT_GLOBAL_TIMEOUT_MS;
+  return Math.min(
+    MAX_LOW_LOAD_GLOBAL_TIMEOUT_MS,
+    Math.max(DEFAULT_GLOBAL_TIMEOUT_MS, configured * 4),
+  );
+}
 
 function urlFor(baseUrl, section) { const url = new URL(baseUrl); url.searchParams.set("section", section); return url.toString(); }
 async function open(page, baseUrl, section = "overview") {
@@ -68,9 +84,98 @@ function inspectStaticContract() {
     separateStyleEntry: /mobile-reference-ui\/mobile-reference\.css/.test(combined),
     retiredOwnerReferenceAbsent: !retired.test(combined),
     adaptiveRules: /prefers-reduced-motion/.test(combined) && /prefers-reduced-transparency/.test(combined) && /forced-colors/.test(combined),
+    routeManifest: validateCurrentMobileReferenceRouteManifest(),
   };
-  assert(!missing.length && Object.values(evidence).every((value) => typeof value !== "boolean" || value), "mobile-reference static accessibility contract is incomplete", evidence);
+  assert(!missing.length && evidence.routeManifest.pass && Object.values(evidence).every((value) => typeof value !== "boolean" || value), "mobile-reference static accessibility contract is incomplete", evidence);
   return evidence;
+}
+
+async function inspectCurrentMobileReferenceRoutes(page, runtime) {
+  await configure(runtime, "");
+  await page.setViewportSize({ width: 390, height: 844 });
+  const routes = [];
+  for (const spec of CURRENT_MOBILE_REFERENCE_ROUTES) {
+    await page.goto(urlFor(runtime.mock.url, spec.route), { waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
+    await page.locator(spec.rootSelector).waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
+    const evidence = await page.evaluate(({ route, rootSelector, contentSelector }) => {
+      const visible = (node) => node instanceof HTMLElement
+        && getComputedStyle(node).display !== "none"
+        && getComputedStyle(node).visibility !== "hidden"
+        && node.getBoundingClientRect().width > 0
+        && node.getBoundingClientRect().height > 0;
+      const root = document.querySelector(rootSelector);
+      const idCounts = new Map();
+      document.querySelectorAll("[id]").forEach((node) => {
+        const id = node.getAttribute("id") || "";
+        if (id) idCounts.set(id, (idCounts.get(id) || 0) + 1);
+      });
+      const duplicateIds = [...idCounts].filter(([, count]) => count > 1).map(([id]) => id);
+      const ariaTargets = [];
+      document.querySelectorAll("[aria-controls],[aria-labelledby],[aria-describedby]").forEach((node) => {
+        ["aria-controls", "aria-labelledby", "aria-describedby"].forEach((attribute) => {
+          if (!node.hasAttribute(attribute)) return;
+          const ids = (node.getAttribute(attribute) || "").trim().split(/\s+/).filter(Boolean);
+          if (!ids.length) ariaTargets.push({ attribute, id: "", count: 0 });
+          ids.forEach((id) => ariaTargets.push({ attribute, id, count: idCounts.get(id) || 0 }));
+        });
+      });
+      const title = root?.querySelector("[data-panel-route-title]")?.textContent?.replace(/\s+/g, " ").trim() || "";
+      const content = root?.querySelector(contentSelector);
+      const current = [...document.querySelectorAll('[aria-current="page"]')];
+      const nav = document.querySelector("[data-mobile-reference-navigation]");
+      const retiredOwner = document.querySelector("[data-mobile-inspection-overview],[data-inspection-workspace],[data-mobile-pulse-workspace],[data-mobile-domain-workspace]");
+      return {
+        route,
+        urlRoute: new URL(location.href).searchParams.get("section") || "overview",
+        rootVisible: visible(root),
+        rootIsMain: root?.tagName === "MAIN",
+        title,
+        contentVisible: visible(content),
+        contentText: content?.textContent?.replace(/\s+/g, " ").trim() || "",
+        navigationVisible: visible(nav),
+        navigationName: nav?.getAttribute("aria-label")?.trim() || "",
+        currentCount: current.length,
+        duplicateIds,
+        danglingAriaTargets: ariaTargets.filter((target) => target.count !== 1),
+        retiredOwner: retiredOwner?.outerHTML?.slice(0, 160) || "",
+      };
+    }, spec);
+    assert(
+      evidence.urlRoute === spec.route
+        && evidence.rootVisible
+        && evidence.rootIsMain
+        && evidence.title.length > 0
+        && evidence.contentVisible
+        && evidence.contentText.length > 0
+        && evidence.navigationVisible
+        && evidence.navigationName.length > 0
+        && evidence.currentCount === 1
+        && evidence.duplicateIds.length === 0
+        && evidence.danglingAriaTargets.length === 0
+        && !evidence.retiredOwner,
+      `current Mobile Reference route ${spec.route} failed its accessibility contract`,
+      evidence,
+    );
+    routes.push(evidence);
+  }
+
+  await page.goto(urlFor(runtime.mock.url, "interfaces"), { waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
+  const firstRow = page.locator('[data-mobile-reference-workspace="interfaces"] [data-panel-object-row]').first();
+  await firstRow.waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
+  const focusId = await firstRow.getAttribute("id");
+  assert(focusId, "interfaces list row must expose a stable focus id");
+  await firstRow.focus();
+  await firstRow.click();
+  await page.locator('[data-mobile-reference-workspace="interfaces"][data-mobile-reference-object-detail]').waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
+  await page.goBack({ waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
+  await page.locator('[data-mobile-reference-workspace="interfaces"] [data-panel-object-row]').first().waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
+  await page.waitForFunction((id) => document.activeElement?.id === id, focusId, { timeout: ACTION_TIMEOUT_MS });
+  await page.goForward({ waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
+  const detail = page.locator('[data-mobile-reference-workspace="interfaces"][data-mobile-reference-object-detail]');
+  await detail.waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
+  const detailTitle = (await detail.locator("[data-panel-route-title]").textContent())?.trim() || "";
+  assert(detailTitle, "forward navigation must restore the interfaces detail title");
+  return { routes, history: { route: "interfaces", focusId, backFocusRestored: true, forwardDetailRestored: true, detailTitle } };
 }
 
 async function inspectHistory(page, runtime) {
@@ -186,12 +291,21 @@ async function inspectAdaptiveMedia(page, runtime) {
 
 async function inspectNavigation(page, runtime) {
   const checks = [];
-  for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }, { width: 667, height: 375 }, { width: 768, height: 1024 }]) {
-    await configure(runtime, ""); await page.setViewportSize(viewport); await open(page, runtime.mock.url, "overview");
-    const result = await page.evaluate(() => { const nav = document.querySelector("[data-mobile-reference-navigation]"); const tabs = [...(nav?.querySelectorAll("button") || [])].map((button) => button.getBoundingClientRect().toJSON()); return { nav: nav?.getBoundingClientRect().toJSON(), tabs, position: nav ? getComputedStyle(nav).position : "" }; });
+  const mobileViewports = [
+    { id: "phone320", width: 320, height: 568 }, { id: "phone360", width: 360, height: 800 },
+    { id: "phone375", width: 375, height: 667 }, { id: "phone390", width: 390, height: 844 },
+    { id: "phone430", width: 430, height: 932 }, { id: "landscape568", width: 568, height: 320 },
+    { id: "tablet768", width: 768, height: 1024 },
+  ];
+  for (const viewport of mobileViewports) {
+    await configure(runtime, ""); await page.setViewportSize({ width: viewport.width, height: viewport.height }); await open(page, runtime.mock.url, "overview");
+    const result = await page.evaluate(() => { const nav = document.querySelector("[data-mobile-reference-navigation]"); const tabs = [...(nav?.querySelectorAll("button") || [])].map((button) => button.getBoundingClientRect().toJSON()); const content = document.querySelector("[data-mobile-reference-home] .ref-content"); return { nav: nav?.getBoundingClientRect().toJSON(), tabs, position: nav ? getComputedStyle(nav).position : "", contentDisplay: content ? getComputedStyle(content).display : "" }; });
     assert(result.nav && result.position === "fixed" && result.tabs.length === 4 && result.tabs.every((tab) => tab.width >= 44 && tab.height >= 44), "navigation is not fully reachable", { viewport, result });
-    if (viewport.height <= 500 || viewport.width >= 600) assert(result.nav.left <= 1 && result.nav.width <= 80 && result.nav.height >= viewport.height - 1, "landscape/tablet navigation must use a dedicated rail", { viewport, result });
+    if (viewport.id === "tablet768") assert(result.nav.left <= 1 && result.nav.width <= 80 && result.nav.height >= viewport.height - 1, "tablet portrait navigation must use a dedicated rail", { viewport, result });
     else assert(result.nav.width >= viewport.width - 30 && result.nav.bottom <= viewport.height + 1, "phone navigation must remain a bottom control", { viewport, result });
+    if (viewport.id === "landscape568") {
+      assert(new Set(result.tabs.map((tab) => Math.round(tab.top))).size === 1 && result.contentDisplay !== "grid", "568px landscape must retain one bottom tab row and single-column phone content", { viewport, result });
+    }
     checks.push({ viewport, result });
   }
   return checks;
@@ -202,10 +316,24 @@ async function inspectConnection(page, runtime) {
   await page.locator("[data-mobile-reference-directory]").getByRole("button", { name: /RouterOS 连接/ }).click();
   const form = page.locator('[data-mobile-reference-connection="form"]'); await form.waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
   const evidence = await inspectSurface(page, CONNECTION_SELECTOR, "connection");
+  const session = await page.context().newCDPSession(page);
+  let reducedTransparency = null;
+  try {
+    await session.send("Emulation.setEmulatedMedia", { media: "screen", features: [{ name: "prefers-reduced-transparency", value: "reduce" }] });
+    reducedTransparency = await page.evaluate(() => {
+      const header = document.querySelector(".ref-connect > header");
+      const style = header ? getComputedStyle(header) : null;
+      return { matches: matchMedia("(prefers-reduced-transparency: reduce)").matches, backdrop: style?.backdropFilter || "none", webkitBackdrop: style?.webkitBackdropFilter || "none" };
+    });
+    assert(reducedTransparency.matches && ["", "none"].includes(reducedTransparency.backdrop) && ["", "none"].includes(reducedTransparency.webkitBackdrop), "connection header retains blur under reduced transparency", reducedTransparency);
+  } finally {
+    await session.send("Emulation.setEmulatedMedia", { media: "screen", features: [] }).catch(() => {});
+    await session.detach().catch(() => {});
+  }
   await form.getByLabel("地址", { exact: true }).fill("https://invalid.example"); await form.getByLabel("用户名", { exact: true }).fill("observer"); await form.locator('input[type="password"]').fill("not-sent"); await form.locator('button[type="submit"]').click();
   const alert = form.locator('[role="alert"]'); await alert.waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
   assert(/协议|地址|主机名/.test((await alert.textContent()) || ""), "connection must reject protocol-bearing addresses");
-  return { evidence, addressValidation: true };
+  return { evidence, reducedTransparency, addressValidation: true };
 }
 
 async function inspectAbortBound() { const started = Date.now(); let error = null; try { await boundedAbortCleanup(() => new Promise(() => {}), 70); } catch (failure) { error = failure; } const evidence = { code: error?.code || "", elapsedMs: Date.now() - started, configured: ABORT_CLEANUP_TIMEOUT_MS }; assert(evidence.code === "ABORT_CLEANUP_TIMEOUT" && evidence.elapsedMs >= 50 && evidence.elapsedMs < 1000, "runtime abort cleanup is not bounded", evidence); return evidence; }
@@ -223,15 +351,20 @@ async function main() {
     await run("model-runtime", async () => { await configure(runtime, "interfaces-down"); await open(runtime.page, runtime.mock.url, "overview"); const scene = await runtime.page.locator(HOME_SELECTOR).getAttribute("data-mobile-reference-scene"); assert(scene === "interfaces", "interfaces-down must render the interface scene"); return { scene }; });
     await run("wan-detail-history", () => inspectHistory(runtime.page, runtime));
     await run("workspace-object-detail", () => inspectWorkspaceObjectDetail(runtime.page, runtime));
+    await run(CURRENT_MOBILE_REFERENCE_ROUTE_STAGE, () => inspectCurrentMobileReferenceRoutes(runtime.page, runtime));
     await run("mobile-geometry-and-wan-truth", () => inspectMobileGeometryAndWanTruth(runtime.page, runtime));
     await run("text-only-scale-200", inspectTextScale);
     await run("adaptive-media", () => inspectAdaptiveMedia(runtime.page, runtime));
     await run("navigation", () => inspectNavigation(runtime.page, runtime));
     await run("connection-controls", () => inspectConnection(runtime.page, runtime));
   } finally { if (runtime) await closeRuntime(runtime); }
-  const identityEnd = gitWorktreeIdentity(root); const complete = stages.length === 11 && stages.every((stage) => stage.status === "passed") && sameIdentity(identityStart, identityEnd);
+  const identityEnd = gitWorktreeIdentity(root); const complete = stages.length === 12 && stages.every((stage) => stage.status === "passed") && sameIdentity(identityStart, identityEnd);
   const report = { pass: complete, complete, contract, source: "mobile-reference", generatedAt: new Date().toISOString(), commit: identityEnd.commit, artifactKey: identityEnd.artifactKey, worktreeFingerprint: identityEnd.worktreeFingerprint, freshness: sameIdentity(identityStart, identityEnd), stages, elapsedMs: Date.now() - started };
   fs.mkdirSync(artifactDir, { recursive: true }); fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`); console.log(JSON.stringify({ pass: report.pass, complete: report.complete, contract, stages: stages.map((stage) => ({ name: stage.name, status: stage.status })), elapsedMs: report.elapsedMs }, null, 2)); if (!complete) process.exitCode = 1;
 }
 
-withTimeout("mobile reference accessibility", () => main(), 210_000).catch((error) => { const identity = gitWorktreeIdentity(root); const report = { pass: false, complete: false, contract, source: "mobile-reference", generatedAt: new Date().toISOString(), commit: identity.commit, artifactKey: identity.artifactKey, worktreeFingerprint: identity.worktreeFingerprint, error: serialise(error) }; fs.mkdirSync(artifactDir, { recursive: true }); fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`); console.error(JSON.stringify(report, null, 2)); process.exitCode = 1; });
+if (require.main === module) {
+  withTimeout("mobile reference accessibility", () => main(), accessibilityGlobalTimeoutMs()).catch((error) => { const identity = gitWorktreeIdentity(root); const report = { pass: false, complete: false, contract, source: "mobile-reference", generatedAt: new Date().toISOString(), commit: identity.commit, artifactKey: identity.artifactKey, worktreeFingerprint: identity.worktreeFingerprint, error: serialise(error) }; fs.mkdirSync(artifactDir, { recursive: true }); fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`); console.error(JSON.stringify(report, null, 2)); process.exitCode = 1; });
+}
+
+module.exports = { accessibilityGlobalTimeoutMs };

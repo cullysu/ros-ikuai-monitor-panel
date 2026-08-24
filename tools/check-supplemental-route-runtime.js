@@ -9,7 +9,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
-const { startMock, browserExecutable } = require('./check-panel-runtime-browser');
+const { startMock, browserExecutable } = require('./acceptance/current-runtime-mock');
 const { login } = require('./acceptance/accessibility-v2/runtime');
 const { runBrowserLifecycle } = require('./acceptance/browser-lifecycle-v2/browser-lifecycle');
 

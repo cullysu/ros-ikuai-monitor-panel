@@ -9,8 +9,8 @@ const surface = read(`${ownerPath}/MobileReferenceSurface.tsx`);
 const connection = read(`${ownerPath}/MobileReferenceConnection.tsx`);
 const styles = read(`${ownerPath}/mobile-reference.css`);
 const mobileApp = read("src/panel-framework/mobile/MobilePanelApp.tsx");
-const fallbackApp = read("src/panel-framework/panel-framework-app.tsx");
-const source = [surface, connection, styles, mobileApp, fallbackApp].join("\n");
+const desktopApp = read("src/panel-framework/desktop/DesktopPanelApp.tsx");
+const source = [surface, connection, styles, mobileApp].join("\n");
 const failures = [];
 const expect = (condition, message) => { if (!condition) failures.push(message); };
 
@@ -28,7 +28,9 @@ expect(/resourceImpactRows/.test(surface) && !/priorityObjectsAll\.slice\(0, 3\)
 expect(/label: "概览"/.test(surface) && /label: "网络"/.test(surface) && /label: "设备"/.test(surface) && /label: "日志"/.test(surface), "navigation must retain four stable roots");
 expect(/data-mobile-reference-connection/.test(connection) && /REST/.test(connection) && /SSH/.test(connection), "connection must remain a mobile-owned dual-channel flow");
 expect(/password.*useState|useState.*password/.test(connection), "connection password must stay in component memory");
-expect(/MobileReferenceSurface/.test(mobileApp) && /MobileReferenceNavigation/.test(mobileApp) && /MobileReferenceConnection/.test(mobileApp) && /MobileReferenceSurface/.test(fallbackApp), "all mobile entry owners must mount the reference surface");
+expect(/MobileReferenceSurface/.test(mobileApp) && /MobileReferenceNavigation/.test(mobileApp) && /MobileReferenceConnection/.test(mobileApp), "mobile production owner must mount the complete reference surface");
+expect(!/MobileReferenceSurface|MobileReferenceNavigation|MobileReferenceConnection/.test(desktopApp), "desktop production owner must not import mobile presentation");
+expect(!fs.existsSync(path.join(root, "src/panel-framework/panel-framework-app.tsx")) && !fs.existsSync(path.join(root, "src/panel-framework/main.tsx")), "dead composite mobile/desktop entry must be physically absent");
 expect(/prefers-reduced-motion/.test(styles) && /prefers-reduced-transparency/.test(styles) && /forced-colors/.test(styles), "mobile styles must retain adaptive accessibility rules");
 expect(!/!important/.test(styles) && !/transition\s*:\s*all/.test(styles), "mobile styles cannot depend on patch sediment");
 expect(!/MobileSituation|mobile-situation-ui|MobileFlow|mobile-flow-ui|MobileNative|mobile-native-ui|MobileOps|mobile-ops-ui|MobilePulse|mobile-pulse-ui|MobilePatrol|mobile-patrol|IkuaiMobile|mobile-ikuai-ui|mobile-inspection-ui/.test(source), "current entry cannot retain a rejected owner marker");

@@ -10,17 +10,25 @@ const forwardedArgs = process.argv.slice(2);
 
 let result;
 if (process.platform === "win32" && process.env.CI !== "true") {
-  const wrapper = path.join(__dirname, "run-mobile-reference-runtime-low-load.cmd");
-  result = spawnSync(process.env.ComSpec || "cmd.exe", ["/d", "/c", wrapper, ...forwardedArgs], {
+  const lowLoad = path.join(__dirname, "run-low-load.py");
+  result = spawnSync("py", ["-3", lowLoad, "--browser", process.execPath, runtime, ...forwardedArgs], {
     cwd: root,
-    env: process.env,
+    env: {
+      ...process.env,
+      MOBILE_MAX_CPU_PERCENT: "55",
+      MOBILE_RUNTIME_LAUNCHER_ID: path.join(__dirname, "run-mobile-reference-runtime.js"),
+      MOBILE_CPU_AFFINITY_ENFORCED: "1",
+    },
     stdio: "inherit",
     windowsHide: true,
   });
 } else {
   result = spawnSync(process.execPath, [runtime, ...forwardedArgs], {
     cwd: root,
-    env: process.env,
+    env: {
+      ...process.env,
+      MOBILE_RUNTIME_LAUNCHER_ID: path.join(__dirname, "run-mobile-reference-runtime.js"),
+    },
     stdio: "inherit",
   });
 }

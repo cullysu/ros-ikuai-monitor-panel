@@ -72,7 +72,9 @@
   cursor: pointer;
 }
 
-.panel-overview-back:hover { border-color: #6f9eb0; background: #edf5f8; }
+@media (hover: hover) and (pointer: fine) {
+  .panel-overview-back:hover { border-color: #6f9eb0; background: #edf5f8; }
+}
 .panel-overview-back:focus-visible,
 .panel-more-list button:focus-visible { outline: 2px solid #0b6d93; outline-offset: 2px; }
 
@@ -174,7 +176,9 @@
   cursor: pointer;
 }
 
-.panel-workspace-tabs button:hover { color: #155d79; background: rgb(255 255 255 / 45%); }
+@media (hover: hover) and (pointer: fine) {
+  .panel-workspace-tabs button:hover { color: #155d79; background: rgb(255 255 255 / 45%); }
+}
 .panel-workspace-tabs button.is-active { color: #0d6688; }
 .panel-workspace-tabs button.is-active::after {
   position: absolute;
@@ -283,7 +287,9 @@
   cursor: pointer;
 }
 
-.panel-section-metrics button:hover { background: #eaf4f7; }
+@media (hover: hover) and (pointer: fine) {
+  .panel-section-metrics button:hover { background: #eaf4f7; }
+}
 .panel-section-metrics button:focus-visible { outline: 2px solid #0b6d93; outline-offset: -3px; }
 
 .readonly-feature-nav {
@@ -314,7 +320,9 @@
   cursor: pointer;
 }
 
-.readonly-feature-link:hover { color: #0d6487; background: #edf5f8; }
+@media (hover: hover) and (pointer: fine) {
+  .readonly-feature-link:hover { color: #0d6487; background: #edf5f8; }
+}
 .readonly-feature-link:focus-visible { position: relative; z-index: 1; outline: 2px solid #0b6d93; outline-offset: -2px; }
 
 .panel-readonly-footer {
@@ -358,7 +366,9 @@
   cursor: pointer;
 }
 
-.panel-more-list button:hover { border-color: #6f9eb0; background: #f2f8fa; }
+@media (hover: hover) and (pointer: fine) {
+  .panel-more-list button:hover { border-color: #6f9eb0; background: #f2f8fa; }
+}
 .panel-more-list span,
 .panel-more-list b,
 .panel-more-list small { display: block; }
@@ -400,7 +410,7 @@
   line-height: 1.2;
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 599px), (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .panel-app {
     min-width: 0;
     padding-bottom: calc(84px + env(safe-area-inset-bottom));
@@ -489,7 +499,7 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1199px) {
+@media (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .panel-app {
     padding-bottom: 0;
     padding-left: 0;
@@ -522,14 +532,15 @@
 }
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  @media (max-width: 1199px) {
+  @media (max-width: 599px), (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
     .panel-task-navigation {
       background: #f2f7f9;
     }
   }
 }
 
-@media (prefers-reduced-transparency: reduce) and (max-width: 1199px) {
+@media (prefers-reduced-transparency: reduce) and (max-width: 599px),
+  (prefers-reduced-transparency: reduce) and (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
   .panel-task-navigation {
     border-color: #b9c8cf;
     background: #f2f7f9;
@@ -538,7 +549,7 @@
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1200px), (min-width: 600px) and (max-width: 1199px) and (orientation: landscape) {
   .panel-app {
     padding-left: 64px;
   }

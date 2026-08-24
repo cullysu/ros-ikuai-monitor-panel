@@ -7,7 +7,18 @@ const { spawnSync } = require('child_process');
 const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
 const { assertFrameworkAssetBudget } = require('./framework-asset-budget');
 const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
-const { TOOLBAR_200_REQUIRED_CELLS, TOOLBAR_INCREMENTS, validWindowsCapture } = require('./check-browser-toolbar-zoom200');
+const { cellKey, verifyCellPngEvidence } = require('./png-evidence-identity');
+const { sameRuntimeCore, validateRecordedRuntimeIdentity } = require('./runtime-process-identity');
+const { validateToolbarReportEvidence } = require('./check-browser-toolbar-zoom200');
+const {
+  DESKTOP_RESOURCE_REPORT_CONTRACT,
+  FOCUSED_REQUIRED_RUNTIME_FILES,
+  WAN_AXIS_REPORT_CONTRACT,
+  captureProjectIdentity,
+  readJsonReport,
+  sameWorktreeIdentity,
+  validateCurrentSourceRuntimeReport,
+} = require('./source-runtime-report-identity');
 // Local matrix reports expose a fail-closed iKuai 4 mobile probe.  The
 // dedicated iKuai 4 runtime report proves route/detail/More/connection flows.
 const MOBILE_REFERENCE_REQUIRED_CHECKS = Object.freeze([
@@ -44,6 +55,22 @@ const OVERVIEW_VIEWPORTS = [
   { name: 'wide', width: 844, height: 390 },
   { name: 'narrow', width: 390, height: 844 },
 ];
+const MOBILE_REFERENCE_VIEWPORTS = Object.freeze([
+  Object.freeze({ id: 'phone320', width: 320, height: 568 }),
+  Object.freeze({ id: 'phone360', width: 360, height: 800 }),
+  Object.freeze({ id: 'phone375', width: 375, height: 667 }),
+  Object.freeze({ id: 'phone390', width: 390, height: 844 }),
+  Object.freeze({ id: 'phone430', width: 430, height: 932 }),
+  Object.freeze({ id: 'landscape568', width: 568, height: 320 }),
+  Object.freeze({ id: 'tablet768', width: 768, height: 1024 }),
+]);
+const MOBILE_RUNTIME_REPORT_RELATIVE = path.join('_acceptance', 'mobile-reference-runtime', 'report.json');
+const MOBILE_WORKFLOW_NAMES = Object.freeze([
+  'wanDetailHistory', 'wanDetailShortPhoneClearance', 'fourRootNavigation', 'networkDirectory',
+  'networkWanDetail', 'moreDirectory', 'connectionAddressValidation', 'resourceDetail',
+  'resourceRootSelection', 'interfaceDetail', 'workspaceSearchFilterSort', 'collectionRecoveryAction',
+  'noSnapshotRecoveryAction', 'refreshFeedback',
+]);
 const PUBLIC_ROUTES = [
   'overview', 'interfaces', 'terminals', 'dhcp', 'dns4', 'dns6', 'routes', 'lineStatus',
   'balance', 'trafficLoad', 'loadAudit', 'security', 'arp', 'trafficAudit', 'readonlyDiagnostics',
@@ -60,6 +87,22 @@ const ROUTE_STATE_VIEWPORTS = [
   { name: 'narrow', width: 390, height: 844 },
 ];
 const TOOLBAR_ZOOM200_REPORT_RELATIVE = path.join('_acceptance', 'edge-toolbar-zoom200', 'report.json');
+const FOCUSED_SOURCE_RUNTIME_REPORTS = Object.freeze([
+  Object.freeze({
+    name: 'desktopResourceDensity',
+    contract: DESKTOP_RESOURCE_REPORT_CONTRACT,
+    reportRelative: path.join('_acceptance', 'desktop-resource-density-v2', 'report.json'),
+    runtimeRelative: path.join('_acceptance', 'desktop-resource-density-v2', 'source-runtime'),
+    requiredFiles: FOCUSED_REQUIRED_RUNTIME_FILES,
+  }),
+  Object.freeze({
+    name: 'wanAxisLabelIntegrity',
+    contract: WAN_AXIS_REPORT_CONTRACT,
+    reportRelative: path.join('_acceptance', 'wan-axis-label-integrity-v1', 'report.json'),
+    runtimeRelative: path.join('_acceptance', 'wan-axis-label-integrity-v1', 'source-runtime'),
+    requiredFiles: FOCUSED_REQUIRED_RUNTIME_FILES,
+  }),
+]);
 
 function expectedMatrixCells(scenarios, routes, viewports) {
   return scenarios.flatMap((scenario) => routes.flatMap((section) => viewports.map((viewport) => ({
@@ -73,6 +116,9 @@ function expectedMatrixCells(scenarios, routes, viewports) {
 const OVERVIEW_MATRIX_CELLS = expectedMatrixCells(FULL_MATRIX_SCENARIOS, ['overview'], OVERVIEW_VIEWPORTS);
 const ROUTE_RESPONSIVE_MATRIX_CELLS = expectedMatrixCells(['single'], PUBLIC_ROUTES, ROUTE_RESPONSIVE_VIEWPORTS);
 const ROUTE_STATE_MATRIX_CELLS = expectedMatrixCells(FULL_MATRIX_SCENARIOS, PUBLIC_ROUTES, ROUTE_STATE_VIEWPORTS);
+const MOBILE_MATRIX_CELLS = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
+  MOBILE_REFERENCE_VIEWPORTS.map((viewport) => ({ scenario, viewport })));
+const MOBILE_MATRIX_CELL_IDS = MOBILE_MATRIX_CELLS.map((cell) => `${cell.scenario}::${cell.viewport.id}`);
 
 function parseArgs(argv = process.argv.slice(2)) {
   const candidateEvidencePrefixes = [
@@ -285,10 +331,12 @@ function assertNodeContract(relPath, args = []) {
 }
 
 function assertDecisionLedgerFreshness(rootDir = ROOT) {
-  const python = process.platform === 'win32' ? 'py' : 'python3';
-  const args = process.platform === 'win32'
-    ? ['-3', path.join(rootDir, 'tools', 'check-decision-ledger-sync.py')]
-    : [path.join(rootDir, 'tools', 'check-decision-ledger-sync.py')];
+  const python =
+    process.env.PYTHON_EXECUTABLE ||
+    (process.platform === 'win32'
+      ? 'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe'
+      : 'python3');
+  const args = [path.join(rootDir, 'tools', 'check-decision-ledger-sync.py')];
   const result = runReadinessChild('python:decision-ledger-sync', python, args, { cwd: rootDir });
   if (result.error || result.status !== 0) {
     throw new Error(
@@ -533,10 +581,12 @@ function reportNameMatchesKind(name, kind) {
 }
 
 function assertPythonDependencyLockContract(rootDir = ROOT) {
-  const python = process.platform === 'win32' ? 'py' : 'python3';
-  const args = process.platform === 'win32'
-    ? ['-3', path.join(rootDir, 'tools', 'check-python-dependency-lock.py')]
-    : [path.join(rootDir, 'tools', 'check-python-dependency-lock.py')];
+  const python =
+    process.env.PYTHON_EXECUTABLE ||
+    (process.platform === 'win32'
+      ? 'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe'
+      : 'python3');
+  const args = [path.join(rootDir, 'tools', 'check-python-dependency-lock.py')];
   const result = runReadinessChild('python:dependency-lock', python, args, { cwd: rootDir });
   if (result.error || result.status !== 0) {
     throw new Error(
@@ -604,74 +654,10 @@ function assertToolbarZoom200Report(rootDir = ROOT, currentIdentity = gitWorktre
   } catch (error) {
     throw new Error(`actual Edge toolbar 200% report is invalid JSON: ${error.message}`);
   }
-  const identity = report?.identity && typeof report.identity === 'object' ? report.identity : {};
-  const exactIdentityFields = ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible'];
-  const identityMismatches = exactIdentityFields.filter((field) => identity[field] !== currentIdentity[field]);
-  if (report?.pass !== true || report?.contract !== 'edge-toolbar-zoom200-windows-v9-variable-increment-mobile-reference' || identityMismatches.length) {
-    throw new Error(`actual Edge toolbar 200% report is failed or stale: ${JSON.stringify({
-      pass: report?.pass,
-      contract: report?.contract,
-      identityMismatches,
-    })}`);
+  const validation = validateToolbarReportEvidence(report, currentIdentity);
+  if (!validation.pass) {
+    throw new Error(`actual Edge toolbar 200% report is failed, stale, or structurally incomplete: ${validation.errors.join('; ')}`);
   }
-  const expectedIds = TOOLBAR_200_REQUIRED_CELLS.map(({ viewport, scenario }) => `${viewport.id}::${scenario}`);
-  const cells = Array.isArray(report?.cells) ? report.cells : [];
-  const actualIds = cells.map((cell) => `${cell?.viewport?.id || ''}::${cell?.scenario || ''}`);
-  if (report?.matrix?.complete !== true || cells.length !== expectedIds.length ||
-      listDifference(actualIds, expectedIds).length || listDifference(expectedIds, actualIds).length) {
-    throw new Error(`actual Edge toolbar 200% matrix is incomplete: ${JSON.stringify({ expectedIds, actualIds, complete: report?.matrix?.complete })}`);
-  }
-  const stable = report?.stableIdentity && typeof report.stableIdentity === 'object' ? report.stableIdentity : {};
-  if (stable.commit !== currentIdentity.commit || typeof stable.fingerprint !== 'string' || stable.fingerprint.length !== 64) {
-    throw new Error('actual Edge toolbar 200% report lacks a valid stable worktree identity');
-  }
-  const failures = [];
-  for (const { viewport: expected, scenario } of TOOLBAR_200_REQUIRED_CELLS) {
-    const cell = cells.find((item) => item?.viewport?.id === expected.id && item?.scenario === scenario);
-    const observedViewport = cell?.viewport?.cssViewport;
-    if (!cell || observedViewport?.width !== expected.cssViewport.width || observedViewport?.height !== expected.cssViewport.height) {
-      failures.push(`${expected.id}/${scenario}: target CSS viewport is missing or wrong`);
-      continue;
-    }
-    if (cell?.zoomLevel?.verified !== true || cell?.zoomLevel?.expectedPercent !== 200 ||
-        cell?.zoomLevel?.toolbarIncrements !== TOOLBAR_INCREMENTS ||
-        cell?.windowsAutomation?.pass !== true || !Array.isArray(cell?.windowsAutomation?.steps) || cell.windowsAutomation.steps.length !== TOOLBAR_INCREMENTS) {
-      failures.push(`${expected.id}/${scenario}: actual Edge toolbar zoom level is not verified`);
-    }
-    for (const step of Array.isArray(cell?.windowsAutomation?.steps) ? cell.windowsAutomation.steps : []) {
-      const accepted = Array.isArray(step?.attempts)
-        ? step.attempts.find((attempt) => attempt?.action === step.acceptedAction && attempt?.changed === true)
-        : null;
-      if (!accepted || !['oem-plus', 'numpad-plus', 'menu-plus'].includes(step.acceptedAction)) {
-        failures.push(`${expected.id}/${scenario}: toolbar step ${step?.step || '?'} lacks a geometry-confirmed real Edge action`);
-      }
-    }
-    if (cell?.stableIdentity?.commit !== stable.commit || cell?.stableIdentity?.fingerprint !== stable.fingerprint) {
-      failures.push(`${expected.id}/${scenario}: stable worktree identity differs from the report`);
-    }
-    const surface = cell?.surface;
-    const keyboardTraversal = surface?.keyboardTraversal;
-    const keyboardTraversalComplete = keyboardTraversal?.complete === true &&
-      keyboardTraversal.visitedCount === keyboardTraversal.expectedCount &&
-      Array.isArray(keyboardTraversal.sequence) &&
-      keyboardTraversal.sequence.every((entry) => entry?.focusVisible === true &&
-        entry?.fullyVisible === true && entry?.withinMain === true && entry?.obscuredByNavigation === false);
-    if (!surface || surface.overflowX > 1 || !Number.isFinite(surface.main?.horizontalOverflow) || surface.main.horizontalOverflow > 1 ||
-        !surface.primary?.present || !surface.primary?.visible || !surface.primary?.reachable || surface.primary?.withinMain !== true ||
-        surface.primary?.obscuredByNavigation !== false || surface.clippedOperationalText?.length !== 0 ||
-        surface.unreadableOperationalText?.length !== 0 ||
-        !keyboardTraversalComplete ||
-        !surface.screenshot?.file || !/^[0-9a-f]{64}$/i.test(String(surface.screenshot?.sha256 || '')) ||
-        !surface.playwrightDiagnosticScreenshot?.file || !/^[0-9a-f]{64}$/i.test(String(surface.playwrightDiagnosticScreenshot?.sha256 || '')) ||
-        !validWindowsCapture(surface.windowsCapture, surface.windowsCapture?.windowHandle)) {
-      failures.push(`${expected.id}/${scenario}: task, navigation clearance, clipping, overflow, focus, or Windows screenshot evidence failed`);
-    }
-  }
-  if (!String(report?.proofBoundary?.doesNotProve || '').includes('iOS Dynamic Type') ||
-      !String(report?.proofBoundary?.doesNotProve || '').includes('CDP pageScale')) {
-    failures.push('toolbar report must retain its non-Dynamic-Type/non-CDP proof boundary');
-  }
-  if (failures.length) throw new Error(`actual Edge toolbar 200% report is incomplete: ${failures.join('; ')}`);
   return { reportPath, report };
 }
 
@@ -773,6 +759,97 @@ function collectGateDetailFailures(latest) {
   return gateFailures;
 }
 
+function mobileCellId(cell) {
+  return `${cell?.scenario}::${cell?.viewport?.id}`;
+}
+
+function validateMobileRuntimeReport(reportPath, currentIdentity, options = {}) {
+  let report;
+  try {
+    report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  } catch (error) {
+    return { report: null, errors: [`invalid mobile runtime JSON: ${error.message}`] };
+  }
+
+  const errors = [];
+  const evidenceRoot = path.resolve(reportPath, '..', '..', '..');
+  const push = (message) => errors.push(message);
+  const matrix = report?.matrix;
+  const cells = Array.isArray(matrix?.cells) ? matrix.cells : [];
+  const actualCellIds = cells.map(mobileCellId);
+  const actualSet = new Set(actualCellIds);
+  const missingCells = MOBILE_MATRIX_CELL_IDS.filter((id) => !actualSet.has(id));
+  const unexpectedCells = actualCellIds.filter((id) => !MOBILE_MATRIX_CELL_IDS.includes(id));
+
+  if (report?.contract !== 'mobile-reference-runtime-v1') push(`contract must be mobile-reference-runtime-v1: ${JSON.stringify(report?.contract)}`);
+  if (report?.evidenceContract !== 'mobile-decoded-png-runtime-v1') push('decoded PNG evidence contract is missing or stale');
+  if (!Number.isFinite(Date.parse(report?.generatedAt || ''))) push('generatedAt is missing or invalid');
+  else if (Date.parse(report.generatedAt) > Date.now() + 5 * 60 * 1000) push('generatedAt is in the future');
+  else if (Date.now() - Date.parse(report.generatedAt) > 24 * 60 * 60 * 1000) push('mobile runtime report is older than 24 hours');
+  if (report?.pass !== true || report?.complete !== true || report?.smokePass !== true) push('mobile runtime report is not a passing complete run');
+  if (report?.mode !== undefined || matrix?.mode !== 'full') push('mobile evidence is not marked as a full run');
+  if (matrix?.append !== false) push('final mobile evidence may not come from an unresolved append request');
+  const relativeOutput = path.relative(evidenceRoot, path.resolve(evidenceRoot, String(report?.outputDirectory || '')));
+  if (relativeOutput.startsWith('..') || path.isAbsolute(relativeOutput) || relativeOutput.replace(/\\/g, '/') !== '_acceptance/mobile-reference-runtime') {
+    push('full mobile evidence output directory is missing or mixed with smoke evidence');
+  }
+  if (path.basename(reportPath) !== 'report.json') push('full mobile report must use report.json in its isolated full directory');
+
+  for (const field of ['commit', 'worktreeFingerprint', 'artifactKey', 'reviewContentFingerprint', 'worktreeClean', 'releaseEvidenceEligible']) {
+    if (report?.[field] !== currentIdentity[field]) {
+      push(`report.${field} must equal current runtime worktree identity ${JSON.stringify(currentIdentity[field])}`);
+    }
+  }
+  if (report?.freshness !== true || report?.runtimeFreshness !== true) push('source or Node runtime identity changed during production');
+  if (!Array.isArray(report?.evidenceErrors) || report.evidenceErrors.length) push('recorded decoded-PNG evidence errors are present');
+  if (matrix?.required !== 49 || matrix?.completed !== 49 || matrix?.failed !== 0 || matrix?.remaining !== 0) {
+    push(`matrix is not exactly 49 verified cells: required=${matrix?.required}, completed=${matrix?.completed}, failed=${matrix?.failed}, remaining=${matrix?.remaining}`);
+  }
+  if (missingCells.length || unexpectedCells.length || actualSet.size !== actualCellIds.length) {
+    push(`mobile cells do not exactly match 7x7 (missing=${missingCells.length}, unexpected=${unexpectedCells.length}, total=${actualCellIds.length})`);
+  }
+
+  const workflowNames = Object.keys(report?.workflows || {});
+  if (workflowNames.length !== MOBILE_WORKFLOW_NAMES.length || MOBILE_WORKFLOW_NAMES.some((name) => report.workflows[name] !== true)) {
+    push('one or more real interaction workflows are missing or failed');
+  }
+
+  const runtimeStart = report?.runtimeStart;
+  const runtimeEnd = report?.runtimeEnd;
+  if (!sameRuntimeCore(runtimeStart, runtimeEnd)) push('runtime identity phases do not describe one producer');
+  for (const phaseError of validateRecordedRuntimeIdentity(runtimeEnd, evidenceRoot)) push(phaseError);
+  if (runtimeEnd && !path.isAbsolute(String(runtimeEnd.execPath || ''))) push('runtime execPath is not absolute');
+
+  const viewportByName = new Map(MOBILE_REFERENCE_VIEWPORTS.map((viewport) => [viewport.id, viewport]));
+  for (let index = 0; index < Math.max(cells.length, MOBILE_MATRIX_CELLS.length); index += 1) {
+    const cell = cells[index];
+    const expected = MOBILE_MATRIX_CELLS[index];
+    if (!expected) break;
+    if (!cell || mobileCellId(cell) !== mobileCellId(expected)) continue;
+    if (cell.pass !== true) push(`${mobileCellId(expected)} did not pass`);
+    errors.push(...verifyCellPngEvidence(cell, evidenceRoot, expected.viewport.width, expected.viewport.height)
+      .map((item) => `${item} (release evidence)`));
+  }
+  if (!MOBILE_MATRIX_CELLS.every((expected) => {
+    const cell = cells.find((candidate) => mobileCellId(candidate) === mobileCellId(expected));
+    return Boolean(cell);
+  })) push('every one of the 49 required PNGs must exist before release validation continues');
+
+  if (options.requireReleaseEligibility === true && report?.releaseEvidenceEligible !== true) {
+    push('mobile runtime evidence is not eligible for public release');
+  }
+  return { report, errors: [...new Set(errors)] };
+}
+
+function assertMobileRuntimeReport(rootDir = ROOT, currentIdentity = gitWorktreeIdentity(rootDir), options = {}) {
+  const reportPath = path.join(rootDir, MOBILE_RUNTIME_REPORT_RELATIVE);
+  const validated = validateMobileRuntimeReport(reportPath, currentIdentity, options);
+  if (validated.errors.length) {
+    throw new Error(`Current 7x7 mobile runtime evidence is incomplete: ${validated.errors.slice(0, 10).join(" | ")}`);
+  }
+  return { reportPath, report: validated.report };
+}
+
 function assertLatestFullMatrixReport(rootDir = ROOT, requiredWorktreeIdentity = null) {
   return findCurrentMatrixReport(rootDir, '7x4 overview visual matrix', OVERVIEW_MATRIX_CELLS, {
     requireReportPass: true,
@@ -783,7 +860,7 @@ function assertLatestFullMatrixReport(rootDir = ROOT, requiredWorktreeIdentity =
 }
 
 function assertMatrixEvidenceIdentity(evidence, currentIdentity) {
-  const names = ['overview', 'routeResponsive', 'routeState'];
+  const names = ['overview', 'routeResponsive', 'routeState', 'mobileReference'];
   const rows = names.map((name) => ({ name, matrix: evidence?.[name]?.report?.matrix }));
   const missing = rows.filter((row) => !row.matrix).map((row) => row.name);
   if (missing.length) throw new Error(`Matrix identity is missing for: ${missing.join(', ')}`);
@@ -819,12 +896,49 @@ function assertEvidenceModeEligibility(identity, { allowDirtyEngineering = false
   return identity;
 }
 
+function assertFocusedSourceRuntimeReports(rootDir = ROOT, options = {}) {
+  const currentIdentity = options.currentIdentity || captureProjectIdentity(rootDir);
+  const reports = {};
+  const failures = [];
+  for (const definition of FOCUSED_SOURCE_RUNTIME_REPORTS) {
+    const reportPath = path.join(rootDir, definition.reportRelative);
+    const runtimeDirectory = path.join(rootDir, definition.runtimeRelative);
+    const loaded = readJsonReport(reportPath);
+    if (!loaded.report) {
+      failures.push(`${definition.name}: ${loaded.error || 'report is missing'}`);
+      continue;
+    }
+    const validation = validateCurrentSourceRuntimeReport(loaded.report, {
+      rootDir,
+      runtimeDirectory,
+      requiredFiles: definition.requiredFiles,
+      expectedContract: definition.contract,
+      currentIdentity,
+      ...(Number.isFinite(options.nowMs) ? { nowMs: options.nowMs } : {}),
+      ...(Number.isFinite(options.maxAgeMs) ? { maxAgeMs: options.maxAgeMs } : {}),
+    });
+    if (!validation.pass || !validation.complete) {
+      failures.push(`${definition.name}: ${validation.reasons.join('; ')}`);
+      continue;
+    }
+    reports[definition.name] = { reportPath, runtimeDirectory, report: loaded.report, validation };
+  }
+  if (failures.length) {
+    throw new Error(`Focused exact-current desktop evidence is incomplete: ${failures.join(' | ')}`);
+  }
+  return reports;
+}
+
 function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
   const evidence = {};
   const failures = [];
   const currentIdentity = gitWorktreeIdentity(rootDir);
   if (currentIdentity.identityError) {
     throw new Error(`Current runtime worktree identity is unavailable: ${currentIdentity.identityError}`);
+  }
+  const focusedCurrentIdentity = captureProjectIdentity(rootDir);
+  if (!sameWorktreeIdentity(currentIdentity, focusedCurrentIdentity.worktree)) {
+    throw new Error('Current runtime worktree identity changed while release evidence validation started');
   }
   const collect = (name, assertion) => {
     try {
@@ -834,6 +948,9 @@ function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
     }
   };
   collect('overview', () => assertLatestFullMatrixReport(rootDir, currentIdentity));
+  collect('mobileReference', () => assertMobileRuntimeReport(rootDir, currentIdentity, {
+    requireReleaseEligibility: !options.allowDirtyEngineering,
+  }));
   collect('routeResponsive', () => findCurrentMatrixReport(
     rootDir,
     '19x4 single-scenario route responsive matrix',
@@ -847,7 +964,18 @@ function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
     { requiredWorktreeIdentity: currentIdentity, allowBoundedScope: true }
   ));
   collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
+  collect('focusedSourceRuntime', () => assertFocusedSourceRuntimeReports(rootDir, {
+    currentIdentity: focusedCurrentIdentity,
+  }));
   if (failures.length) throw new Error(`Required current-HEAD release evidence is incomplete: ${failures.join(' | ')}`);
+  const endIdentity = captureProjectIdentity(rootDir);
+  if (!sameWorktreeIdentity(currentIdentity, endIdentity.worktree) ||
+      JSON.stringify(focusedCurrentIdentity.framework) !== JSON.stringify(endIdentity.framework)) {
+    throw new Error('Current source/framework identity changed during release evidence validation');
+  }
+  evidence.focusedSourceRuntime = assertFocusedSourceRuntimeReports(rootDir, {
+    currentIdentity: endIdentity,
+  });
   evidence.matrixIdentity = assertMatrixEvidenceIdentity(evidence, currentIdentity);
   assertEvidenceModeEligibility(evidence.matrixIdentity, options);
   return evidence;
@@ -1304,12 +1432,17 @@ if (require.main === module) {
 }
 
 module.exports = {
+  FOCUSED_SOURCE_RUNTIME_REPORTS,
   MOBILE_REFERENCE_REQUIRED_CHECKS,
   MATRIX_REPORT_ALIAS_NAMES,
+  MOBILE_MATRIX_CELLS,
+  MOBILE_WORKFLOW_NAMES,
   assertDecisionLedgerFreshness,
   assertLatestFullMatrixReport,
   assertEvidenceModeEligibility,
+  assertFocusedSourceRuntimeReports,
   assertMatrixEvidenceIdentity,
+  assertMobileRuntimeReport,
   assertRequiredMatrixEvidence,
   assertToolbarZoom200Report,
   collectGateDetailFailures,
@@ -1318,6 +1451,7 @@ module.exports = {
   parseArgs,
   reportNameMatchesKind,
   validateMatrixReport,
+  validateMobileRuntimeReport,
   FULL_MATRIX_CELLS,
   FULL_MATRIX_SCENARIOS,
   FULL_MATRIX_VIEWPORT_KEYS,

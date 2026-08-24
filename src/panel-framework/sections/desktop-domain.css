@@ -504,7 +504,9 @@
   cursor: pointer;
 }
 
-.ddw-filters button:hover { background: rgb(255 255 255 / 68%); }
+@media (hover: hover) and (pointer: fine) {
+  .ddw-filters button:hover { background: rgb(255 255 255 / 68%); }
+}
 .ddw-filters button.is-active {
   border-color: #87a9b7;
   color: #15546d;
@@ -586,7 +588,9 @@
 .ddw-table-scroll th:nth-child(3) { width: 15%; }
 .ddw-table-scroll th:nth-child(4) { width: 36%; }
 
-.ddw-table-scroll tr:hover td { background: #f1f7f9; }
+@media (hover: hover) and (pointer: fine) {
+  .ddw-table-scroll tr:hover td { background: #f1f7f9; }
+}
 .ddw-table-scroll tr.is-attention td:first-child { box-shadow: inset 3px 0 #99633b; }
 
 .ddw-table-scroll td:first-child { padding: 0; }

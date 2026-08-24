@@ -19,11 +19,19 @@ const DEFAULT_MIN_SOAK_SECONDS = 300;
 const DEFAULT_MIN_SOAK_SAMPLES = 10;
 const DEFAULT_ROUTE_VERIFIER_TIMEOUT_MS = 30_000;
 const DEFAULT_SOAK_VERIFIER_TIMEOUT_MS = 30_000;
+const LOW_LOAD_CHILD_TIMEOUT_MS = 180_000;
+const MAX_LOW_LOAD_CHILD_TIMEOUT_MS = 600_000;
+const LOW_LOAD_TIMEOUT_OWNER = 'run-low-load/v1';
 const MAX_REVIEW_RECORD_BYTES = 1024 * 1024;
-const MAX_SOAK_REPORT_BYTES = 16 * 1024 * 1024;
 const MAX_EVIDENCE_BUNDLE_BYTES = 64 * 1024 * 1024;
+const MAX_EVIDENCE_BUNDLE_FILE_BYTES = 4 * 1024 * 1024;
+const MAX_SOAK_REPORT_BYTES = MAX_EVIDENCE_BUNDLE_FILE_BYTES;
 const MAX_EVIDENCE_BUNDLE_FILES = 256;
+const MAX_EVIDENCE_BUNDLE_DIRECTORIES = 64;
+const MAX_EVIDENCE_BUNDLE_ENTRIES = 320;
+const MAX_EVIDENCE_BUNDLE_DEPTH = 16;
 const ROUTE_MANIFEST_FILE = 'route-manifest.json';
+let verifiedTimeoutOwnerSignature = null;
 
 function isPlainObject(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
 function isCandidateCommit(value) { return typeof value === 'string' && /^[0-9a-f]{40}$/.test(value); }
@@ -32,7 +40,100 @@ function isPathInside(parent, candidate) {
   const relative = path.relative(parent, candidate);
   return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
 }
+function hasManagedTimeoutOwnerDescriptor(environment = process.env) {
+  const ownerPid = Number(environment?.CODEX_LOW_LOAD_OWNER_PID);
+  const jobName = environment?.CODEX_LOW_LOAD_JOB_NAME;
+  const prefix = `Local\\CodexLowLoad-${ownerPid}-`;
+  return environment?.CODEX_LOW_LOAD_MANAGED === '1' &&
+    environment?.CODEX_LOW_LOAD_TIMEOUT_OWNER === LOW_LOAD_TIMEOUT_OWNER &&
+    Number.isSafeInteger(ownerPid) && ownerPid > 0 &&
+    typeof jobName === 'string' && jobName.startsWith(prefix) &&
+    /^[0-9a-f]{32}$/.test(jobName.slice(prefix.length));
+}
+function verifyManagedTimeoutOwner(environment = process.env) {
+  if (process.platform !== 'win32' || !hasManagedTimeoutOwnerDescriptor(environment)) return false;
+  const signature = `${environment.CODEX_LOW_LOAD_JOB_NAME}:${environment.CODEX_LOW_LOAD_OWNER_PID}:${process.pid}:${process.ppid}`;
+  if (verifiedTimeoutOwnerSignature === signature) return true;
+  const result = spawnSync('py', [
+    '-3',
+    path.join(__dirname, 'run-low-load.py'),
+    '--verify-timeout-owner',
+    environment.CODEX_LOW_LOAD_JOB_NAME,
+    String(process.pid),
+    environment.CODEX_LOW_LOAD_OWNER_PID,
+  ], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 30_000,
+    maxBuffer: 64 * 1024,
+    windowsHide: true,
+    env: { ...process.env, CODEX_MEMORY_LIMIT_MB: '2048' },
+  });
+  if (!result.error && result.status === 0) verifiedTimeoutOwnerSignature = signature;
+  return verifiedTimeoutOwnerSignature === signature;
+}
+function managedChildTimeoutMs(timeoutMs, environment = process.env, ownerVerifier = verifyManagedTimeoutOwner) {
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) throw new RangeError('child timeout must be a positive safe integer');
+  if (hasManagedTimeoutOwnerDescriptor(environment) && ownerVerifier(environment) === true) return undefined;
+  return environment?.CODEX_LOW_LOAD_MANAGED === '1'
+    ? Math.min(MAX_LOW_LOAD_CHILD_TIMEOUT_MS, Math.max(LOW_LOAD_CHILD_TIMEOUT_MS, timeoutMs))
+    : timeoutMs;
+}
 function sha256Digest(bytes) { return `sha256:${crypto.createHash('sha256').update(bytes).digest('hex')}`; }
+function inspectEvidenceBundleSize(reviewBytes, soakBytes) {
+  const values = [reviewBytes, soakBytes];
+  if (values.some((value) => !Number.isSafeInteger(value) || value < 0)) {
+    return { pass: false, failures: ['evidence_bundle_size_invalid'], totalBytes: null };
+  }
+  const totalBytes = reviewBytes + soakBytes;
+  if (!Number.isSafeInteger(totalBytes)) return { pass: false, failures: ['evidence_bundle_size_invalid'], totalBytes: null };
+  return {
+    pass: totalBytes <= MAX_EVIDENCE_BUNDLE_BYTES,
+    failures: totalBytes <= MAX_EVIDENCE_BUNDLE_BYTES ? [] : ['evidence_bundle_size_exceeded'],
+    totalBytes,
+  };
+}
+function reviewEvidenceReadLimit(totalBytes) {
+  const budget = inspectEvidenceBundleSize(totalBytes, 0);
+  if (!budget.pass) throw new Error(budget.failures[0]);
+  return Math.min(MAX_EVIDENCE_BUNDLE_FILE_BYTES, MAX_EVIDENCE_BUNDLE_BYTES - totalBytes);
+}
+function reviewSnapshotByteLength(review) {
+  if (!Array.isArray(review?.files)) return Number.NaN;
+  return review.files.reduce((total, file) => total + Number(file?.bytes?.length), 0);
+}
+function nativeIdentityPart(value) {
+  if (typeof value === 'bigint') return value === 0n ? null : value.toString();
+  return typeof value === 'number' && Number.isFinite(value) && value !== 0 ? String(value) : null;
+}
+function nativeFileIdentity(metadata) {
+  const device = nativeIdentityPart(metadata?.dev);
+  const inode = nativeIdentityPart(metadata?.ino);
+  return device && inode ? `${device}:${inode}` : null;
+}
+function assertFrozenExternalFile(fullPath, realPathBefore, frozen) {
+  const pathStat = fs.lstatSync(fullPath);
+  if (pathStat.isSymbolicLink() || !pathStat.isFile()) throw new Error('evidence_bundle_file_changed');
+  const realPathAfter = fs.realpathSync(fullPath);
+  if (realPathBefore !== realPathAfter) throw new Error('evidence_bundle_file_realpath_changed');
+  const frozenIdentity = nativeFileIdentity(frozen?.metadata);
+  const pathIdentity = nativeFileIdentity(pathStat);
+  if (!frozenIdentity || !pathIdentity) throw new Error('evidence_bundle_file_identity_unavailable');
+  if (frozenIdentity !== pathIdentity) throw new Error('evidence_bundle_file_identity_changed');
+  const frozenMetadata = frozen?.metadata;
+  if (![frozenMetadata?.size, frozenMetadata?.mtimeMs, frozenMetadata?.ctimeMs].every(Number.isFinite)) {
+    throw new Error('evidence_bundle_file_metadata_unavailable');
+  }
+  if (pathStat.size !== frozenMetadata.size || pathStat.mtimeMs !== frozenMetadata.mtimeMs || pathStat.ctimeMs !== frozenMetadata.ctimeMs) {
+    throw new Error('evidence_bundle_file_metadata_changed');
+  }
+  return realPathAfter;
+}
+function assertFrozenReviewFile(directory, fullPath, realPathBefore, frozen) {
+  const currentRealPath = fs.realpathSync(fullPath);
+  if (!isPathInside(directory, fullPath) || !isPathInside(directory, currentRealPath)) throw new Error('evidence_bundle_path_escape');
+  return assertFrozenExternalFile(fullPath, realPathBefore, frozen);
+}
 function decodeUtf8Fatal(bytes, label) {
   if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) throw new Error(`${label}_bom_forbidden`);
   try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
@@ -40,7 +141,7 @@ function decodeUtf8Fatal(bytes, label) {
 }
 
 function runGit(root, args, options = {}) {
-  const result = spawnSync('git', args, { cwd: root, encoding: 'utf8', timeout: 30_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true, ...options });
+  const result = spawnSync('git', args, { cwd: root, encoding: 'utf8', timeout: managedChildTimeoutMs(30_000), maxBuffer: 4 * 1024 * 1024, windowsHide: true, ...options });
   if (result.error || result.status !== 0) throw new Error(`git_${args[0].replaceAll('-', '_')}_failed`);
   return result;
 }
@@ -55,7 +156,7 @@ function withIsolatedCandidateWorktree(root, candidateCommit, operation) {
     attached = true;
     return operation(temporary);
   } finally {
-    if (attached) spawnSync('git', ['worktree', 'remove', '--force', temporary], { cwd: root, encoding: 'utf8', timeout: 30_000, windowsHide: true });
+    if (attached) spawnSync('git', ['worktree', 'remove', '--force', temporary], { cwd: root, encoding: 'utf8', timeout: managedChildTimeoutMs(30_000), windowsHide: true });
     fs.rmSync(temporary, { recursive: true, force: true, maxRetries: 2 });
   }
 }
@@ -200,13 +301,14 @@ function readExternalFileSnapshot(workspaceRoot, filePath, label, maxBytes) {
     const realBefore = fs.realpathSync(resolved);
     if (isPathInside(workspaceRealPath, resolved) || isPathInside(workspaceRealPath, realBefore)) return { ok: false, reason: `${label}_must_be_external` };
     const frozen = readBoundedFileSnapshotSync(resolved, { maxBytes, decodeUtf8: true });
-    const realAfter = fs.realpathSync(resolved);
-    if (realBefore !== realAfter) return { ok: false, reason: `${label}_changed_while_reading` };
+    const realAfter = assertFrozenExternalFile(resolved, realBefore, frozen);
+    if (isPathInside(workspaceRealPath, resolved) || isPathInside(workspaceRealPath, realAfter)) return { ok: false, reason: `${label}_must_be_external` };
     return { ok: true, path: realAfter, bytes: Buffer.from(frozen.bytes), text: frozen.text, digest: frozen.digest };
   } catch (error) {
     if (error?.code === 'ERR_BOUNDED_FILE_SNAPSHOT_TOO_LARGE') return { ok: false, reason: `${label}_too_large` };
     if (['ERR_BOUNDED_FILE_SNAPSHOT_NOT_REGULAR', 'ERR_BOUNDED_FILE_SNAPSHOT_SYMLINK'].includes(error?.code)) return { ok: false, reason: `${label}_must_be_regular_file` };
     if (String(error?.code || '').startsWith('ERR_BOUNDED_FILE_SNAPSHOT_')) return { ok: false, reason: `${label}_changed_or_invalid` };
+    if (String(error?.message || '').startsWith('evidence_bundle_file_')) return { ok: false, reason: `${label}_changed_or_invalid` };
     return { ok: false, reason: `${label}_unreadable` };
   }
 }
@@ -222,48 +324,114 @@ function snapshotExternalReviewDirectory(workspaceRoot, directoryPath) {
     if (isPathInside(workspaceRealPath, resolved) || isPathInside(workspaceRealPath, directory)) return { ok: false, reason: 'independent_review_dir_must_be_external' };
     const collect = () => {
       const entries = [];
-      const visit = (current) => {
-      for (const entry of fs.readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name, 'en'))) {
-        const fullPath = path.join(current, entry.name);
-        const entryStat = fs.lstatSync(fullPath);
-        if (entryStat.isSymbolicLink()) throw new Error('evidence_bundle_symlink_forbidden');
-        if (entryStat.isDirectory()) { visit(fullPath); continue; }
-        if (!entryStat.isFile()) throw new Error('evidence_bundle_special_file_forbidden');
-        entries.push(path.relative(directory, fullPath).split(path.sep).join('/'));
+      const pending = [{ current: directory, depth: 0 }];
+      let directoryCount = 0;
+      let entryCount = 0;
+      while (pending.length > 0) {
+        const { current, depth } = pending.pop();
+        if (depth > MAX_EVIDENCE_BUNDLE_DEPTH) throw new Error('evidence_bundle_depth_exceeded');
+        directoryCount += 1;
+        if (directoryCount > MAX_EVIDENCE_BUNDLE_DIRECTORIES) throw new Error('evidence_bundle_directory_count_exceeded');
+        const currentStat = fs.lstatSync(current);
+        const currentRealPath = fs.realpathSync(current);
+        if (currentStat.isSymbolicLink() || !currentStat.isDirectory()) throw new Error('evidence_bundle_directory_changed');
+        if (!isPathInside(directory, current) || !isPathInside(directory, currentRealPath)) throw new Error('evidence_bundle_path_escape');
+
+        const children = [];
+        const handle = fs.opendirSync(current);
+        try {
+          for (let entry = handle.readSync(); entry !== null; entry = handle.readSync()) {
+            entryCount += 1;
+            if (entryCount > MAX_EVIDENCE_BUNDLE_ENTRIES) throw new Error('evidence_bundle_entry_count_exceeded');
+            children.push(entry);
+          }
+        } finally {
+          handle.closeSync();
+        }
+        children.sort((a, b) => a.name.localeCompare(b.name, 'en'));
+        const childDirectories = [];
+        for (const entry of children) {
+          const fullPath = path.join(current, entry.name);
+          const entryStat = fs.lstatSync(fullPath);
+          if (entryStat.isSymbolicLink()) throw new Error('evidence_bundle_symlink_forbidden');
+          if (entryStat.isDirectory()) { childDirectories.push({ current: fullPath, depth: depth + 1 }); continue; }
+          if (!entryStat.isFile()) throw new Error('evidence_bundle_special_file_forbidden');
+          entries.push(path.relative(directory, fullPath).split(path.sep).join('/'));
+          if (entries.length > MAX_EVIDENCE_BUNDLE_FILES) throw new Error('evidence_bundle_file_count_exceeded');
+        }
+        for (let index = childDirectories.length - 1; index >= 0; index -= 1) pending.push(childDirectories[index]);
       }
-      };
-      visit(directory);
       return entries.sort((a, b) => a.localeCompare(b, 'en'));
     };
     const before = collect();
-    if (before.length > MAX_EVIDENCE_BUNDLE_FILES) throw new Error('evidence_bundle_file_count_exceeded');
     const files = [];
+    const frozenFiles = [];
     let totalBytes = 0;
     for (const relativePath of before) {
       const fullPath = path.join(directory, ...relativePath.split('/'));
-      const realPath = fs.realpathSync(fullPath);
-      if (!isPathInside(directory, fullPath) || !isPathInside(directory, realPath)) throw new Error('evidence_bundle_path_escape');
-      const frozen = readBoundedFileSnapshotSync(fullPath, { maxBytes: MAX_EVIDENCE_BUNDLE_BYTES, decodeUtf8: false });
+      const realPathBefore = fs.realpathSync(fullPath);
+      if (!isPathInside(directory, fullPath) || !isPathInside(directory, realPathBefore)) throw new Error('evidence_bundle_path_escape');
+      const readLimit = reviewEvidenceReadLimit(totalBytes);
+      let frozen;
+      try {
+        frozen = readBoundedFileSnapshotSync(fullPath, { maxBytes: readLimit, decodeUtf8: false });
+      } catch (error) {
+        if (error?.code === 'ERR_BOUNDED_FILE_SNAPSHOT_TOO_LARGE' && readLimit < MAX_EVIDENCE_BUNDLE_FILE_BYTES) {
+          throw new Error('evidence_bundle_size_exceeded');
+        }
+        throw error;
+      }
+      assertFrozenReviewFile(directory, fullPath, realPathBefore, frozen);
       const bytes = Buffer.from(frozen.bytes);
       totalBytes += bytes.length;
       if (totalBytes > MAX_EVIDENCE_BUNDLE_BYTES) throw new Error('evidence_bundle_size_exceeded');
       files.push({ relativePath, bytes });
+      frozenFiles.push({ relativePath, realPathBefore, metadata: frozen.metadata });
     }
     if (!isDeepStrictEqual(before, collect())) throw new Error('evidence_bundle_changed_while_reading');
+    for (const frozenFile of frozenFiles) {
+      const fullPath = path.join(directory, ...frozenFile.relativePath.split('/'));
+      assertFrozenReviewFile(directory, fullPath, frozenFile.realPathBefore, { metadata: frozenFile.metadata });
+    }
     return { ok: true, directory, files: files.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en')) };
-  } catch (error) { return { ok: false, reason: String(error?.message || 'independent_review_dir_unreadable') }; }
+  } catch (error) {
+    if (error?.code === 'ERR_BOUNDED_FILE_SNAPSHOT_TOO_LARGE') return { ok: false, reason: 'evidence_bundle_file_too_large' };
+    if (String(error?.code || '').startsWith('ERR_BOUNDED_FILE_SNAPSHOT_')) return { ok: false, reason: 'evidence_bundle_file_changed' };
+    const reason = String(error?.message || '');
+    if (/^evidence_bundle_[a-z0-9_]+$/.test(reason)) return { ok: false, reason };
+    return { ok: false, reason: 'independent_review_dir_unreadable' };
+  }
+}
+
+function readSoakWithinEvidenceBudget(workspaceRoot, soakReportPath, review) {
+  const reviewBytes = reviewSnapshotByteLength(review);
+  const reviewBudget = inspectEvidenceBundleSize(reviewBytes, 0);
+  if (!reviewBudget.pass) return { ok: false, reason: reviewBudget.failures[0] };
+  const remainingBytes = MAX_EVIDENCE_BUNDLE_BYTES - reviewBytes;
+  const soakLimit = Math.min(MAX_SOAK_REPORT_BYTES, remainingBytes);
+  const soak = readExternalFileSnapshot(workspaceRoot, soakReportPath, 'soak_report', soakLimit);
+  if (!soak.ok) {
+    if (soak.reason === 'soak_report_too_large' && soakLimit < MAX_SOAK_REPORT_BYTES) {
+      return { ok: false, reason: 'evidence_bundle_size_exceeded' };
+    }
+    return soak;
+  }
+  const combinedBudget = inspectEvidenceBundleSize(reviewBytes, soak.bytes.length);
+  return combinedBudget.pass ? soak : { ok: false, reason: combinedBudget.failures[0] };
 }
 
 function snapshotReleaseInputs(workspaceRoot, options) {
   const review = snapshotExternalReviewDirectory(workspaceRoot, options.independentReviewDir);
   if (!review.ok) return { ok: false, failures: [review.reason] };
-  const soak = readExternalFileSnapshot(workspaceRoot, options.soakReport, 'soak_report', MAX_SOAK_REPORT_BYTES);
+  const soak = readSoakWithinEvidenceBudget(workspaceRoot, options.soakReport, review);
   const failures = [soak].filter((entry) => !entry.ok).map((entry) => entry.reason);
   if (soak.ok && isPathInside(review.directory, soak.path)) failures.push('soak_report_must_be_outside_review_dir');
   return failures.length ? { ok: false, failures } : { ok: true, review, soak };
 }
 
 function computeEvidenceDigestFromSnapshot(snapshot) {
+  const size = inspectEvidenceBundleSize(reviewSnapshotByteLength(snapshot?.review), Number(snapshot?.soak?.bytes?.length));
+  if (!size.pass) return { pass: false, failures: size.failures, evidenceDigest: null, fileCount: 0, totalBytes: size.totalBytes };
   const hash = crypto.createHash('sha256');
   hash.update('release-evidence-bundle/v1\0');
   for (const file of snapshot.review.files) {
@@ -273,13 +441,13 @@ function computeEvidenceDigestFromSnapshot(snapshot) {
   }
   hash.update(`soak/report.json\0${snapshot.soak.bytes.length}\0`);
   hash.update(snapshot.soak.bytes);
-  return { pass: true, failures: [], evidenceDigest: `sha256:${hash.digest('hex')}`, fileCount: snapshot.review.files.length + 1, totalBytes: snapshot.review.files.reduce((sum, file) => sum + file.bytes.length, 0) + snapshot.soak.bytes.length };
+  return { pass: true, failures: [], evidenceDigest: `sha256:${hash.digest('hex')}`, fileCount: snapshot.review.files.length + 1, totalBytes: size.totalBytes };
 }
 
 function computeEvidenceDigest(workspaceRoot, reviewDirectory, soakReportPath) {
   const review = snapshotExternalReviewDirectory(workspaceRoot, reviewDirectory);
   if (!review.ok) return { pass: false, failures: [review.reason] };
-  const soak = readExternalFileSnapshot(workspaceRoot, soakReportPath, 'soak_report', MAX_SOAK_REPORT_BYTES);
+  const soak = readSoakWithinEvidenceBudget(workspaceRoot, soakReportPath, review);
   if (!soak.ok) return { pass: false, failures: [soak.reason] };
   if (isPathInside(review.directory, soak.path)) return { pass: false, failures: ['soak_report_must_be_outside_review_dir'] };
   return computeEvidenceDigestFromSnapshot({ review, soak });
@@ -290,7 +458,7 @@ function loadCurrentRouteManifest(root = ROOT) {
   const result = spawnSync(process.execPath, ['--max-old-space-size=2048', checker, '--print-public-release-manifest'], {
     cwd: root,
     encoding: null,
-    timeout: DEFAULT_ROUTE_VERIFIER_TIMEOUT_MS,
+    timeout: managedChildTimeoutMs(DEFAULT_ROUTE_VERIFIER_TIMEOUT_MS),
     maxBuffer: 1024 * 1024,
     env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=2048', CODEX_MEMORY_LIMIT_MB: '2048' },
   });
@@ -351,16 +519,16 @@ function verifySoakReport({ root = ROOT, candidateCommit, soakBytes, minSoakSeco
   const python = process.platform === 'win32' ? 'py' : 'python3';
   const args = process.platform === 'win32' ? ['-3'] : [];
   args.push(path.join(root, 'tools', 'check-routeros-readonly-soak.py'), '--verify-report-stdin', '--expected-commit', candidateCommit || '', '--min-duration', String(minSoakSeconds), '--min-samples', String(minSoakSamples));
-  const result = spawnSync(python, args, { cwd: root, encoding: 'utf8', input: soakBytes, timeout: timeoutMs, maxBuffer: 1024 * 1024, windowsHide: true });
+  const result = spawnSync(python, args, { cwd: root, encoding: 'utf8', input: soakBytes, timeout: managedChildTimeoutMs(timeoutMs), maxBuffer: 1024 * 1024, windowsHide: true });
   if (result.error) return { pass: false, failures: [result.error.code === 'ETIMEDOUT' ? 'soak_verifier_timed_out' : 'soak_verifier_execution_failed'] };
   return result.status === 0 ? { pass: true, failures: [] } : { pass: false, failures: ['soak_verifier_rejected_report'] };
 }
 
 function inspectCurrentCheckout(root, candidateCommit) {
-  const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', timeout: 10_000, windowsHide: true });
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', timeout: managedChildTimeoutMs(10_000), windowsHide: true });
   if (head.error || head.status !== 0) return { pass: false, failures: ['candidate_checkout_head_unavailable'] };
   if (String(head.stdout || '').trim().toLowerCase() !== candidateCommit) return { pass: false, failures: ['candidate_commit_is_not_current_head'] };
-  const status = spawnSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], { cwd: root, encoding: 'utf8', timeout: 30_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true });
+  const status = spawnSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], { cwd: root, encoding: 'utf8', timeout: managedChildTimeoutMs(30_000), maxBuffer: 4 * 1024 * 1024, windowsHide: true });
   if (status.error || status.status !== 0) return { pass: false, failures: ['candidate_checkout_status_unavailable'] };
   return String(status.stdout || '').trim() ? { pass: false, failures: ['candidate_checkout_not_clean'] } : { pass: true, failures: [] };
 }
@@ -450,4 +618,4 @@ if (require.main === module) {
   process.exitCode = result.pass ? 0 : 1;
 }
 
-module.exports = { DEFAULT_MIN_SOAK_SECONDS, DEFAULT_MIN_SOAK_SAMPLES, inspectCandidateCommit, inspectIndependentReviewRecords, inspectSoakReport, inspectReleaseCandidateEvidence, inspectCurrentCheckout, computeEvidenceDigest, computeEvidenceDigestFromSnapshot, snapshotReleaseInputs, snapshotExternalReviewDirectory, readExternalFileSnapshot, loadCurrentRouteManifest, verifyRouteManifest, withIsolatedCandidateWorktree, parseCliArguments, verifySoakReport, sha256Digest };
+module.exports = { DEFAULT_MIN_SOAK_SECONDS, DEFAULT_MIN_SOAK_SAMPLES, LOW_LOAD_CHILD_TIMEOUT_MS, MAX_LOW_LOAD_CHILD_TIMEOUT_MS, LOW_LOAD_TIMEOUT_OWNER, hasManagedTimeoutOwnerDescriptor, verifyManagedTimeoutOwner, managedChildTimeoutMs, MAX_EVIDENCE_BUNDLE_BYTES, MAX_EVIDENCE_BUNDLE_FILE_BYTES, MAX_SOAK_REPORT_BYTES, MAX_EVIDENCE_BUNDLE_DIRECTORIES, MAX_EVIDENCE_BUNDLE_ENTRIES, MAX_EVIDENCE_BUNDLE_DEPTH, inspectEvidenceBundleSize, reviewEvidenceReadLimit, nativeFileIdentity, assertFrozenExternalFile, assertFrozenReviewFile, inspectCandidateCommit, inspectIndependentReviewRecords, inspectSoakReport, inspectReleaseCandidateEvidence, inspectCurrentCheckout, computeEvidenceDigest, computeEvidenceDigestFromSnapshot, snapshotReleaseInputs, snapshotExternalReviewDirectory, readSoakWithinEvidenceBudget, readExternalFileSnapshot, loadCurrentRouteManifest, verifyRouteManifest, withIsolatedCandidateWorktree, parseCliArguments, verifySoakReport, sha256Digest };
