@@ -17,7 +17,7 @@ SCRIPT = WORKSPACE / ".agents/skills/router-panel-product-loop/scripts/release_c
 
 
 class ReleaseCheckpointVerifyTest(unittest.TestCase):
-   def setUp(self) -> None:
+    def setUp(self) -> None:
         acc_dir = WORKSPACE / "_acceptance"
         acc_dir.mkdir(parents=True, exist_ok=True)
         self.tempdir = tempfile.TemporaryDirectory(dir=acc_dir)

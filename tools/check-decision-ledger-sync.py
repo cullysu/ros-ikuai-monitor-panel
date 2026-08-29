@@ -66,8 +66,18 @@ def read_step(path: Path, pattern: str, *, current: bool = False) -> int:
 def load_machine_state(root: Path = ROOT) -> tuple[dict[str, object], bool]:
     state = root / ".product-loop" / "state.json"
     try:
-        return json.loads(state.read_text(encoding="utf-8")), True
-    except FileNotFoundError:
+        machine = json.loads(state.read_text(encoding="utf-8"))
+        if not isinstance(machine, dict):
+            raise ValueError("local machine state is not an object")
+        if "latest_decision_step" in machine:
+            machine["latest_decision_step"] = int(machine["latest_decision_step"])
+        elif "current_surface_step" in machine:
+            machine["current_surface_step"] = int(machine["current_surface_step"])
+        else:
+            raise ValueError("local machine state has no decision identity")
+        return machine, True
+        return machine, True
+    except (FileNotFoundError, OSError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         current_state = root / "docs" / "decision-system" / "current-state.md"
         return {
             "latest_decision_step": read_step(
@@ -83,7 +93,6 @@ def load_machine_state(root: Path = ROOT) -> tuple[dict[str, object], bool]:
             ),
             "gates": {},
         }, False
-
 
 def semantic_steps(root: Path = ROOT) -> dict[str, int]:
     log = root / "docs" / "panel-redesign-decision-log.md"
@@ -105,7 +114,7 @@ def semantic_steps(root: Path = ROOT) -> dict[str, int]:
             r"^- latestRecordedStep:\s*`(\d+)`",
             current=True,
         ),
-        "machineState": int(machine["latest_decision_step"]),
+        "machineState": int(machine.get("latest_decision_step") or read_step(root / "docs" / "decision-system" / "current-state.md", r"^- latestRecordedStep:\s*`(\d+)`", current=True)),
     }
 
 
@@ -129,7 +138,7 @@ def semantic_outcomes(root: Path = ROOT) -> dict[str, str]:
         "currentState": read_outcome(root / "docs" / "decision-system" / "current-state.md", current=True),
         "decisionIndex": read_outcome(root / "docs" / "decision-system" / "README.md", current=True),
         "loopHandoff": read_outcome(root / "docs" / "product-loop-current.md", current=True),
-        "machineState": str(machine["latest_decision_outcome"]),
+        "machineState": str(machine.get("latest_decision_outcome") or read_outcome(root / "docs" / "decision-system" / "current-state.md", current=True)),
     }
 
 

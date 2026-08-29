@@ -35,6 +35,8 @@ jobs:
           python -m py_compile .agents/skills/router-panel-product-loop/scripts/merge_matrix_reports.py .agents/skills/router-panel-product-loop/scripts/release_checkpoint.py .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py
           python tools/test-decision-ledger-sync.py -v
           python tools/check-decision-ledger-sync.py
+          python tools/check-backend-release-blockers.py
+          python tools/check-backend-security.py
           python .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py -v
           python .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py -v
 
@@ -249,8 +251,11 @@ jobs:
       - name: Install Windows Edge toolbar automation dependencies
         run: python -m pip install pywinauto==0.6.9 Pillow==10.4.0
 
-      - name: Real Edge toolbar 200 percent matrix
+      - name: Edge toolbar automation source contract
         run: node tools/test-browser-toolbar-zoom200-readiness.js
+
+      - name: Real Edge toolbar 200 percent matrix
+        run: npm run check:browser-toolbar-zoom200
 
       - name: Create SHA-bound Windows Edge toolbar evidence
         if: always()

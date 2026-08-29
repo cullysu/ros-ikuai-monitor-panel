@@ -123,29 +123,42 @@ try {
   Write-Host ""
 
   $indexPath = Join-Path $repoRoot "public/index.html"
-  $frameworkStylePath = Join-Path $repoRoot "public/assets/framework/style.css"
-  $frameworkScriptPath = Join-Path $repoRoot "public/assets/framework/panel-framework.js"
+  $frameworkRoot = Join-Path $repoRoot "public/assets/framework"
+  $frameworkManifestPath = Join-Path $frameworkRoot "manifest.json"
   if (-not (Test-Path -LiteralPath $indexPath)) {
     Add-Check "FAIL" "frontend framework assets" "public/index.html was not found."
   }
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
-    $reactShell = (
-      $indexText -match '<div\s+id="app"(?:\s|>)' -and
-      $indexText -notmatch 'data-app-shell="ikuai"' -and
-      $indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)' -and
-      $indexText -match 'data-overview-framework-asset="style"' -and
-      $indexText -match 'data-overview-framework-asset="script"'
-    )
-    $frameworkAssetsPresent = (Test-Path -LiteralPath $frameworkStylePath) -and (Test-Path -LiteralPath $frameworkScriptPath)
-    if ($reactShell -and $frameworkAssetsPresent) {
-      Add-Check "PASS" "frontend framework assets" "The React application root and framework asset files are present without legacy shell markers."
+    $reactShell = ($indexText -match '<div\s+id="app"(?:\s|>)')
+    $surfaceLoaderMarker = $indexText -match 'data-overview-framework-asset="surface-loader"'
+    $legacyShellAbsent = $indexText -notmatch 'data-app-shell="ikuai"' -and $indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)'
+    $manifestValid = $false
+    $manifest = $null
+    if (Test-Path -LiteralPath $frameworkManifestPath -PathType Leaf) {
+      try {
+        $manifest = Get-Content -Raw -LiteralPath $frameworkManifestPath | ConvertFrom-Json
+        $manifestValid = $manifest.version -eq 3
+        foreach ($record in @($manifest.assets.loader, $manifest.assets.mobile.script, $manifest.assets.mobile.style, $manifest.assets.desktop.script, $manifest.assets.desktop.style)) {
+          if ($null -eq $record -or [string]::IsNullOrWhiteSpace([string]$record.file) -or [string]$record.file -notmatch '^[^/\\]+$' -or [string]$record.sha256 -notmatch '^[0-9a-f]{64}$' -or -not (Test-Path -LiteralPath (Join-Path $frameworkRoot $record.file) -PathType Leaf)) {
+            $manifestValid = $false
+          }
+        }
+        if ($manifestValid -and $indexText -notmatch [regex]::Escape("/assets/framework/$($manifest.assets.loader.file)")) {
+          $manifestValid = $false
+        }
+      }
+      catch {
+        $manifestValid = $false
+      }
+    }
+    if ($reactShell -and $surfaceLoaderMarker -and $legacyShellAbsent -and $manifestValid) {
+      Add-Check "PASS" "frontend framework assets" "Neutral React root, v3 surface loader, manifest identities, and dual-surface assets are present."
     }
     else {
-      Add-Check "FAIL" "frontend framework assets" "The React application root or framework assets are missing, or retired legacy shell markers remain."
+      Add-Check "FAIL" "frontend framework assets" "The neutral React root, v3 surface loader, framework manifest identities, or dual-surface assets are missing or stale."
     }
   }
-
   $specPath = Join-Path $repoRoot "routeros-triage-panel.spec"
   $dockerfilePath = Join-Path $repoRoot "Dockerfile"
   $composePath = Join-Path $repoRoot "compose.yml"

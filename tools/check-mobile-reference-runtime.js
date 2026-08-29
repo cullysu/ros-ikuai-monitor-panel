@@ -393,7 +393,7 @@ async function main() {
   await waitForCpuBudget("runtime-launch");
   const identityStart = gitWorktreeIdentity(root);
   fs.mkdirSync(output, { recursive: true });
-  const reportPath = path.join(output, "report.json");
+  const reportPath = path.join(output, smoke ? "report-smoke.json" : "report.json");
   if (!append) {
     for (const name of fs.readdirSync(output)) {
       const item = path.join(output, name);
