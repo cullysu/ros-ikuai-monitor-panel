@@ -189,17 +189,26 @@ def ui_control_names(control) -> tuple[str, ...]:
     return tuple(names)
 
 
+EDGE_ACCELERATOR_SUFFIX = re.compile(
+    r"\s+\((?:alt|ctrl|shift|meta|win)(?:\s*\+[a-z0-9]+)+\)\s*$",
+    re.IGNORECASE,
+)
+
+
+def canonical_ui_name(name: str) -> str:
+    """Normalize one visible name and remove only a known accelerator suffix."""
+    normalized = " ".join(str(name or "").strip().lower().split())
+    return EDGE_ACCELERATOR_SUFFIX.sub("", normalized).strip()
+
+
 def ui_name_matches(name: str, tokens: tuple[str, ...], exact: bool = False) -> bool:
     """Match a visible UIA name without reopening broad substring ambiguity."""
-    normalized_name = " ".join(str(name or "").strip().lower().split())
-    normalized_tokens = tuple(" ".join(str(token).strip().lower().split()) for token in tokens)
+    normalized_name = canonical_ui_name(name)
+    normalized_tokens = tuple(canonical_ui_name(token) for token in tokens)
     if not normalized_name:
         return False
     if exact:
-        return any(
-            re.fullmatch(re.escape(token) + r"[^a-z0-9]*", normalized_name) is not None
-            for token in normalized_tokens
-        )
+        return normalized_name in normalized_tokens
     return any(token in normalized_name for token in normalized_tokens)
 
 
@@ -704,18 +713,6 @@ def main() -> None:
                     if len(more_matches) != 1:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
                     more = more_matches[0]
-                if more is None:
-                    observed = []
-                    try:
-                        for control in window.descendants()[:80]:
-                            info = control.element_info
-                            name = str(getattr(info, "name", "") or "").strip()
-                            automation_id = str(getattr(info, "automation_id", "") or "").strip()
-                            if name or automation_id:
-                                observed.append({"type": getattr(info, "control_type", ""), "name": name[:80], "id": automation_id[:80]})
-                    except Exception as inspect_error:
-                        observed.append({"inspectError": str(inspect_error)[:120]})
-                    raise RuntimeError("could not locate the real Edge Settings and more button for menu zoom fallback; observed=" + json.dumps(observed[:30], ensure_ascii=False))
                 invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
                 time.sleep(args.settle_milliseconds / 1000)
                 # Do not scan every visible UIA window on the desktop here.
