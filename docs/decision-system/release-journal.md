@@ -171,3 +171,50 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 ### outcome
 
 - outcome: `1191:task-artifacts-preserved-local-exclude-clean-candidate-gates-next`
+
+---
+
+
+## Step 1192：形成新的 clean exact-SHA 候选并准备 lease-protected 推送（2026-08-30）
+
+### 已完成
+
+- 经过本地静态契约、Python 语法和补丁检查后，提交了候选：`78de7b964e914806331f237624fa688f6194abe5`。
+- 提交内容仅包含 Edge popup UIA fallback、对应 readiness 源码契约和已同步的决策文档；本地 `git status --short --branch` 仅显示分支行，内部 `.impeccable/` 与 `work/` 由本地排除规则保留且不会进入 Git tree。
+- 推送前重新 fetch：远端 `origin/codex/ci-fix-20260830` 当前保护值为 `b18ada8ee828c621538a686b45beecfce930e693`；本候选正是其直接后继。
+- `git diff --check HEAD^ HEAD` 无错误。
+
+### 发布边界
+
+还没有推送这个新 SHA，也没有把已取消的 Run 或旧 SHA 结果当成当前证明。下一次只允许用 `--force-with-lease` 且明确指定上述旧 SHA 更新同名分支；推送后只读取 `78de7b9...` 对应的 Linux、Windows、CL/GHCR 结果。
+
+### 下一步
+
+执行一次受 lease 保护的精确 SHA 推送；随后记录 GitHub 新 Run 编号，并等待/读取该 SHA 的真实三端结果。任一失败继续按首个失败步骤修复，不发布未验证候选。
+
+### outcome
+
+- outcome: `1192:clean-exact-sha-78de7b9-ready-for-lease-protected-push`
+
+---
+
+
+## Step 1193：文档同步后重新封装候选，避免把旧提交当作最终 SHA（2026-08-30）
+
+### 已核实现场
+
+- Step1192 记录的 `78de7b9` 是源码修复提交，不是包含 Step1190—1192 全部文档镜像的最终候选；本轮文档同步发生在该提交之后，因此不能继续把 `78de7b9` 称为当前最终 SHA。
+- 当前待提交内容仍只包含 Edge popup UIA fallback、readiness 源码契约和决策/发布文档；未跟踪 `.impeccable/` 与 `work/` 由本地排除规则保留，不进入 Git tree。
+- 新候选的精确 SHA 将在本步提交后由 Git 读取；远端分支 lease 保护值仍是 `b18ada8ee828c621538a686b45beecfce930e693`，不能盲目覆盖。
+
+### 决策
+
+先把本轮文档同步完整纳入候选，再读取提交后的真实 SHA；不使用旧提交或旧 CI 结果做新候选证明。候选形成后再执行一次 lease-protected 推送，推送后的 CI 必须绑定新 SHA。
+
+### 下一步
+
+提交当前已审查文件，读取新的精确 SHA 与远端父提交，使用 `--force-with-lease` 推送；随后等待并核对该 SHA 的 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1193:documentation-synchronized-candidate-commit-and-lease-push-next`
