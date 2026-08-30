@@ -684,10 +684,7 @@ def main() -> None:
                     normalized_tokens = {" ".join(token.lower().split()) for token in tokens}
                     for container in containers:
                         try:
-                            buttons = [
-                                *container.descendants(control_type="Button"),
-                                *container.descendants(control_type="MenuItem"),
-                            ]
+                            buttons = container.descendants()
                         except Exception:
                             continue
                         for button in buttons:

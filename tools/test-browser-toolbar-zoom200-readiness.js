@@ -33,6 +33,7 @@ assert.match(windowsZoomSource, /NoPatternInterfaceError[\s\S]*pywinauto\.uia_de
 assert.match(windowsZoomSource, /menu_remains_open[\s\S]*invoke_owned_control\(more, owned_process_id, handle, "Edge Settings and more close control"\)/, 'the owned Edge menu must be closed through UIA before the next increment or capture');
 assert.match(windowsZoomSource, /def ui_control_is_visible_and_enabled[\s\S]*if not ui_control_is_visible_and_enabled\(button\):/, 'Edge UIA lookup must ignore hidden or disabled duplicate projections');
 assert.match(windowsZoomSource, /more_tokens = \("settings and more", "设置及更多", "设置和更多", "更多"\)[\s\S]*find_buttons\(\(window,\), more_tokens, exact=True\)/, 'Settings and more lookup must use exact localized names');
+assert.match(windowsZoomSource, /container\.descendants\(\)/, 'Edge menu lookup must include bounded non-Button UIA projections');
 assert.match(windowsZoomSource, /def ui_control_names\([\s\S]*element_info, "name"[\s\S]*window_text/, 'Edge UIA lookup must read the UIA Name property before the Win32 text projection');
 assert.match(windowsZoomSource, /EDGE_ACCELERATOR_SUFFIX[\s\S]*def canonical_ui_name[\s\S]*def ui_name_matches[\s\S]*return normalized_name in normalized_tokens/, 'exact Edge names may only remove a recognized accelerator suffix');
 assert.doesNotMatch(windowsZoomSource, /observed\.append|automation_id.*observed|json\.dumps\(observed/, 'UIA metadata must not be emitted into CI diagnostics');
