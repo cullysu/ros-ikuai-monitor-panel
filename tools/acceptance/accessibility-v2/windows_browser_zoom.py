@@ -776,6 +776,9 @@ def main() -> None:
                     "zoom_in",
                     "IncreaseZoomButton",
                     "increaseZoom",
+                    "ZoomIn",
+                    "ZoomPlusButton",
+                    "zoomPlusButton",
                 )
 
                 def ui_control_is_visible_and_enabled(control):
@@ -845,6 +848,38 @@ def main() -> None:
                             matches[key] = button
                     return list(matches.values())
 
+                def find_known_controls(containers, automation_ids):
+                    """Resolve known Edge controls without depending on ControlView labels."""
+                    matches = {}
+                    normalized_ids = {" ".join(str(item).lower().split()) for item in automation_ids}
+                    for container in containers:
+                        for automation_id in automation_ids:
+                            try:
+                                candidate = container.child_window(auto_id=automation_id).wrapper_object()
+                                if not candidate.exists(timeout=0.05):
+                                    continue
+                                actual_id = " ".join(str(getattr(candidate.element_info, "automation_id", "") or "").lower().split())
+                                if actual_id not in normalized_ids:
+                                    continue
+                                rect = candidate.rectangle()
+                                top_level = control_top_level_handle(candidate)
+                                if int(rect.right) <= int(rect.left) or int(rect.bottom) <= int(rect.top):
+                                    continue
+                                if not ctypes.windll.user32.IsWindowVisible(top_level):
+                                    continue
+                                key = (
+                                    int(getattr(candidate.element_info, "process_id", 0) or 0),
+                                    actual_id,
+                                    int(rect.left),
+                                    int(rect.top),
+                                    int(rect.right),
+                                    int(rect.bottom),
+                                )
+                                matches[key] = candidate
+                            except Exception:
+                                continue
+                    return list(matches.values())
+
                 stage = "find-settings-and-more"
                 more = None
                 for auto_id in more_automation_ids:
@@ -886,6 +921,12 @@ def main() -> None:
                     # attempt instead of repeatedly searching a stale snapshot.
                     owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
                     zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens, automation_ids=zoom_in_automation_ids)
+                    if not zoom_matches:
+                        # Some Edge builds publish menu items with a stable
+                        # AutomationId but without a usable Name/control-type
+                        # projection. Resolve only the known Zoom ids inside
+                        # the already process-owned roots before using RawView.
+                        zoom_matches = find_known_controls((window, *owned_windows), zoom_in_automation_ids)
                     if not zoom_matches and zoom_search_attempts >= 3:
                         # Edge can expose the transient menu only in RawView
                         # while its ControlView remains empty. Keep this fallback
