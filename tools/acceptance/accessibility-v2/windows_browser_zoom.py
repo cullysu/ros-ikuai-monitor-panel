@@ -301,6 +301,14 @@ def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) 
         return True
 
     user32.EnumWindows(collect, 0)
+    # Hosted runners can expose Edge's app menu through UIA before its popup
+    # HWND becomes visible to EnumWindows. Query only this exact Edge process;
+    # add_window preserves the HWND/process identity boundary and deduplicates.
+    try:
+        for candidate in desktop.windows(process=owned_process_id, visible_only=False):
+            add_window(int(getattr(candidate, "handle", 0) or 0))
+    except Exception:
+        pass
     return containers
 
 def control_top_level_handle(control) -> int:
@@ -759,6 +767,7 @@ def main() -> None:
                 if int(window.process_id()) != owned_process_id:
                     raise RuntimeError("UIA window is not bound to the expected Edge process")
                 more_tokens = ("settings and more", "设置及更多", "设置和更多", "更多")
+                more_automation_ids = ("SettingsAndMoreButton", "MoreButton", "AppMenuButton")
                 zoom_in_tokens = ("zoom in", "increase zoom", "zoom plus", "放大", "增大")
                 zoom_in_automation_ids = (
                     "ZoomInButton",
@@ -836,22 +845,24 @@ def main() -> None:
                             matches[key] = button
                     return list(matches.values())
 
+                stage = "find-settings-and-more"
                 more = None
-                for auto_id in ("SettingsAndMoreButton", "MoreButton", "AppMenuButton"):
+                for auto_id in more_automation_ids:
                     try:
                         candidate = window.child_window(auto_id=auto_id).wrapper_object()
-                        candidate_names = ui_control_names(candidate)
-                        if (
-                            candidate.exists(timeout=0.5)
-                            and ui_control_is_visible_and_enabled(candidate)
-                            and any(ui_name_matches(name, more_tokens, exact=True) for name in candidate_names)
-                        ):
+                        if candidate.exists(timeout=0.5) and ui_control_is_visible_and_enabled(candidate):
                             more = candidate
                             break
                     except Exception:
                         continue
                 if more is None:
-                    more_matches = find_buttons((window,), more_tokens, exact=True)
+                    more_matches = find_buttons(
+                        (window,),
+                        more_tokens,
+                        exact=True,
+                        automation_ids=more_automation_ids,
+                        include_raw=True,
+                    )
                     if len(more_matches) != 1:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
                     more = more_matches[0]
@@ -865,11 +876,15 @@ def main() -> None:
                 # product failure.  The menu popup is owned by the same Edge
                 # process, so keep the search bounded to that process and the
                 # already-owned window.
-                owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
                 stage = "find-zoom-in"
                 zoom_matches = []
                 zoom_search_attempts = 0
+                owned_windows = []
                 for zoom_search_attempts in range(1, 13):
+                    # Edge may publish the transient menu root after the click
+                    # animation. Refresh same-process roots on every bounded
+                    # attempt instead of repeatedly searching a stale snapshot.
+                    owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
                     zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens, automation_ids=zoom_in_automation_ids)
                     if not zoom_matches and zoom_search_attempts >= 3:
                         # Edge can expose the transient menu only in RawView
@@ -887,7 +902,7 @@ def main() -> None:
                 if len(zoom_matches) != 1:
                     raise RuntimeError(
                         f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
-                        f"after {zoom_search_attempts} bounded UIA searches"
+                        f"after {zoom_search_attempts} bounded UIA searches across {len(owned_windows)} same-process roots"
                     )
                 zoom_control = zoom_matches[0]
                 stage = "invoke-zoom-in"

@@ -268,7 +268,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $source | Out-Null
           $report = Join-Path $source "report.json"
           if (-not (Test-Path -LiteralPath $report -PathType Leaf)) {
-            '{"pass":true,"contract":"edge-toolbar-zoom200-windows-v10-process-owned-uia-mobile-reference","matrix":{"complete":true},"cells":[]}' | Set-Content -LiteralPath $report -Encoding ascii
+            '{"pass":false,"complete":false,"contract":"edge-toolbar-zoom200-windows-v10-process-owned-uia-mobile-reference","matrix":{"complete":false},"cells":[],"failure":{"code":"report_missing","message":"Real Edge toolbar check did not create report.json."}}' | Set-Content -LiteralPath $report -Encoding ascii
           }
           $evidenceRoot = ".\_release-evidence\windows-edge-toolbar-zoom200-$env:GITHUB_SHA"
           $payloadRoot = Join-Path $evidenceRoot "edge-toolbar"
