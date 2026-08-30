@@ -179,10 +179,18 @@ def ui_control_names(control) -> tuple[str, ...]:
     except Exception:
         element_name = ""
     try:
+        legacy_name = str(getattr(control.element_info, "legacy_name", "") or "").strip()
+    except Exception:
+        legacy_name = ""
+    try:
+        rich_text = str(getattr(control.element_info, "rich_text", "") or "").strip()
+    except Exception:
+        rich_text = ""
+    try:
         window_name = str(control.window_text() or "").strip()
     except Exception:
         window_name = ""
-    for candidate in (element_name, window_name):
+    for candidate in (element_name, legacy_name, rich_text, window_name):
         normalized = " ".join(candidate.lower().split())
         if normalized and normalized not in names:
             names.append(normalized)
@@ -664,7 +672,15 @@ def main() -> None:
                 if int(window.process_id()) != owned_process_id:
                     raise RuntimeError("UIA window is not bound to the expected Edge process")
                 more_tokens = ("settings and more", "设置及更多", "设置和更多", "更多")
-                zoom_in_tokens = ("zoom in", "放大", "增大")
+                zoom_in_tokens = ("zoom in", "increase zoom", "zoom plus", "放大", "增大")
+                zoom_in_automation_ids = (
+                    "ZoomInButton",
+                    "zoomInButton",
+                    "zoomIn",
+                    "zoom_in",
+                    "IncreaseZoomButton",
+                    "increaseZoom",
+                )
 
                 def ui_control_is_visible_and_enabled(control):
                     try:
@@ -694,9 +710,10 @@ def main() -> None:
                     except Exception:
                         return ()
 
-                def find_buttons(containers, tokens, exact=False):
+                def find_buttons(containers, tokens, exact=False, automation_ids=()):
                     matches = {}
                     normalized_tokens = {" ".join(token.lower().split()) for token in tokens}
+                    normalized_automation_ids = {" ".join(str(token).lower().split()) for token in automation_ids}
                     for container in containers:
                         try:
                             buttons = container.descendants()
@@ -710,14 +727,18 @@ def main() -> None:
                                 ui_name_matches(candidate, tuple(normalized_tokens), exact=exact)
                                 for candidate in names
                             )
-                            name = names[0] if names else ""
-                            if not name or not matched:
+                            automation_id = " ".join(str(getattr(button.element_info, "automation_id", "") or "").lower().split())
+                            matched_id = bool(automation_id and automation_id in normalized_automation_ids)
+                            if not matched and not matched_id:
+                                continue
+                            name = names[0] if names else automation_id
+                            if not name:
                                 continue
                             info = button.element_info
                             rect_key = control_rect_key(button)
                             key = (
                                 int(getattr(info, "process_id", 0) or 0),
-                                str(getattr(info, "automation_id", "") or ""),
+                                automation_id,
                                 name,
                                 rect_key,
                             )
@@ -760,7 +781,7 @@ def main() -> None:
                     if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
                 ]
                 stage = "find-zoom-in"
-                zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens)
+                zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens, automation_ids=zoom_in_automation_ids)
                 if len(zoom_matches) != 1:
                     raise RuntimeError(f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)}")
                 zoom_control = zoom_matches[0]
