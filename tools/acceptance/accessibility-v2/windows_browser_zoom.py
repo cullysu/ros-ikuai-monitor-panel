@@ -239,7 +239,7 @@ def invoke_owned_control(control, owned_process_id: int, owned_window_handle: in
     try:
         control.click()
     except NoPatternInterfaceError:
-        from pywinauto.windows import uia_defines as uia_defs
+        import pywinauto.uia_defines as uia_defs  # type: ignore
         legacy_interface = uia_defs.get_elem_interface(control.element_info.element, "LegacyIAccessible")
         legacy_interface.DoDefaultAction()
     require_owned_foreground_process(owned_process_id, owned_window_handle)
