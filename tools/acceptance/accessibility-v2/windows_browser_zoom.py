@@ -668,7 +668,22 @@ def main() -> None:
 
                 def ui_control_is_visible_and_enabled(control):
                     try:
-                        return bool(control.is_visible()) and bool(control.is_enabled())
+                        if not bool(control.is_enabled()):
+                            return False
+                        if bool(control.is_visible()):
+                            return True
+                        # Edge's transient menu projections can report a stale
+                        # UIA Visible=false during/after the popup animation.
+                        # Keep the fallback bounded to a non-empty rectangle
+                        # inside the already process-owned visible top-level
+                        # window; never turn this into a desktop-wide search.
+                        rect = control.rectangle()
+                        top_level = control_top_level_handle(control)
+                        return (
+                            int(rect.right) > int(rect.left)
+                            and int(rect.bottom) > int(rect.top)
+                            and bool(ctypes.windll.user32.IsWindowVisible(top_level))
+                        )
                     except Exception:
                         return False
 
@@ -741,7 +756,7 @@ def main() -> None:
                 # process, so keep the search bounded to that process and the
                 # already-owned window.
                 owned_windows = [
-                    candidate for candidate in desktop.windows(process=owned_process_id, visible_only=True)
+                    candidate for candidate in desktop.windows(process=owned_process_id, visible_only=False, enabled_only=False)
                     if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
                 ]
                 stage = "find-zoom-in"
