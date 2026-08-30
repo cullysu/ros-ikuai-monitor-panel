@@ -898,16 +898,19 @@ def main() -> None:
                 owned_windows = []
                 for zoom_search_attempts in range(1, 13):
                     # Edge may publish the transient menu root after the click
-                    # animation. Refresh same-process roots on every bounded
-                    # attempt instead of repeatedly searching a stale snapshot.
-                    owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
+                    # animation. Refresh the bounded same-process root set at
+                    # the beginning and once after the popup has had time to
+                    # materialize; repeatedly enumerating all UIA roots can
+                    # itself exceed the one-action timeout on hosted runners.
+                    if not owned_windows or zoom_search_attempts == 4:
+                        owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
                     zoom_matches = find_buttons(
                         (window, *owned_windows),
                         zoom_in_tokens,
                         automation_ids=zoom_in_automation_ids,
                         allow_known_automation_ids=True,
                     )
-                    if not zoom_matches and zoom_search_attempts >= 3:
+                    if not zoom_matches and zoom_search_attempts >= 3 and zoom_search_attempts in (3, 6):
                         # Edge can expose the transient menu only in RawView
                         # while its ControlView remains empty. Keep this fallback
                         # bounded to the original Edge window and popup roots.
@@ -919,6 +922,8 @@ def main() -> None:
                             allow_known_automation_ids=True,
                         )
                     if zoom_matches:
+                        break
+                    if zoom_search_attempts >= 6:
                         break
                     time.sleep(0.15)
                 if len(zoom_matches) != 1:
