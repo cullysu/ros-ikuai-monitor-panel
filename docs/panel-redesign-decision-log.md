@@ -30394,3 +30394,36 @@ Edge 的 Settings and more 菜单是瞬时 popup，在不同版本中不一定�
 
 - outcome: `1187:decision-mirror-contract-repaired-and-ci-next`
 - latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+
+## 第 1188 步：确认新提交与 GitHub 旧运行边界，准备受保护分支发布（2026-08-30）
+
+### 已观察事实
+
+- 当前本地分支为 codex/ci-fix-20260830，HEAD 为 dbd4a90799defdaf2a3883d3160384808b89c730；该提交的父提交为远端同名分支旧 HEAD 7231e00a2e6822632d847f43d54239d7f7a4194f。
+- GitHub 同名分支仍停在 7231e00a2e6822632d847f43d54239d7f7a4194f；PR #1 仍开放。Run 33309694877 的 Linux 仍在运行、Windows 已失败，后续结果不能代表 dbd4a90 修复后的 SHA。
+- 远端 main 为 69174b38d3e5bc8eac4272eac3082acb2db37bd9，因此本分支是基于 main 的 PR 分支，不能把远端 main 误当成当前候选分支 HEAD。
+- 工作区没有已跟踪改动；仅有历史评审文件和 work/ 未跟踪目录。它们不属于本次修复候选，不会被加入提交。
+- 本轮检查未运行 rg.exe，未启动浏览器门禁，未终止用户进程；用户要求的文档同步和 GitHub 更新仍需继续完成。
+
+### 判断与取舍
+
+- 保持已经确认的四屏手机视觉基线和 192.168.3.5 / iPad 桌面基线不变；本轮只处理 Edge 验收器与决策镜像，不借机重新改 UI。
+- 不复用旧 Run 的 Linux/Windows/CL 结论，也不以本地退出码冒充远端发布通过。新 SHA 必须先进入 GitHub，再读取该 SHA 的真实 CI 结果；若失败，只修复首个根因。
+- 采用不覆盖远端新提交的 lease-protected 分支更新，并显式排除 .impeccable/ 与 work/ 未跟踪临时工件；不使用无条件强推或普通无保护发布。
+
+### 本步操作记录
+
+- 读取了当前分支、远端 refs、HEAD 提交元数据、PR #1 状态、项目发布脚本和当前决策状态。
+- 确认本地 dbd4a90 已包含 Step1186 的 Edge popup UIA owner 修复和 Step1187 的决策镜像语义修复；尚未有该 SHA 的 GitHub CI 结果。
+- 当前进程环境未暴露 GITHUB_TOKEN；后续优先使用已登录 GitHub CLI 的受保护分支更新路径，不在日志或输出中显示任何凭据。\n- 纠正：机器门禁中的 ci-windows 仅表示新 SHA 是否已有结果；旧 Run 的 Windows failure 保留在历史说明中，当前新 SHA 状态必须保持 pending，避免历史失败被误当成当前候选结果。
+
+### 心得
+
+先把“本地修复已存在”“远端旧运行失败”“新 SHA 尚未验证”三件事分开，才能避免再次把旧失败或单次本地检查包装成发布通过。推送本身只是把候选送进验证链，不是验收结论。
+
+### 下一步
+
+同步并验证 Step1188 决策镜像，执行最小源契约与发布边界检查，形成只包含受管文件的 clean candidate；随后用 lease-protected 方式更新同名 GitHub 分支并读取新 SHA 的 Linux、Windows、CL/GHCR 真实结果。
+
+- outcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
+- latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`

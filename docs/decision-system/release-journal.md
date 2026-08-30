@@ -1,12 +1,19 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: false; Step1186 local CI-fix evidence is green, but the fix is not yet committed and the old pushed SHA remains Windows-red
+- validForCommit: false; Step1188 records local commit dbd4a90 and the old pushed SHA remains Windows-red; the new candidate still needs protected branch publication and fresh CI
 - supersededBy: null
-- currentStep: `1187`
-- currentOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
-- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- currentStep: `1188`
+- currentOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
+- latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
+
+## Step 1188 boundary
+
+- Local HEAD dbd4a90799defdaf2a3883d3160384808b89c730 contains the Edge popup UIA owner fix and decision-ledger repair. GitHub branch codex/ci-fix-20260830 remains at 7231e00a2e6822632d847f43d54239d7f7a4194f; the old Run 33309694877 is not evidence for the new SHA.
+- The accepted mobile and desktop art directions are unchanged. Only tracked repair and decision files are candidates; untracked .impeccable/ reviews and work/ are excluded.
+- Release remains CLOSED until the new SHA has fresh Linux, Windows, and downstream CL/GHCR evidence. A lease-protected branch update is the next external action; no unguarded force update is allowed.
+
 
 ## Current release boundary
 

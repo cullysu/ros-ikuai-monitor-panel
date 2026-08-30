@@ -1,22 +1,22 @@
-- validForCommit: false; current worktree is uncommitted and is not a release candidate
+- validForCommit: false; current worktree is uncommitted and is not a release candidate; Step1188 is documented and the clean candidate has not yet been formed
 - status: `current-handoff`
-- currentHandoffForStep: `1187`
+- currentHandoffForStep: `1188`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
 - updated: 2026-08-30
-- latestRecordedStep: `1187`
-- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- latestRecordedStep: `1188`
+- latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
 - releaseCandidate: none; GitHub publication is closed
-- currentConclusion: **FAIL overall / the accepted four-screen phone reference remains unchanged / the old pushed SHA 7231e00 is Windows-red at Edge toolbar 200 percent / the local popup-owner fix is not yet pushed / clean exact-SHA and Linux/Windows/CL/GHCR evidence remain open.**
+- currentConclusion: **FAIL overall / the accepted four-screen phone reference remains unchanged / old pushed SHA 7231e00 is Windows-red at Edge toolbar 200 percent / local repair HEAD dbd4a90 is not yet published / clean exact-SHA and Linux/Windows/CL/GHCR evidence remain open.**
 
-## Current handoff: Step 1187
+## Current handoff: Step 1188
 
-- 决策镜像的 16 个受管文档已复制并字节一致；用户已有的 部署说明并执行清单.md 被明确保留，不再作为未知垃圾误报。
-- current-state、current-index、handoff、release journal、机器状态与历史日志的最新 outcome 已统一绑定 Step1187。
-- Step1185 四角色记录已明确标记为 superseded；当前产品/视觉签收仍未伪装为新鲜证据，发布仍 FAIL/CLOSED。
-- Step1186 的 Edge popup-owner 修复与本地 toolbar 24-cell/readiness/py_compile 证据仍有效，但尚未形成新提交和新远端 CI。
-- outcome: `1187:decision-mirror-contract-repaired-and-ci-next`
-- next action: 验证镜像与源契约，再提交推送并读取新 SHA 的 Linux/Windows/CL/GHCR 结果。
+- Step1187 的决策镜像语义修复已进入本地提交 dbd4a90；本步确认同名 GitHub 分支仍为 7231e00，PR #1 的旧 Run 不能代表新 SHA。\n- 机器 ci-windows 状态已纠正为 pending；旧 Run 的 failure 仅保留为历史证据。
+- 未跟踪 .impeccable/ 评审文件和 work/ 目录明确排除；手机四屏基线与 192.168.3.5 / iPad 桌面基线不变。
+- 当前发布仍 FAIL/CLOSED；必须先同步并验证 Step1188 镜像和源契约，再用 lease-protected 方式更新分支，随后读取新 SHA 的 Linux、Windows、CL/GHCR 真实结果。
+- outcome: 1188:remote-old-run-separated-and-protected-branch-publish-next
+- next action: 同步并验证 Step1188 镜像，执行最小源契约/发布边界检查，形成 clean candidate 后更新 GitHub 分支并读取新 SHA 结果。
+
 ## Gate boundary
 
 | Gate | Status | Meaning |

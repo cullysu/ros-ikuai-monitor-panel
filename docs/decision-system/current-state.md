@@ -1,19 +1,29 @@
-- validForCommit: false; current worktree is uncommitted and is not a release candidate
+- validForCommit: false; current worktree is uncommitted and is not a clean candidate; Step1188 decision record is documented and untracked review/work artifacts remain excluded
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1187`
-- currentConclusionForStep: `1187`
-- latestRecordedStep: `1187`
-- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- currentBoundaryForStep: `1188`
+- currentConclusionForStep: `1188`
+- latestRecordedStep: `1188`
+- latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
 
 ## Current conclusion
 
-**FAIL overall for release / the user-supplied four-screen mobile reference remains the sole phone baseline / accepted phone art is unchanged / current-identity matrices and four-role local signoff are green / clean exact-SHA, GitHub upload and exact-SHA Linux/Windows/GHCR CL remain open / release CLOSED.**
+**FAIL overall for release / the user-supplied four-screen mobile reference remains the sole phone baseline / accepted phone art is unchanged / local repair commit exists but has no fresh remote CI / clean exact-SHA, GitHub upload and exact-SHA Linux/Windows/GHCR CL remain open / release CLOSED.**
 
-## Current decision record: Step 1186
+## Current decision record: Step 1188
+
+- 本地 codex/ci-fix-20260830 的 HEAD 为 dbd4a90799defdaf2a3883d3160384808b89c730，父提交为远端同名分支旧 HEAD 7231e00a2e6822632d847f43d54239d7f7a4194f；远端 main 为 69174b38d3e5bc8eac4272eac3082acb2db37bd9。
+- PR #1 仍开放。旧 Run 33309694877 的 Linux 仍运行、Windows 已失败；它不是新本地修复的证据，Windows 后续失败也不能被拆成独立新根因。
+- 当前工作区仅有未跟踪的历史 .impeccable/ 评审文件与 work/；它们不进入候选提交。手机四屏基线、桌面 192.168.3.5 / iPad 基线和产品代码本轮均不变。
+- 当前已确认的新修复是 Edge popup UIA 所有者查找、toolbar 离线契约与决策镜像语义修复；新的 GitHub CI 仍未开始。\n- 机器 ci-windows gate 已纠正为 pending；旧 Run 33309694877 的 Windows failure 只作为历史证据保留，不代表新 SHA。
+- 本轮没有使用 rg.exe、没有启动浏览器矩阵、没有终止用户进程；外部更新将采用 lease-protected 分支路径，并在更新后只认新 SHA 的真实 Linux、Windows、CL/GHCR 结果。
+- outcome: 1188:remote-old-run-separated-and-protected-branch-publish-next
+- next action: 同步并验证 Step1188 镜像，执行最小源契约/发布边界检查，形成排除未跟踪工件的 clean candidate 后更新同名 GitHub 分支并读取新 SHA 的真实 CI。
+
+## Previous decision record: Step 1186
 
 - 远端 Run 33309694877 绑定提交 7231e00a2e6822632d847f43d54239d7f7a4194f；Windows packaging 在 Real Edge toolbar 200 percent matrix 失败，后续 Windows manifest/upload 失败均为前置失败级联，不能当作独立根因。
 - 根因判断：现有 Windows UIA 菜单查找只依赖 Desktop.windows(process=...)，无法稳定取得 Edge 瞬时 Settings popup 的顶层 HWND，因此 Zoom in 控件可能报告 found 0。

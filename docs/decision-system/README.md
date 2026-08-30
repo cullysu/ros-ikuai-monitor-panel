@@ -1,9 +1,9 @@
-- validForCommit: false; current worktree is uncommitted and is not a release candidate
+- validForCommit: false; Step1188 is a documented pre-publication boundary and the clean candidate is not yet formed
 - status: `current-index`
 - supersededBy: `null`
-- currentBoundaryForStep: `1187`
-- latestRecordedStep: `1187`
-- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- currentBoundaryForStep: `1188`
+- latestRecordedStep: `1188`
+- latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.
@@ -16,4 +16,4 @@ The current conclusion is owned only by `current-state.md`; this page is navigat
 - Full historical journal: `../panel-redesign-decision-log.md`
 - Historical index: `historical-index.md`
 
-Step1187 records the decision-mirror semantic pointer repair and preservation of the explicit user auxiliary document. The old remote Run 33309694877 remains Windows-red; clean exact-SHA, GitHub upload and exact-SHA Linux/Windows/GHCR CL remain open.
+Step1188 records the separation of local dbd4a90, remote branch 7231e00 and remote main 69174b3, with untracked review/work artifacts excluded. The old remote Run 33309694877 remains Windows-red; protected branch publication and fresh exact-SHA Linux/Windows/GHCR CL remain open.
