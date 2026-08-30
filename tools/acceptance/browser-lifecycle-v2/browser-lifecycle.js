@@ -55,14 +55,20 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-function browserExecutable(configuredPath) {
+function browserExecutable(configuredPath, env = process.env) {
   const candidates = [
     configuredPath,
-    process.env.BROWSER_EXECUTABLE,
-    process.env.EDGE_EXECUTABLE,
-    process.env['PROGRAMFILES(X86)'] && path.join(process.env['PROGRAMFILES(X86)'], 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-    process.env.PROGRAMFILES && path.join(process.env.PROGRAMFILES, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-    process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    env.BROWSER_EXECUTABLE_PATH,
+    env.BROWSER_EXECUTABLE,
+    env.EDGE_EXECUTABLE,
+    env.CHROME_EXECUTABLE,
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    env['PROGRAMFILES(X86)'] && path.join(env['PROGRAMFILES(X86)'], 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    env.PROGRAMFILES && path.join(env.PROGRAMFILES, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    env.LOCALAPPDATA && path.join(env.LOCALAPPDATA, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
   ].filter(Boolean);
   return candidates.find((candidate) => fs.existsSync(candidate)) || '';
 }
@@ -249,7 +255,7 @@ async function launchManagedBrowser(options) {
     cleanup: [],
   };
   if (!executablePath) {
-    throw new LifecycleError('BROWSER_UNAVAILABLE', 'Microsoft Edge executable was not found', { searched: 'BROWSER_EXECUTABLE, EDGE_EXECUTABLE, standard Edge locations' });
+    throw new LifecycleError('BROWSER_UNAVAILABLE', 'Microsoft Edge executable was not found', { searched: 'BROWSER_EXECUTABLE_PATH, BROWSER_EXECUTABLE, EDGE_EXECUTABLE, CHROME_EXECUTABLE, standard Edge/Chrome/Chromium locations' });
   }
 
   let browserServer = null;
@@ -516,7 +522,7 @@ async function runBrowserLifecycle(options, task) {
 
   try {
     if (!executablePath) {
-      throw new LifecycleError('BROWSER_UNAVAILABLE', 'Microsoft Edge executable was not found', { searched: 'BROWSER_EXECUTABLE, EDGE_EXECUTABLE, standard Edge locations' });
+      throw new LifecycleError('BROWSER_UNAVAILABLE', 'Microsoft Edge executable was not found', { searched: 'BROWSER_EXECUTABLE_PATH, BROWSER_EXECUTABLE, EDGE_EXECUTABLE, CHROME_EXECUTABLE, standard Edge/Chrome/Chromium locations' });
     }
     managedBrowser = await runStep('browser.managed.launch', () => launchManagedBrowser({
       executablePath,

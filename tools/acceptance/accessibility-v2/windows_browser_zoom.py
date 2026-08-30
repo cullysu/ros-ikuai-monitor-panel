@@ -171,6 +171,24 @@ def window_is_owned_by(candidate_handle: int, owned_window_handle: int) -> bool:
     return False
 
 
+def ui_control_names(control) -> tuple[str, ...]:
+    """Read the UIA Name property first, then the Win32 text projection."""
+    names: list[str] = []
+    try:
+        element_name = str(getattr(control.element_info, "name", "") or "").strip()
+    except Exception:
+        element_name = ""
+    try:
+        window_name = str(control.window_text() or "").strip()
+    except Exception:
+        window_name = ""
+    for candidate in (element_name, window_name):
+        normalized = " ".join(candidate.lower().split())
+        if normalized and normalized not in names:
+            names.append(normalized)
+    return tuple(names)
+
+
 def ui_name_matches(name: str, tokens: tuple[str, ...], exact: bool = False) -> bool:
     """Match a visible UIA name without reopening broad substring ambiguity."""
     normalized_name = " ".join(str(name or "").strip().lower().split())
@@ -651,11 +669,12 @@ def main() -> None:
                         for button in buttons:
                             if not ui_control_is_visible_and_enabled(button):
                                 continue
-                            try:
-                                name = " ".join(str(button.window_text() or "").strip().lower().split())
-                            except Exception:
-                                continue
-                            matched = ui_name_matches(name, tuple(normalized_tokens), exact=exact)
+                            names = ui_control_names(button)
+                            matched = any(
+                                ui_name_matches(candidate, tuple(normalized_tokens), exact=exact)
+                                for candidate in names
+                            )
+                            name = names[0] if names else ""
                             if not name or not matched:
                                 continue
                             info = button.element_info
