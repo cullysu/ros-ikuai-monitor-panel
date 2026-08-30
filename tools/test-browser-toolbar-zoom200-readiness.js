@@ -31,6 +31,9 @@ assert.match(windowsZoomSource, /def invoke_owned_control[\s\S]*control_process_
 assert.match(windowsZoomSource, /menu_remains_open[\s\S]*invoke_owned_control\(more, owned_process_id, handle, "Edge Settings and more close control"\)/, 'the owned Edge menu must be closed through UIA before the next increment or capture');
 assert.match(windowsZoomSource, /def ui_control_is_visible_and_enabled[\s\S]*if not ui_control_is_visible_and_enabled\(button\):/, 'Edge UIA lookup must ignore hidden or disabled duplicate projections');
 assert.match(windowsZoomSource, /more_tokens = \("settings and more", "设置及更多", "设置和更多", "更多"\)[\s\S]*find_buttons\(\(window,\), more_tokens, exact=True\)/, 'Settings and more lookup must use exact localized names');
+assert.match(windowsZoomSource, /def ui_name_matches\([\s\S]*re\.fullmatch\(re\.escape\(token\) \+ r"\[\^a-z0-9\]\*"/, 'exact Edge names may only carry a non-alphanumeric suffix');
+assert.match(windowsZoomSource, /matched = ui_name_matches\(name, tuple\(normalized_tokens\), exact=exact\)/, 'Edge UIA lookup must use the bounded exact-name matcher');
+assert.doesNotMatch(windowsZoomSource, /matched = name in normalized_tokens if exact else any\(token in name/, 'Edge UIA lookup must not regress to the old exact-or-broad-substring branch');
 const configuredPanelRuntimeTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);
 const expectedPanelRuntimeTimeout = Number.isFinite(configuredPanelRuntimeTimeout) && configuredPanelRuntimeTimeout > 0
   ? Math.min(300_000, Math.max(8_000, configuredPanelRuntimeTimeout))

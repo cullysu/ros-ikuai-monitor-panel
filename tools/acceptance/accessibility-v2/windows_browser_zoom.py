@@ -171,6 +171,20 @@ def window_is_owned_by(candidate_handle: int, owned_window_handle: int) -> bool:
     return False
 
 
+def ui_name_matches(name: str, tokens: tuple[str, ...], exact: bool = False) -> bool:
+    """Match a visible UIA name without reopening broad substring ambiguity."""
+    normalized_name = " ".join(str(name or "").strip().lower().split())
+    normalized_tokens = tuple(" ".join(str(token).strip().lower().split()) for token in tokens)
+    if not normalized_name:
+        return False
+    if exact:
+        return any(
+            re.fullmatch(re.escape(token) + r"[^a-z0-9]*", normalized_name) is not None
+            for token in normalized_tokens
+        )
+    return any(token in normalized_name for token in normalized_tokens)
+
+
 def control_top_level_handle(control) -> int:
     try:
         return int(control.top_level_parent().handle or 0)
@@ -641,7 +655,7 @@ def main() -> None:
                                 name = " ".join(str(button.window_text() or "").strip().lower().split())
                             except Exception:
                                 continue
-                            matched = name in normalized_tokens if exact else any(token in name for token in normalized_tokens)
+                            matched = ui_name_matches(name, tuple(normalized_tokens), exact=exact)
                             if not name or not matched:
                                 continue
                             info = button.element_info
