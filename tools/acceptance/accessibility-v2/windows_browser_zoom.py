@@ -225,6 +225,38 @@ def safe_exception_message(error: BaseException) -> str:
     message = str(error).strip()
     return message or type(error).__name__
 
+def raw_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> list:
+    """Walk one already-bound UIA tree through RawView, never the desktop root."""
+    from pywinauto.controls.uiawrapper import UIAWrapper  # type: ignore
+    from pywinauto.uia_defines import IUIA  # type: ignore
+    from pywinauto.uia_element_info import UIAElementInfo  # type: ignore
+
+    root_element = getattr(control.element_info, "element", None)
+    if root_element is None:
+        return []
+    walker = IUIA().iuia.RawViewWalker
+    found = []
+    stack = [(root_element, 0)]
+    while stack and len(found) < max_nodes:
+        parent, depth = stack.pop()
+        if depth >= max_depth:
+            continue
+        try:
+            child = walker.GetFirstChildElement(parent)
+        except Exception:
+            continue
+        while child is not None and len(found) < max_nodes:
+            try:
+                wrapper = UIAWrapper(UIAElementInfo(child))
+                found.append(wrapper)
+                if depth + 1 < max_depth:
+                    stack.append((child, depth + 1))
+                child = walker.GetNextSiblingElement(child)
+            except Exception:
+                break
+    return found
+
+
 def control_top_level_handle(control) -> int:
     try:
         return int(control.top_level_parent().handle or 0)
@@ -710,13 +742,15 @@ def main() -> None:
                     except Exception:
                         return ()
 
-                def find_buttons(containers, tokens, exact=False, automation_ids=()):
+                def find_buttons(containers, tokens, exact=False, automation_ids=(), include_raw=False):
                     matches = {}
                     normalized_tokens = {" ".join(token.lower().split()) for token in tokens}
                     normalized_automation_ids = {" ".join(str(token).lower().split()) for token in automation_ids}
                     for container in containers:
                         try:
-                            buttons = container.descendants()
+                            buttons = list(container.descendants())
+                            if include_raw:
+                                buttons.extend(raw_view_descendants(container))
                         except Exception:
                             continue
                         for button in buttons:
@@ -782,6 +816,16 @@ def main() -> None:
                 ]
                 stage = "find-zoom-in"
                 zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens, automation_ids=zoom_in_automation_ids)
+                if not zoom_matches:
+                    # Edge can expose the transient menu only in RawView while
+                    # its ControlView remains empty. Keep this fallback bounded
+                    # to the original Edge window and process-owned popup roots.
+                    zoom_matches = find_buttons(
+                        (window, *owned_windows),
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                        include_raw=True,
+                    )
                 if len(zoom_matches) != 1:
                     raise RuntimeError(f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)}")
                 zoom_control = zoom_matches[0]
