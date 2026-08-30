@@ -320,3 +320,53 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 ### outcome
 
 - outcome: `1193:documentation-synchronized-candidate-commit-and-lease-push-next`
+
+---
+
+
+## Step 1195：第二次远端复现仍为零匹配，收窄过度过滤并准备重发（2026-08-30）
+
+### 已核实现场
+
+- 新 Run `33316260102` 的 Windows packaging 仍在第 1 格 `phone-320::normal` 的 `find-zoom-in` 阶段失败，首因仍是经过 12 次有界 UIA 搜索找到 0 个 Zoom in 控件。
+- 这证明 Step1190 的“同进程 + Chromium 类 + 可见顶层窗口”fallback 仍然过窄；不是 package manifest 或 artifact 上传逻辑的首因。
+- Run `33316260102` 的 Linux 结果仍未取得可用终态；本轮不得把 Windows 失败或 Linux 取消/未完成当作发布通过。
+
+### 实施的最小纠正
+
+- 保留 UIA 搜索只从已解析的 Edge 进程顶层窗口开始；取消对瞬态 popup 的 Win32 可见性和窗口类预过滤，避免 Edge runner 的 UIA/Win32 投影短暂不一致时把真实菜单根排除在外。
+- 保留零匹配/多匹配 fail-closed；控件激活仍要求精确 `msedge.exe` 进程、可见顶层窗口和前台归属，非 owner 链 popup 只能作为当前选中的同进程窗口。
+- 手机/桌面 UI、美术基线、数据语义均未修改。
+
+### 本地验证
+
+- `node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js`：PASS。
+- `py -3 -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py`：PASS。
+- 未启动新的本地真实 Edge 矩阵；远端真实 Windows runner 复验仍是必须证据。
+
+### 下一步
+
+同步本步到 D 盘并提交新的源代码/文档候选；不要复用 Run `33316260102` 的失败结果。新 SHA 推送后重新读取其精确 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1195:edge-popup-filter-too-narrow-static-green-new-candidate-next`
+
+---
+
+
+## Step 1196：停止已失败的旧候选运行，准备提交第二次 popup 纠正（2026-08-30）
+
+### 已核实现场
+
+- Run `33316260102` 的 Windows packaging 已确认与上一轮相同：`phone-320::normal` 在 `find-zoom-in` 阶段经过 12 次有界 UIA 搜索仍得到 0 个 Zoom in 控件。
+- 该 Run 的 Linux validation 未形成终态；由于同一候选 Windows 已失败且 Linux 长时间停留在总门禁，已提交取消，不能把取消结果解读为 Linux 通过或失败。
+- 当前工作树的第二次 popup 纠正已完成本地静态验证，尚未提交和推送。
+
+### 下一步
+
+提交本步源代码和文档，读取新的 exact SHA；以远端 `b18ada8...` 为 lease 保护值推送新候选，然后只核对新 SHA 的 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1196:failed-run-cancelled-second-popup-correction-commit-next`

@@ -275,17 +275,18 @@ def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) 
     seen: set[int] = set()
 
     def add_window(handle: int) -> None:
-        if handle <= 0 or handle in seen or not user32.IsWindowVisible(handle):
+        if handle <= 0 or handle in seen:
             return
         try:
             if owned_process_id_for_window(handle) != owned_process_id:
                 return
             if handle != owned_window_handle and not window_is_owned_by(handle, owned_window_handle):
-                # Some Edge builds omit a usable owner link for transient menus.
-                # The exact Edge process is the fallback boundary; selection still
-                # fails closed on zero or multiple matching controls.
-                if not window_class_name(handle).startswith("Chrome_WidgetWin"):
-                    return
+                # Some Edge builds omit both a usable owner link and a stable
+                # visibility projection for transient menus. The exact Edge
+                # process is the fallback boundary; selection still fails closed
+                # on zero or multiple matching controls, and activation rechecks
+                # the selected top-level HWND.
+                pass
             containers.append(desktop.window(handle=handle))
             seen.add(handle)
         except Exception:
