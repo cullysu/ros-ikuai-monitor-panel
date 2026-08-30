@@ -139,15 +139,26 @@ def owned_process_id_for_window(handle: int) -> int:
     return value
 
 
-def require_owned_foreground_process(owned_process_id: int, owned_window_handle: int) -> int:
-    """Fail closed unless foreground is the original Edge HWND or its owned popup."""
+def require_owned_foreground_process(
+    owned_process_id: int,
+    owned_window_handle: int,
+    allowed_popup_handle: int = 0,
+) -> int:
+    """Fail closed unless foreground is the original Edge HWND or selected same-process popup."""
     user32 = ctypes.windll.user32
     foreground = int(user32.GetForegroundWindow())
     if foreground <= 0:
         raise RuntimeError("no foreground window is available for the owned Edge UIA action")
-    if not window_is_owned_by(foreground, owned_window_handle):
-        raise RuntimeError("foreground ownership moved outside the original Edge HWND chain")
     foreground_process_id = owned_process_id_for_window(foreground)
+    original_chain = window_is_owned_by(foreground, owned_window_handle)
+    selected_popup = bool(
+        allowed_popup_handle
+        and foreground == allowed_popup_handle
+        and foreground_process_id == owned_process_id
+        and user32.IsWindowVisible(foreground)
+    )
+    if not original_chain and not selected_popup:
+        raise RuntimeError("foreground ownership moved outside the original Edge HWND chain")
     if foreground_process_id != owned_process_id:
         raise RuntimeError("foreground ownership changed before the Edge UIA action")
     return foreground
@@ -258,23 +269,23 @@ def raw_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> l
 
 
 def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) -> list:
-    """Return UIA roots for the owned Edge HWND and its owned popup HWNDs.
-
-    Edge transient menus are not consistently exposed by Desktop.windows(process=...).
-    Enumerate only Win32 top-level windows and retain the exact process/owner chain.
-    """
+    """Return UIA roots for the original Edge HWND and visible same-process popups."""
     user32 = ctypes.windll.user32
     containers = []
     seen: set[int] = set()
 
     def add_window(handle: int) -> None:
-        if handle <= 0 or handle in seen:
-            return
-        if handle != owned_window_handle and not window_is_owned_by(handle, owned_window_handle):
+        if handle <= 0 or handle in seen or not user32.IsWindowVisible(handle):
             return
         try:
             if owned_process_id_for_window(handle) != owned_process_id:
                 return
+            if handle != owned_window_handle and not window_is_owned_by(handle, owned_window_handle):
+                # Some Edge builds omit a usable owner link for transient menus.
+                # The exact Edge process is the fallback boundary; selection still
+                # fails closed on zero or multiple matching controls.
+                if not window_class_name(handle).startswith("Chrome_WidgetWin"):
+                    return
             containers.append(desktop.window(handle=handle))
             seen.add(handle)
         except Exception:
@@ -303,9 +314,18 @@ def invoke_owned_control(control, owned_process_id: int, owned_window_handle: in
     control_process_id = int(getattr(control.element_info, "process_id", 0) or 0)
     if control_process_id != owned_process_id:
         raise RuntimeError(f"{label} is not owned by the expected Edge process")
-    if not window_is_owned_by(control_top_level_handle(control), owned_window_handle):
-        raise RuntimeError(f"{label} is not owned by the original Edge HWND")
-    require_owned_foreground_process(owned_process_id, owned_window_handle)
+    control_window_handle = control_top_level_handle(control)
+    if not window_is_owned_by(control_window_handle, owned_window_handle):
+        if (
+            owned_process_id_for_window(control_window_handle) != owned_process_id
+            or not ctypes.windll.user32.IsWindowVisible(control_window_handle)
+        ):
+            raise RuntimeError(f"{label} is not owned by the original Edge process")
+    require_owned_foreground_process(
+        owned_process_id,
+        owned_window_handle,
+        allowed_popup_handle=control_window_handle,
+    )
     # UIA click uses Invoke/Select; LegacyIAccessible is the UIA fallback, never physical mouse input.
     if not control.is_enabled():
         raise RuntimeError(f"{label} is disabled")

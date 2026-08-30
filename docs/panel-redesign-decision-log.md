@@ -30429,3 +30429,94 @@ Edge 的 Settings and more 菜单是瞬时 popup，在不同版本中不一定�
 
 - outcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
 - latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
+
+---
+
+
+## Step 1189：新 SHA 首轮远端 CL 失败，保留 Linux 运行并锁定 Windows 首个根因（2026-08-30）
+
+### 已核实现场
+
+- 当前候选 SHA：`b18ada8ee828c621538a686b45beecfce930e693`，分支：`codex/ci-fix-20260830`。
+- GitHub Actions Run `33313772840` 已确认 Windows packaging 失败；首个失败步骤是 `Real Edge toolbar 200 percent matrix`。
+- Windows 在该步骤之前的 Edge toolbar source contract、Python/Node 环境和依赖安装均通过；其后的 package manifest/upload 失败是上游失败的级联结果，不能单独修复或解读为新根因。
+- Linux validation 仍停留在 `Release blocking contract gates` 运行中，尚未取得终态；当前不能声称 Linux、Windows、CL/GHCR 全部通过。
+- 失败日志在 Run 仍进行时不可下载；没有用旧 SHA 的历史报告冒充当前证据，也没有重复启动新的 CI。
+
+### 本步决策
+
+1. 只修复 Windows 的首个真实失败；不先处理由它级联的 manifest/artifact 缺失。
+2. 继续保持手机/桌面美术基线不变，本步属于发布验收基础设施，不借机改 UI。
+3. 等当前 Run `33313772840` 自然结束后读取精确 job 日志；若根因与现有 UIA 所有权实现不一致，再做最小修复并生成新 SHA。
+4. 所有后续修改、提交、推送和 CL 读取都必须同步本日志、D 盘镜像及状态文档；任一远端 CL 失败都继续纠正，直到同一精确 SHA 的 Linux、Windows、CL/GHCR 全绿。
+
+### 资源与安全记录
+
+- 本轮未使用 `rg.exe`，未启动新的本地浏览器矩阵，未终止用户进程。
+- 上下文脚本曾因执行层 ACL 初始化失败而未运行；没有把该失败伪装成 checkpoint 或验收结果。
+- 之后只进行了有界的 Git/CI 查询、源码读取和文档同步；未修改手机或桌面美术。
+
+### 心得
+
+CI 的“上传后失败”必须按首个失败步骤追根，而不是看到后续产物缺失就批量补文件。当前证据只说明候选已上传且 Windows 首个门禁失败、Linux 未结束；因此发布状态继续为 FAIL/CLOSED。
+
+### outcome
+
+- outcome: `1189:current-sha-windows-edge-toolbar-failed-linux-running-root-log-pending`
+
+---
+
+
+## Step 1190：读取首个远端失败日志并修复 Edge popup 搜索边界（2026-08-30）
+
+### 已核实现场
+
+- Run `33313772840` 的 Windows 日志已公开完整首因：第 1 格 `phone-320::normal` 在 `find-zoom-in` 阶段经过 12 次有界 UIA 搜索仍找到 0 个 Zoom in 控件，退出码为 1。
+- Windows 的 package manifest、bundle 和 SHA256 manifest 失败均发生在该步骤之后，是上游失败的级联结果。
+- Linux 在 `Release blocking contract gates` 运行约 36 分钟仍无步骤推进；为避免继续占用远端资源已提交取消，取消不被解读为 Linux 产品失败或通过。
+- 当前仍没有同一新 SHA 的 Linux、Windows、CL/GHCR 全绿证据。
+
+### 实施的最小修复
+
+- 修改 `tools/acceptance/accessibility-v2/windows_browser_zoom.py`：UIA popup 根枚举仍只从已绑定的 Edge 进程枚举可见顶层窗口；当 Edge 瞬态菜单缺失可用 Win32 owner 链时，以同一 `msedge.exe` 进程和 Chromium 顶层窗口类作为受限 fallback。
+- UIA 激活继续复核控件进程、顶层窗口可见性和前台归属；只有选中的同进程 popup 可以作为前台例外，不恢复全局 UIA、全局键盘、物理鼠标或 `click_input()`。
+- 修改 `tools/test-browser-toolbar-zoom200-readiness.js`，把选中的同进程 popup 前台边界固定为源码契约。
+- 未修改手机/桌面产品美术、布局、数据语义或用户确认的视觉基线。
+
+### 本地验证
+
+- `node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js`：PASS。
+- `py -3 -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py`：PASS。
+- `git diff --check`：无错误；仅报告既有文档 CRLF 将在 Git 下次处理时转为 LF 的提示。
+- 没有在本机启动真实 Edge 200% 矩阵；上述结果不能替代 GitHub Windows runner 的新鲜真实证据。
+
+### 下一步
+
+把本步修复与验证继续同步到 D 盘镜像，清理只属于本任务的临时工件，形成新的 clean exact-SHA；然后用 lease 保护更新 GitHub 分支，并只读取该新 SHA 的 Linux、Windows、CL/GHCR 终态。任何一端失败继续按首个根因纠正。
+
+### outcome
+
+- outcome: `1190:windows-edge-popup-fallback-static-green-clean-candidate-next`
+
+---
+
+
+## Step 1191：保留历史工件并以本地排除收口 clean candidate（2026-08-30）
+
+### 已核实现场
+
+- `git clean -nd -- .impeccable work` 显示这些目录含有既有评审记录和本任务临时脚本；无法证明每个文件都可安全删除，因此没有执行不可逆清理。
+- 已在当前仓库本地 `.git/info/exclude` 增加 `.impeccable/` 与 `work/`；文件本体保留，不进入提交、GitHub tree 或发布证据。
+- 重新读取 `git status --short --branch` 后，仅剩本轮 UIA 修复和决策文档的六组已跟踪修改；未把任何产品文件隐藏或删除。
+
+### 决策
+
+采用“保留文件、只在本地排除”的可逆方案，而不是为了制造 clean 状态删除可能有历史价值的评审/工作工件。候选提交只包含已审查的 UIA 修复与同步后的决策文档；推送前还要用 Git 的实际暂存内容和 exact-SHA 身份检查确认。
+
+### 下一步
+
+先运行低负载静态/类型/构建相关门禁，随后检查暂存清单与 exact-SHA 身份；若全部通过，再提交并用 lease protection 更新 GitHub 分支，等待该新 SHA 的 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1191:task-artifacts-preserved-local-exclude-clean-candidate-gates-next`

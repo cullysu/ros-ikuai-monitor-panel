@@ -33,6 +33,7 @@ assert.match(windowsZoomSource, /NoPatternInterfaceError[\s\S]*pywinauto\.uia_de
 assert.match(windowsZoomSource, /menu_remains_open[\s\S]*invoke_owned_control\(more, owned_process_id, handle, "Edge Settings and more close control"\)/, 'the owned Edge menu must be closed through UIA before the next increment or capture');
 assert.match(windowsZoomSource, /def ui_control_is_visible_and_enabled[\s\S]*if not ui_control_is_visible_and_enabled\(button\):/, 'Edge UIA lookup must ignore hidden or disabled duplicate projections');
 assert.match(windowsZoomSource, /def owned_uia_windows\([\s\S]*EnumWindows[\s\S]*window_is_owned_by/, 'Edge menu lookup must include process-owned top-level popup HWNDs without a desktop-wide UIA scan');
+assert.match(windowsZoomSource, /allowed_popup_handle[\s\S]*selected_popup/, 'Edge popup activation must permit only the selected same-process foreground popup');
 assert.match(windowsZoomSource, /more_tokens = \("settings and more", "设置及更多", "设置和更多", "更多"\)[\s\S]*find_buttons\(\(window,\), more_tokens, exact=True\)/, 'Settings and more lookup must use exact localized names');
 assert.match(windowsZoomSource, /container\.descendants\(\)/, 'Edge menu lookup must include bounded non-Button UIA projections');
 assert.match(windowsZoomSource, /def ui_control_names\([\s\S]*element_info, "name"[\s\S]*window_text/, 'Edge UIA lookup must read the UIA Name property before the Win32 text projection');
