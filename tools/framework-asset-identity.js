@@ -19,9 +19,13 @@ function portablePath(value) {
   return value.split(path.sep).join('/');
 }
 
+function deterministicPathCompare(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 function collectFiles(directory, projectRoot, output) {
   const entries = fs.readdirSync(directory, { withFileTypes: true })
-    .sort((left, right) => left.name.localeCompare(right.name, 'en'));
+    .sort((left, right) => deterministicPathCompare(left.name, right.name));
   for (const entry of entries) {
     const absolute = path.join(directory, entry.name);
     if (entry.isSymbolicLink()) {
@@ -44,7 +48,7 @@ function frameworkInputFiles(projectRoot) {
 
   const files = [...REQUIRED_INPUT_FILES];
   collectFiles(sourceRoot, resolvedRoot, files);
-  const unique = [...new Set(files)].sort((left, right) => left.localeCompare(right, 'en'));
+  const unique = [...new Set(files)].sort(deterministicPathCompare);
   for (const relative of unique) {
     const absolute = path.join(resolvedRoot, ...relative.split('/'));
     if (!fs.statSync(absolute, { throwIfNoEntry: false })?.isFile()) {

@@ -229,6 +229,7 @@ jobs:
     env:
       CODEX_MEMORY_LIMIT_MB: "2048"
       NODE_OPTIONS: --max-old-space-size=2048
+      CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS: "60000"
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6

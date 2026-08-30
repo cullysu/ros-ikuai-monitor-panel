@@ -19,6 +19,7 @@ interface WanView {
   name: string;
   provider: string;
   online: boolean;
+  observed: boolean;
   disabled: boolean;
   verifiedDefault: boolean;
   duration: string;
@@ -38,6 +39,7 @@ interface InterfaceView {
   role: string;
   status: string;
   tone: Tone;
+  observed: boolean;
   rates: string;
   quality: string;
 }
@@ -94,10 +96,13 @@ function wanView(evidence: OverviewEvidenceModel, snapshot: OverviewRawSnapshot,
   const rows = uniqueWan(snapshot);
   const active = evidence.evidenceMode === "current" ? evidence.routeEvidence.activePath : null;
   const verified = active ? rows.find((row) => routeMatches(row, active.gateway)) || null : null;
+  const requestedName = objectId ? normalized(objectId.replace(/^(?:wan|if):/i, "")) : "";
   const requested = objectId
-    ? rows.find((candidate) => normalized(valueOf(candidate as Record<string, unknown>, ["name", "interface", "access", "parent"])) === normalized(objectId)) || null
+    ? rows.find((candidate) => normalized(valueOf(candidate as Record<string, unknown>, ["name", "interface", "access", "parent"])) === requestedName) || null
     : null;
-  const row = requested || verified || rows.find((candidate) => candidate.running === true && candidate.disabled !== true) || null;
+  // A default WAN is a relationship claim, not a visual convenience. Without
+  // an explicit route match, only an explicitly selected object may be shown.
+  const row = requested || verified || null;
   if (!row) return null;
   const raw = row as Record<string, unknown>;
   const atomic = Boolean(row === verified && evidence.evidenceMode === "current" && evidence.traffic?.status === "ready");
@@ -108,6 +113,7 @@ function wanView(evidence: OverviewEvidenceModel, snapshot: OverviewRawSnapshot,
     name: valueOf(raw, ["name", "interface", "access", "parent"]) || "WAN",
     provider: valueOf(raw, ["provider", "isp", "carrier", "comment"]) || "运营商未记录",
     online: row.running === true && row.disabled !== true,
+    observed: row.disabled === true || typeof row.running === "boolean",
     disabled: row.disabled === true,
     verifiedDefault: Boolean(row === verified && active),
     duration: valueOf(raw, ["uptime", "onlineFor", "connectedFor", "duration"]) || "未记录",
@@ -126,16 +132,16 @@ function wanView(evidence: OverviewEvidenceModel, snapshot: OverviewRawSnapshot,
 
 function interfaceViews(snapshot: OverviewRawSnapshot): InterfaceView[] {
   const wan = uniqueWan(snapshot).map((row): InterfaceView => {
-    const raw = row as Record<string, unknown>; const online = row.running === true && row.disabled !== true;
+    const raw = row as Record<string, unknown>; const observed = row.disabled === true || typeof row.running === "boolean"; const online = row.running === true && row.disabled !== true;
     const down = rawRate(row.downRate); const up = rawRate(row.upRate);
     const latency = numberOf(raw, ["latency", "delay", "ping", "latencyMs"]); const loss = numberOf(raw, ["loss", "packetLoss", "lossPercent"]);
-    return { id: `wan:${valueOf(raw, ["name", "interface"])}`, name: valueOf(raw, ["name", "interface"]) || "WAN", role: valueOf(raw, ["provider", "isp", "carrier", "comment"]) || "WAN", status: online ? "在线" : row.disabled ? "未启用" : "离线", tone: online ? "ok" : row.disabled ? "muted" : "danger", rates: `${down.value} ${down.unit} / ${up.value} ${up.unit}`.trim(), quality: `延迟 ${latency === null ? "—" : `${latency} ms`}　丢包 ${loss === null ? "—" : `${loss}%`}` };
+    return { id: `wan:${valueOf(raw, ["name", "interface"])}`, name: valueOf(raw, ["name", "interface"]) || "WAN", role: valueOf(raw, ["provider", "isp", "carrier", "comment"]) || "WAN", status: online ? "在线" : row.disabled ? "未启用" : observed ? "离线" : "未核实", tone: online ? "ok" : row.disabled ? "muted" : observed ? "danger" : "warn", observed, rates: `${down.value} ${down.unit} / ${up.value} ${up.unit}`.trim(), quality: `延迟 ${latency === null ? "—" : `${latency} ms`}　丢包 ${loss === null ? "—" : `${loss}%`}` };
   });
   const names = new Set(wan.map((item) => normalized(item.name)));
   const interfaces = (snapshot.interfaces || []).filter((row) => !names.has(normalized(row.name || row.interface))).map((row: OverviewRawInterfaceRow): InterfaceView => {
-    const raw = row as Record<string, unknown>; const online = row.running === true && row.disabled !== true;
+    const raw = row as Record<string, unknown>; const observed = row.disabled === true || typeof row.running === "boolean"; const online = row.running === true && row.disabled !== true;
     const down = rawRate(row.rxRate ?? row.downRate); const up = rawRate(row.txRate ?? row.upRate);
-    return { id: `if:${valueOf(raw, ["name", "interface"])}`, name: valueOf(raw, ["name", "interface"]) || "接口", role: valueOf(raw, ["role", "type", "bridge", "parent"]) || "接口", status: online ? "在线" : row.disabled ? "未启用" : "离线", tone: online ? "ok" : row.disabled ? "muted" : "danger", rates: `${down.value} ${down.unit} / ${up.value} ${up.unit}`.trim(), quality: "延迟 —　丢包 —" };
+    return { id: `if:${valueOf(raw, ["name", "interface"])}`, name: valueOf(raw, ["name", "interface"]) || "接口", role: valueOf(raw, ["role", "type", "bridge", "parent"]) || "接口", status: online ? "在线" : row.disabled ? "未启用" : observed ? "离线" : "未核实", tone: online ? "ok" : row.disabled ? "muted" : observed ? "danger" : "warn", observed, rates: `${down.value} ${down.unit} / ${up.value} ${up.unit}`.trim(), quality: "延迟 —　丢包 —" };
   });
   return [...wan, ...interfaces].sort((a, b) => (a.tone === "danger" ? 0 : a.tone === "ok" ? 1 : 2) - (b.tone === "danger" ? 0 : b.tone === "ok" ? 1 : 2));
 }
@@ -168,19 +174,22 @@ function interfaceViewForObject(snapshot: OverviewRawSnapshot, objectId: string)
   return interfaceViews(snapshot).find((candidate) => normalized(candidate.name) === normalized(name)) || null;
 }
 
-function sceneFor(evidence: OverviewEvidenceModel, state: OverviewDerivedState, interfaces: InterfaceView[]): Scene {
+function sceneFor(evidence: OverviewEvidenceModel, state: OverviewDerivedState, interfaces: InterfaceView[], routeLinked: boolean): Scene {
   if (evidence.evidenceMode === "unavailable" || state.scenario === "no-snapshot") return "unavailable";
   if (state.scenario === "collection-down" || evidence.risk === "collection") return "collection";
   if (state.scenario === "all-offline") return "outage";
   if (evidence.risk === "resource" || state.scenario === "resource-full") return "resource";
   if (evidence.risk === "interfaces" || state.scenario === "interfaces-down" || (state.scenario === "fleet" && interfaces.some((item) => item.tone === "danger"))) return "interfaces";
-  if (!evidence.routeEvidence.activePath) return "route";
+  if (!evidence.routeEvidence.activePath || !routeLinked) return "route";
   return "normal";
 }
 
 export function buildMobileReferenceModel(evidence: OverviewEvidenceModel, snapshot: OverviewRawSnapshot, state: OverviewDerivedState) {
   const interfaces = interfaceViews(snapshot);
-  const scene = sceneFor(evidence, state, interfaces);
+  const rows = uniqueWan(snapshot);
+  const active = evidence.evidenceMode === "current" ? evidence.routeEvidence.activePath : null;
+  const routeLinked = Boolean(active && rows.some((row) => routeMatches(row, active.gateway)));
+  const scene = sceneFor(evidence, state, interfaces, routeLinked);
   const wan = wanView(evidence, snapshot);
   const traffic = scene === "normal" && wan?.verifiedDefault && evidence.evidenceMode === "current" && evidence.traffic?.status === "ready" ? evidence.traffic : null;
   return { scene, wan, interfaces, traffic };
@@ -207,6 +216,10 @@ function timestampLabel(evidence: OverviewEvidenceModel): string {
   return mobileEvidenceTimestampLabel(evidence.evidenceAt);
 }
 
+function evidenceBoundaryLabel(evidence: OverviewEvidenceModel): string {
+  return evidence.evidenceMode === "current" ? "当前" : evidence.evidenceMode === "historical" ? "历史，不代表当前" : "当前不可核实";
+}
+
 function Header({ title, alert, refreshing, onRefresh, onMore }: { title: string; alert?: boolean; refreshing: boolean; onRefresh?: () => Promise<void>; onMore: () => void }) {
   return <header className="ref-topbar"><div className="ref-topbar__title">{alert ? <AlertOctagon className="ref-topbar__alert" aria-hidden="true" /> : null}<h1 data-panel-route-title tabIndex={-1}>{title}</h1></div><div className="ref-topbar__actions"><button type="button" aria-label={refreshing ? "正在刷新当前数据" : "刷新当前数据"} aria-busy={refreshing} disabled={!onRefresh || refreshing} onClick={onRefresh}><RefreshCw className={refreshing ? "ref-spin" : undefined} size={19} aria-hidden="true" /></button><button type="button" aria-label="打开更多工具" onClick={onMore}><Ellipsis size={20} aria-hidden="true" /></button></div></header>;
 }
@@ -218,12 +231,15 @@ function Status({ title, note, meta, tone }: { title: string; note: string; meta
 function TrafficChart({ traffic, detail = false }: { traffic: OverviewTrafficInstrument; detail?: boolean }) {
   const points = traffic.points.length > 1 ? traffic.points : [];
   if (!points.length) return null;
-  const width = 310, height = detail ? 142 : 112, left = 24, right = 4, top = 10, bottom = 18;
+  const width = 310, height = detail ? 142 : 112, left = 34, right = 4, top = 10, bottom = 18;
+  const unitScale: Record<OverviewTrafficInstrument["unit"], number> = { bps: 1, Kbps: 1_000, Mbps: 1_000_000, Gbps: 1_000_000_000 };
+  const scale = unitScale[traffic.unit];
   const max = Math.max(1, ...points.flatMap((point) => [point.down, point.up]));
+  const displayScale = (value: number) => value / scale;
   const pathFor = (key: "down" | "up") => points.map((point, index) => `${index ? "L" : "M"}${left + index * ((width - left - right) / Math.max(1, points.length - 1))} ${top + (1 - point[key] / max) * (height - top - bottom)}`).join(" ");
   const time = (value: number) => new Date(value).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
   const middle = points[Math.floor((points.length - 1) / 2)];
-  return <figure className={`ref-chart ${detail ? "is-detail" : ""}`} aria-label={traffic.accessibleSummary}><div className="ref-chart__unit">{traffic.unit}</div><svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" role="img"><title>{traffic.accessibleSummary}</title><desc>{traffic.windowLabel}，{traffic.sampleCount} 个采样点；蓝线表示下载，绿线表示上传。</desc><g className="ref-chart__grid"><line x1={left} y1={top} x2={width - right} y2={top} /><line x1={left} y1={(height - bottom + top) / 2} x2={width - right} y2={(height - bottom + top) / 2} /><line x1={left} y1={height - bottom} x2={width - right} y2={height - bottom} /></g><path className="ref-chart__down" d={pathFor("down")} /><path className="ref-chart__up" d={pathFor("up")} /></svg><div className="ref-chart__scale"><span>{Math.round(max / (traffic.unit === "Mbps" ? 1_000_000 : traffic.unit === "Kbps" ? 1_000 : 1))}</span><span>{Math.round(max / 2 / (traffic.unit === "Mbps" ? 1_000_000 : traffic.unit === "Kbps" ? 1_000 : 1))}</span><span>0</span></div><div className="ref-chart__footer"><span>{time(points[0].timestamp)}</span><span>{time(middle.timestamp)}</span><span>{time(points[points.length - 1].timestamp)}</span></div><div className="ref-chart__meta"><span><i className="down" />下载　<i className="up" />上传</span><span>{traffic.windowLabel} · {traffic.sampleCount} 个采样点</span></div></figure>;
+  return <figure className={`ref-chart ${detail ? "is-detail" : ""}`} aria-label={traffic.accessibleSummary}><div className="ref-chart__unit">{traffic.unit}</div><svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" role="img"><title>{traffic.accessibleSummary}</title><desc>{traffic.windowLabel}，{traffic.sampleCount} 个采样点；蓝线表示下载，绿线表示上传。</desc><g className="ref-chart__grid"><line x1={left} y1={top} x2={width - right} y2={top} /><line x1={left} y1={(height - bottom + top) / 2} x2={width - right} y2={(height - bottom + top) / 2} /><line x1={left} y1={height - bottom} x2={width - right} y2={height - bottom} /></g><path className="ref-chart__down" d={pathFor("down")} /><path className="ref-chart__up" d={pathFor("up")} /></svg><div className="ref-chart__scale"><span>{displayScale(max).toFixed(displayScale(max) >= 10 ? 0 : 1)}</span><span>{displayScale(max / 2).toFixed(displayScale(max) >= 10 ? 0 : 1)}</span><span>0</span></div><div className="ref-chart__footer"><span>{time(points[0].timestamp)}</span><span>{time(middle.timestamp)}</span><span>{time(points[points.length - 1].timestamp)}</span></div><div className="ref-chart__meta"><span><i className="down" />下载　<i className="up" />上传</span><span>{traffic.windowLabel} · {traffic.sampleCount} 个采样点</span></div></figure>;
 }
 
 function Rate({ label, value, direction }: { label: string; value: MetricText; direction: "down" | "up" }) {
@@ -231,8 +247,8 @@ function Rate({ label, value, direction }: { label: string; value: MetricText; d
 }
 
 function WanCard({ wan, traffic, onOpen, detail = false }: { wan: WanView; traffic: OverviewTrafficInstrument | null; onOpen?: () => void; detail?: boolean }) {
-  const tone: Tone = wan.online ? "ok" : wan.disabled ? "muted" : "danger";
-  return <section className="ref-card ref-wan"><header><div><h2>{wan.name}</h2><span>{wan.provider}<i className="ref-dot" data-tone={tone} /></span></div><strong data-tone={tone}>{wan.online ? "在线" : wan.disabled ? "未启用" : "离线"}　{wan.duration}</strong></header><div className="ref-rate-grid"><Rate label="下载" value={wan.down} direction="down" /><Rate label="上传" value={wan.up} direction="up" /></div><div className="ref-quality"><span>延迟　<b>{wan.latency}</b></span><span>丢包率　<b>{wan.loss}</b></span></div>{traffic ? <TrafficChart traffic={traffic} detail={detail} /> : <p className="ref-unavailable">当前没有可核实的完整速率样本</p>}{onOpen ? <button className="ref-card-link" type="button" onClick={onOpen}>查看 WAN 详情<ChevronRight size={15} aria-hidden="true" /></button> : null}</section>;
+  const tone: Tone = wan.online ? "ok" : wan.disabled ? "muted" : wan.observed ? "danger" : "warn";
+  return <section className="ref-card ref-wan"><header><div><h2>{wan.name}</h2><span>{wan.provider}<i className="ref-dot" data-tone={tone} /></span></div><strong data-tone={tone}>{wan.online ? "在线" : wan.disabled ? "未启用" : wan.observed ? "离线" : "未核实"}　{wan.duration}</strong></header><div className="ref-rate-grid"><Rate label="下载" value={wan.down} direction="down" /><Rate label="上传" value={wan.up} direction="up" /></div><div className="ref-quality"><span>延迟　<b>{wan.latency}</b></span><span>丢包率　<b>{wan.loss}</b></span></div>{traffic ? <TrafficChart traffic={traffic} detail={detail} /> : <p className="ref-unavailable">当前没有可核实的完整速率样本</p>}{onOpen ? <button className="ref-card-link" type="button" onClick={onOpen}>查看 WAN 详情<ChevronRight size={15} aria-hidden="true" /></button> : null}</section>;
 }
 
 function Facts({ title, rows }: { title: string; rows: Array<[string, string, Tone?]> }) {
@@ -307,7 +323,7 @@ function operationalReasonLabel(value: string): string {
 
 function ExceptionEvidence({ scene, evidence, snapshot, state, interfaces, onNavigate, refreshing, onRefresh, onShowConnection }: { scene: Scene; evidence: OverviewEvidenceModel; snapshot: OverviewRawSnapshot; state: OverviewDerivedState; interfaces: InterfaceView[]; onNavigate: PanelNavigate; refreshing: boolean; onRefresh?: () => Promise<void>; onShowConnection?: () => void }) {
   if (scene === "outage") {
-    const affected = interfaces.filter((item) => item.tone !== "ok");
+    const affected = interfaces.filter((item) => item.id.startsWith("wan:") && item.tone !== "ok");
     return <><div className="ref-outage-primary"><Facts title="影响范围" rows={[["WAN 线路", `${state.facts.wan.online} / ${state.facts.wan.total} 在线`, state.facts.wan.online > 0 ? "warn" : "danger"], ["其他接口未运行", `${state.facts.interfaces.down} 项`, state.facts.interfaces.down > 0 ? "danger" : "muted"], ["下一步核查", "打开网络查看路由与接口", "warn"]]} /><TabletTaskBoard evidence={evidence} snapshot={snapshot} state={state} onNavigate={onNavigate} /></div>{affected.length ? <InterfaceList title="受影响 WAN 线路" ratePrefix="最后观测 " rows={affected} onOpen={(id) => onNavigate("interfaces", { objectId: id, returnRoute: "overview", evidenceAt: evidence.evidenceAt })} onViewAll={() => onNavigate("interfaces")} /> : null}</>;
   }
   if (scene === "collection") {
@@ -353,15 +369,18 @@ function Home({ evidence, snapshot, state, onNavigate, onRefresh, onShowConnecti
   const { scene, wan, interfaces, traffic } = buildMobileReferenceModel(evidence, snapshot, state);
   const alert = scene !== "normal";
   const title = scene === "resource" ? "资源告警" : scene === "interfaces" ? "接口告警" : scene === "collection" ? "采集告警" : scene === "outage" ? "网络告警" : scene === "unavailable" ? "快照不可用" : scene === "route" ? "路由待确认" : evidence.device;
-  const status = scene === "normal" ? [wan?.verifiedDefault ? "网络正常" : "默认路由待确认", wan?.verifiedDefault ? "所有系统运行正常" : "未核实活动路由与 WAN 的对应关系", timestampLabel(evidence), wan?.verifiedDefault ? "ok" : "warn"] as const : scene === "resource" ? ["设备资源紧张", "当前样本超过配置阈值", `${evidence.resource?.sampleCount ?? 0} 个样本`, "danger"] as const : scene === "interfaces" ? [interfaces.find((item) => item.tone === "danger")?.name || "接口链路异常", "已影响默认路由或网络对象", `${interfaces.filter((item) => item.tone === "danger").length} 项`, "danger"] as const : scene === "collection" ? ["当前采集不完整", "REST 与 SSH 证据需分别核对", "需确认", "warn"] as const : scene === "outage" ? ["外网出口未确认", "当前没有在线 WAN 证据", "离线", "danger"] as const : scene === "unavailable" ? ["当前快照不可用", "业务数字已撤回，不使用历史值代替", "不可判", "warn"] as const : ["默认路由待确认", "未取得明确活动路径与 WAN 关系", "待确认", "warn"] as const;
- return <main className="ref-mobile" data-mobile-reference-home data-mobile-reference-scene={scene} data-evidence-mode={evidence.evidenceMode}><Header title={title} alert={alert} refreshing={refreshing} onRefresh={onRefresh ? refreshAction : undefined} onMore={() => onNavigate("more")} /><div className="ref-scroll" data-origin-space-scroll="mobile-reference:overview:home"><div className={`ref-content ref-scene-${scene} ${scene === "normal" ? "ref-home-content" : ""}`}><Status title={status[0]} note={status[1]} meta={status[2]} tone={status[3]} />{scene === "normal" && wan ? <><WanCard wan={wan} traffic={traffic} onOpen={() => onNavigate("lineStatus", { objectId: wan.id, returnRoute: "overview", evidenceAt: evidence.evidenceAt })} /><div className="ref-home-side"><div className="ref-pair"><Facts title="路由与链路" rows={[["默认路由", wan.verifiedDefault ? wan.name : "待确认", wan.verifiedDefault ? "ok" : "warn"], ["备用链路", `${Math.max(0, uniqueWan(snapshot).length - 1)} 条`], ["策略路由", `${Math.max(0, (snapshot.routes?.defaultRoutes || []).length - 1)} 条`]]} /><Facts title="数据采集" rows={[["来源", evidence.evidenceLabel], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"], ["采集通道", state.facts.collection.rest.status === "current" && state.facts.collection.ssh.status === "current" ? "REST + SSH" : "需核对", state.facts.collection.rest.status === "current" && state.facts.collection.ssh.status === "current" ? "ok" : "warn"]]} /></div>{evidence.secondaryDecisions.length ? <Facts title="当前状态" rows={evidence.secondaryDecisions.slice(0, 2).map((item) => [item.object, item.state, item.tone === "danger" ? "danger" : "muted"] as [string, string, Tone])} /> : null}</div></> : null}{scene === "resource" ? <><ResourceList metrics={evidence.resource?.metrics || []} snapshot={snapshot} onOpen={(id) => onNavigate("trafficLoad", { objectId: id, returnRoute: "overview", evidenceAt: evidence.evidenceAt })} /><Facts title="受影响对象" rows={resourceImpactRows(evidence)} /></> : null}{scene === "interfaces" ? <InterfaceList title="接口状态" rows={interfaces} onOpen={(id) => onNavigate("interfaces", { objectId: id, returnRoute: "overview", evidenceAt: evidence.evidenceAt })} onViewAll={() => onNavigate("interfaces")} /> : null}{scene !== "normal" ? <><ExceptionEvidence scene={scene} evidence={evidence} snapshot={snapshot} state={state} interfaces={interfaces} onNavigate={onNavigate} refreshing={refreshing} onRefresh={onRefresh ? refreshAction : undefined} onShowConnection={onShowConnection} /><Facts title="证据与来源" rows={[["数据来源", evidence.evidenceLabel], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"], ["证据模式", evidence.evidenceMode === "current" ? "当前" : evidence.evidenceMode === "historical" ? "历史" : "不可用", evidence.evidenceMode === "current" ? "ok" : "warn"]]} /></> : null}{scene !== "outage" ? <TabletTaskBoard evidence={evidence} snapshot={snapshot} state={state} onNavigate={onNavigate} /> : null}</div></div></main>;
+  const firstInterfaceRisk = interfaces.find((item) => item.tone === "danger");
+  const hasDefaultRouteDependency = evidence.routeEvidence.interfaceDependencies.length > 0;
+  const interfaceStatusNote = hasDefaultRouteDependency ? "明确依赖默认路由，优先核查" : "接口未运行；当前证据不足以判断默认路由或业务影响";
+  const status = scene === "normal" ? [wan?.verifiedDefault ? "网络正常" : "默认路由待确认", wan?.verifiedDefault ? "所有系统运行正常" : "未核实活动路由与 WAN 的对应关系", timestampLabel(evidence), wan?.verifiedDefault ? "ok" : "warn"] as const : scene === "resource" ? ["设备资源紧张", "当前样本超过配置阈值", `${evidence.resource?.sampleCount ?? 0} 个样本`, "danger"] as const : scene === "interfaces" ? [firstInterfaceRisk?.name || "接口状态待核实", interfaceStatusNote, `${interfaces.filter((item) => item.tone === "danger").length} 项`, "danger"] as const : scene === "collection" ? ["当前采集不完整", "REST 与 SSH 证据需分别核对", "需确认", "warn"] as const : scene === "outage" ? ["外网出口未确认", "当前没有在线 WAN 证据", "离线", "danger"] as const : scene === "unavailable" ? ["当前快照不可用", "业务数字已撤回，不使用历史值代替", "不可判", "warn"] as const : ["默认路由待确认", "未取得明确活动路径与 WAN 关系", "待确认", "warn"] as const;
+ return <main className="ref-mobile" data-mobile-reference-home data-mobile-reference-scene={scene} data-evidence-mode={evidence.evidenceMode}><Header title={title} alert={alert} refreshing={refreshing} onRefresh={onRefresh ? refreshAction : undefined} onMore={() => onNavigate("more")} /><div className="ref-scroll" data-origin-space-scroll="mobile-reference:overview:home"><div className={`ref-content ref-scene-${scene} ${scene === "normal" ? "ref-home-content" : ""}`}><Status title={status[0]} note={status[1]} meta={status[2]} tone={status[3]} />{scene === "normal" && wan ? <><WanCard wan={wan} traffic={traffic} onOpen={() => onNavigate("lineStatus", { objectId: wan.id, returnRoute: "overview", evidenceAt: evidence.evidenceAt })} /><div className="ref-home-side"><div className="ref-pair"><Facts title="路由与链路" rows={[["默认路由", wan.verifiedDefault ? wan.name : "待确认", wan.verifiedDefault ? "ok" : "warn"], ["备用链路", `${Math.max(0, uniqueWan(snapshot).length - 1)} 条`], ["策略路由", `${Math.max(0, (snapshot.routes?.defaultRoutes || []).length - 1)} 条`]]} /><Facts title="数据采集" rows={[["来源", evidence.evidenceLabel], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"], ["采集通道", state.facts.collection.rest.status === "current" && state.facts.collection.ssh.status === "current" ? "REST + SSH" : "需核对", state.facts.collection.rest.status === "current" && state.facts.collection.ssh.status === "current" ? "ok" : "warn"]]} /></div>{evidence.secondaryDecisions.length ? <Facts title="当前状态" rows={evidence.secondaryDecisions.slice(0, 2).map((item) => [item.object, item.state, item.tone === "danger" ? "danger" : "muted"] as [string, string, Tone])} /> : null}</div></> : null}{scene === "resource" ? <><ResourceList metrics={evidence.resource?.metrics || []} snapshot={snapshot} onOpen={(id) => onNavigate("trafficLoad", { objectId: id, returnRoute: "overview", evidenceAt: evidence.evidenceAt })} /><Facts title="受影响对象" rows={resourceImpactRows(evidence)} /></> : null}{scene === "interfaces" ? <InterfaceList title="接口状态" rows={interfaces} onOpen={(id) => onNavigate("interfaces", { objectId: id, returnRoute: "overview", evidenceAt: evidence.evidenceAt })} onViewAll={() => onNavigate("interfaces")} /> : null}{scene !== "normal" ? <><ExceptionEvidence scene={scene} evidence={evidence} snapshot={snapshot} state={state} interfaces={interfaces} onNavigate={onNavigate} refreshing={refreshing} onRefresh={onRefresh ? refreshAction : undefined} onShowConnection={onShowConnection} /><Facts title="证据与来源" rows={[["数据来源", evidence.evidenceLabel], ["证据边界", evidenceBoundaryLabel(evidence), evidence.evidenceMode === "current" ? "ok" : "warn"], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"]]} /></> : null}{scene !== "outage" ? <TabletTaskBoard evidence={evidence} snapshot={snapshot} state={state} onNavigate={onNavigate} /> : null}</div></div></main>;
 }
 
 function WanDetail({ evidence, snapshot, state, onNavigate, navigationContext }: MobileReferenceProps) {
   const wan = wanView(evidence, snapshot, navigationContext?.objectId); const traffic = wan?.verifiedDefault && evidence.evidenceMode === "current" && evidence.traffic?.status === "ready" ? evidence.traffic : null;
   const backRoute = navigationContext?.returnRoute || "overview";
   const title = wan ? (wan.provider === "运营商未记录" ? wan.name : `${wan.name} ${wan.provider}`) : "WAN 详情";
-  return <main className="ref-mobile" data-mobile-reference-wan-detail><header className="ref-detailbar"><button type="button" onClick={() => onNavigate(backRoute, { objectId: null, replace: true })}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{title}</h1><button type="button" aria-label="打开更多工具" onClick={() => onNavigate("more")}><Ellipsis size={20} aria-hidden="true" /></button></header><div className="ref-scroll" data-origin-space-scroll="mobile-reference:lineStatus:detail"><div className="ref-content">{wan ? <WanCard wan={wan} traffic={traffic} detail /> : <Status title="WAN 数据不可用" note="当前快照没有可核实的出口对象" meta="不可判" tone="warn" />}<Facts title="线路配置" rows={wan ? [["IPv4 地址", wan.address], ["子网掩码", wan.netmask], ["默认出口", wan.gateway], ["默认路由", wan.verifiedDefault ? "是" : "未核实", wan.verifiedDefault ? "ok" : "warn"], ["运营商", wan.provider], ["MTU", wan.mtu]] : [["配置", "未记录"]]} /><Facts title="证据与来源" rows={[["数据来源", evidence.evidenceLabel], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"], ["证据模式", evidence.evidenceMode === "current" ? "当前" : evidence.evidenceMode === "historical" ? "历史" : "不可用"]]} /><button className="ref-operation" type="button" onClick={() => onNavigate("more")}><Ellipsis size={17} aria-hidden="true" />操作</button></div></div></main>;
+  return <main className="ref-mobile" data-mobile-reference-wan-detail><header className="ref-detailbar"><button type="button" onClick={() => onNavigate(backRoute, { objectId: null, replace: true })}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{title}</h1><button type="button" aria-label="打开更多工具" onClick={() => onNavigate("more")}><Ellipsis size={20} aria-hidden="true" /></button></header><div className="ref-scroll" data-origin-space-scroll="mobile-reference:lineStatus:detail"><div className="ref-content">{wan ? <WanCard wan={wan} traffic={traffic} detail /> : <Status title="WAN 数据不可用" note="当前快照没有可核实的出口对象" meta="不可判" tone="warn" />}<Facts title="线路配置" rows={wan ? [["IPv4 地址", wan.address], ["子网掩码", wan.netmask], ["默认出口", wan.gateway], ["默认路由", wan.verifiedDefault ? "是" : "未核实", wan.verifiedDefault ? "ok" : "warn"], ["运营商", wan.provider], ["MTU", wan.mtu]] : [["配置", "未记录"]]} /><Facts title="证据与来源" rows={[["数据来源", evidence.evidenceLabel], ["证据边界", evidenceBoundaryLabel(evidence), evidence.evidenceMode === "current" ? "ok" : "warn"], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"]]} /><button className="ref-operation" type="button" onClick={() => onNavigate("more")}><Ellipsis size={17} aria-hidden="true" />操作</button></div></div></main>;
 }
 
 function NetworkDirectory({ evidence, snapshot, state, onNavigate }: MobileReferenceProps) {
@@ -391,17 +410,17 @@ function InterfaceDetail({ evidence, snapshot, state, onNavigate, navigationCont
   const addresses = typed?.addresses.join("、") || valueOf(raw, ["ipv4Address", "address", "ip"]) || "未记录";
   const latency = numberOf(raw, ["latency", "delay", "ping", "latencyMs"]);
   const loss = typed?.lossRate ?? numberOf(raw, ["loss", "packetLoss", "lossPercent"]);
-  return <main className="ref-mobile ref-workspace" data-mobile-reference-workspace="interfaces" data-mobile-reference-object-detail={view.id} data-mobile-reference-interface-detail={view.id}><header className="ref-listbar"><button type="button" onClick={() => onNavigate(backRoute, { objectId: null, replace: true })}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{view.name}</h1><span /></header><div className="ref-scroll" data-origin-space-scroll="mobile-reference:interfaces:detail"><div className="ref-content"><Status title={view.status} note={view.role} meta={online ? "可核实" : view.status} tone={view.tone} /><Facts title="接口证据" rows={[["运行状态", view.status, online ? "ok" : view.tone === "danger" ? "danger" : "muted"], ["默认路由关系", routeRelated ? "已关联" : "未核实", routeRelated ? "ok" : "warn"], ["地址", addresses], ["下载", rateValue(typed?.rxRate ?? numberOf(raw, ["rxRate", "downRate"])), "muted"], ["上传", rateValue(typed?.txRate ?? numberOf(raw, ["txRate", "upRate"])), "muted"], ["延迟", latency === null ? "—" : `${latency} ms`], ["丢包", loss === null ? "—" : `${loss}%`], ["运行说明", reason]]} /><Facts title="证据来源" rows={[["数据来源", evidence.evidenceLabel], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"], ["采集通道", state.facts.collection.rest.status === "current" && state.facts.collection.ssh.status === "current" ? "REST + SSH" : "需核对"]]} /></div></div></main>;
+  return <main className="ref-mobile ref-workspace" data-mobile-reference-workspace="interfaces" data-mobile-reference-object-detail={view.id} data-mobile-reference-interface-detail={view.id}><header className="ref-listbar"><button type="button" onClick={() => onNavigate(backRoute, { objectId: null, replace: true })}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{view.name}</h1><span /></header><div className="ref-scroll" data-origin-space-scroll="mobile-reference:interfaces:detail"><div className="ref-content"><Status title={view.status} note={view.role} meta={online ? "可核实" : view.status} tone={view.tone} /><Facts title="接口证据" rows={[["运行状态", view.status, online ? "ok" : view.tone === "danger" ? "danger" : "muted"], ["默认路由关系", routeRelated ? "已关联" : "未核实", routeRelated ? "ok" : "warn"], ["地址", addresses], ["下载", rateValue(typed?.rxRate ?? numberOf(raw, ["rxRate", "downRate"])), "muted"], ["上传", rateValue(typed?.txRate ?? numberOf(raw, ["txRate", "upRate"])), "muted"], ["延迟", latency === null ? "—" : `${latency} ms`], ["丢包", loss === null ? "—" : `${loss}%`], ["运行说明", reason]]} /><Facts title="证据来源" rows={[["数据来源", evidence.evidenceLabel], ["证据边界", evidenceBoundaryLabel(evidence), evidence.evidenceMode === "current" ? "ok" : "warn"], ["最后上报", formatRfc3339LocalTime(evidence.evidenceAt) || "未记录"], ["采集通道", state.facts.collection.rest.status === "current" && state.facts.collection.ssh.status === "current" ? "REST + SSH" : "需核对"]]} /></div></div></main>;
 }
 
-function WorkspaceDetail({ route, row, onNavigate }: { route: Exclude<PanelRouteId, "overview" | "lineStatus" | "more">; row: ReturnType<typeof rowsFromModel>[number]; onNavigate: PanelNavigate }) {
+function WorkspaceDetail({ route, row, evidence, onNavigate }: { route: Exclude<PanelRouteId, "overview" | "lineStatus" | "more">; row: ReturnType<typeof rowsFromModel>[number]; evidence: OverviewEvidenceModel; onNavigate: PanelNavigate }) {
   const facts = domainEvidenceFacts(row).length ? domainEvidenceFacts(row) : row.columns
     .map((column) => [column.label, row.values[column.key] || "—"] as [string, string])
     .filter(([, value]) => value.trim() && value !== "—")
     .slice(0, 8)
     .map(([label, value]) => [label, value, "muted"] as [string, string, Tone]);
   const evidenceType = row.evidence.kind === "interface" ? "接口" : row.evidence.kind === "route" ? "路由" : row.evidence.kind === "terminal" ? "终端" : row.evidence.kind === "resource" ? "资源" : "通用";
-  return <main className="ref-mobile ref-workspace" data-mobile-reference-workspace={route} data-mobile-reference-object-detail={row.id}><header className="ref-listbar"><button type="button" onClick={() => onNavigate(route, { objectId: null, replace: true })}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{row.primary}</h1><span>{row.trailing}</span></header><div className="ref-scroll" data-origin-space-scroll={`mobile-reference:${route}:detail`}><div className="ref-content">{row.evidence.kind === "route" || row.evidence.kind === "terminal" ? null : <section className="ref-card ref-detail-summary"><h2>{row.primary}</h2><p>{row.secondary}</p></section>}{row.evidence.kind === "resource" ? <ResourceEvidenceChart evidence={row.evidence} /> : null}{facts.length ? <Facts title="对象证据" rows={facts} /> : <p className="ref-unavailable">当前对象没有可核实的字段证据</p>}<Facts title="证据来源" rows={[["模块", PANEL_ROUTES[route].title], ["数据表", row.table], ["证据类型", evidenceType], ["重复记录", row.duplicateCount > 1 ? `${row.duplicateCount} 条` : "未发现重复"]]} /></div></div></main>;
+  return <main className="ref-mobile ref-workspace" data-mobile-reference-workspace={route} data-mobile-reference-object-detail={row.id}><header className="ref-listbar"><button type="button" onClick={() => onNavigate(route, { objectId: null, replace: true })}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{row.primary}</h1><span>{row.trailing}</span></header><div className="ref-scroll" data-origin-space-scroll={`mobile-reference:${route}:detail`}><div className="ref-content">{row.evidence.kind === "route" || row.evidence.kind === "terminal" ? null : <section className="ref-card ref-detail-summary"><h2>{row.primary}</h2><p>{row.secondary}</p></section>}{row.evidence.kind === "resource" ? <ResourceEvidenceChart evidence={row.evidence} /> : null}{facts.length ? <Facts title="对象证据" rows={facts} /> : <p className="ref-unavailable">当前对象没有可核实的字段证据</p>}<Facts title="证据来源" rows={[["模块", PANEL_ROUTES[route].title], ["证据边界", evidenceBoundaryLabel(evidence), evidence.evidenceMode === "current" ? "ok" : "warn"], ["数据表", row.table], ["证据类型", evidenceType], ["重复记录", row.duplicateCount > 1 ? `${row.duplicateCount} 条` : "未发现重复"]]} /></div></div></main>;
 }
 
 function ResourceEvidenceChart({ evidence }: { evidence: Extract<ReturnType<typeof rowsFromModel>[number]["evidence"], { kind: "resource" }> }) {
@@ -485,7 +504,7 @@ function WorkspacePager({ page, pageCount, onPage }: { page: number; pageCount: 
   return <nav className="ref-pagination" aria-label="对象分页"><button type="button" aria-label="上一页" disabled={page <= 1} onClick={() => onPage(page - 1)}><ChevronLeft size={17} aria-hidden="true" /></button><span>第 {page} / {pageCount} 页</span><button type="button" aria-label="下一页" disabled={page >= pageCount} onClick={() => onPage(page + 1)}><ChevronRight size={17} aria-hidden="true" /></button></nav>;
 }
 
-function Workspace({ route, snapshot, onNavigate, navigationContext }: { route: WorkspaceRoute; snapshot: OverviewRawSnapshot; onNavigate: PanelNavigate; navigationContext?: PanelNavigationContext }) {
+function Workspace({ route, evidence, snapshot, onNavigate, navigationContext }: { route: WorkspaceRoute; evidence: OverviewEvidenceModel; snapshot: OverviewRawSnapshot; onNavigate: PanelNavigate; navigationContext?: PanelNavigationContext }) {
   const model = useMemo(() => buildSectionModel(route, snapshot), [route, snapshot]); const definition = useMemo(() => domainDefinitionFor(route), [route]); const rows = useMemo(() => rowsFromModel(route, model), [model, route]);
   const requestedObject = navigationContext?.objectId || null;
   const initialHistory = useRef<PanelWorkspaceHistoryState | null>(null);
@@ -533,7 +552,7 @@ function Workspace({ route, snapshot, onNavigate, navigationContext }: { route: 
     ? rows.find((row) => row.id === requestedObject) || rows.find((row) => row.primary === requestedObject.replace(/^(?:wan|if):/, "")) || null
     : null;
   if (requestedObject) {
-    if (selectedRow) return <WorkspaceDetail route={route} row={selectedRow} onNavigate={onNavigate} />;
+    if (selectedRow) return <WorkspaceDetail route={route} row={selectedRow} evidence={evidence} onNavigate={onNavigate} />;
     return <main className="ref-mobile ref-workspace" data-mobile-reference-workspace={route} data-mobile-reference-object-detail="unavailable"><header className="ref-listbar"><button type="button" onClick={() => onNavigate(route, { objectId: null, replace: true })}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{PANEL_ROUTES[route].title}</h1><span /></header><div className="ref-scroll" data-origin-space-scroll={`mobile-reference:${route}:detail`}><div className="ref-content"><Status title="对象证据不可用" note="当前快照没有与该对象标识匹配的记录" meta="不可判" tone="warn" /><button className="ref-operation" type="button" onClick={() => onNavigate(route, { objectId: null, replace: true })}>返回列表</button></div></div></main>;
   }
   return <main className="ref-mobile ref-workspace" data-mobile-reference-workspace={route}><header className="ref-listbar"><button type="button" onClick={() => onNavigate(PANEL_ROUTES[route].primaryDestination)}><ArrowLeft size={19} aria-hidden="true" />返回</button><h1 data-panel-route-title tabIndex={-1}>{PANEL_ROUTES[route].title}</h1><span>{filteredRows.length} / {rows.length}</span></header><div ref={scrollRef} className="ref-scroll" data-origin-space-scroll={`mobile-reference:${route}:list`} data-panel-workspace-scroll={route}><div className="ref-content"><WorkspaceTools definition={definition} query={query} filterId={filterId} sortId={sortId} resultCount={filteredRows.length} totalCount={rows.length} onQuery={(value) => { setQuery(value); setPage(1); }} onFilter={(value) => { setFilterId(value); setPage(1); }} onSort={(value) => { setSortId(value); setPage(1); }} /><section className="ref-card ref-object-list"><h2>{definition.objectLabel}</h2>{visibleRows.length ? visibleRows.map((row) => <button key={row.id} id={objectRowFocusId(route, row.id)} type="button" data-panel-object-row={row.id} onClick={() => onNavigate(route, { objectId: row.id, focusId: objectRowFocusId(route, row.id) })}><span><b>{row.primary}</b><small>{row.secondary}</small></span><strong>{row.trailing}</strong><ChevronRight size={16} aria-hidden="true" /></button>) : <p className="ref-empty">当前筛选没有可核实的对象</p>}</section><WorkspacePager page={effectivePage} pageCount={pageCount} onPage={setPage} /></div></div></main>;
@@ -549,7 +568,7 @@ export function MobileReferenceSurface(props: MobileReferenceProps) {
   if (props.route === "lineStatus") return props.navigationContext?.objectId ? <WanDetail {...props} /> : <NetworkDirectory {...props} />;
   if (props.route === "more") return <Directory onNavigate={props.onNavigate} onShowConnection={props.onShowConnection} />;
   if (props.route === "interfaces" && props.navigationContext?.objectId) return <InterfaceDetail {...props} />;
-  return <Workspace key={`${props.route}:${props.navigationEntryKey ?? 0}:${props.navigationContext?.objectId ? "detail" : "list"}`} route={props.route} snapshot={props.snapshot} onNavigate={props.onNavigate} navigationContext={props.navigationContext} />;
+  return <Workspace key={`${props.route}:${props.navigationEntryKey ?? 0}:${props.navigationContext?.objectId ? "detail" : "list"}`} route={props.route} evidence={props.evidence} snapshot={props.snapshot} onNavigate={props.onNavigate} navigationContext={props.navigationContext} />;
 }
 
 const NAV = [
