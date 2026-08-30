@@ -30415,7 +30415,9 @@ Edge 的 Settings and more 菜单是瞬时 popup，在不同版本中不一定�
 
 - 读取了当前分支、远端 refs、HEAD 提交元数据、PR #1 状态、项目发布脚本和当前决策状态。
 - 确认本地 dbd4a90 已包含 Step1186 的 Edge popup UIA owner 修复和 Step1187 的决策镜像语义修复；尚未有该 SHA 的 GitHub CI 结果。
-- 当前进程环境未暴露 GITHUB_TOKEN；后续优先使用已登录 GitHub CLI 的受保护分支更新路径，不在日志或输出中显示任何凭据。\n- 纠正：机器门禁中的 ci-windows 仅表示新 SHA 是否已有结果；旧 Run 的 Windows failure 保留在历史说明中，当前新 SHA 状态必须保持 pending，避免历史失败被误当成当前候选结果。
+- 后续受管决策文档已提交到本地分支；未跟踪 .impeccable/ 与 work/ 仍未进入候选。
+- 当前进程环境未暴露 GITHUB_TOKEN；后续优先使用已登录 GitHub CLI 的受保护分支更新路径，不在日志或输出中显示任何凭据。
+- 纠正：机器门禁中的 ci-windows 仅表示新 SHA 是否已有结果；旧 Run 的 Windows failure 保留在历史说明中，当前新 SHA 状态必须保持 pending，避免历史失败被误当成当前候选结果。
 
 ### 心得
 

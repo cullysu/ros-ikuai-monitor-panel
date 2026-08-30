@@ -11,11 +11,12 @@
 
 ## Current handoff: Step 1188
 
-- Step1187 的决策镜像语义修复已进入本地提交 dbd4a90；本步确认同名 GitHub 分支仍为 7231e00，PR #1 的旧 Run 不能代表新 SHA。\n- 机器 ci-windows 状态已纠正为 pending；旧 Run 的 failure 仅保留为历史证据。
+- Step1187 的决策镜像语义修复已进入本地提交 dbd4a90；本步确认同名 GitHub 分支仍为 7231e00，PR #1 的旧 Run 不能代表新 SHA。
+- 机器 ci-windows 状态已纠正为 pending；旧 Run 的 failure 仅保留为历史证据。
 - 未跟踪 .impeccable/ 评审文件和 work/ 目录明确排除；手机四屏基线与 192.168.3.5 / iPad 桌面基线不变。
 - 当前发布仍 FAIL/CLOSED；必须先同步并验证 Step1188 镜像和源契约，再用 lease-protected 方式更新分支，随后读取新 SHA 的 Linux、Windows、CL/GHCR 真实结果。
 - outcome: 1188:remote-old-run-separated-and-protected-branch-publish-next
-- next action: 同步并验证 Step1188 镜像，执行最小源契约/发布边界检查，形成 clean candidate 后更新 GitHub 分支并读取新 SHA 结果。
+- next action: 复核当前候选 HEAD 与远端分支 lease，更新 GitHub 分支并读取新 SHA 的真实 Linux、Windows、CL/GHCR 结果。
 
 ## Gate boundary
 

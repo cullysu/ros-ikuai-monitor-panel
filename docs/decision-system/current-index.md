@@ -45,6 +45,6 @@
 - Step1182 raises only the bounded parent timeout for the physical Edge keyboard probe after a failed cell showed delayed input could queue and overshoot 200% to 250%; mobile and desktop product code remain unchanged, and all Edge cells must be regenerated under the new worktree identity.
 - Step1183 changes only the Edge verifier to stop when the real page reaches 200% within a maximum of five probes, accommodating Edge's variable built-in zoom ladder; the v9 contract requires exact target geometry and keeps release closed until the full current matrix is fresh.
 - Step1185 keeps the accepted mobile art unchanged and binds fresh Edge 22/22, overview 28/28, route 76/76, route-state 266/266, mobile 56/56 plus workflows 14/14 and accessibility 11/11 to one artifact. Four local isolated-role reviews pass; clean exact-SHA and remote CL remain open.
-- GitHub 同名分支尚未更新；发布仍 CLOSED，下一步是同步镜像、执行最小门禁并进行 lease-protected 分支更新。
+- GitHub 同名分支尚未更新；发布仍 CLOSED，下一步是复核候选身份并进行 lease-protected 分支更新。
 
 Full process: `docs/panel-redesign-decision-log.md`.
