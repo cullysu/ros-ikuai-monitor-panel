@@ -2,13 +2,15 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1185`
-- currentOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
-- currentBoundary: `1185`
-- latestRecordedStep: `1185`
-- latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+- currentStep: `1187`
+- currentOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- currentBoundary: `1187`
+- latestRecordedStep: `1187`
+- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
 
 ## Current pointer
+
+- Step1187 修复决策镜像语义指针与用户辅助文档误报；Step1186 Edge popup 修复仍待新 SHA 远端验证，发布继续关闭。
 
 - Sole mobile direction: the user-supplied four-screen iOS/iKuai reference image.
 - Sole mobile owner: `src/panel-framework/mobile-reference-ui/`.

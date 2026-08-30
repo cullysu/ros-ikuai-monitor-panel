@@ -49,6 +49,7 @@ CURRENT_SURFACE_MARKERS = {
     ),
 }
 HISTORICAL_GATE_NAMES = frozenset(("ci-linux", "ci-windows", "ci-container"))
+MIRROR_AUXILIARY_FILES = frozenset(("未完成工作与并行执行清单.md",))
 
 
 def sha256(path: Path) -> str:
@@ -345,7 +346,7 @@ def main() -> int:
         )
         actual_markdown = markdown_inventory(mirror)
 
-    unexpected_markdown = sorted(set(actual_markdown) - set(expected_markdown))
+    unexpected_markdown = sorted((set(actual_markdown) - set(expected_markdown)) - MIRROR_AUXILIARY_FILES)
     missing_markdown = sorted(set(expected_markdown) - set(actual_markdown))
     mirror_ok = (
         not rows

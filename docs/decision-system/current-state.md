@@ -1,10 +1,10 @@
 - validForCommit: false; current worktree is uncommitted and is not a release candidate
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1185`
-- currentConclusionForStep: `1185`
-- latestRecordedStep: `1185`
-- latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+- currentBoundaryForStep: `1187`
+- currentConclusionForStep: `1187`
+- latestRecordedStep: `1187`
+- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,17 +13,17 @@
 
 **FAIL overall for release / the user-supplied four-screen mobile reference remains the sole phone baseline / accepted phone art is unchanged / current-identity matrices and four-role local signoff are green / clean exact-SHA, GitHub upload and exact-SHA Linux/Windows/GHCR CL remain open / release CLOSED.**
 
-## Current decision record: Step 1185
+## Current decision record: Step 1186
 
-- 最终当前身份 `worktree-c35df77de8ac-9ef6adea85fa` 已完成真实 Edge toolbar 200% `22/22`、公众概览 `28/28`、route-responsive `76/76`、route-state `266/266`、mobile `56/56` 与 `14/14` 工作流。
-- 手机运行报告补齐 `generatedAt`，使四角色签收能够与同一运行工件逐字段绑定；该修复不改变任何手机视觉或产品行为。
-- 当前身份 accessibility `11/11` 通过，包含 200% 文本缩放、320px 几何、触控目标、导航安全区、Back/Forward、连接表单与偏好媒体分支。
-- Product、Visual、Accessibility、Engineering 四个隔离角色记录均为 `pass`、`P0=0`、`P1=0`，并绑定同一 artifact key、fingerprint、commit 与 generatedAt。
-- 手机仍只使用用户指定四屏基线；768 纵向形成侧栏工作区，667×375 与 844×390 横屏由浏览器/桌面 owner 承接。没有恢复任何被拒绝的手机 presentation。
-- dirty-worktree engineering readiness 通过，但工作树尚未形成 clean exact-SHA；GitHub 未上传，Linux/Windows/GHCR exact-SHA CL 尚未开始，发布保持 CLOSED。
-- outcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
-- next action: 同步并验证 D 盘决策镜像，然后整理准确提交范围并建立 clean exact-SHA 候选；不得包含无关 `.agents/skills/router-panel-product-loop/agents/openai.yaml`。
-
+- 远端 Run 33309694877 绑定提交 7231e00a2e6822632d847f43d54239d7f7a4194f；Windows packaging 在 Real Edge toolbar 200 percent matrix 失败，后续 Windows manifest/upload 失败均为前置失败级联，不能当作独立根因。
+- 根因判断：现有 Windows UIA 菜单查找只依赖 Desktop.windows(process=...)，无法稳定取得 Edge 瞬时 Settings popup 的顶层 HWND，因此 Zoom in 控件可能报告 found 0。
+- 本地修复：新增 owned_uia_windows()，只通过 Win32 EnumWindows 枚举当前 Edge 进程且处于原始 Edge HWND owner chain 内的顶层窗口，再把这些已绑定窗口交给 UIA；没有恢复桌面级 UIA 扫描，也没有使用全局键盘或物理鼠标输入。
+- 同步修正 Windows toolbar 离线契约测试：实际 UIA 调用是 pywinauto control.click()，捕获函数提取正则同时接受 CRLF/LF；这两个修正只恢复测试与实现的真实契约，不放宽验收标准。
+- 新鲜本地证据：test-browser-toolbar-zoom200.js 通过（24 cells），test-browser-toolbar-zoom200-readiness.js 通过，windows_browser_zoom.py py_compile 通过。
+- 当前远端状态仍不能宣称通过：Run 33309694877 是修复前提交的旧失败证据；本地修复尚未形成新提交，也尚未产生新的 Linux、Windows、CL/GHCR 终态证据。
+- CPU 纪律：本轮没有使用 rg.exe、没有启动浏览器门禁、没有终止用户进程；后续仍按单次、低负载、可复现检查推进。
+- outcome: `1186:edge-uia-popup-owner-fix-and-fresh-ci-next`
+- next action: 运行最小源契约与类型/发布边界检查，提交并推送本修复，然后读取新 SHA 的 Linux、Windows 与 CL/GHCR 真实结果；任何失败继续按首个根因纠正，不把级联失败当成通过。
 ## Previous decision record: Step 1163
 
 - Wide landscape tablets at `667×375` and `844×390` now use the desktop/browser owner; the accepted phone reference and portrait tablet owner remain unchanged.

@@ -30295,3 +30295,102 @@ Product、Design、Visual 继续保持 failed；工程矩阵和 Accessibility �
 - outcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
 - next action: 同步并验证 D 盘决策镜像，随后建立严格排除无关 `.agents/skills/router-panel-product-loop/agents/openai.yaml` 的 clean exact-SHA 候选并重放发布证据。
 - latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+
+## 第 1186 步：修复 Edge 瞬时菜单的 UIA popup 所有权查找（2026-08-30）
+
+### 已观察事实
+
+- 远端 Run 33309694877（提交 7231e00a2e6822632d847f43d54239d7f7a4194f）中，Linux 仍在 Release blocking contract gates，Windows 在 Real Edge toolbar 200 percent matrix 失败；Windows 后面的 manifest/upload 是级联失败；本次 pull_request 没有创建 CL/GHCR job。
+- 官方日志下载 API 对当前访问身份返回 403 admin rights，因此不能伪造更细的远端日志内容；已有远端阶段证据与历史重复失败共同指向 find-zoom-in 找不到控件。
+
+### 判断与取舍
+
+- 不修改后续 manifest/upload 步骤，也不把失败的旧 Run 改写成通过。修复首个失败的 Edge UIA popup 查找。
+- 不放宽到桌面级 UIA 扫描：只枚举 Win32 顶层窗口，再按原始 Edge HWND 的 owner chain 与同一 msedge.exe 进程过滤，保持进程边界与低负载边界。
+- 不改变手机或桌面产品美术、路由、数据语义；本步是发布验收基础设施修复。
+
+### 为什么这样做
+
+Edge 的 Settings and more 菜单是瞬时 popup，在不同版本中不一定出现在 Desktop.windows(process=...) 的 ControlView。若只继续增加重试，无法改变可见窗口集合；把已验证的 Win32 owner chain 作为 UIA 容器来源，才能补齐真实 popup，同时避免误触另一个 Edge 窗口。
+
+### 修改的文件
+
+- tools/acceptance/accessibility-v2/windows_browser_zoom.py
+- tools/test-browser-toolbar-zoom200.js
+- tools/test-browser-toolbar-zoom200-readiness.js
+- .product-loop/state.json
+- docs/decision-system/current-state.md
+- docs/decision-system/current-index.md
+- docs/decision-system/README.md
+- docs/product-loop-current.md
+- docs/decision-system/release-journal.md
+- docs/panel-redesign-decision-log.md
+
+### 验证证据
+
+- node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200.js：PASS，24 cells。
+- node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js：PASS。
+- python -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py：PASS（通过 Node 子进程调用 Python，未启动浏览器）。
+- 旧远端 Run 33309694877：Windows failure，不能作为本修复后的结果；新提交后的远端验收尚未开始。
+
+### 未解决风险
+
+- 当前本地修复仍未提交和推送；未取得新鲜 Linux、Windows、CL/GHCR 全部通过证据。
+- 本机桌面环境没有暴露完整 Edge Settings and more 控件，不能用本机单测替代远端 Windows 证据。
+
+### 心得
+
+验收器的可靠性取决于它看到的对象是否真实存在，而不只是重试次数。遇到瞬时 UIA popup，先修正所有权和容器边界，比继续堆重试更接近根因；同时必须把测试契约与实际调用方式保持一致。
+
+### 下一步
+
+先执行最小源契约与发布边界检查，再提交并推送；随后只以新 SHA 的远端 Linux、Windows、CL/GHCR 结果决定是否继续修复或关闭发布门。
+
+### outcome
+
+- outcome: `1186:edge-uia-popup-owner-fix-and-fresh-ci-next`
+## 第 1187 步：修复决策镜像语义指针与用户辅助文档误报（2026-08-30）
+
+### 已观察事实
+
+- Step1186 的镜像同步已实际复制 16 个文档且字节一致，但同步报告仍失败：历史日志最后的 latestStepOutcome 还是 1185，机器 gate 中若干已通过项 note 为空，D 盘还有用户已有的 部署说明并执行清单.md。
+
+### 判断与取舍
+
+- 不删除 D 盘用户文档，也不把镜像中存在的用户辅助文档当成产品发布证据。把它列入明确的保留白名单。
+- 不把旧的 review 记录伪装成当前签收；Step1185 四角色记录继续标记为 superseded，当前产品/视觉 gate 仍保持 FAIL/PENDING。
+
+### 为什么这样做
+
+镜像同步门禁应能区分“缺失或未知的生成文件”和“用户明确保留的辅助文档”。同时，历史流水的最后一个 latestStepOutcome 必须与 current-state、current-index、handoff 和机器状态相同，否则报告会在复制成功后仍然给出误导性的失败原因。
+
+### 修改的文件
+
+- tools/check-decision-ledger-sync.py
+- .product-loop/state.json
+- docs/panel-redesign-decision-log.md
+- docs/decision-system/current-state.md
+- docs/decision-system/current-index.md
+- docs/decision-system/README.md
+- docs/product-loop-current.md
+- docs/decision-system/release-journal.md
+
+### 验证证据
+
+- 决策镜像同步的下一次验证必须同时检查 semantic outcomes、stale gate notes、镜像字节一致性和允许的辅助文档；在本步修复完成前尚未宣称通过。
+- Step1186 的 toolbar 24-cell 离线契约、readiness fixture、Python syntax compile 仍为 PASS。
+
+### 未解决风险
+
+- 远端 Run 33309694877 仍是旧提交失败结果；本地新修复尚未提交、推送和远端验证。
+
+### 心得
+
+文档同步不是把文件复制过去就算完成；当前指针、状态语义和用户保留文件边界也必须可解释、可复现。
+
+### 下一步
+
+执行一次新鲜镜像/源契约/发布边界验证；确认通过后再提交、推送并检查新 SHA 的 Linux、Windows 与 CL/GHCR。
+
+- outcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`

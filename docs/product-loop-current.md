@@ -1,23 +1,22 @@
 - validForCommit: false; current worktree is uncommitted and is not a release candidate
 - status: `current-handoff`
-- currentHandoffForStep: `1185`
+- currentHandoffForStep: `1187`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
-- updated: 2026-08-23
-- latestRecordedStep: `1185`
-- latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+- updated: 2026-08-30
+- latestRecordedStep: `1187`
+- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
 - releaseCandidate: none; GitHub publication is closed
-- currentConclusion: **FAIL overall for release / the user-supplied four-screen reference remains the sole phone direction / accepted mobile art is unchanged / current-identity matrices and four-role local signoff are green / clean exact-SHA and GitHub exact-SHA CL remain open / GitHub is closed.**
+- currentConclusion: **FAIL overall / the accepted four-screen phone reference remains unchanged / the old pushed SHA 7231e00 is Windows-red at Edge toolbar 200 percent / the local popup-owner fix is not yet pushed / clean exact-SHA and Linux/Windows/CL/GHCR evidence remain open.**
 
-## Current handoff: Step 1185
+## Current handoff: Step 1187
 
-- Artifact `worktree-c35df77de8ac-9ef6adea85fa` has fresh Edge `22/22`, public overview `28/28`, route-responsive `76/76`, route-state `266/266`, mobile `56/56`, workflows `14/14`, accessibility `11/11` and dirty-worktree engineering readiness.
-- The mobile runtime report now carries `generatedAt`, so structured Product/Visual/Accessibility/Engineering records bind exactly to the same artifact key, fingerprint, commit and report timestamp.
-- All four local isolated-role reviews pass with `P0=0` and `P1=0`. They do not make the dirty worktree release eligible.
-- Wide landscape tablets remain browser/desktop workbench surfaces. The accepted phone composition, color, typography, spacing, chart and navigation art did not change.
-- outcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
-- next action: sync the decision mirror, create an exact scoped commit excluding the unrelated skill file, then replay clean exact-SHA release evidence before atomic GitHub publication.
-
+- 决策镜像的 16 个受管文档已复制并字节一致；用户已有的 部署说明并执行清单.md 被明确保留，不再作为未知垃圾误报。
+- current-state、current-index、handoff、release journal、机器状态与历史日志的最新 outcome 已统一绑定 Step1187。
+- Step1185 四角色记录已明确标记为 superseded；当前产品/视觉签收仍未伪装为新鲜证据，发布仍 FAIL/CLOSED。
+- Step1186 的 Edge popup-owner 修复与本地 toolbar 24-cell/readiness/py_compile 证据仍有效，但尚未形成新提交和新远端 CI。
+- outcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- next action: 验证镜像与源契约，再提交推送并读取新 SHA 的 Linux/Windows/CL/GHCR 结果。
 ## Gate boundary
 
 | Gate | Status | Meaning |

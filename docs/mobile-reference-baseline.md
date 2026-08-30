@@ -6,7 +6,7 @@
 
 ## 当前门禁
 
-- Product/design/visual gate: **PASS** for the current local worktree review; the accepted four-screen baseline remains locked and unchanged, while public release remains FAIL until a clean exact-SHA candidate and its required remote checks pass.
+- Product/design/visual gate: **FAIL** for current release evidence; the Step1185 review is historical after the Step1186 tooling change, so final external product/visual acceptance is not closed. The accepted four-screen baseline remains locked and unchanged.
 - 安全结论仅适用于公开分发、默认仅本机访问的只读监控面板，不扩大为任意公网部署安全承诺。
 
 ## 唯一允许的参考

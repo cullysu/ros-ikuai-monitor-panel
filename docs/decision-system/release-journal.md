@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: false; Step1112 current engineering evidence is green, but four-role independent re-signoff, dirty-worktree cleanup and a clean exact-SHA release candidate remain open
+- validForCommit: false; Step1186 local CI-fix evidence is green, but the fix is not yet committed and the old pushed SHA remains Windows-red
 - supersededBy: null
-- currentStep: `1183`
-- currentOutcome: `1183:edge-toolbar-verifier-stops-on-observed-200pct-target-within-bounded-probes`
-- latestStepOutcome: `1183:edge-toolbar-verifier-stops-on-observed-200pct-target-within-bounded-probes`
+- currentStep: `1187`
+- currentOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 

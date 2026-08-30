@@ -3,8 +3,8 @@
   "step": 1185,
   "role": "product-information-architecture",
   "scope": "local-independent-scope",
-  "status": "current",
-  "currentEvidence": true,
+  "status": "superseded",
+  "currentEvidence": false,
   "historicalEvidenceOnly": false,
   "releaseEligible": false,
   "reviewerAgentId": "main-agent-isolated-product-role-step1185",
@@ -46,5 +46,6 @@
       "result": "pass",
       "summary": "概览、网络、设备、日志四个稳定入口及对象详情、连接检查、诊断与日志纵深均由真实路由和工作流支撑。"
     }
-  ]
+  ],
+  "supersededBy": "Step1186"
 }

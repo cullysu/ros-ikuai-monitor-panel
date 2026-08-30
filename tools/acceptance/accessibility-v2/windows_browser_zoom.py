@@ -257,6 +257,40 @@ def raw_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> l
     return found
 
 
+def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) -> list:
+    """Return UIA roots for the owned Edge HWND and its owned popup HWNDs.
+
+    Edge transient menus are not consistently exposed by Desktop.windows(process=...).
+    Enumerate only Win32 top-level windows and retain the exact process/owner chain.
+    """
+    user32 = ctypes.windll.user32
+    containers = []
+    seen: set[int] = set()
+
+    def add_window(handle: int) -> None:
+        if handle <= 0 or handle in seen:
+            return
+        if handle != owned_window_handle and not window_is_owned_by(handle, owned_window_handle):
+            return
+        try:
+            if owned_process_id_for_window(handle) != owned_process_id:
+                return
+            containers.append(desktop.window(handle=handle))
+            seen.add(handle)
+        except Exception:
+            return
+
+    add_window(owned_window_handle)
+    callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    @callback_type
+    def collect(hwnd, _lparam):
+        add_window(int(hwnd))
+        return True
+
+    user32.EnumWindows(collect, 0)
+    return containers
+
 def control_top_level_handle(control) -> int:
     try:
         return int(control.top_level_parent().handle or 0)
@@ -810,10 +844,7 @@ def main() -> None:
                 # product failure.  The menu popup is owned by the same Edge
                 # process, so keep the search bounded to that process and the
                 # already-owned window.
-                owned_windows = [
-                    candidate for candidate in desktop.windows(process=owned_process_id, visible_only=False, enabled_only=False)
-                    if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
-                ]
+                owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
                 stage = "find-zoom-in"
                 zoom_matches = []
                 zoom_search_attempts = 0
