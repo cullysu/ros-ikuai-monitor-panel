@@ -318,7 +318,7 @@ def control_top_level_handle(control) -> int:
         raise RuntimeError(f"could not resolve UIA control top-level HWND: {error}") from error
 
 
-def invoke_owned_control(control, owned_process_id: int, owned_window_handle: int, label: str) -> None:
+def invoke_owned_control(control, owned_process_id: int, owned_window_handle: int, label: str, allow_stale_enabled: bool = False) -> None:
     """Activate one UIA control only after binding it to the exact Edge window."""
     control_process_id = int(getattr(control.element_info, "process_id", 0) or 0)
     if control_process_id != owned_process_id:
@@ -336,7 +336,7 @@ def invoke_owned_control(control, owned_process_id: int, owned_window_handle: in
         allowed_popup_handle=control_window_handle,
     )
     # UIA click uses Invoke/Select; LegacyIAccessible is the UIA fallback, never physical mouse input.
-    if not control.is_enabled():
+    if not allow_stale_enabled and not control.is_enabled():
         raise RuntimeError(f"{label} is disabled")
     from pywinauto.uia_defines import NoPatternInterfaceError  # type: ignore
     try:
@@ -809,7 +809,19 @@ def main() -> None:
                     except Exception:
                         return ()
 
-                def find_buttons(containers, tokens, exact=False, automation_ids=(), include_raw=False):
+                def has_visible_bounds(control):
+                    try:
+                        rect = control.rectangle()
+                        top_level = control_top_level_handle(control)
+                        return (
+                            int(rect.right) > int(rect.left)
+                            and int(rect.bottom) > int(rect.top)
+                            and bool(ctypes.windll.user32.IsWindowVisible(top_level))
+                        )
+                    except Exception:
+                        return False
+
+                def find_buttons(containers, tokens, exact=False, automation_ids=(), include_raw=False, allow_known_automation_ids=False):
                     matches = {}
                     normalized_tokens = {" ".join(token.lower().split()) for token in tokens}
                     normalized_automation_ids = {" ".join(str(token).lower().split()) for token in automation_ids}
@@ -821,8 +833,6 @@ def main() -> None:
                         except Exception:
                             continue
                         for button in buttons:
-                            if not ui_control_is_visible_and_enabled(button):
-                                continue
                             names = ui_control_names(button)
                             matched = any(
                                 ui_name_matches(candidate, tuple(normalized_tokens), exact=exact)
@@ -832,6 +842,9 @@ def main() -> None:
                             matched_id = bool(automation_id and automation_id in normalized_automation_ids)
                             if not matched and not matched_id:
                                 continue
+                            if not ui_control_is_visible_and_enabled(button):
+                                if not (allow_known_automation_ids and matched_id and has_visible_bounds(button)):
+                                    continue
                             name = names[0] if names else automation_id
                             if not name:
                                 continue
@@ -846,38 +859,6 @@ def main() -> None:
                             if not rect_key:
                                 key += (tuple(getattr(info, "runtime_id", ()) or ()),)
                             matches[key] = button
-                    return list(matches.values())
-
-                def find_known_controls(containers, automation_ids):
-                    """Resolve known Edge controls without depending on ControlView labels."""
-                    matches = {}
-                    normalized_ids = {" ".join(str(item).lower().split()) for item in automation_ids}
-                    for container in containers:
-                        for automation_id in automation_ids:
-                            try:
-                                candidate = container.child_window(auto_id=automation_id).wrapper_object()
-                                if not candidate.exists(timeout=0.05):
-                                    continue
-                                actual_id = " ".join(str(getattr(candidate.element_info, "automation_id", "") or "").lower().split())
-                                if actual_id not in normalized_ids:
-                                    continue
-                                rect = candidate.rectangle()
-                                top_level = control_top_level_handle(candidate)
-                                if int(rect.right) <= int(rect.left) or int(rect.bottom) <= int(rect.top):
-                                    continue
-                                if not ctypes.windll.user32.IsWindowVisible(top_level):
-                                    continue
-                                key = (
-                                    int(getattr(candidate.element_info, "process_id", 0) or 0),
-                                    actual_id,
-                                    int(rect.left),
-                                    int(rect.top),
-                                    int(rect.right),
-                                    int(rect.bottom),
-                                )
-                                matches[key] = candidate
-                            except Exception:
-                                continue
                     return list(matches.values())
 
                 stage = "find-settings-and-more"
@@ -920,13 +901,12 @@ def main() -> None:
                     # animation. Refresh same-process roots on every bounded
                     # attempt instead of repeatedly searching a stale snapshot.
                     owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
-                    zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens, automation_ids=zoom_in_automation_ids)
-                    if not zoom_matches:
-                        # Some Edge builds publish menu items with a stable
-                        # AutomationId but without a usable Name/control-type
-                        # projection. Resolve only the known Zoom ids inside
-                        # the already process-owned roots before using RawView.
-                        zoom_matches = find_known_controls((window, *owned_windows), zoom_in_automation_ids)
+                    zoom_matches = find_buttons(
+                        (window, *owned_windows),
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                        allow_known_automation_ids=True,
+                    )
                     if not zoom_matches and zoom_search_attempts >= 3:
                         # Edge can expose the transient menu only in RawView
                         # while its ControlView remains empty. Keep this fallback
@@ -936,6 +916,7 @@ def main() -> None:
                             zoom_in_tokens,
                             automation_ids=zoom_in_automation_ids,
                             include_raw=True,
+                            allow_known_automation_ids=True,
                         )
                     if zoom_matches:
                         break
@@ -947,7 +928,7 @@ def main() -> None:
                     )
                 zoom_control = zoom_matches[0]
                 stage = "invoke-zoom-in"
-                invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control")
+                invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control", allow_stale_enabled=True)
                 time.sleep(args.settle_milliseconds / 1000)
                 # Edge normally keeps its Settings menu open after the Zoom
                 # in control is invoked. Close it through the same owned UIA
