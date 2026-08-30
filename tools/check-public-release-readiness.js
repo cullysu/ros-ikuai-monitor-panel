@@ -599,7 +599,16 @@ function assertPythonDependencyLockContract(rootDir = ROOT) {
   } catch {
     throw new Error('Python dependency lock contract did not return JSON.');
   }
-  if (report?.pass !== true || report?.contract !== 'python-runtime-lock-v1' || report?.hashLocked !== true) {
+  const supportedContracts = new Set([
+    'python-runtime-lock-v1',
+    'python-runtime-and-windows-build-lock-v2',
+  ]);
+  if (
+    report?.pass !== true ||
+    !supportedContracts.has(report?.contract) ||
+    report?.hashLocked !== true ||
+    (report?.contract === 'python-runtime-and-windows-build-lock-v2' && report?.windowsBuildHashLocked !== true)
+  ) {
     throw new Error('Python dependency lock contract did not confirm the immutable runtime lock.');
   }
   return report;
