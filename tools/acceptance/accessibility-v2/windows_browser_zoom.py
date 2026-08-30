@@ -815,19 +815,28 @@ def main() -> None:
                     if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
                 ]
                 stage = "find-zoom-in"
-                zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens, automation_ids=zoom_in_automation_ids)
-                if not zoom_matches:
-                    # Edge can expose the transient menu only in RawView while
-                    # its ControlView remains empty. Keep this fallback bounded
-                    # to the original Edge window and process-owned popup roots.
-                    zoom_matches = find_buttons(
-                        (window, *owned_windows),
-                        zoom_in_tokens,
-                        automation_ids=zoom_in_automation_ids,
-                        include_raw=True,
-                    )
+                zoom_matches = []
+                zoom_search_attempts = 0
+                for zoom_search_attempts in range(1, 13):
+                    zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens, automation_ids=zoom_in_automation_ids)
+                    if not zoom_matches and zoom_search_attempts >= 3:
+                        # Edge can expose the transient menu only in RawView
+                        # while its ControlView remains empty. Keep this fallback
+                        # bounded to the original Edge window and popup roots.
+                        zoom_matches = find_buttons(
+                            (window, *owned_windows),
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                            include_raw=True,
+                        )
+                    if zoom_matches:
+                        break
+                    time.sleep(0.15)
                 if len(zoom_matches) != 1:
-                    raise RuntimeError(f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)}")
+                    raise RuntimeError(
+                        f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
+                        f"after {zoom_search_attempts} bounded UIA searches"
+                    )
                 zoom_control = zoom_matches[0]
                 stage = "invoke-zoom-in"
                 invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control")
