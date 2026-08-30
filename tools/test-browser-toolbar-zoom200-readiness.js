@@ -29,6 +29,8 @@ assert.doesNotMatch(windowsZoomSource, /keybd_event|SendInput|send_chord|\.click
 assert.match(windowsZoomSource, /if args\.action == "menu-plus":[\s\S]*from pywinauto import Desktop/, 'pywinauto must be loaded only for the process-owned Edge menu action');
 assert.match(windowsZoomSource, /def invoke_owned_control[\s\S]*control_process_id != owned_process_id[\s\S]*require_owned_foreground_process[\s\S]*control\.invoke\(\)/, 'Edge controls must be process-bound and invoked through UIA only');
 assert.match(windowsZoomSource, /menu_remains_open[\s\S]*invoke_owned_control\(more, owned_process_id, handle, "Edge Settings and more close control"\)/, 'the owned Edge menu must be closed through UIA before the next increment or capture');
+assert.match(windowsZoomSource, /def ui_control_is_visible_and_enabled[\s\S]*if not ui_control_is_visible_and_enabled\(button\):/, 'Edge UIA lookup must ignore hidden or disabled duplicate projections');
+assert.match(windowsZoomSource, /more_tokens = \("settings and more", "设置及更多", "设置和更多", "更多"\)[\s\S]*find_buttons\(\(window,\), more_tokens, exact=True\)/, 'Settings and more lookup must use exact localized names');
 const configuredPanelRuntimeTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);
 const expectedPanelRuntimeTimeout = Number.isFinite(configuredPanelRuntimeTimeout) && configuredPanelRuntimeTimeout > 0
   ? Math.min(300_000, Math.max(8_000, configuredPanelRuntimeTimeout))

@@ -607,11 +607,25 @@ def main() -> None:
                 owned_process_id = owned_process_id_for_window(handle)
                 if int(window.process_id()) != owned_process_id:
                     raise RuntimeError("UIA window is not bound to the expected Edge process")
-                more_tokens = ("settings and more", "settings", "设置及更多", "设置和更多", "更多")
+                more_tokens = ("settings and more", "设置及更多", "设置和更多", "更多")
                 zoom_in_tokens = ("zoom in", "放大", "增大")
 
-                def find_buttons(containers, tokens):
+                def ui_control_is_visible_and_enabled(control):
+                    try:
+                        return bool(control.is_visible()) and bool(control.is_enabled())
+                    except Exception:
+                        return False
+
+                def control_rect_key(control):
+                    try:
+                        rect = control.rectangle()
+                        return (int(rect.left), int(rect.top), int(rect.right), int(rect.bottom))
+                    except Exception:
+                        return ()
+
+                def find_buttons(containers, tokens, exact=False):
                     matches = {}
+                    normalized_tokens = {" ".join(token.lower().split()) for token in tokens}
                     for container in containers:
                         try:
                             buttons = [
@@ -621,32 +635,39 @@ def main() -> None:
                         except Exception:
                             continue
                         for button in buttons:
+                            if not ui_control_is_visible_and_enabled(button):
+                                continue
                             try:
-                                name = str(button.window_text() or "").strip().lower()
+                                name = " ".join(str(button.window_text() or "").strip().lower().split())
                             except Exception:
                                 continue
-                            if name and any(token in name for token in tokens):
-                                info = button.element_info
-                                runtime_id = tuple(getattr(info, "runtime_id", ()) or ())
-                                key = runtime_id or (
-                                    int(getattr(info, "handle", 0) or 0),
-                                    str(getattr(info, "automation_id", "") or ""),
-                                    name,
-                                )
-                                matches[key] = button
+                            matched = name in normalized_tokens if exact else any(token in name for token in normalized_tokens)
+                            if not name or not matched:
+                                continue
+                            info = button.element_info
+                            rect_key = control_rect_key(button)
+                            key = (
+                                int(getattr(info, "process_id", 0) or 0),
+                                str(getattr(info, "automation_id", "") or ""),
+                                name,
+                                rect_key,
+                            )
+                            if not rect_key:
+                                key += (tuple(getattr(info, "runtime_id", ()) or ()),)
+                            matches[key] = button
                     return list(matches.values())
 
                 more = None
                 for auto_id in ("SettingsAndMoreButton", "MoreButton", "AppMenuButton"):
                     try:
                         candidate = window.child_window(auto_id=auto_id).wrapper_object()
-                        if candidate.exists(timeout=0.5):
+                        if candidate.exists(timeout=0.5) and ui_control_is_visible_and_enabled(candidate):
                             more = candidate
                             break
                     except Exception:
                         continue
                 if more is None:
-                    more_matches = find_buttons((window,), more_tokens)
+                    more_matches = find_buttons((window,), more_tokens, exact=True)
                     if len(more_matches) != 1:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
                     more = more_matches[0]

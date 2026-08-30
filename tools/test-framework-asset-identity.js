@@ -80,6 +80,13 @@ try {
   write('src/panel-framework/styles.css', ':root { color: #123; }\n');
 
   const original = computeFrameworkInputIdentity(fixture);
+  write('src/panel-framework/main.tsx', 'export const value = 1;\r\n');
+  assert.equal(
+    computeFrameworkInputIdentity(fixture).digest,
+    original.digest,
+    'framework input identity must ignore repository text line-ending materialization',
+  );
+  write('src/panel-framework/main.tsx', 'export const value = 1;\n');
   const assets = writeBuiltAssets();
   writeManifest(original, 3, assets);
   assert.equal(verifyFrameworkAssetIdentity(fixture).pass, true, 'matching v3 inputs must pass');

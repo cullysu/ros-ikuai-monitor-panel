@@ -23,6 +23,13 @@ function deterministicPathCompare(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
+function normalizeFrameworkInputBody(body) {
+  // Git checkouts may materialize repository text as CRLF on Windows and LF
+  // on Linux. Hash the canonical LF representation so one commit has one
+  // framework identity on every supported runner.
+  return Buffer.from(body.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
+}
+
 function collectFiles(directory, projectRoot, output) {
   const entries = fs.readdirSync(directory, { withFileTypes: true })
     .sort((left, right) => deterministicPathCompare(left.name, right.name));
@@ -65,7 +72,7 @@ function computeFrameworkInputIdentity(projectRoot) {
   hash.update(FRAMEWORK_INPUT_SCHEMA, 'utf8');
   hash.update('\0', 'utf8');
   for (const relative of files) {
-    const body = fs.readFileSync(path.join(resolvedRoot, ...relative.split('/')));
+    const body = normalizeFrameworkInputBody(fs.readFileSync(path.join(resolvedRoot, ...relative.split('/'))));
     hash.update(relative, 'utf8');
     hash.update('\0', 'utf8');
     hash.update(String(body.length), 'utf8');
