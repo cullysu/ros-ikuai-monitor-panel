@@ -34,6 +34,9 @@ assert.match(windowsZoomSource, /more_tokens = \("settings and more", "设置及
 assert.match(windowsZoomSource, /def ui_control_names\([\s\S]*element_info, "name"[\s\S]*window_text/, 'Edge UIA lookup must read the UIA Name property before the Win32 text projection');
 assert.match(windowsZoomSource, /EDGE_ACCELERATOR_SUFFIX[\s\S]*def canonical_ui_name[\s\S]*def ui_name_matches[\s\S]*return normalized_name in normalized_tokens/, 'exact Edge names may only remove a recognized accelerator suffix');
 assert.doesNotMatch(windowsZoomSource, /observed\.append|automation_id.*observed|json\.dumps\(observed/, 'UIA metadata must not be emitted into CI diagnostics');
+assert.match(windowsZoomSource, /def safe_exception_message[\s\S]*type\(error\).__name__/, 'UIA failures must preserve a safe exception type when the message is empty');
+assert.match(windowsZoomSource, /stage = \"find-owned-window\"[\s\S]*\"stage\": stage/, 'UIA failures must retain a bounded execution stage');
+assert.match(windowsZoomSource, /candidate_names = ui_control_names\(candidate\)[\s\S]*ui_name_matches\(name, more_tokens, exact=True\)/, 'automation-id candidates must still pass canonical exact name validation');
 assert.match(windowsZoomSource, /matched = any\([\s\S]*ui_name_matches\(candidate, tuple\(normalized_tokens\), exact=exact\)/, 'Edge UIA lookup must test every bounded name projection for the owned control');
 assert.doesNotMatch(windowsZoomSource, /matched = name in normalized_tokens if exact else any\(token in name/, 'Edge UIA lookup must not regress to the old exact-or-broad-substring branch');
 const configuredPanelRuntimeTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);

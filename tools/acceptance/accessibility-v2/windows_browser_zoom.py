@@ -212,6 +212,11 @@ def ui_name_matches(name: str, tokens: tuple[str, ...], exact: bool = False) -> 
     return any(token in normalized_name for token in normalized_tokens)
 
 
+def safe_exception_message(error: BaseException) -> str:
+    """Keep failure diagnostics useful without serializing UIA control metadata."""
+    message = str(error).strip()
+    return message or type(error).__name__
+
 def control_top_level_handle(control) -> int:
     try:
         return int(control.top_level_parent().handle or 0)
@@ -627,11 +632,14 @@ def main() -> None:
         emit({"pass": False, "code": "PYWINAUTO_REQUIRED", "message": "pywinauto is not installed"}, 2)
 
     started_at = time.time()
+    stage = "find-owned-window"
     try:
         handle = find_owned_window_handle(args.title, args.timeout_seconds)
+        stage = "validate-owned-window"
         validate_owned_edge_window(handle, args.title)
         if args.window_handle and int(args.window_handle) != handle:
             raise RuntimeError("UIA action handle differs from the original Edge window")
+        stage = "focus-owned-window"
         focus_owned_window(handle, args.timeout_seconds)
         if not args.capture_only:
             # This helper performs one process-owned toolbar operation at a
@@ -703,7 +711,12 @@ def main() -> None:
                 for auto_id in ("SettingsAndMoreButton", "MoreButton", "AppMenuButton"):
                     try:
                         candidate = window.child_window(auto_id=auto_id).wrapper_object()
-                        if candidate.exists(timeout=0.5) and ui_control_is_visible_and_enabled(candidate):
+                        candidate_names = ui_control_names(candidate)
+                        if (
+                            candidate.exists(timeout=0.5)
+                            and ui_control_is_visible_and_enabled(candidate)
+                            and any(ui_name_matches(name, more_tokens, exact=True) for name in candidate_names)
+                        ):
                             more = candidate
                             break
                     except Exception:
@@ -713,6 +726,7 @@ def main() -> None:
                     if len(more_matches) != 1:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
                     more = more_matches[0]
+                stage = "invoke-settings-and-more"
                 invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
                 time.sleep(args.settle_milliseconds / 1000)
                 # Do not scan every visible UIA window on the desktop here.
@@ -726,10 +740,12 @@ def main() -> None:
                     candidate for candidate in desktop.windows(process=owned_process_id, visible_only=True)
                     if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
                 ]
+                stage = "find-zoom-in"
                 zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens)
                 if len(zoom_matches) != 1:
                     raise RuntimeError(f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)}")
                 zoom_control = zoom_matches[0]
+                stage = "invoke-zoom-in"
                 invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control")
                 time.sleep(args.settle_milliseconds / 1000)
                 # Edge normally keeps its Settings menu open after the Zoom
@@ -746,6 +762,7 @@ def main() -> None:
             time.sleep(args.settle_milliseconds / 1000)
 
         capture = None
+        stage = "capture-owned-edge"
         if args.capture_path:
             target = Path(args.capture_path).resolve()
             # Playwright's page screenshot is rasterized at the context scale,
@@ -773,7 +790,8 @@ def main() -> None:
         emit({
             "pass": False,
             "code": "EDGE_WINDOW_AUTOMATION_FAILED",
-            "message": str(error),
+            "message": f"{stage}: {safe_exception_message(error)}",
+            "stage": stage,
             "title": args.title,
             "elapsedMs": round((time.time() - started_at) * 1000),
         }, 1)
