@@ -225,16 +225,17 @@ def control_top_level_handle(control) -> int:
 
 
 def invoke_owned_control(control, owned_process_id: int, owned_window_handle: int, label: str) -> None:
-    """Invoke one UIA control only after binding it to the exact Edge window."""
+    """Activate one UIA control only after binding it to the exact Edge window."""
     control_process_id = int(getattr(control.element_info, "process_id", 0) or 0)
     if control_process_id != owned_process_id:
         raise RuntimeError(f"{label} is not owned by the expected Edge process")
     if not window_is_owned_by(control_top_level_handle(control), owned_window_handle):
         raise RuntimeError(f"{label} is not owned by the original Edge HWND")
     require_owned_foreground_process(owned_process_id, owned_window_handle)
+    # UIA click uses Invoke/Select patterns; it never emits physical mouse input.
     if not control.is_enabled():
         raise RuntimeError(f"{label} is disabled")
-    control.invoke()
+    control.click()
     require_owned_foreground_process(owned_process_id, owned_window_handle)
 
 
