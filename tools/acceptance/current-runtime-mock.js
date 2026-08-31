@@ -901,7 +901,12 @@ async function startMock({ transport = 'tcp', preferIpv4 = false } = {}) {
           })));
           payload.pppoe = payload.wan.map((row) => ({ ...row }));
         }
-        if (state.scenario === 'fleet' || state.scenario === 'interfaces-down' || state.scenario === 'interface-review') {
+        // Keep the fleet fixture focused on scale.  Interface failures belong
+        // to the dedicated interfaces-down fixture; combining both made the
+        // 390px overview render the same first-scan evidence for fleet and
+        // interfaces-down-overview, so the real Edge matrix could not prove
+        // that those two cells were distinct states.
+        if (state.scenario === 'interfaces-down' || state.scenario === 'interface-review') {
           payload.interfaces.push(
             { name: 'ether9', type: 'ether', role: 'LAN', parent: 'switch1', running: false, disabled: false },
             { name: 'vlan30', type: 'vlan', role: 'LAN', parent: 'ether9', vlan: 30, running: false, disabled: false },
@@ -916,7 +921,7 @@ async function startMock({ transport = 'tcp', preferIpv4 = false } = {}) {
             { name: 'vlan30', type: 'vlan', role: 'LAN', parent: 'ether9', vlan: 30, running: false, disabled: false },
           );
         }
-        if (state.scenario === 'fleet' || state.scenario === 'interfaces-down') {
+        if (state.scenario === 'interfaces-down') {
           payload.routes.defaultRoutes.push(
             { dstAddress: '0.0.0.0/0', default: true, gateway: 'ether9', active: false, disabled: false, distance: 2, table: 'main' },
             { dstAddress: '0.0.0.0/0', default: true, gateway: 'vlan30', active: false, disabled: false, distance: 3, table: 'main' },
