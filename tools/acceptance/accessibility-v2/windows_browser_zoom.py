@@ -404,6 +404,7 @@ def invoke_owned_control(
     label: str,
     allow_stale_enabled: bool = False,
     allowed_process_ids: tuple[int, ...] = (),
+    prefer_legacy_action: bool = False,
 ) -> None:
     """Activate one UIA control only after binding it to the exact Edge window."""
     control_process_id = int(getattr(control.element_info, "process_id", 0) or 0)
@@ -432,17 +433,25 @@ def invoke_owned_control(
     invoke = getattr(control, "invoke", None)
     select = getattr(control, "select", None)
     semantic_action = invoke if callable(invoke) else select if callable(select) else None
-    if semantic_action is None:
+    def legacy_action() -> None:
         import pywinauto.uia_defines as uia_defs  # type: ignore
         legacy_interface = uia_defs.get_elem_interface(control.element_info.element, "LegacyIAccessible")
         legacy_interface.DoDefaultAction()
+
+    if prefer_legacy_action:
+        try:
+            legacy_action()
+        except Exception:
+            if semantic_action is None:
+                raise
+            semantic_action()
+    elif semantic_action is None:
+        legacy_action()
     else:
         try:
             semantic_action()
         except NoPatternInterfaceError:
-            import pywinauto.uia_defines as uia_defs  # type: ignore
-            legacy_interface = uia_defs.get_elem_interface(control.element_info.element, "LegacyIAccessible")
-            legacy_interface.DoDefaultAction()
+            legacy_action()
     require_owned_foreground_process(
         owned_process_id,
         owned_window_handle,
@@ -1135,7 +1144,13 @@ def main() -> None:
                     trace_stage("settings-and-more-control:unavailable")
                 stage = "invoke-settings-and-more"
                 trace_stage(stage)
-                invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
+                invoke_owned_control(
+                    more,
+                    owned_process_id,
+                    handle,
+                    "Edge Settings and more control",
+                    prefer_legacy_action=True,
+                )
                 time.sleep(args.settle_milliseconds / 1000)
                 # The menu may be created lazily in a second msedge.exe owner
                 # process only after the toolbar action is invoked. Refresh the
