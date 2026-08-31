@@ -1002,6 +1002,36 @@ def main() -> None:
                             matches[key] = control
                     return list(matches.values())
 
+                def bounded_root_diagnostic(containers):
+                    """Emit a small, non-sensitive view of bounded Edge roots on failure."""
+                    roots = []
+                    for container in containers:
+                        handle_value = int(getattr(container, "handle", 0) or 0)
+                        entries = []
+                        try:
+                            controls = raw_view_descendants(container, max_depth=5, max_nodes=96)
+                        except Exception:
+                            controls = []
+                        for control in controls[:48]:
+                            names = ui_control_names(control)
+                            automation_id = str(getattr(control.element_info, "automation_id", "") or "").strip()
+                            control_type = str(getattr(control.element_info, "control_type", "") or "").strip()
+                            if names or automation_id or control_type:
+                                entries.append({
+                                    "name": names[0] if names else "",
+                                    "automationId": automation_id,
+                                    "controlType": control_type,
+                                })
+                        roots.append({
+                            "handle": handle_value,
+                            "class": window_class_name(handle_value) if handle_value else "",
+                            "text": window_text(handle_value) if handle_value else "",
+                            "visible": bool(handle_value and ctypes.windll.user32.IsWindowVisible(handle_value)),
+                            "entries": entries[:24],
+                        })
+                    diagnostic = json.dumps(roots, ensure_ascii=False, separators=(",", ":"))
+                    trace_stage(f"zoom-root-diagnostic:{diagnostic[:12000]}")
+
                 stage = "find-settings-and-more"
                 trace_stage(stage)
                 more = None
@@ -1126,6 +1156,7 @@ def main() -> None:
                     )
                     trace_stage(f"zoom-popup-descendants-end:{len(zoom_matches)}")
                 if len(zoom_matches) != 1:
+                    bounded_root_diagnostic(tuple(owned_windows))
                     raise RuntimeError(
                         f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
                         f"after {zoom_search_attempts} bounded UIA searches across {len(owned_windows)} same-process roots"
