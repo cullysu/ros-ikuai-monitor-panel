@@ -56,10 +56,11 @@ def process_image_name(process_id: int) -> str:
         kernel32.CloseHandle(process)
 
 
-def validate_owned_edge_window(handle: int, title: str) -> int:
+def validate_owned_edge_window(handle: int, title: str, require_visible: bool = True) -> int:
     user32 = ctypes.windll.user32
-    if not user32.IsWindow(handle) or not user32.IsWindowVisible(handle):
-        raise RuntimeError("owned Edge window handle is no longer valid and visible")
+    if not user32.IsWindow(handle) or (require_visible and not user32.IsWindowVisible(handle)):
+        visibility = " and visible" if require_visible else ""
+        raise RuntimeError(f"owned Edge window handle is no longer valid{visibility}")
     if title not in window_text(handle):
         raise RuntimeError("owned Edge window title no longer matches the unique task title")
     if not window_class_name(handle).startswith("Chrome_WidgetWin"):
@@ -71,7 +72,7 @@ def validate_owned_edge_window(handle: int, title: str) -> int:
 
 
 def find_owned_window_handle(title: str, timeout_seconds: float) -> int:
-    """Find the uniquely titled headed Edge window without asking UIA to scan every Edge tab."""
+    """Find the uniquely titled Edge window before focus restores visibility."""
     user32 = ctypes.windll.user32
     deadline = time.time() + timeout_seconds
     while time.time() < deadline:
@@ -80,10 +81,13 @@ def find_owned_window_handle(title: str, timeout_seconds: float) -> int:
 
         @callback_type
         def collect(hwnd, _lparam):
-            if not user32.IsWindowVisible(hwnd):
-                return True
             try:
-                validate_owned_edge_window(int(hwnd), title)
+                # A large physical pre-zoom viewport can make a newly created
+                # headed Edge window minimized, cloaked, or temporarily outside
+                # the visible work area. Its random title plus exact Edge
+                # process/class checks are still the ownership boundary; the
+                # following focus step restores visibility before any UIA action.
+                validate_owned_edge_window(int(hwnd), title, require_visible=False)
                 matches.append(int(hwnd))
             except RuntimeError:
                 pass
@@ -944,12 +948,13 @@ def main() -> None:
         handle = find_owned_window_handle(args.title, args.timeout_seconds)
         stage = "validate-owned-window"
         trace_stage(stage)
-        validate_owned_edge_window(handle, args.title)
+        validate_owned_edge_window(handle, args.title, require_visible=False)
         if args.window_handle and int(args.window_handle) != handle:
             raise RuntimeError("UIA action handle differs from the original Edge window")
         stage = "focus-owned-window"
         trace_stage(stage)
         focus_owned_window(handle, args.timeout_seconds)
+        validate_owned_edge_window(handle, args.title)
         if not args.capture_only:
             # This helper performs one process-owned toolbar operation at a
             # time. The Node gate observes DPR/layout after every invocation;
