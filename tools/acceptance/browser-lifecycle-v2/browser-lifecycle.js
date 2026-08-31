@@ -142,6 +142,49 @@ async function bestEffortPageState(page) {
 
 async function terminateOwnedProcessTree(pid, timeoutMs) {
   if (!Number.isInteger(pid) || pid <= 0) return { attempted: false, reason: 'owned browser PID unavailable' };
+  if (process.platform !== 'win32') {
+    const startedAt = Date.now();
+    const deadlineAt = startedAt + Math.max(1, timeoutMs);
+    let signal = null;
+    let error = null;
+    const send = (name) => {
+      try {
+        process.kill(pid, name);
+        signal = name;
+        return true;
+      } catch (failure) {
+        if (failure?.code === 'ESRCH') return false;
+        error = failure;
+        return false;
+      }
+    };
+    const waitForExit = async (waitMs) => {
+      const endAt = Math.min(deadlineAt, Date.now() + Math.max(1, waitMs));
+      while (Date.now() < endAt) {
+        if (!processExists(pid)) return true;
+        await delay(Math.min(50, Math.max(1, endAt - Date.now())));
+      }
+      return !processExists(pid);
+    };
+    if (!processExists(pid)) {
+      return { attempted: false, pid, signal: null, residual: false, verifiedStopped: true, outcome: 'already-exited' };
+    }
+    send('SIGTERM');
+    if (await waitForExit(Math.min(1_000, Math.max(100, timeoutMs / 2)))) {
+      return { attempted: true, pid, signal, error: error ? String(error.message || error) : null, residual: false, verifiedStopped: true, outcome: 'terminated' };
+    }
+    send('SIGKILL');
+    const stopped = await waitForExit(Math.max(1, deadlineAt - Date.now()));
+    return {
+      attempted: true,
+      pid,
+      signal,
+      error: error ? String(error.message || error) : null,
+      residual: !stopped,
+      verifiedStopped: stopped,
+      outcome: stopped ? 'terminated' : 'residual',
+    };
+  }
   const startedAt = Date.now();
   const verifyDeadlineAt = startedAt + Math.max(1, timeoutMs);
   let taskkill = null;

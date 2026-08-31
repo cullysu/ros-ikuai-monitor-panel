@@ -876,10 +876,21 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
     const trafficChart = mobileOriginOverview?.querySelector('.ref-chart') || null;
     const trafficLegend = trafficChart ? Array.from(trafficChart.querySelectorAll('.ref-chart__scale span')) : [];
     const trafficTimeLabels = trafficChart ? Array.from(trafficChart.querySelectorAll('.ref-chart__footer span')) : [];
-    const trafficLegendOutsideChart = trafficLegend.filter((label) => {
-      const labelRect = label.getBoundingClientRect();
-      return labelRect.left < -1 || labelRect.right > viewportWidth + 1 || labelRect.top < -1 || labelRect.bottom > viewportHeight + 1;
-    }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON() }));
+     const trafficChartRect = trafficChart?.getBoundingClientRect() || null;
+     const trafficScrollRoot = trafficChart?.closest(".ref-scroll, main") || null;
+     const trafficScrollRect = trafficScrollRoot?.getBoundingClientRect() || null;
+     const trafficLegendGeometryErrors = trafficLegend.filter((label) => {
+       const labelRect = label.getBoundingClientRect();
+       const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
+       const insideScrollRoot = Boolean(!trafficScrollRect || (labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
+       return !insideChart || !insideScrollRoot;
+     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null, scrollRect: trafficScrollRect?.toJSON() || null }));
+     const trafficFooterGeometryErrors = trafficTimeLabels.filter((label) => {
+       const labelRect = label.getBoundingClientRect();
+       const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
+       const insideScrollRoot = Boolean(!trafficScrollRect || (labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
+       return !insideChart || !insideScrollRoot;
+     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null, scrollRect: trafficScrollRect?.toJSON() || null }));
     return {
       mainCount: document.querySelectorAll("main").length,
        expectedMain: main instanceof HTMLElement,
@@ -898,7 +909,15 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
        clippedOperationalText,
        unreadableOperationalText,
        operationalTextScopes,
-      trafficAxis: { present: Boolean(trafficChart), yLabels: trafficLegend.length, xLabels: trafficTimeLabels.length, overlaps: trafficLegendOutsideChart },
+       trafficAxis: {
+         present: Boolean(trafficChart),
+         yLabels: trafficLegend.length,
+         xLabels: trafficTimeLabels.length,
+         chartRect: trafficChartRect ? trafficChartRect.toJSON() : null,
+         scrollRect: trafficScrollRect ? trafficScrollRect.toJSON() : null,
+         legendGeometryErrors: trafficLegendGeometryErrors,
+         footerGeometryErrors: trafficFooterGeometryErrors,
+       },
       primary: {
          present: primary instanceof HTMLElement,
          visible: Boolean(rect && style && style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0),
@@ -914,7 +933,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   assert(surface.main.horizontalOverflow === 0 && surface.main.maxLeft === 0, `${label} main scroll root has horizontal overflow at actual Edge toolbar zoom`, surface.main);
   assert(surface.clippedOperationalText.length === 0, `${label} has visible operational text clipped by a non-scroll container at actual Edge toolbar zoom`, surface);
   assert(surface.unreadableOperationalText.length === 0, `${label} has operational text below the 12px readability floor at actual Edge toolbar zoom`, surface);
-  assert(!surface.trafficAxis.present || (surface.trafficAxis.yLabels >= 2 && surface.trafficAxis.xLabels >= 2 && surface.trafficAxis.overlaps.length === 0), `${label} traffic chart legend is incomplete or clipped at actual Edge toolbar zoom`, surface.trafficAxis);
+   assert(!surface.trafficAxis.present || (surface.trafficAxis.yLabels >= 2 && surface.trafficAxis.xLabels >= 2 && surface.trafficAxis.legendGeometryErrors.length === 0 && surface.trafficAxis.footerGeometryErrors.length === 0), `${label} traffic chart axis or labels are incomplete or clipped at actual Edge toolbar zoom`, surface.trafficAxis);
   assert(surface.primary.present && surface.primary.visible && surface.primary.reachable && surface.primary.withinMain && !surface.primary.obscuredByNavigation, `${label} primary task is not reachable inside main or is obscured by navigation at actual Edge toolbar zoom`, surface);
   const keyboard = await keyboardTraversal(page, mainSelector);
   assert(keyboard.complete && keyboard.expectedCount > 0 && keyboard.visitedCount === keyboard.expectedCount && keyboard.sequence.every((item) => item.focusVisible && item.outlineWidth >= 2 && item.outlineStyle !== "none" && item.fullyVisible && item.withinMain && !item.obscuredByNavigation), `${label} keyboard traversal did not reach every control with visible focus clear of navigation`, keyboard);
