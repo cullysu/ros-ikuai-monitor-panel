@@ -273,6 +273,38 @@ def raw_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> l
     return found
 
 
+def control_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> list:
+    """Walk one already-bound UIA tree through ControlView with hard bounds."""
+    from pywinauto.controls.uiawrapper import UIAWrapper  # type: ignore
+    from pywinauto.uia_defines import IUIA  # type: ignore
+    from pywinauto.uia_element_info import UIAElementInfo  # type: ignore
+
+    root_element = getattr(control.element_info, "element", None)
+    if root_element is None:
+        return []
+    walker = IUIA().iuia.ControlViewWalker
+    found = []
+    stack = [(root_element, 0)]
+    while stack and len(found) < max_nodes:
+        parent, depth = stack.pop()
+        if depth >= max_depth:
+            continue
+        try:
+            child = walker.GetFirstChildElement(parent)
+        except Exception:
+            continue
+        while child is not None and len(found) < max_nodes:
+            try:
+                wrapper = UIAWrapper(UIAElementInfo(child))
+                found.append(wrapper)
+                if depth + 1 < max_depth:
+                    stack.append((child, depth + 1))
+                child = walker.GetNextSiblingElement(child)
+            except Exception:
+                break
+    return found
+
+
 def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) -> list:
     """Return UIA roots for the original Edge HWND and visible same-process popups."""
     user32 = ctypes.windll.user32
@@ -922,6 +954,31 @@ def main() -> None:
                             matches[key] = control
                     return list(matches.values())
 
+                def find_bounded_control_matches(containers, tokens, automation_ids=(), exact=False):
+                    """Search bounded ControlView descendants for semantic Edge controls."""
+                    matches = {}
+                    normalized_automation_ids = {" ".join(str(value).lower().split()) for value in automation_ids}
+                    for container in containers:
+                        for control in control_view_descendants(container, max_depth=8, max_nodes=512):
+                            names = ui_control_names(control)
+                            automation_id = " ".join(str(getattr(control.element_info, "automation_id", "") or "").lower().split())
+                            matched_name = any(ui_name_matches(name, tokens, exact=exact) for name in names)
+                            matched_id = bool(automation_id and automation_id in normalized_automation_ids)
+                            if not matched_name and not matched_id:
+                                continue
+                            if not ui_control_is_visible_and_enabled(control):
+                                if not (matched_id and has_visible_bounds(control)):
+                                    continue
+                            info = control.element_info
+                            key = (
+                                int(getattr(info, "process_id", 0) or 0),
+                                automation_id,
+                                names[0] if names else "",
+                                control_rect_key(control),
+                            )
+                            matches[key] = control
+                    return list(matches.values())
+
                 stage = "find-settings-and-more"
                 trace_stage(stage)
                 more = None
@@ -1009,6 +1066,14 @@ def main() -> None:
                         automation_ids=zoom_in_automation_ids,
                     )
                 trace_stage(f"zoom-raw-bounded-end:{len(zoom_matches)}")
+                if not zoom_matches:
+                    trace_stage("zoom-control-bounded-start")
+                    zoom_matches = find_bounded_control_matches(
+                        raw_search_containers,
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                    )
+                    trace_stage(f"zoom-control-bounded-end:{len(zoom_matches)}")
                 if len(zoom_matches) != 1:
                     raise RuntimeError(
                         f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
