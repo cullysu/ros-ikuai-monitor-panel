@@ -154,10 +154,14 @@ function withIsolatedCandidateWorktree(root, candidateCommit, operation) {
   try {
     runGit(root, ['worktree', 'add', '--detach', temporary, candidateCommit]);
     attached = true;
+    // A release candidate is immutable by commit, so normalize the isolated checkout
+    // before measuring identity. This keeps runner-created ignored/untracked residue
+    // from turning a freshly materialized candidate into a false dirty worktree.
+    runGit(temporary, ['reset', '--hard', '--quiet', candidateCommit]);
     return operation(temporary);
   } finally {
     if (attached) spawnSync('git', ['worktree', 'remove', '--force', temporary], { cwd: root, encoding: 'utf8', timeout: managedChildTimeoutMs(30_000), windowsHide: true });
-    fs.rmSync(temporary, { recursive: true, force: true, maxRetries: 2 });
+    fs.rmSync(temporary, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 });
   }
 }
 
