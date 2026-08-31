@@ -143,24 +143,26 @@ def require_owned_foreground_process(
     owned_process_id: int,
     owned_window_handle: int,
     allowed_popup_handle: int = 0,
+    allowed_process_ids: tuple[int, ...] = (),
 ) -> int:
-    """Fail closed unless foreground is the original Edge HWND or selected same-process popup."""
+    """Fail closed unless foreground is the original Edge owner chain."""
     user32 = ctypes.windll.user32
     foreground = int(user32.GetForegroundWindow())
     if foreground <= 0:
         raise RuntimeError("no foreground window is available for the owned Edge UIA action")
     foreground_process_id = owned_process_id_for_window(foreground)
+    accepted_process_ids = {owned_process_id, *(int(value) for value in allowed_process_ids if int(value) > 0)}
     original_chain = window_is_owned_by(foreground, owned_window_handle)
     selected_popup = bool(
         allowed_popup_handle
         and foreground == allowed_popup_handle
-        and foreground_process_id == owned_process_id
+        and foreground_process_id in accepted_process_ids
         and user32.IsWindowVisible(foreground)
     )
     if not original_chain and not selected_popup:
         raise RuntimeError("foreground ownership moved outside the original Edge HWND chain")
-    if foreground_process_id != owned_process_id:
-        raise RuntimeError("foreground ownership changed before the Edge UIA action")
+    if foreground_process_id not in accepted_process_ids:
+        raise RuntimeError("foreground ownership changed outside the verified Edge owner processes")
     return foreground
 
 
@@ -305,25 +307,51 @@ def control_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) 
     return found
 
 
-def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) -> list:
-    """Return UIA roots for the original Edge HWND and bounded same-process menus."""
+def edge_owner_process_ids(owned_process_id: int, owned_window_handle: int) -> tuple[int, ...]:
+    """Collect only msedge.exe processes that own a window in the exact Edge owner chain."""
+    user32 = ctypes.windll.user32
+    process_ids = {int(owned_process_id)}
+    callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    @callback_type
+    def collect(hwnd, _lparam):
+        handle = int(hwnd)
+        if handle <= 0 or handle == owned_window_handle or not user32.IsWindowVisible(handle):
+            return True
+        if not window_is_owned_by(handle, owned_window_handle):
+            return True
+        try:
+            process_id = owned_process_id_for_window(handle)
+            if process_image_name(process_id) == "msedge.exe":
+                process_ids.add(process_id)
+        except Exception:
+            pass
+        return True
+
+    user32.EnumWindows(collect, 0)
+    return tuple(sorted(process_ids))
+
+
+def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int, allowed_process_ids: tuple[int, ...] = ()) -> list:
+    """Return UIA roots for the original Edge HWND and bounded Edge owner-chain menus."""
     user32 = ctypes.windll.user32
     containers = []
     seen: set[int] = set()
+    accepted_process_ids = {owned_process_id, *(int(value) for value in allowed_process_ids if int(value) > 0)}
 
     def add_window(handle: int) -> None:
         if handle <= 0 or handle in seen:
             return
         try:
-            if owned_process_id_for_window(handle) != owned_process_id:
+            process_id = owned_process_id_for_window(handle)
+            if process_id not in accepted_process_ids:
                 return
-            if handle != owned_window_handle and not window_is_owned_by(handle, owned_window_handle):
-                # Some Edge builds omit both a usable owner link and a stable
-                # visibility projection for transient menus. The exact Edge
-                # process is the fallback boundary; selection still fails closed
-                # on zero or multiple matching controls, and activation rechecks
-                # the selected top-level HWND.
-                pass
+            if (
+                handle != owned_window_handle
+                and process_id != owned_process_id
+                and not window_is_owned_by(handle, owned_window_handle)
+            ):
+                return
             containers.append(desktop.window(handle=handle))
             seen.add(handle)
         except Exception:
@@ -369,15 +397,23 @@ def control_top_level_handle(control) -> int:
         raise RuntimeError(f"could not resolve UIA control top-level HWND: {error}") from error
 
 
-def invoke_owned_control(control, owned_process_id: int, owned_window_handle: int, label: str, allow_stale_enabled: bool = False) -> None:
+def invoke_owned_control(
+    control,
+    owned_process_id: int,
+    owned_window_handle: int,
+    label: str,
+    allow_stale_enabled: bool = False,
+    allowed_process_ids: tuple[int, ...] = (),
+) -> None:
     """Activate one UIA control only after binding it to the exact Edge window."""
     control_process_id = int(getattr(control.element_info, "process_id", 0) or 0)
-    if control_process_id != owned_process_id:
-        raise RuntimeError(f"{label} is not owned by the expected Edge process")
+    accepted_process_ids = {owned_process_id, *(int(value) for value in allowed_process_ids if int(value) > 0)}
+    if control_process_id not in accepted_process_ids:
+        raise RuntimeError(f"{label} is not owned by the verified Edge owner processes")
     control_window_handle = control_top_level_handle(control)
     if not window_is_owned_by(control_window_handle, owned_window_handle):
         if (
-            owned_process_id_for_window(control_window_handle) != owned_process_id
+            owned_process_id_for_window(control_window_handle) not in accepted_process_ids
             or not ctypes.windll.user32.IsWindowVisible(control_window_handle)
         ):
             raise RuntimeError(f"{label} is not owned by the original Edge process")
@@ -385,6 +421,7 @@ def invoke_owned_control(control, owned_process_id: int, owned_window_handle: in
         owned_process_id,
         owned_window_handle,
         allowed_popup_handle=control_window_handle,
+        allowed_process_ids=tuple(accepted_process_ids),
     )
     # Prefer the semantic UIA Invoke/Select patterns. UIAWrapper.click can fall
     # back to input simulation on some pywinauto versions, which is both less
@@ -406,7 +443,11 @@ def invoke_owned_control(control, owned_process_id: int, owned_window_handle: in
             import pywinauto.uia_defines as uia_defs  # type: ignore
             legacy_interface = uia_defs.get_elem_interface(control.element_info.element, "LegacyIAccessible")
             legacy_interface.DoDefaultAction()
-    require_owned_foreground_process(owned_process_id, owned_window_handle)
+    require_owned_foreground_process(
+        owned_process_id,
+        owned_window_handle,
+        allowed_process_ids=tuple(accepted_process_ids),
+    )
 
 
 def non_sensitive_window_identity(handle: int, owned_process_id: int) -> dict:
@@ -828,6 +869,7 @@ def main() -> None:
                 desktop = Desktop(backend="uia")
                 window = desktop.window(handle=handle)
                 owned_process_id = owned_process_id_for_window(handle)
+                allowed_process_ids = edge_owner_process_ids(owned_process_id, handle)
                 if int(window.process_id()) != owned_process_id:
                     raise RuntimeError("UIA window is not bound to the expected Edge process")
                 more_tokens = ("settings and more", "设置及更多", "设置和更多", "更多")
@@ -1114,7 +1156,7 @@ def main() -> None:
                 foreground_handle = 0
                 for discovery_round in range(2):
                     trace_stage(f"zoom-popup-roots-start:{discovery_round + 1}")
-                    all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
+                    all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle, allowed_process_ids)
                     foreground_handle = int(ctypes.windll.user32.GetForegroundWindow() or 0)
                     popup_windows = [
                         candidate for candidate in all_owned_windows
@@ -1213,7 +1255,14 @@ def main() -> None:
                 zoom_control = zoom_matches[0]
                 stage = "invoke-zoom-in"
                 trace_stage(stage)
-                invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control", allow_stale_enabled=True)
+                invoke_owned_control(
+                    zoom_control,
+                    owned_process_id,
+                    handle,
+                    "Edge Zoom in control",
+                    allow_stale_enabled=True,
+                    allowed_process_ids=allowed_process_ids,
+                )
                 time.sleep(args.settle_milliseconds / 1000)
                 # Edge normally keeps its Settings menu open after the Zoom
                 # in control is invoked. Close it through the same owned UIA
