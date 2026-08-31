@@ -97,6 +97,11 @@ function createRuntimeServer(runtimeDirectory, sourceRuntime) {
   const sockets = new Set();
   const server = http.createServer((request, response) => {
     const pathname = new URL(request.url || "/", "http://127.0.0.1").pathname;
+    if (pathname === "/favicon.ico") {
+      response.writeHead(204, { "Cache-Control": "no-store" });
+      response.end();
+      return;
+    }
     if (pathname === "/") {
       response.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
       response.end("<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"stylesheet\" href=\"/style.css\"><link rel=\"stylesheet\" href=\"/desktop-overview.css\" media=\"(min-width:1200px)\"></head><body><div id=\"app\"></div><script src=\"/panel-framework.js\"></script></body></html>");
