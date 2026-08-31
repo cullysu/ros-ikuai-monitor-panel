@@ -171,6 +171,7 @@ async function launchRuntime(options = {}) {
       headless = true,
       mockTransport = process.platform === "win32" ? "pipe" : "tcp",
       mockPreferIpv4 = false,
+      browserConnectionMode = process.platform === "win32" ? "pipe" : "server",
       signal: _ignoredSignal,
       ...contextOptions
     } = options;
@@ -180,7 +181,7 @@ async function launchRuntime(options = {}) {
       executablePath,
       headless,
       args: [...(process.platform === "linux" ? ["--no-sandbox"] : []), ...browserArgs],
-      connectionMode: process.platform === "win32" ? "pipe" : "server",
+      connectionMode: browserConnectionMode,
       launchTimeoutMs: LAUNCH_TIMEOUT_MS,
       cleanupTimeoutMs: CLEANUP_TIMEOUT_MS,
     }), LAUNCH_TIMEOUT_MS)).value;

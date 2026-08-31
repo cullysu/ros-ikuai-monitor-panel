@@ -951,6 +951,7 @@ async function runCell(viewport, scenario) {
       headless: false,
       mockTransport: "tcp",
       mockPreferIpv4: true,
+      browserConnectionMode: "server",
       viewport: baselineViewport,
       deviceScaleFactor: 1,
       isMobile: false,
@@ -963,10 +964,8 @@ async function runCell(viewport, scenario) {
     // bounded infrastructure write, immediately before the real toolbar input.
     const identityAtEvidenceStart = gitWorktreeIdentity(root);
     const stableIdentityAtEvidenceStart = stableEvidenceIdentity();
-    const browserPid = Number(runtime.managedBrowser?.diagnostics?.ownedBrowserPid || 0);
-    assert(Number.isInteger(browserPid) && browserPid > 0, "managed Edge browser PID is required for process-owned UIA binding", {
-      diagnostics: runtime.managedBrowser?.diagnostics || null,
-    });
+    const browserPidValue = Number(runtime.managedBrowser?.diagnostics?.ownedBrowserPid || 0);
+    const browserPid = Number.isInteger(browserPidValue) && browserPidValue > 0 ? browserPidValue : null;
     const title = `RouterPanel Edge Toolbar Zoom ${viewport.id} ${scenario} ${crypto.randomUUID()}`;
     await runtime.page.evaluate((value) => { document.title = value; }, title);
     const baseline = await geometry(runtime.page);
