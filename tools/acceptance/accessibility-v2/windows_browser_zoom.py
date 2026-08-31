@@ -977,6 +977,12 @@ def main() -> None:
                             matches[key] = control
                     return list(matches.values())
 
+                def is_original_edge_shell_control(control):
+                    try:
+                        return control_top_level_handle(control) == handle
+                    except Exception:
+                        return False
+
                 def find_bounded_control_matches(containers, tokens, automation_ids=(), exact=False):
                     """Search bounded ControlView descendants for semantic Edge controls."""
                     matches = {}
@@ -1038,7 +1044,11 @@ def main() -> None:
                 for auto_id in more_automation_ids:
                     try:
                         candidate = window.child_window(auto_id=auto_id).wrapper_object()
-                        if candidate.exists(timeout=0) and ui_control_is_visible_and_enabled(candidate):
+                        if (
+                            candidate.exists(timeout=0)
+                            and is_original_edge_shell_control(candidate)
+                            and ui_control_is_visible_and_enabled(candidate)
+                        ):
                             more = candidate
                             break
                     except Exception:
@@ -1050,9 +1060,27 @@ def main() -> None:
                         exact=True,
                         automation_ids=more_automation_ids,
                     )
+                    more_matches = [candidate for candidate in more_matches if is_original_edge_shell_control(candidate)]
                     if len(more_matches) != 1:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
                     more = more_matches[0]
+                try:
+                    more_info = more.element_info
+                    trace_stage(
+                        "settings-and-more-control:"
+                        + json.dumps(
+                            {
+                                "name": ui_control_names(more)[:2],
+                                "automationId": str(getattr(more_info, "automation_id", "") or ""),
+                                "topLevel": control_top_level_handle(more),
+                                "window": handle,
+                            },
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                        )
+                    )
+                except Exception:
+                    trace_stage("settings-and-more-control:unavailable")
                 stage = "invoke-settings-and-more"
                 trace_stage(stage)
                 invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
