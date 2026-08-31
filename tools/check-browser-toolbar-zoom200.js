@@ -508,6 +508,8 @@ function runPythonToolbarZoom(title, { action = "inspect", capturePath = "", cap
       } else {
         child.kill();
       }
+      const diagnostic = Buffer.concat(stderr).toString("utf8").trim();
+      if (diagnostic) process.stderr.write(`[edge-toolbar-child-diagnostic] ${diagnostic.slice(-4000)}\n`);
       const error = new Error(`Windows Edge toolbar automation exceeded its bounded timeout during ${action}`);
       error.code = "EDGE_UI_AUTOMATION_TIMEOUT";
       error.detail = { action, title };

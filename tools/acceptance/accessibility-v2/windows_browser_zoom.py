@@ -236,6 +236,11 @@ def safe_exception_message(error: BaseException) -> str:
     message = str(error).strip()
     return message or type(error).__name__
 
+
+def trace_stage(label: str) -> None:
+    """Emit a bounded diagnostic channel that never contaminates JSON stdout."""
+    print(f"[edge-uia-stage] {label}", file=sys.stderr, flush=True)
+
 def raw_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> list:
     """Walk one already-bound UIA tree through RawView, never the desktop root."""
     from pywinauto.controls.uiawrapper import UIAWrapper  # type: ignore
@@ -741,12 +746,15 @@ def main() -> None:
     started_at = time.time()
     stage = "find-owned-window"
     try:
+        trace_stage(stage)
         handle = find_owned_window_handle(args.title, args.timeout_seconds)
         stage = "validate-owned-window"
+        trace_stage(stage)
         validate_owned_edge_window(handle, args.title)
         if args.window_handle and int(args.window_handle) != handle:
             raise RuntimeError("UIA action handle differs from the original Edge window")
         stage = "focus-owned-window"
+        trace_stage(stage)
         focus_owned_window(handle, args.timeout_seconds)
         if not args.capture_only:
             # This helper performs one process-owned toolbar operation at a
@@ -913,6 +921,7 @@ def main() -> None:
                     return list(matches.values())
 
                 stage = "find-settings-and-more"
+                trace_stage(stage)
                 more = None
                 for auto_id in more_automation_ids:
                     try:
@@ -933,6 +942,7 @@ def main() -> None:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
                     more = more_matches[0]
                 stage = "invoke-settings-and-more"
+                trace_stage(stage)
                 invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
                 time.sleep(args.settle_milliseconds / 1000)
                 # Do not scan every visible UIA window on the desktop here.
@@ -943,6 +953,7 @@ def main() -> None:
                 # process, so keep the search bounded to that process and the
                 # already-owned window.
                 stage = "find-zoom-in"
+                trace_stage(stage)
                 # Search the original Edge window first.  Only if the transient
                 # menu has not materialized do we enumerate same-process popup
                 # roots once, then perform one bounded fallback tree walk.  The
@@ -975,6 +986,7 @@ def main() -> None:
                     )
                 zoom_control = zoom_matches[0]
                 stage = "invoke-zoom-in"
+                trace_stage(stage)
                 invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control", allow_stale_enabled=True)
                 time.sleep(args.settle_milliseconds / 1000)
                 # Edge normally keeps its Settings menu open after the Zoom
