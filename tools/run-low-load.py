@@ -696,7 +696,8 @@ def main() -> int:
                 browser_cpu_rate, load, browser_recover_samples
             )
             if next_rate != browser_cpu_rate:
-                set_windows_job_cpu_cap(job_handle, next_rate)
+                if os.name == "nt":
+                    set_windows_job_cpu_cap(job_handle, next_rate)
                 browser_cpu_rate = next_rate
                 if next_rate == BROWSER_CPU_RATE_DEGRADED:
                     action = "system busy; browser task quota reduced"
