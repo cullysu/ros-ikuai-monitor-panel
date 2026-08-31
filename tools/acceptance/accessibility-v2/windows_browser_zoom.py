@@ -880,7 +880,13 @@ def main() -> None:
                             if not matched and not matched_id:
                                 continue
                             if not ui_control_is_visible_and_enabled(button):
-                                if not (allow_known_automation_ids and matched_id and has_visible_bounds(button)):
+                                # Transient Edge flyouts can report a stale
+                                # Visible/Enabled projection while their
+                                # matched button still has a real on-screen
+                                # rectangle. The caller enables this only for
+                                # the selected popup-root fallback, never for
+                                # the full browser window.
+                                if not (allow_known_automation_ids and has_visible_bounds(button)):
                                     continue
                             name = names[0] if names else automation_id
                             if not name:
