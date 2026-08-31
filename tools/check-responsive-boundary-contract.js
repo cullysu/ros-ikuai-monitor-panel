@@ -108,14 +108,15 @@ async function inspectCell(page, baseUrl, cell) {
   return evidence;
 }
 
-async function main() {
+async function main(signal) {
   const started = Date.now();
   const identityStart = gitWorktreeIdentity(root);
   const results = [];
   for (const cell of cells) {
+    signal?.throwIfAborted?.();
     let runtime = null;
     try {
-      runtime = await launchRuntime({ viewport: { width: cell.width, height: cell.height }, screen: { width: cell.width, height: cell.height }, isMobile: false, hasTouch: false });
+      runtime = await launchRuntime({ viewport: { width: cell.width, height: cell.height }, screen: { width: cell.width, height: cell.height }, isMobile: false, hasTouch: false, signal });
       await login(runtime.page, overviewUrl(runtime.mock.url));
       try { results.push({ ...cell, pass: true, evidence: await inspectCell(runtime.page, runtime.mock.url, cell) }); }
       catch (error) { results.push({ ...cell, pass: false, error: serialise(error) }); }
@@ -129,7 +130,7 @@ async function main() {
   if (!complete) process.exitCode = 1;
 }
 
-withTimeout("responsive telemetry boundary", () => main(), RUNTIME_BOUNDARY_TIMEOUT_MS).catch((error) => {
+withTimeout("responsive telemetry boundary", (signal) => main(signal), RUNTIME_BOUNDARY_TIMEOUT_MS).catch((error) => {
   const identity = gitWorktreeIdentity(root);
   const report = { pass: false, complete: false, contract, source: "mobile-reference", generatedAt: new Date().toISOString(), commit: identity.commit, artifactKey: identity.artifactKey, worktreeFingerprint: identity.worktreeFingerprint, error: serialise(error) };
   fs.mkdirSync(artifactDir, { recursive: true }); fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);

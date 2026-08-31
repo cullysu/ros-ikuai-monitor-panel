@@ -338,13 +338,14 @@ async function inspectConnection(page, runtime) {
 
 async function inspectAbortBound() { const started = Date.now(); let error = null; try { await boundedAbortCleanup(() => new Promise(() => {}), 70); } catch (failure) { error = failure; } const evidence = { code: error?.code || "", elapsedMs: Date.now() - started, configured: ABORT_CLEANUP_TIMEOUT_MS }; assert(evidence.code === "ABORT_CLEANUP_TIMEOUT" && evidence.elapsedMs >= 50 && evidence.elapsedMs < 1000, "runtime abort cleanup is not bounded", evidence); return evidence; }
 
-async function main() {
+async function main(signal) {
   const started = Date.now(); const identityStart = gitWorktreeIdentity(root); const stages = []; let runtime = null;
   const run = async (name, operation) => { const stage = { name, status: "running" }; stages.push(stage); try { stage.evidence = await operation(); stage.status = "passed"; } catch (error) { stage.status = "failed"; stage.error = serialise(error); throw error; } };
   try {
     await run("static-mobile-reference-owner", inspectStaticContract);
     await run("abort-cleanup-bound", inspectAbortBound);
-    runtime = await launchRuntime({ viewport: { width: 390, height: 844 }, screen: { width: 390, height: 844 } });
+    signal?.throwIfAborted?.();
+    runtime = await launchRuntime({ viewport: { width: 390, height: 844 }, screen: { width: 390, height: 844 }, signal });
     await configure(runtime, "");
     await open(runtime.page, runtime.mock.url, "overview");
     await run("overview-controls", () => inspectSurface(runtime.page, HOME_SELECTOR, "overview"));
@@ -364,7 +365,7 @@ async function main() {
 }
 
 if (require.main === module) {
-  withTimeout("mobile reference accessibility", () => main(), accessibilityGlobalTimeoutMs()).catch((error) => { const identity = gitWorktreeIdentity(root); const report = { pass: false, complete: false, contract, source: "mobile-reference", generatedAt: new Date().toISOString(), commit: identity.commit, artifactKey: identity.artifactKey, worktreeFingerprint: identity.worktreeFingerprint, error: serialise(error) }; fs.mkdirSync(artifactDir, { recursive: true }); fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`); console.error(JSON.stringify(report, null, 2)); process.exitCode = 1; });
+  withTimeout("mobile reference accessibility", (signal) => main(signal), accessibilityGlobalTimeoutMs()).catch((error) => { const identity = gitWorktreeIdentity(root); const report = { pass: false, complete: false, contract, source: "mobile-reference", generatedAt: new Date().toISOString(), commit: identity.commit, artifactKey: identity.artifactKey, worktreeFingerprint: identity.worktreeFingerprint, error: serialise(error) }; fs.mkdirSync(artifactDir, { recursive: true }); fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`); console.error(JSON.stringify(report, null, 2)); process.exitCode = 1; });
 }
 
 module.exports = { accessibilityGlobalTimeoutMs };
