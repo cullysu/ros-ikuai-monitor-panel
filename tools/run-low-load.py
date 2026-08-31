@@ -25,6 +25,13 @@ from pathlib import Path
 import psutil
 
 
+# psutil exposes Windows priority constants only on Windows.  The browser
+# launcher also runs in Linux CI, where the equivalent conservative nice
+# values must be supplied explicitly instead of importing Windows-only names.
+IDLE_PRIORITY_CLASS = getattr(psutil, "IDLE_PRIORITY_CLASS", 19)
+BELOW_NORMAL_PRIORITY_CLASS = getattr(psutil, "BELOW_NORMAL_PRIORITY_CLASS", 10)
+
+
 # Keep ordinary work conservative: the managed tree is one-core and below
 # normal priority, and is paused well before the user's 70% whole-machine
 # ceiling because this launcher cannot control unrelated system processes.
@@ -209,9 +216,9 @@ def apply_limits(
         try:
             candidate.cpu_affinity([0])
             candidate.nice(
-                psutil.IDLE_PRIORITY_CLASS
+                IDLE_PRIORITY_CLASS
                 if idle_priority
-                else psutil.BELOW_NORMAL_PRIORITY_CLASS
+                else BELOW_NORMAL_PRIORITY_CLASS
             )
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue

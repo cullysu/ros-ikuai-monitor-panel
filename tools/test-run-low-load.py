@@ -182,7 +182,7 @@ def main() -> int:
         include_descendants=False,
     )
     assert browser_owner.affinity == [0]
-    assert browser_owner.priority == MODULE.psutil.IDLE_PRIORITY_CLASS
+    assert browser_owner.priority == MODULE.IDLE_PRIORITY_CLASS
 
     print("run-low-load policy: PASS")
     return 0
