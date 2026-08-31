@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE_IMAGE = "python:3.12.10-slim-bookworm@sha256:fd95fa221297a88e1cf49c55ec1828edd7c5a428187e67b5d1805692d11588db"
 LOCK_NAME = "requirements.lock"
 BUILD_LOCK_NAME = "requirements-build.lock"
-DIRECT_REQUIREMENTS = {"paramiko", "requests"}
+DIRECT_REQUIREMENTS = {"paramiko", "requests", "psutil"}
 BUILD_REQUIREMENTS = {
     "altgraph",
     "packaging",
@@ -88,7 +88,11 @@ def verify_static(root: Path = ROOT) -> dict[str, object]:
     if read_text(root / "requirements-build.txt").strip() != f"--require-hashes\n-r {BUILD_LOCK_NAME}":
         raise LockContractError("requirements-build.txt must enforce hashes and delegate only to the immutable build lock")
     source = read_text(root / "requirements.in")
-    if "paramiko>=3.4,<4" not in source or "requests>=2.32,<3" not in source:
+    if (
+        "paramiko>=3.4,<4" not in source
+        or "requests>=2.32,<3" not in source
+        or "psutil>=7.1,<8" not in source
+    ):
         raise LockContractError("requirements.in must retain the reviewed direct dependency bounds")
     packages = parse_lock(root / LOCK_NAME)
     missing = sorted(DIRECT_REQUIREMENTS - set(packages))

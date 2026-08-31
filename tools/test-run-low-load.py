@@ -124,7 +124,7 @@ def main() -> int:
         Path(__file__).parent.parent.joinpath("package.json").read_text(encoding="utf-8")
     )["scripts"]
     assert package_scripts["check:route-deep-interactions-v2"] == (
-        "py -3 tools/run-low-load.py --browser node --max-old-space-size=2048 "
+        "python tools/run-low-load.py --browser node --max-old-space-size=2048 "
         "tools/check-route-deep-interactions-v2.js"
     )
     route_deep_source = Path(__file__).parent.joinpath(
