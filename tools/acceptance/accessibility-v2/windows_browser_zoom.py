@@ -301,14 +301,11 @@ def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) 
         return True
 
     user32.EnumWindows(collect, 0)
-    # Hosted runners can expose Edge's app menu through UIA before its popup
-    # HWND becomes visible to EnumWindows. Query only this exact Edge process;
-    # add_window preserves the HWND/process identity boundary and deduplicates.
-    try:
-        for candidate in desktop.windows(process=owned_process_id, visible_only=False):
-            add_window(int(getattr(candidate, "handle", 0) or 0))
-    except Exception:
-        pass
+    # Do not call Desktop.windows(process=...) here.  That asks UIA to enumerate
+    # every window in the Edge process and can block behind a transient popup for
+    # tens of seconds on hosted Windows runners.  EnumWindows above is enough to
+    # discover a visible menu root while preserving the exact HWND/process
+    # boundary; the original Edge window remains the first search container.
     return containers
 
 def control_top_level_handle(control) -> int:
@@ -862,14 +859,18 @@ def main() -> None:
                     return list(matches.values())
 
                 def find_direct_automation_id_matches(containers, automation_ids):
-                    """Resolve Edge's transient menu controls without tree enumeration."""
+                    """Resolve a known Edge menu control with bounded direct lookups."""
                     matches = {}
                     normalized_ids = {" ".join(str(value).lower().split()) for value in automation_ids}
                     for container in containers:
                         for automation_id in automation_ids:
                             try:
                                 candidate = container.child_window(auto_id=automation_id).wrapper_object()
-                                if not candidate.exists(timeout=0.25):
+                                # A zero-wait probe is intentional.  The caller
+                                # controls the small number of retry rounds and
+                                # must not multiply UIA's internal wait across
+                                # every root/id combination.
+                                if not candidate.exists(timeout=0):
                                     continue
                                 actual_id = " ".join(str(getattr(candidate.element_info, "automation_id", "") or "").lower().split())
                                 if actual_id not in normalized_ids or not has_visible_bounds(candidate):
@@ -891,7 +892,7 @@ def main() -> None:
                 for auto_id in more_automation_ids:
                     try:
                         candidate = window.child_window(auto_id=auto_id).wrapper_object()
-                        if candidate.exists(timeout=0.5) and ui_control_is_visible_and_enabled(candidate):
+                        if candidate.exists(timeout=0) and ui_control_is_visible_and_enabled(candidate):
                             more = candidate
                             break
                     except Exception:
@@ -918,42 +919,40 @@ def main() -> None:
                 # process, so keep the search bounded to that process and the
                 # already-owned window.
                 stage = "find-zoom-in"
-                zoom_matches = []
-                zoom_search_attempts = 0
+                # Search the original Edge window first.  Only if the transient
+                # menu has not materialized do we enumerate same-process popup
+                # roots once, then perform one bounded fallback tree walk.  The
+                # previous 6-12 round loop repeatedly re-ran UIA queries across
+                # every root and was the source of hosted-runner timeouts.
+                zoom_search_attempts = 1
                 owned_windows = []
-                for zoom_search_attempts in range(1, 13):
-                    # Edge may publish the transient menu root after the click
-                    # animation. Refresh the bounded same-process root set at
-                    # the beginning and once after the popup has had time to
-                    # materialize; repeatedly enumerating all UIA roots can
-                    # itself exceed the one-action timeout on hosted runners.
-                    if not owned_windows or zoom_search_attempts == 4:
-                        owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
-                    search_containers = (window, *owned_windows)
-                    zoom_matches = find_direct_automation_id_matches(search_containers, zoom_in_automation_ids)
-                    if not zoom_matches:
-                        zoom_matches = find_buttons(
-                            search_containers,
-                            zoom_in_tokens,
-                            automation_ids=zoom_in_automation_ids,
-                            allow_known_automation_ids=True,
-                        )
-                    if not zoom_matches and zoom_search_attempts >= 3 and zoom_search_attempts in (3, 6):
-                        # Edge can expose the transient menu only in RawView
-                        # while its ControlView remains empty. Keep this fallback
-                        # bounded to the original Edge window and popup roots.
-                        zoom_matches = find_buttons(
-                            search_containers,
-                            zoom_in_tokens,
-                            automation_ids=zoom_in_automation_ids,
-                            include_raw=True,
-                            allow_known_automation_ids=True,
-                        )
-                    if zoom_matches:
-                        break
-                    if zoom_search_attempts >= 6:
-                        break
+                zoom_matches = find_direct_automation_id_matches((window,), zoom_in_automation_ids)
+                if not zoom_matches:
                     time.sleep(0.15)
+                    zoom_search_attempts = 2
+                    owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
+                    zoom_matches = find_direct_automation_id_matches(tuple(owned_windows), zoom_in_automation_ids)
+                search_containers = (window, *owned_windows)
+                if not zoom_matches:
+                    zoom_search_attempts = 3
+                    zoom_matches = find_buttons(
+                        search_containers,
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                        allow_known_automation_ids=True,
+                    )
+                if not zoom_matches:
+                    zoom_search_attempts = 4
+                    # Edge can expose the transient menu only in RawView while
+                    # its ControlView is empty. This is the final bounded
+                    # fallback, still restricted to the exact Edge roots.
+                    zoom_matches = find_buttons(
+                        search_containers,
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                        include_raw=True,
+                        allow_known_automation_ids=True,
+                    )
                 if len(zoom_matches) != 1:
                     raise RuntimeError(
                         f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
