@@ -306,7 +306,7 @@ def control_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) 
 
 
 def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) -> list:
-    """Return UIA roots for the original Edge HWND and visible same-process popups."""
+    """Return UIA roots for the original Edge HWND and bounded same-process menus."""
     user32 = ctypes.windll.user32
     containers = []
     seen: set[int] = set()
@@ -338,11 +338,28 @@ def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int) 
         return True
 
     user32.EnumWindows(collect, 0)
+    # Edge menu projections can be child HWNDs instead of top-level popup
+    # windows. Discover only a bounded child set below the already-owned Edge
+    # HWND; this avoids the expensive desktop/UIA tree enumeration that caused
+    # the previous CI hangs while still covering the real menu surface.
+    child_count = 0
+
+    @callback_type
+    def collect_child(hwnd, _lparam):
+        nonlocal child_count
+        if child_count >= 256:
+            return False
+        child_count += 1
+        add_window(int(hwnd))
+        return True
+
+    user32.EnumChildWindows(owned_window_handle, collect_child, 0)
     # Do not call Desktop.windows(process=...) here.  That asks UIA to enumerate
     # every window in the Edge process and can block behind a transient popup for
-    # tens of seconds on hosted Windows runners.  EnumWindows above is enough to
-    # discover a visible menu root while preserving the exact HWND/process
-    # boundary; the original Edge window remains the first search container.
+    # tens of seconds on hosted Windows runners.  The bounded Win32 enumeration
+    # above is enough to discover a visible menu root while preserving the exact
+    # HWND/process boundary; the original Edge window remains the first search
+    # container.
     return containers
 
 def control_top_level_handle(control) -> int:
