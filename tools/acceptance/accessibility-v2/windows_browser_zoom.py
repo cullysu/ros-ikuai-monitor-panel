@@ -1044,10 +1044,26 @@ def main() -> None:
         emit({"pass": False, "code": "PYWINAUTO_REQUIRED", "message": "pywinauto is not installed"}, 2)
 
     started_at = time.time()
-    stage = "find-owned-window"
+    stage = "reuse-owned-window" if args.window_handle else "find-owned-window"
     try:
         trace_stage(stage)
-        handle = find_owned_window_handle(args.title, args.timeout_seconds, args.browser_pid)
+        # Every menu-plus invocation already carries the HWND returned by the
+        # validated baseline inspection. Re-discovering that same window by
+        # title is fragile for oversized tablet viewports: Chromium can expose
+        # the title late or through a different Win32 projection. Reuse the
+        # validated handle when present; only the initial inspect action needs
+        # title/process-tree discovery.
+        if args.window_handle:
+            handle = int(args.window_handle)
+            validate_owned_edge_window(
+                handle,
+                args.title,
+                require_visible=False,
+                expected_process_ids=expected_process_ids,
+                require_title=args.browser_pid <= 0,
+            )
+        else:
+            handle = find_owned_window_handle(args.title, args.timeout_seconds, args.browser_pid)
         stage = "validate-owned-window"
         trace_stage(stage)
         validate_owned_edge_window(

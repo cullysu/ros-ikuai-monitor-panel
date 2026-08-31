@@ -56,7 +56,8 @@ assert.match(windowsZoomSource, /def ui_control_names\([\s\S]*element_info, "nam
 assert.match(windowsZoomSource, /EDGE_ACCELERATOR_SUFFIX[\s\S]*def canonical_ui_name[\s\S]*def ui_name_matches[\s\S]*return normalized_name in normalized_tokens/, 'exact Edge names may only remove a recognized accelerator suffix');
 assert.doesNotMatch(windowsZoomSource, /observed\.append|automation_id.*observed|json\.dumps\(observed/, 'UIA metadata must not be emitted into CI diagnostics');
 assert.match(windowsZoomSource, /def safe_exception_message[\s\S]*type\(error\).__name__/, 'UIA failures must preserve a safe exception type when the message is empty');
-assert.match(windowsZoomSource, /stage = \"find-owned-window\"[\s\S]*\"stage\": stage/, 'UIA failures must retain a bounded execution stage');
+assert.match(windowsZoomSource, /stage = .*find-owned-window[\s\S]*\"stage\": stage/, 'UIA failures must retain a bounded execution stage');
+assert.match(windowsZoomSource, /if args\.window_handle:[\s\S]*validate_owned_edge_window\([\s\S]*else:[\s\S]*handle = find_owned_window_handle/, 'menu actions must reuse the validated baseline HWND instead of rediscovering oversized Edge windows by title');
 assert(windowsZoomSource.includes('more_matches = find_bounded_raw_matches(') && windowsZoomSource.includes('more_tokens,'), 'Settings and more lookup must retain a bounded canonical localized-name fallback');
 assert.match(windowsZoomSource, /matched = any\([\s\S]*ui_name_matches\(candidate, tuple\(normalized_tokens\), exact=exact\)/, 'Edge UIA lookup must test every bounded name projection for the owned control');
 assert.doesNotMatch(windowsZoomSource, /matched = name in normalized_tokens if exact else any\(token in name/, 'Edge UIA lookup must not regress to the old exact-or-broad-substring branch');
