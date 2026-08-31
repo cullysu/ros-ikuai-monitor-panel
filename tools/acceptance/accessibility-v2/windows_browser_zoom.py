@@ -1024,25 +1024,38 @@ def main() -> None:
                 # block on the full browser accessibility tree while the menu is
                 # already available in its popup HWND.
                 zoom_search_attempts = 1
-                trace_stage("zoom-popup-roots-start")
-                all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
-                foreground_handle = int(ctypes.windll.user32.GetForegroundWindow() or 0)
-                popup_windows = [
-                    candidate for candidate in all_owned_windows
-                    if (
-                        int(getattr(candidate, "handle", 0) or 0) != handle
-                        and bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                popup_windows = []
+                owned_windows = [window]
+                foreground_handle = 0
+                for discovery_round in range(2):
+                    trace_stage(f"zoom-popup-roots-start:{discovery_round + 1}")
+                    all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
+                    foreground_handle = int(ctypes.windll.user32.GetForegroundWindow() or 0)
+                    popup_windows = [
+                        candidate for candidate in all_owned_windows
+                        if (
+                            int(getattr(candidate, "handle", 0) or 0) != handle
+                            and (
+                                bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                                or window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
+                            )
+                        )
+                    ]
+                    popup_windows.sort(
+                        key=lambda candidate: (
+                            0 if bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0))) else 1,
+                            0 if int(getattr(candidate, "handle", 0) or 0) == foreground_handle else 1,
+                            0 if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle) else 1,
+                        )
                     )
-                ]
-                popup_windows.sort(
-                    key=lambda candidate: (
-                        0 if int(getattr(candidate, "handle", 0) or 0) == foreground_handle else 1,
-                        0 if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle) else 1,
-                    )
-                )
-                popup_windows = popup_windows[:4]
+                    popup_windows = popup_windows[:4]
+                    if popup_windows:
+                        zoom_search_attempts = discovery_round + 1
+                        break
+                    if discovery_round == 0:
+                        time.sleep(0.15)
                 owned_windows = popup_windows or [window]
-                trace_stage(f"zoom-popup-roots-end:{len(owned_windows)}")
+                trace_stage(f"zoom-popup-roots-end:popup={len(popup_windows)};search={len(owned_windows)}")
                 zoom_search_attempts = 2
                 trace_stage("zoom-direct-popup-start")
                 # Chromium Edge often exposes the menu button's AutomationId
