@@ -1115,6 +1115,17 @@ def main() -> None:
                     zoom_in_automation_ids,
                 )
                 trace_stage(f"zoom-direct-popup-end:{len(zoom_matches)}")
+                if not zoom_matches:
+                    # Chromium Edge can keep the menu projection under the
+                    # original browser root. The zero-wait existence probe is
+                    # safe here; wrapper resolution is attempted only after
+                    # Edge reports a matching AutomationId.
+                    trace_stage("zoom-direct-browser-start")
+                    zoom_matches = find_direct_automation_id_matches(
+                        (window,),
+                        zoom_in_automation_ids,
+                    )
+                    trace_stage(f"zoom-direct-browser-end:{len(zoom_matches)}")
                 zoom_search_attempts = 3
                 trace_stage("zoom-raw-bounded-start")
                 if not zoom_matches:
