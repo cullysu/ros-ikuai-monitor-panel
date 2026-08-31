@@ -84,7 +84,12 @@ const TOOLBAR_200_REQUIRED_CELLS = Object.freeze(TOOLBAR_200_MATRIX.flatMap((vie
 
 function toolbarScenarioConfig(scenario) {
   if (scenario === "normal") return { fixtureScenario: "single", route: "overview", surface: "overview", runtimePhase: "current" };
-  if (scenario === "fleet") return { fixtureScenario: "fleet-coverage", route: "overview", surface: "overview", runtimePhase: "current" };
+  // Keep the real Edge fixture name aligned with the canonical matrix.  The
+  // former fleet-coverage fixture only added below-the-fold interfaces, so the
+  // 390px renderer screenshot was byte-identical to normal and was correctly
+  // rejected as reused evidence.  The canonical fleet fixture changes the
+  // visible WAN scope and identity as well as the underlying rows.
+  if (scenario === "fleet") return { fixtureScenario: "fleet", route: "overview", surface: "overview", runtimePhase: "current" };
   if (scenario === "interfaces-down") return { fixtureScenario: "interfaces-down", route: "interfaces", surface: "route", runtimePhase: "current" };
   if (scenario === "interfaces-down-overview") return { fixtureScenario: "interfaces-down", route: "overview", surface: "overview", runtimePhase: "current" };
   if (TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS.includes(scenario)) {
