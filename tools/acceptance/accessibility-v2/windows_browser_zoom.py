@@ -459,6 +459,14 @@ def invoke_owned_control(
     )
 
 
+def dispatch_uia_pattern(control, pattern_name: str, method_name: str) -> None:
+    """Dispatch one explicit UIA pattern without falling back to input simulation."""
+    import pywinauto.uia_defines as uia_defs  # type: ignore
+
+    interface = uia_defs.get_elem_interface(control.element_info.element, pattern_name)
+    getattr(interface, method_name)()
+
+
 def non_sensitive_window_identity(handle: int, owned_process_id: int) -> dict:
     if not handle:
         return {"coveringProcessId": 0, "coveringClass": "", "sameProcess": False}
@@ -1099,6 +1107,89 @@ def main() -> None:
                     diagnostic = json.dumps(roots, ensure_ascii=False, separators=(",", ":"))
                     trace_stage(f"zoom-root-diagnostic:{diagnostic[:12000]}")
 
+                def discover_zoom_controls():
+                    """Discover the menu Zoom control within the exact Edge owner chain."""
+                    current_process_ids = edge_owner_process_ids(owned_process_id, handle)
+                    discovered_popup_windows = []
+                    discovered_owned_windows = [window]
+                    foreground_handle = 0
+                    for discovery_round in range(2):
+                        trace_stage(f"zoom-popup-roots-start:{discovery_round + 1}")
+                        all_owned_windows = owned_uia_windows(
+                            desktop,
+                            owned_process_id,
+                            handle,
+                            current_process_ids,
+                        )
+                        foreground_handle = int(ctypes.windll.user32.GetForegroundWindow() or 0)
+                        discovered_popup_windows = [
+                            candidate for candidate in all_owned_windows
+                            if (
+                                int(getattr(candidate, "handle", 0) or 0) != handle
+                                and (
+                                    bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                                    or window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
+                                )
+                            )
+                        ]
+                        discovered_popup_windows.sort(
+                            key=lambda candidate: (
+                                0 if bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0))) else 1,
+                                0 if int(getattr(candidate, "handle", 0) or 0) == foreground_handle else 1,
+                                0 if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle) else 1,
+                            )
+                        )
+                        # Keep discovery bounded, but leave room for IME and
+                        # translation helper HWNDs alongside the actual flyout.
+                        discovered_popup_windows = discovered_popup_windows[:12]
+                        if discovered_popup_windows:
+                            break
+                        if discovery_round == 0:
+                            time.sleep(0.15)
+                    discovered_owned_windows = discovered_popup_windows or [window]
+                    trace_stage(
+                        f"zoom-popup-roots-end:popup={len(discovered_popup_windows)};search={len(discovered_owned_windows)}"
+                    )
+                    raw_search_containers = tuple(discovered_owned_windows)
+                    if window not in raw_search_containers:
+                        raw_search_containers += (window,)
+                    trace_stage("zoom-direct-popup-start")
+                    matches = find_direct_automation_id_matches(
+                        tuple(discovered_owned_windows),
+                        zoom_in_automation_ids,
+                    )
+                    trace_stage(f"zoom-direct-popup-end:{len(matches)}")
+                    if not matches:
+                        trace_stage("zoom-direct-browser-start")
+                        matches = find_direct_automation_id_matches((window,), zoom_in_automation_ids)
+                        trace_stage(f"zoom-direct-browser-end:{len(matches)}")
+                    if not matches:
+                        trace_stage("zoom-raw-bounded-start")
+                        matches = find_bounded_raw_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                        trace_stage(f"zoom-raw-bounded-end:{len(matches)}")
+                    if not matches:
+                        trace_stage("zoom-control-bounded-start")
+                        matches = find_bounded_control_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                        trace_stage(f"zoom-control-bounded-end:{len(matches)}")
+                    if not matches and discovered_popup_windows:
+                        trace_stage("zoom-popup-descendants-start")
+                        matches = find_buttons(
+                            tuple(discovered_popup_windows),
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                            allow_known_automation_ids=True,
+                        )
+                        trace_stage(f"zoom-popup-descendants-end:{len(matches)}")
+                    return matches, discovered_popup_windows, discovered_owned_windows, current_process_ids
+
                 stage = "find-settings-and-more"
                 trace_stage(stage)
                 more = None
@@ -1320,6 +1411,30 @@ def main() -> None:
                             allow_known_automation_ids=True,
                         )
                     trace_stage(f"settings-and-more-semantic-recovery-result:{len(zoom_matches)}")
+                if not zoom_matches:
+                    for pattern_name, method_name in (
+                        ("Toggle", "Toggle"),
+                        ("ExpandCollapse", "Expand"),
+                    ):
+                        trace_stage(f"settings-and-more-pattern-recovery:{pattern_name}")
+                        try:
+                            require_owned_foreground_process(
+                                owned_process_id,
+                                handle,
+                                allowed_process_ids=tuple(allowed_process_ids),
+                            )
+                            dispatch_uia_pattern(more, pattern_name, method_name)
+                            time.sleep(args.settle_milliseconds / 1000)
+                            zoom_matches, popup_windows, owned_windows, allowed_process_ids = discover_zoom_controls()
+                            trace_stage(
+                                f"settings-and-more-pattern-recovery-result:{pattern_name}:{len(zoom_matches)}"
+                            )
+                            if zoom_matches:
+                                break
+                        except Exception as error:
+                            trace_stage(
+                                f"settings-and-more-pattern-recovery-error:{pattern_name}:{safe_exception_message(error)}"
+                            )
                 if len(zoom_matches) != 1:
                     bounded_root_diagnostic(tuple(owned_windows))
                     raise RuntimeError(
