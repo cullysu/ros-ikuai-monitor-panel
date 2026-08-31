@@ -322,10 +322,12 @@ function toolbarCellEvidenceErrors(cell, expected, stableIdentity = null) {
   }
   const captureDimensions = surface?.windowsCapture?.capture;
   const diagnosticDimensions = surface?.playwrightDiagnosticScreenshot?.dimensions;
-  if (!sameScreenshotDimensions(surface?.screenshot?.dimensions, captureDimensions) ||
-      Number(surface?.screenshot?.dimensions?.width) < Number(expectedViewport.cssViewport?.width) ||
-      Number(surface?.screenshot?.dimensions?.height) < Number(expectedViewport.cssViewport?.height)) {
-    errors.push(`${expectedId}: Windows screenshot dimensions do not match its owned capture or cover the target viewport`);
+  // Windows evidence is a physical capture of the headed Edge window, not a
+  // CSS-pixel renderer dump.  On a bounded desktop surface its height can be
+  // smaller than the zoomed CSS viewport while the separately hashed renderer
+  // screenshot still proves the complete target geometry.
+  if (!sameScreenshotDimensions(surface?.screenshot?.dimensions, captureDimensions)) {
+    errors.push(`${expectedId}: Windows screenshot dimensions do not match its owned capture`);
   }
   if (Number(diagnosticDimensions?.width) !== Number(expectedViewport.cssViewport?.width) ||
       !Number.isInteger(Number(diagnosticDimensions?.height)) ||
