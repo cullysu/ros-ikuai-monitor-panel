@@ -1192,36 +1192,44 @@ def main() -> None:
 
                 def dismiss_owned_translation_popup():
                     """Close Edge's own translation prompt before physical capture."""
+                    user32 = ctypes.windll.user32
                     current_process_ids = edge_owner_process_ids(owned_process_id, handle)
-                    roots = owned_uia_windows(desktop, owned_process_id, handle, current_process_ids)
-                    for root in roots:
-                        root_handle = int(getattr(root, "handle", 0) or 0)
-                        if root_handle <= 0 or root_handle == handle:
-                            continue
-                        root_text = window_text(root_handle).lower()
-                        if "translate" not in root_text and "翻译" not in root_text:
-                            continue
-                        trace_stage(f"translation-popup-found:{root_handle}")
-                        close_matches = find_bounded_raw_matches(
-                            (root,),
-                            ("close", "关闭"),
-                            exact=True,
-                        )
-                        if len(close_matches) != 1:
-                            raise RuntimeError(
-                                f"expected exactly one owned translation close control, found {len(close_matches)}"
-                            )
-                        invoke_owned_control(
-                            close_matches[0],
-                            owned_process_id,
-                            handle,
-                            "Edge translation popup close control",
-                            allowed_process_ids=current_process_ids,
-                        )
-                        time.sleep(args.settle_milliseconds / 1000)
-                        trace_stage("translation-popup-closed")
+                    candidates = []
+                    callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+                    @callback_type
+                    def collect(hwnd, _lparam):
+                        root_handle = int(hwnd)
+                        if root_handle <= 0 or root_handle == handle or not user32.IsWindowVisible(root_handle):
+                            return True
+                        try:
+                            process_id = owned_process_id_for_window(root_handle)
+                            class_name = window_class_name(root_handle)
+                            text = window_text(root_handle).lower()
+                            if (
+                                process_id in current_process_ids
+                                and class_name == "Chrome_WidgetWin_2"
+                                and ("translate" in text or "翻译" in text)
+                                and (window_is_owned_by(root_handle, handle) or process_id == owned_process_id)
+                            ):
+                                candidates.append(root_handle)
+                        except Exception:
+                            pass
                         return True
-                    return False
+
+                    user32.EnumWindows(collect, 0)
+                    if not candidates:
+                        return False
+                    for root_handle in candidates[:2]:
+                        trace_stage(f"translation-popup-found:{root_handle}")
+                        user32.PostMessageW(root_handle, 0x0010, 0, 0)  # WM_CLOSE
+                        deadline = time.time() + 2
+                        while time.time() < deadline and user32.IsWindowVisible(root_handle):
+                            time.sleep(0.05)
+                        if user32.IsWindowVisible(root_handle):
+                            raise RuntimeError("owned translation popup did not close after WM_CLOSE")
+                        trace_stage("translation-popup-closed")
+                    return True
 
                 stage = "find-settings-and-more"
                 trace_stage(stage)
