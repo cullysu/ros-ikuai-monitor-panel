@@ -675,7 +675,7 @@ def main() -> int:
         maximum_runtime_load = max(maximum_runtime_load, load)
         if browser_mode:
             now = time.monotonic()
-            if now - last_browser_member_refresh >= BROWSER_MEMBER_REFRESH_SECONDS:
+            if os.name == "nt" and now - last_browser_member_refresh >= BROWSER_MEMBER_REFRESH_SECONDS:
                 browser_job_members = apply_windows_job_member_limits(job_handle)
                 if managed.pid not in browser_job_members:
                     # The owner may exit normally between the poll above and
