@@ -1137,6 +1137,10 @@ def main() -> None:
                 trace_stage(stage)
                 invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
                 time.sleep(args.settle_milliseconds / 1000)
+                # The menu may be created lazily in a second msedge.exe owner
+                # process only after the toolbar action is invoked. Refresh the
+                # bounded owner-process set after the transition, not before it.
+                allowed_process_ids = edge_owner_process_ids(owned_process_id, handle)
                 # Do not scan every visible UIA window on the desktop here.
                 # A headed Edge run can coexist with many unrelated Edge
                 # windows/processes, and a global UIA enumeration can stall
