@@ -873,13 +873,15 @@ def main() -> None:
                     for container in containers:
                         for automation_id in automation_ids:
                             try:
-                                candidate = container.child_window(auto_id=automation_id).wrapper_object()
-                                # A zero-wait probe is intentional.  The caller
-                                # controls the small number of retry rounds and
-                                # must not multiply UIA's internal wait across
-                                # every root/id combination.
-                                if not candidate.exists(timeout=0):
+                                specification = container.child_window(auto_id=automation_id)
+                                # Probe the WindowSpecification before resolving
+                                # a wrapper. wrapper_object() performs its own
+                                # default wait and can block on a transient Edge
+                                # popup even though this lookup is intended to
+                                # be zero-wait and bounded.
+                                if not specification.exists(timeout=0):
                                     continue
+                                candidate = specification.wrapper_object()
                                 actual_id = " ".join(str(getattr(candidate.element_info, "automation_id", "") or "").lower().split())
                                 if actual_id not in normalized_ids or not has_visible_bounds(candidate):
                                     continue
