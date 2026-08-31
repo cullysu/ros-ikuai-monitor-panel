@@ -1194,7 +1194,11 @@ def main() -> None:
                             0 if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle) else 1,
                         )
                     )
-                    popup_windows = popup_windows[:4]
+                    # Keep the search bounded, but do not let IME/translation
+                    # helper HWNDs crowd the actual Edge flyout out of the
+                    # candidate set. Hosted runners commonly expose 5-8
+                    # same-process roots while a menu is open.
+                    popup_windows = popup_windows[:12]
                     if popup_windows:
                         zoom_search_attempts = discovery_round + 1
                         break
@@ -1265,6 +1269,57 @@ def main() -> None:
                         allow_known_automation_ids=True,
                     )
                     trace_stage(f"zoom-popup-descendants-end:{len(zoom_matches)}")
+                if not zoom_matches:
+                    # A subset of hosted Edge builds exposes the toolbar
+                    # button to UIA but silently drops both InvokePattern and
+                    # LegacyIAccessible.DoDefaultAction. Try one semantic
+                    # re-dispatch before declaring the browser contract
+                    # failed.
+                    trace_stage("settings-and-more-semantic-recovery")
+                    invoke_owned_control(
+                        more,
+                        owned_process_id,
+                        handle,
+                        "Edge Settings and more semantic recovery",
+                        allowed_process_ids=allowed_process_ids,
+                    )
+                    time.sleep(args.settle_milliseconds / 1000)
+                    allowed_process_ids = edge_owner_process_ids(owned_process_id, handle)
+                    all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle, allowed_process_ids)
+                    popup_windows = [
+                        candidate for candidate in all_owned_windows
+                        if int(getattr(candidate, "handle", 0) or 0) != handle
+                        and (
+                            bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                            or window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
+                        )
+                    ]
+                    popup_windows = popup_windows[:12]
+                    owned_windows = popup_windows or [window]
+                    raw_search_containers = tuple(owned_windows)
+                    if window not in raw_search_containers:
+                        raw_search_containers += (window,)
+                    zoom_matches = find_direct_automation_id_matches(tuple(owned_windows), zoom_in_automation_ids)
+                    if not zoom_matches:
+                        zoom_matches = find_bounded_raw_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                    if not zoom_matches:
+                        zoom_matches = find_bounded_control_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                    if not zoom_matches and popup_windows:
+                        zoom_matches = find_buttons(
+                            tuple(popup_windows),
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                            allow_known_automation_ids=True,
+                        )
+                    trace_stage(f"settings-and-more-semantic-recovery-result:{len(zoom_matches)}")
                 if len(zoom_matches) != 1:
                     bounded_root_diagnostic(tuple(owned_windows))
                     raise RuntimeError(
