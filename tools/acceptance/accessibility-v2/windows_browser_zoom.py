@@ -386,16 +386,26 @@ def invoke_owned_control(control, owned_process_id: int, owned_window_handle: in
         owned_window_handle,
         allowed_popup_handle=control_window_handle,
     )
-    # UIA click uses Invoke/Select; LegacyIAccessible is the UIA fallback, never physical mouse input.
+    # Prefer the semantic UIA Invoke/Select patterns. UIAWrapper.click can fall
+    # back to input simulation on some pywinauto versions, which is both less
+    # deterministic and less appropriate for a headed CI runner.
     if not allow_stale_enabled and not control.is_enabled():
         raise RuntimeError(f"{label} is disabled")
     from pywinauto.uia_defines import NoPatternInterfaceError  # type: ignore
-    try:
-        control.click()
-    except NoPatternInterfaceError:
+    invoke = getattr(control, "invoke", None)
+    select = getattr(control, "select", None)
+    semantic_action = invoke if callable(invoke) else select if callable(select) else None
+    if semantic_action is None:
         import pywinauto.uia_defines as uia_defs  # type: ignore
         legacy_interface = uia_defs.get_elem_interface(control.element_info.element, "LegacyIAccessible")
         legacy_interface.DoDefaultAction()
+    else:
+        try:
+            semantic_action()
+        except NoPatternInterfaceError:
+            import pywinauto.uia_defines as uia_defs  # type: ignore
+            legacy_interface = uia_defs.get_elem_interface(control.element_info.element, "LegacyIAccessible")
+            legacy_interface.DoDefaultAction()
     require_owned_foreground_process(owned_process_id, owned_window_handle)
 
 
