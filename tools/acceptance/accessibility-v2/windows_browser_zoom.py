@@ -878,8 +878,6 @@ def main() -> None:
                                 # controls the small number of retry rounds and
                                 # must not multiply UIA's internal wait across
                                 # every root/id combination.
-                                if not candidate.exists(timeout=0):
-                                    continue
                                 actual_id = " ".join(str(getattr(candidate.element_info, "automation_id", "") or "").lower().split())
                                 if actual_id not in normalized_ids or not has_visible_bounds(candidate):
                                     continue
@@ -961,10 +959,21 @@ def main() -> None:
                 zoom_search_attempts = 1
                 trace_stage("zoom-popup-roots-start")
                 all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle)
+                foreground_handle = int(ctypes.windll.user32.GetForegroundWindow() or 0)
                 popup_windows = [
                     candidate for candidate in all_owned_windows
-                    if int(getattr(candidate, "handle", 0) or 0) != handle
-                ][:4]
+                    if (
+                        int(getattr(candidate, "handle", 0) or 0) != handle
+                        and bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                    )
+                ]
+                popup_windows.sort(
+                    key=lambda candidate: (
+                        0 if int(getattr(candidate, "handle", 0) or 0) == foreground_handle else 1,
+                        0 if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle) else 1,
+                    )
+                )
+                popup_windows = popup_windows[:4]
                 owned_windows = popup_windows or [window]
                 trace_stage(f"zoom-popup-roots-end:{len(owned_windows)}")
                 zoom_search_attempts = 2
