@@ -37,7 +37,8 @@ assert.doesNotMatch(windowsZoomSource, /desktop\.windows\(process=owned_process_
 assert(windowsZoomSource.includes('more_automation_ids = (\"SettingsAndMoreButton\", \"MoreButton\", \"AppMenuButton\")'), 'Known Edge Settings and more AutomationIds must remain available inside the exact owned Edge window');
 assert(windowsZoomSource.includes('for auto_id in more_automation_ids:'), 'Known Edge Settings and more AutomationIds must be used by the lookup');
 assert(windowsZoomSource.includes('candidate.exists(timeout=0) and ui_control_is_visible_and_enabled(candidate)'), 'Known Edge Settings and more controls must remain enabled and visible before invocation');
-assert.match(windowsZoomSource, /zoom_matches = find_direct_automation_id_matches\(\(window,\), zoom_in_automation_ids\)[\s\S]*owned_windows = owned_uia_windows\(desktop, owned_process_id, handle\)[\s\S]*raw_view_descendants\(container\)/, 'Zoom in lookup must prioritize the original Edge window, refresh same-process popup roots at most once, and use only a bounded popup RawView fallback');
+assert.match(windowsZoomSource, /zoom_matches = find_direct_automation_id_matches\(\(window,\), zoom_in_automation_ids\)[\s\S]*owned_windows = owned_uia_windows\(desktop, owned_process_id, handle\)[\s\S]*zoom_matches = find_bounded_raw_matches\(/, 'Zoom in lookup must prioritize the original Edge window, refresh same-process popup roots at most once, and use only a bounded RawView fallback');
+assert.match(windowsZoomSource, /def find_bounded_raw_matches[\s\S]*raw_view_descendants\(container, max_depth=8, max_nodes=512\)/, 'Zoom and menu fallback must use the bounded RawView walker');
 assert.match(windowsZoomSource, /allowed_popup_handle[\s\S]*selected_popup/, 'Edge popup activation must permit only the selected same-process foreground popup');
 assert(windowsZoomSource.includes('more_tokens = (') && windowsZoomSource.includes('find_buttons('), 'Settings and more lookup must retain a localized-name fallback within the owned Edge window');
 assert.match(windowsZoomSource, /container\.descendants\(\)/, 'Edge menu lookup must include bounded non-Button UIA projections');
@@ -46,7 +47,7 @@ assert.match(windowsZoomSource, /EDGE_ACCELERATOR_SUFFIX[\s\S]*def canonical_ui_
 assert.doesNotMatch(windowsZoomSource, /observed\.append|automation_id.*observed|json\.dumps\(observed/, 'UIA metadata must not be emitted into CI diagnostics');
 assert.match(windowsZoomSource, /def safe_exception_message[\s\S]*type\(error\).__name__/, 'UIA failures must preserve a safe exception type when the message is empty');
 assert.match(windowsZoomSource, /stage = \"find-owned-window\"[\s\S]*\"stage\": stage/, 'UIA failures must retain a bounded execution stage');
-assert(windowsZoomSource.includes('more_matches = find_buttons(') && windowsZoomSource.includes('more_tokens,'), 'Settings and more lookup must retain a canonical localized-name fallback');
+assert(windowsZoomSource.includes('more_matches = find_bounded_raw_matches(') && windowsZoomSource.includes('more_tokens,'), 'Settings and more lookup must retain a bounded canonical localized-name fallback');
 assert.match(windowsZoomSource, /matched = any\([\s\S]*ui_name_matches\(candidate, tuple\(normalized_tokens\), exact=exact\)/, 'Edge UIA lookup must test every bounded name projection for the owned control');
 assert.doesNotMatch(windowsZoomSource, /matched = name in normalized_tokens if exact else any\(token in name/, 'Edge UIA lookup must not regress to the old exact-or-broad-substring branch');
 const configuredPanelRuntimeTimeout = Number(process.env.CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS || 0);

@@ -887,6 +887,31 @@ def main() -> None:
                                 continue
                     return list(matches.values())
 
+                def find_bounded_raw_matches(containers, tokens, automation_ids=(), exact=False):
+                    """Search only bounded RawView descendants of already-owned roots."""
+                    matches = {}
+                    normalized_automation_ids = {" ".join(str(value).lower().split()) for value in automation_ids}
+                    for container in containers:
+                        for control in raw_view_descendants(container, max_depth=8, max_nodes=512):
+                            names = ui_control_names(control)
+                            automation_id = " ".join(str(getattr(control.element_info, "automation_id", "") or "").lower().split())
+                            matched_name = any(ui_name_matches(name, tokens, exact=exact) for name in names)
+                            matched_id = bool(automation_id and automation_id in normalized_automation_ids)
+                            if not matched_name and not matched_id:
+                                continue
+                            if not ui_control_is_visible_and_enabled(control):
+                                if not (matched_id and has_visible_bounds(control)):
+                                    continue
+                            info = control.element_info
+                            key = (
+                                int(getattr(info, "process_id", 0) or 0),
+                                automation_id,
+                                names[0] if names else "",
+                                control_rect_key(control),
+                            )
+                            matches[key] = control
+                    return list(matches.values())
+
                 stage = "find-settings-and-more"
                 more = None
                 for auto_id in more_automation_ids:
@@ -898,12 +923,11 @@ def main() -> None:
                     except Exception:
                         continue
                 if more is None:
-                    more_matches = find_buttons(
+                    more_matches = find_bounded_raw_matches(
                         (window,),
                         more_tokens,
                         exact=True,
                         automation_ids=more_automation_ids,
-                        include_raw=True,
                     )
                     if len(more_matches) != 1:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
@@ -939,25 +963,11 @@ def main() -> None:
                     # Use the already-bounded walker on popup roots only; do
                     # not call descendants() for the full Edge window because
                     # that COM enumeration can block the entire action timer.
-                    for container in owned_windows:
-                        for button in raw_view_descendants(container):
-                            automation_id = " ".join(str(getattr(button.element_info, "automation_id", "") or "").lower().split())
-                            if automation_id not in {" ".join(str(value).lower().split()) for value in zoom_in_automation_ids}:
-                                continue
-                            if not has_visible_bounds(button):
-                                continue
-                            if not ui_control_is_visible_and_enabled(button):
-                                continue
-                            info = button.element_info
-                            key = (
-                                int(getattr(info, "process_id", 0) or 0),
-                                automation_id,
-                                control_rect_key(button),
-                            )
-                            zoom_matches.append(button)
-                            break
-                        if zoom_matches:
-                            break
+                    zoom_matches = find_bounded_raw_matches(
+                        search_containers,
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                    )
                 if len(zoom_matches) != 1:
                     raise RuntimeError(
                         f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
