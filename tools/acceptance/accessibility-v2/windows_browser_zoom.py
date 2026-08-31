@@ -1074,6 +1074,21 @@ def main() -> None:
                         automation_ids=zoom_in_automation_ids,
                     )
                     trace_stage(f"zoom-control-bounded-end:{len(zoom_matches)}")
+                if not zoom_matches and popup_windows:
+                    # Some Edge builds expose the flyout through the popup's
+                    # ControlView descendants but do not expose it through
+                    # either direct AutomationId lookup or the RawView walker.
+                    # This is still bounded to the already selected visible
+                    # popup roots; the original browser tree is never passed
+                    # to descendants().
+                    trace_stage("zoom-popup-descendants-start")
+                    zoom_matches = find_buttons(
+                        tuple(popup_windows),
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                        allow_known_automation_ids=True,
+                    )
+                    trace_stage(f"zoom-popup-descendants-end:{len(zoom_matches)}")
                 if len(zoom_matches) != 1:
                     raise RuntimeError(
                         f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
