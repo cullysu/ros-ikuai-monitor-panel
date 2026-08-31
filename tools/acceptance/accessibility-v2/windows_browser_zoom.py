@@ -968,12 +968,25 @@ def main() -> None:
                 owned_windows = popup_windows or [window]
                 trace_stage(f"zoom-popup-roots-end:{len(owned_windows)}")
                 zoom_search_attempts = 2
-                trace_stage("zoom-raw-bounded-start")
-                zoom_matches = find_bounded_raw_matches(
+                trace_stage("zoom-direct-popup-start")
+                # Chromium Edge often exposes the menu button's AutomationId
+                # on a popup root even when its RawView projection omits the
+                # localized label. A direct AutomationId lookup is bounded to
+                # the already discovered same-process roots and does not touch
+                # the potentially expensive original browser tree.
+                zoom_matches = find_direct_automation_id_matches(
                     tuple(owned_windows),
-                    zoom_in_tokens,
-                    automation_ids=zoom_in_automation_ids,
+                    zoom_in_automation_ids,
                 )
+                trace_stage(f"zoom-direct-popup-end:{len(zoom_matches)}")
+                zoom_search_attempts = 3
+                trace_stage("zoom-raw-bounded-start")
+                if not zoom_matches:
+                    zoom_matches = find_bounded_raw_matches(
+                        tuple(owned_windows),
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                    )
                 trace_stage(f"zoom-raw-bounded-end:{len(zoom_matches)}")
                 if len(zoom_matches) != 1:
                     raise RuntimeError(
