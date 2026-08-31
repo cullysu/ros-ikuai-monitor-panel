@@ -935,24 +935,29 @@ def main() -> None:
                 search_containers = (window, *owned_windows)
                 if not zoom_matches:
                     zoom_search_attempts = 3
-                    zoom_matches = find_buttons(
-                        search_containers,
-                        zoom_in_tokens,
-                        automation_ids=zoom_in_automation_ids,
-                        allow_known_automation_ids=True,
-                    )
-                if not zoom_matches:
-                    zoom_search_attempts = 4
-                    # Edge can expose the transient menu only in RawView while
-                    # its ControlView is empty. This is the final bounded
-                    # fallback, still restricted to the exact Edge roots.
-                    zoom_matches = find_buttons(
-                        search_containers,
-                        zoom_in_tokens,
-                        automation_ids=zoom_in_automation_ids,
-                        include_raw=True,
-                        allow_known_automation_ids=True,
-                    )
+                    # The popup may expose its control only through RawView.
+                    # Use the already-bounded walker on popup roots only; do
+                    # not call descendants() for the full Edge window because
+                    # that COM enumeration can block the entire action timer.
+                    for container in owned_windows:
+                        for button in raw_view_descendants(container):
+                            automation_id = " ".join(str(getattr(button.element_info, "automation_id", "") or "").lower().split())
+                            if automation_id not in {" ".join(str(value).lower().split()) for value in zoom_in_automation_ids}:
+                                continue
+                            if not has_visible_bounds(button):
+                                continue
+                            if not ui_control_is_visible_and_enabled(button):
+                                continue
+                            info = button.element_info
+                            key = (
+                                int(getattr(info, "process_id", 0) or 0),
+                                automation_id,
+                                control_rect_key(button),
+                            )
+                            zoom_matches.append(button)
+                            break
+                        if zoom_matches:
+                            break
                 if len(zoom_matches) != 1:
                     raise RuntimeError(
                         f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
