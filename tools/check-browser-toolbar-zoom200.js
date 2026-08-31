@@ -987,6 +987,10 @@ async function runCell(viewport, scenario) {
       requireWorkspace: scenarioConfig.surface !== "overview",
       runtimePhase: scenarioConfig.runtimePhase,
     });
+    // Route navigation may update document.title (notably the interfaces
+    // workspace). Restore the unique per-cell title before any further UIA
+    // lookup so the HWND ownership proof remains bound to this Edge window.
+    await runtime.page.evaluate((value) => { document.title = value; }, title);
     const surface = await inspectSurface(runtime.page, {
       label: `${viewport.id}-${scenario}-${scenarioConfig.surface}`,
       mainSelector: scenarioConfig.surface === "overview" ? owner.overview : owner.route,
