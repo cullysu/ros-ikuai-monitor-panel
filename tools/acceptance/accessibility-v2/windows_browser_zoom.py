@@ -1190,6 +1190,39 @@ def main() -> None:
                         trace_stage(f"zoom-popup-descendants-end:{len(matches)}")
                     return matches, discovered_popup_windows, discovered_owned_windows, current_process_ids
 
+                def dismiss_owned_translation_popup():
+                    """Close Edge's own translation prompt before physical capture."""
+                    current_process_ids = edge_owner_process_ids(owned_process_id, handle)
+                    roots = owned_uia_windows(desktop, owned_process_id, handle, current_process_ids)
+                    for root in roots:
+                        root_handle = int(getattr(root, "handle", 0) or 0)
+                        if root_handle <= 0 or root_handle == handle:
+                            continue
+                        root_text = window_text(root_handle).lower()
+                        if "translate" not in root_text and "翻译" not in root_text:
+                            continue
+                        trace_stage(f"translation-popup-found:{root_handle}")
+                        close_matches = find_bounded_raw_matches(
+                            (root,),
+                            ("close", "关闭"),
+                            exact=True,
+                        )
+                        if len(close_matches) != 1:
+                            raise RuntimeError(
+                                f"expected exactly one owned translation close control, found {len(close_matches)}"
+                            )
+                        invoke_owned_control(
+                            close_matches[0],
+                            owned_process_id,
+                            handle,
+                            "Edge translation popup close control",
+                            allowed_process_ids=current_process_ids,
+                        )
+                        time.sleep(args.settle_milliseconds / 1000)
+                        trace_stage("translation-popup-closed")
+                        return True
+                    return False
+
                 stage = "find-settings-and-more"
                 trace_stage(stage)
                 more = None
@@ -1469,6 +1502,7 @@ def main() -> None:
         capture = None
         stage = "capture-owned-edge"
         if args.capture_path:
+            dismiss_owned_translation_popup()
             target = Path(args.capture_path).resolve()
             # Playwright's page screenshot is rasterized at the context scale,
             # which can crop a page after toolbar zoom changes Edge's DPR.  A
