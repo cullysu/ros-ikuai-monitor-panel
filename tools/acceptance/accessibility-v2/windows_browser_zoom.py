@@ -916,6 +916,7 @@ def main() -> None:
                 "title": args.title,
                 "windowHandle": handle,
                 "increments": 0,
+                "action": "capture",
                 "captureOnly": True,
                 "captureState": capture_state,
                 "capture": capture,
