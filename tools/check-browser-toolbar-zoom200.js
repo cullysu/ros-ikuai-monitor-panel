@@ -491,13 +491,14 @@ function validWindowsCapture(capture, expectedHandle) {
   );
 }
 
-function runPythonToolbarZoom(title, { action = "inspect", capturePath = "", captureOnly = false, windowHandle = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
+function runPythonToolbarZoom(title, { action = "inspect", capturePath = "", captureOnly = false, windowHandle = null, browserPid = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
   return new Promise((resolve, reject) => {
     const pythonCommand = process.env.PYTHON_EXECUTABLE || "python";
     const args = ["-B", pythonHelper, "--title", title, "--action", action, "--timeout-seconds", String(Math.ceil(timeoutMs / 1000))];
     if (captureOnly) args.push("--capture-only");
     if (capturePath) args.push("--capture-path", capturePath);
     if (Number.isInteger(windowHandle) && windowHandle > 0) args.push("--window-handle", String(windowHandle));
+    if (Number.isInteger(browserPid) && browserPid > 0) args.push("--browser-pid", String(browserPid));
     const child = spawn(pythonCommand, args, {
       cwd: root,
       windowsHide: true,
@@ -612,8 +613,8 @@ function reachedTargetToolbarZoom(geometryState, baseline) {
   );
 }
 
-async function applyActualToolbarZoom(page, title, baseline) {
-  const baselineInspection = await runPythonToolbarZoom(title, { action: "inspect" });
+async function applyActualToolbarZoom(page, title, baseline, browserPid) {
+  const baselineInspection = await runPythonToolbarZoom(title, { action: "inspect", browserPid });
   const baselineGeometry = await geometry(page);
   assert(
     Math.abs(baselineGeometry.devicePixelRatio - 1) <= 0.1 &&
@@ -624,7 +625,7 @@ async function applyActualToolbarZoom(page, title, baseline) {
   const steps = [];
   let current = baselineGeometry;
   for (let step = 1; step <= TOOLBAR_INCREMENTS && !reachedTargetToolbarZoom(current, baseline); step += 1) {
-    const input = await runPythonToolbarZoom(title, { action: TOOLBAR_ZOOM_ACTION, windowHandle: baselineInspection.windowHandle });
+    const input = await runPythonToolbarZoom(title, { action: TOOLBAR_ZOOM_ACTION, windowHandle: baselineInspection.windowHandle, browserPid });
     const transition = await waitForGeometryChange(page, current);
     const attempts = [{ action: TOOLBAR_ZOOM_ACTION, input, ...transition }];
     const accepted = acceptedZoomAttempt(attempts);
@@ -723,7 +724,7 @@ async function keyboardTraversal(page, mainSelector) {
   return { complete: missingIds.length === 0, expectedCount: expected.length, visitedCount: visited.size, missingIds, sequence };
 }
 
-async function inspectSurface(page, { label, mainSelector, primarySelector, screenshotName, windowTitle, windowHandle, identity, viewport }) {
+async function inspectSurface(page, { label, mainSelector, primarySelector, screenshotName, windowTitle, windowHandle, browserPid, identity, viewport }) {
   const primary = page.locator(primarySelector).first();
   await primary.waitFor({ state: "attached", timeout: ACTION_TIMEOUT_MS });
   await primary.scrollIntoViewIfNeeded();
@@ -923,7 +924,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   }, windowTitle);
   await page.waitForTimeout(100);
   const windowsFile = path.join(artifactDir, screenshotName);
-  const windowsCapture = await runPythonToolbarZoom(windowTitle, { capturePath: windowsFile, captureOnly: true, windowHandle });
+  const windowsCapture = await runPythonToolbarZoom(windowTitle, { capturePath: windowsFile, captureOnly: true, windowHandle, browserPid });
   assert(validWindowsCapture(windowsCapture, windowHandle), `${label} Windows screenshot is not exclusively unobscured foreground Edge evidence`, windowsCapture);
   const diagnosticFile = path.join(artifactDir, screenshotName.replace(/\.png$/, "-playwright-diagnostic.png"));
   await page.screenshot({ path: diagnosticFile, fullPage: true, animations: "disabled" });
@@ -962,6 +963,10 @@ async function runCell(viewport, scenario) {
     // bounded infrastructure write, immediately before the real toolbar input.
     const identityAtEvidenceStart = gitWorktreeIdentity(root);
     const stableIdentityAtEvidenceStart = stableEvidenceIdentity();
+    const browserPid = Number(runtime.managedBrowser?.diagnostics?.ownedBrowserPid || 0);
+    assert(Number.isInteger(browserPid) && browserPid > 0, "managed Edge browser PID is required for process-owned UIA binding", {
+      diagnostics: runtime.managedBrowser?.diagnostics || null,
+    });
     const title = `RouterPanel Edge Toolbar Zoom ${viewport.id} ${scenario} ${crypto.randomUUID()}`;
     await runtime.page.evaluate((value) => { document.title = value; }, title);
     const baseline = await geometry(runtime.page);
@@ -970,7 +975,7 @@ async function runCell(viewport, scenario) {
       "headed Edge did not begin from the expected physical output baseline",
       { baseline, baselineViewport, viewport },
     );
-    const windowsAutomation = await applyActualToolbarZoom(runtime.page, title, baseline);
+    const windowsAutomation = await applyActualToolbarZoom(runtime.page, title, baseline, browserPid);
     const zoomed = windowsAutomation.final;
     const zoomLevel = toolbarZoomEvidence({ baseline, zoomed, automation: windowsAutomation, targetCssViewport: viewport.cssViewport });
     assert(zoomLevel.verified, "Edge toolbar did not produce the required verified 200% browser zoom level and target CSS viewport", { viewport, baseline, zoomed, zoomLevel, windowsAutomation });
@@ -1009,6 +1014,7 @@ async function runCell(viewport, scenario) {
       screenshotName: `${viewport.id}-${scenario}-edge-toolbar-zoom200.png`,
       windowTitle: title,
       windowHandle: windowsAutomation.windowHandle,
+      browserPid,
       identity: identityAtEvidenceStart,
       viewport: viewport.cssViewport,
     });

@@ -56,48 +56,143 @@ def process_image_name(process_id: int) -> str:
         kernel32.CloseHandle(process)
 
 
-def validate_owned_edge_window(handle: int, title: str, require_visible: bool = True) -> int:
+def browser_process_tree_ids(root_process_id: int, max_processes: int = 128) -> set[int]:
+    """Return the bounded msedge process tree rooted at the owned browser PID."""
+    if root_process_id <= 0:
+        return set()
+
+    class ProcessEntry32W(ctypes.Structure):
+        _fields_ = [
+            ("dwSize", wintypes.DWORD),
+            ("cntUsage", wintypes.DWORD),
+            ("th32ProcessID", wintypes.DWORD),
+            ("th32DefaultHeapID", ctypes.c_size_t),
+            ("th32ModuleID", wintypes.DWORD),
+            ("cntThreads", wintypes.DWORD),
+            ("th32ParentProcessID", wintypes.DWORD),
+            ("pcPriClassBase", wintypes.LONG),
+            ("dwFlags", wintypes.DWORD),
+            ("szExeFile", wintypes.WCHAR * 260),
+        ]
+
+    kernel32 = ctypes.windll.kernel32
+    kernel32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+    kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    kernel32.Process32FirstW.argtypes = [wintypes.HANDLE, ctypes.POINTER(ProcessEntry32W)]
+    kernel32.Process32FirstW.restype = wintypes.BOOL
+    kernel32.Process32NextW.argtypes = [wintypes.HANDLE, ctypes.POINTER(ProcessEntry32W)]
+    kernel32.Process32NextW.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+
+    snapshot = kernel32.CreateToolhelp32Snapshot(0x00000002, 0)  # TH32CS_SNAPPROCESS
+    invalid_handle = ctypes.c_void_p(-1).value
+    if snapshot in (None, 0, invalid_handle):
+        return {root_process_id}
+    try:
+        parents: dict[int, int] = {}
+        entry = ProcessEntry32W()
+        entry.dwSize = ctypes.sizeof(entry)
+        if kernel32.Process32FirstW(snapshot, ctypes.byref(entry)):
+            while True:
+                process_id = int(entry.th32ProcessID)
+                if process_id > 0:
+                    parents[process_id] = int(entry.th32ParentProcessID)
+                if not kernel32.Process32NextW(snapshot, ctypes.byref(entry)):
+                    break
+        owned = {root_process_id}
+        changed = True
+        while changed and len(owned) < max_processes:
+            changed = False
+            for process_id, parent_id in parents.items():
+                if process_id not in owned and parent_id in owned:
+                    owned.add(process_id)
+                    changed = True
+                    if len(owned) >= max_processes:
+                        break
+        return owned
+    finally:
+        kernel32.CloseHandle(snapshot)
+
+
+def validate_owned_edge_window(
+    handle: int,
+    title: str,
+    require_visible: bool = True,
+    expected_process_ids: set[int] | None = None,
+    require_title: bool = True,
+) -> int:
     user32 = ctypes.windll.user32
     if not user32.IsWindow(handle) or (require_visible and not user32.IsWindowVisible(handle)):
         visibility = " and visible" if require_visible else ""
         raise RuntimeError(f"owned Edge window handle is no longer valid{visibility}")
-    if title not in window_text(handle):
+    if require_title and title not in window_text(handle):
         raise RuntimeError("owned Edge window title no longer matches the unique task title")
     if not window_class_name(handle).startswith("Chrome_WidgetWin"):
         raise RuntimeError("owned window is not an Edge Chromium top-level window")
     process_id = owned_process_id_for_window(handle)
     if process_image_name(process_id) != "msedge.exe":
         raise RuntimeError("owned window process image is not msedge.exe")
+    if expected_process_ids and process_id not in expected_process_ids:
+        raise RuntimeError("owned window process is outside the exact browser process tree")
     return process_id
 
 
-def find_owned_window_handle(title: str, timeout_seconds: float) -> int:
-    """Find the uniquely titled Edge window before focus restores visibility."""
+def find_owned_window_handle(title: str, timeout_seconds: float, browser_pid: int = 0) -> int:
+    """Find the exact Edge window by title, with a bounded owned-PID fallback."""
     user32 = ctypes.windll.user32
     deadline = time.time() + timeout_seconds
+    expected_process_ids = browser_process_tree_ids(browser_pid)
     while time.time() < deadline:
-        matches: list[int] = []
+        title_matches: list[int] = []
+        process_matches: list[int] = []
         callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
 
         @callback_type
         def collect(hwnd, _lparam):
             try:
-                # A large physical pre-zoom viewport can make a newly created
-                # headed Edge window minimized, cloaked, or temporarily outside
-                # the visible work area. Its random title plus exact Edge
-                # process/class checks are still the ownership boundary; the
-                # following focus step restores visibility before any UIA action.
-                validate_owned_edge_window(int(hwnd), title, require_visible=False)
-                matches.append(int(hwnd))
-            except RuntimeError:
+                handle = int(hwnd)
+                if expected_process_ids:
+                    process_id = owned_process_id_for_window(handle)
+                    if process_id not in expected_process_ids:
+                        return True
+                text = window_text(handle)
+                if title and title in text:
+                    validate_owned_edge_window(
+                        handle,
+                        title,
+                        require_visible=False,
+                        expected_process_ids=expected_process_ids,
+                    )
+                    title_matches.append(handle)
+                elif browser_pid > 0:
+                    # A very large pre-zoom viewport can leave the Chromium
+                    # top-level window without its document title in the Win32
+                    # projection. The exact browser process tree is the
+                    # ownership boundary in that case; require one candidate
+                    # and revalidate visibility after focus before UIA action.
+                    validate_owned_edge_window(
+                        handle,
+                        title,
+                        require_visible=False,
+                        expected_process_ids=expected_process_ids,
+                        require_title=False,
+                    )
+                    process_matches.append(handle)
+            except (RuntimeError, OSError):
                 pass
             return True
 
         user32.EnumWindows(collect, 0)
-        if len(matches) == 1:
-            return matches[0]
+        title_matches = sorted(set(title_matches))
+        process_matches = sorted(set(process_matches))
+        if len(title_matches) == 1:
+            return title_matches[0]
+        if not title_matches and browser_pid > 0 and len(process_matches) == 1:
+            trace_stage("owned-window-found-by-browser-process")
+            return process_matches[0]
         time.sleep(0.05)
-    raise RuntimeError("could not find exactly one visible owned Edge window by its unique title")
+    raise RuntimeError("could not find exactly one owned Edge window by title or exact browser process tree")
 
 
 def focus_owned_window(handle: int, timeout_seconds: float) -> None:
@@ -895,10 +990,12 @@ def main() -> None:
     parser.add_argument("--capture-path")
     parser.add_argument("--capture-only", action="store_true")
     parser.add_argument("--window-handle", type=int)
+    parser.add_argument("--browser-pid", type=int, default=0)
     args = parser.parse_args()
 
     if sys.platform != "win32":
         emit({"pass": False, "code": "WINDOWS_REQUIRED", "message": "actual Edge toolbar zoom acceptance only runs on Windows"}, 2)
+    expected_process_ids = browser_process_tree_ids(args.browser_pid)
     if args.capture_only and not args.capture_path:
         emit({"pass": False, "code": "CAPTURE_PATH_REQUIRED", "message": "capture-only requires --capture-path"}, 2)
 
@@ -907,8 +1004,13 @@ def main() -> None:
         try:
             user32 = ctypes.windll.user32
             handle = int(args.window_handle)
-            validate_owned_edge_window(handle, args.title)
-            if find_owned_window_handle(args.title, args.timeout_seconds) != handle:
+            validate_owned_edge_window(
+                handle,
+                args.title,
+                expected_process_ids=expected_process_ids,
+                require_title=args.browser_pid <= 0,
+            )
+            if find_owned_window_handle(args.title, args.timeout_seconds, args.browser_pid) != handle:
                 raise RuntimeError("capture handle differs from the uniquely titled original Edge window")
             focus_owned_window(handle, args.timeout_seconds)
             time.sleep(args.settle_milliseconds / 1000)
@@ -945,16 +1047,27 @@ def main() -> None:
     stage = "find-owned-window"
     try:
         trace_stage(stage)
-        handle = find_owned_window_handle(args.title, args.timeout_seconds)
+        handle = find_owned_window_handle(args.title, args.timeout_seconds, args.browser_pid)
         stage = "validate-owned-window"
         trace_stage(stage)
-        validate_owned_edge_window(handle, args.title, require_visible=False)
+        validate_owned_edge_window(
+            handle,
+            args.title,
+            require_visible=False,
+            expected_process_ids=expected_process_ids,
+            require_title=args.browser_pid <= 0,
+        )
         if args.window_handle and int(args.window_handle) != handle:
             raise RuntimeError("UIA action handle differs from the original Edge window")
         stage = "focus-owned-window"
         trace_stage(stage)
         focus_owned_window(handle, args.timeout_seconds)
-        validate_owned_edge_window(handle, args.title)
+        validate_owned_edge_window(
+            handle,
+            args.title,
+            expected_process_ids=browser_process_tree_ids(args.browser_pid),
+            require_title=args.browser_pid <= 0,
+        )
         if not args.capture_only:
             # This helper performs one process-owned toolbar operation at a
             # time. The Node gate observes DPR/layout after every invocation;
