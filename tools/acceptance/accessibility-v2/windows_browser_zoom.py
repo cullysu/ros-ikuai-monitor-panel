@@ -558,6 +558,36 @@ def inspect_edge_visibility(handle: int) -> dict:
     }
 
 
+def dismiss_owned_obscuring_popups(handle: int, blocked_samples: list[dict]) -> bool:
+    """Close only same-process Edge popup HWNDs proven to obscure the capture."""
+    user32 = ctypes.windll.user32
+    owned_process_id = owned_process_id_for_window(handle)
+    closed = False
+    seen: set[int] = set()
+    for sample in blocked_samples:
+        root_handle = int(sample.get("coveringRoot", 0) or 0)
+        if root_handle <= 0 or root_handle in seen or root_handle == handle:
+            continue
+        seen.add(root_handle)
+        if (
+            int(sample.get("coveringProcessId", 0) or 0) != owned_process_id
+            or str(sample.get("coveringClass", "")) != "Chrome_WidgetWin_2"
+            or not bool(sample.get("sameProcess"))
+        ):
+            continue
+        trace_stage(f"obscuring-edge-popup-found:{root_handle}")
+        if not user32.PostMessageW(root_handle, 0x0010, 0, 0):  # WM_CLOSE
+            raise RuntimeError("could not close the same-process Edge popup obscuring capture")
+        deadline = time.time() + 2
+        while time.time() < deadline and user32.IsWindowVisible(root_handle):
+            time.sleep(0.05)
+        if user32.IsWindowVisible(root_handle):
+            raise RuntimeError("same-process Edge popup obscuring capture did not close")
+        trace_stage("obscuring-edge-popup-closed")
+        closed = True
+    return closed
+
+
 def print_owned_window(handle: int, width: int, height: int):
     """Ask the verified HWND owner to render its complete window into a Windows DC."""
     from PIL import Image  # type: ignore
@@ -770,6 +800,9 @@ def capture_owned_edge(handle: int, target: Path, focus_timeout_seconds: float) 
             focus_owned_window(handle, max(0.1, deadline - time.time()))
             try:
                 state = inspect_edge_visibility(handle)
+                if not state["unobscured"] and dismiss_owned_obscuring_popups(handle, state["blockedSamples"]):
+                    focus_owned_window(handle, max(0.1, deadline - time.time()))
+                    state = inspect_edge_visibility(handle)
                 break
             except RuntimeError as error:
                 if "not foreground immediately before screen capture" not in str(error) or time.time() >= deadline:
