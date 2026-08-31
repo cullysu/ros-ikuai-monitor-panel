@@ -878,6 +878,8 @@ def main() -> None:
                                 # controls the small number of retry rounds and
                                 # must not multiply UIA's internal wait across
                                 # every root/id combination.
+                                if not candidate.exists(timeout=0):
+                                    continue
                                 actual_id = " ".join(str(getattr(candidate.element_info, "automation_id", "") or "").lower().split())
                                 if actual_id not in normalized_ids or not has_visible_bounds(candidate):
                                     continue
@@ -991,8 +993,16 @@ def main() -> None:
                 zoom_search_attempts = 3
                 trace_stage("zoom-raw-bounded-start")
                 if not zoom_matches:
+                    raw_search_containers = tuple(owned_windows)
+                    if window not in raw_search_containers:
+                        # The flyout can be projected as a child of the main
+                        # Edge HWND rather than as its own top-level popup. The
+                        # original root is allowed only through the bounded
+                        # RawView walker; never reopen an unbounded UIA tree
+                        # query against the browser window.
+                        raw_search_containers += (window,)
                     zoom_matches = find_bounded_raw_matches(
-                        tuple(owned_windows),
+                        raw_search_containers,
                         zoom_in_tokens,
                         automation_ids=zoom_in_automation_ids,
                     )
