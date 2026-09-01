@@ -621,6 +621,68 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   gap: 10px;
 }
 
+.legacy-traffic-pending {
+  min-height: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--legacy-line);
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.legacy-traffic-pending-head,
+.legacy-traffic-pending-values {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.legacy-traffic-pending-head b {
+  display: block;
+  color: var(--legacy-ink);
+  font-size: 13px;
+}
+
+.legacy-traffic-pending-head small {
+  display: block;
+  margin-top: 3px;
+  color: var(--legacy-muted);
+  font-size: 11px;
+}
+
+.legacy-traffic-pending-head > span {
+  flex: 0 0 auto;
+  color: var(--legacy-blue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.legacy-traffic-pending-values {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid #e1ebf7;
+}
+
+.legacy-traffic-pending-values div {
+  min-width: 0;
+}
+
+.legacy-traffic-pending-values span,
+.legacy-traffic-pending-values b {
+  display: block;
+}
+
+.legacy-traffic-pending-values span {
+  color: var(--legacy-muted);
+  font-size: 10px;
+}
+
+.legacy-traffic-pending-values b {
+  margin-top: 2px;
+  color: var(--legacy-ink);
+  font-size: 13px;
+}
+
 .legacy-chart {
   min-width: 0;
   padding: 10px;
