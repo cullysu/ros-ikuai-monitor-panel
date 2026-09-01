@@ -1,4 +1,4 @@
-- validForCommit: false; release remains closed until the current candidate has fresh exact-SHA Linux, Windows, and CL/GHCR evidence
+- validForCommit: false; current worktree is a clean candidate, but release remains closed until fresh exact-SHA Linux, Windows, and CL/GHCR evidence is complete
 - status: `current`
 - supersededBy: `null`
 - currentBoundaryForStep: `1188`
@@ -35,7 +35,7 @@
 | R09 Visual | pending | Current-identity independent visual receipt is absent. |
 | R10 Accessibility / security | pending | Current-identity Windows Edge 200% and independent receipt remain open. |
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
-| Release hygiene | pass locally / pending remote | Local tracked candidate is clean; remote candidate gates are not all green. |
+| Release hygiene | pending | Local tracked candidate is clean; current exact-SHA release evidence is not complete. |
 | CI Linux | failed on Run 33481348678 | Current-state compactness gate failed; correction is in progress. |
 | CI Windows | running on Run 33481348678 | Edge toolbar 200% matrix has no terminal result yet. |
 | CL/GHCR | pending | No current exact-SHA evidence is available for `b3528c3`. |
