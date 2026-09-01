@@ -10,9 +10,9 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall for release / 
 
 ## 入口
 
-- `decision-system\\current-state.md`：唯一当前结论、证据和门禁。
-- `decision-system\\README.md`：短决策导航与同步规则。
-- `D:\\想法\\面板\\面板重做决策日志.md`：完整记录触发/问题、观察事实、决策、理由与拒绝项、验证、边界/心得。
+- `decision-system\current-state.md`：唯一当前结论、证据和门禁。
+- `decision-system\README.md`：短决策导航与同步规则。
+- `D:\想法\面板\面板重做决策日志.md`：完整记录触发/问题、观察事实、决策、理由与拒绝项、验证、边界/心得。
 - `手机界面唯一视觉基线.md`：已确认的手机视觉参考与删除边界。
 
 ## 当前边界
