@@ -157,7 +157,6 @@ function withIsolatedCandidateWorktree(root, candidateCommit, operation) {
     // Normalize only non-ignored residue. Do not use -x: the linked worktree's
     // .git control file is intentionally untracked and must remain present.
     runGit(temporary, ['reset', '--hard', '--quiet', candidateCommit]);
-    runGit(temporary, ['clean', '-ffd']);
     return operation(temporary);
   } finally {
     if (attached) spawnSync('git', ['worktree', 'remove', '--force', temporary], { cwd: root, encoding: 'utf8', timeout: managedChildTimeoutMs(30_000), windowsHide: true });
