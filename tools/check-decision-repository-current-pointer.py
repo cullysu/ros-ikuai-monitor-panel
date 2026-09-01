@@ -13,7 +13,10 @@ STATE_PATH = ROOT / ".product-loop" / "state.json"
 CURRENT_STATE_PATH = ROOT / "docs" / "decision-system" / "current-state.md"
 INDEX_PATH = ROOT / "docs" / "decision-system" / "README.md"
 HANDOFF_PATH = ROOT / "docs" / "product-loop-current.md"
-JOURNAL_PATH = ROOT / "docs" / "panel-redesign-decision-log.md"
+# The compact release journal owns the current pointer header.  The long
+# panel-redesign decision log is append-only history and intentionally has no
+# current-pointer header to validate.
+JOURNAL_PATH = ROOT / "docs" / "decision-system" / "release-journal.md"
 
 
 def main() -> int:
@@ -39,7 +42,11 @@ def main() -> int:
         "index_outcome": f"- latestStepOutcome: `{outcome}`" in index[:1200],
         "index_boundary": f"- currentBoundaryForStep: `{latest_step}`" in index[:1200],
         "handoff_step": f"- currentHandoffForStep: `{latest_step}`" in handoff[:1200],
-        "journal_outcome": f"- latestStepOutcome: `{outcome}`" in journal[-12000:],
+        # The release journal is a current-pointer header followed by the
+        # append-only historical chronology.  Inspect the bounded header, not
+        # the tail: the tail can legitimately contain older step outcomes and
+        # must not be allowed to make the current pointer appear stale.
+        "journal_outcome": f"- latestStepOutcome: `{outcome}`" in journal[:12000],
     }
     passed = all(checks.values())
     report = {

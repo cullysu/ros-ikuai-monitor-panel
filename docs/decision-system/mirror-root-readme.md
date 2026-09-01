@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. **FAIL overall for release / Step1188 separates current exact-SHA CI evidence from historical records / release CLOSED**.
+RouterOS / iKuai panel decision repository mirror. **FAIL overall for release / Step1197 records synchronized decision boundaries after the latest failed exact-SHA CI candidate / release CLOSED**.
 
 这是当前面板工作的决策仓库入口。手机视觉基线仍是用户确认的四屏参考，桌面视觉基线仍是 192.168.3.5 / iPad 方向；本轮只修复 CI 与决策状态同步，不改变产品美术或网络行为。
 
 - status: `current-mirror-entry`
-- currentStep: `1188`
-- currentOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
-- currentBoundary: `1188`
+- currentStep: `1197`
+- currentOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- currentBoundary: `1197`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -17,7 +17,7 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall for release / 
 
 ## 当前边界
 
-当前产品结论：**FAIL overall / current-identity product and visual re-signoff is open / Linux, Windows and CL/GHCR exact-SHA evidence is incomplete / release CLOSED**。不得把历史 SHA、PR merge SHA 或单个绿色局部门禁当作发布证据。
+当前产品结论：**FAIL overall / Run 33316260102 在 Windows Edge popup `find-zoom-in` 首格失败，Linux 未形成终态，CL/GHCR 尚无下一候选证据 / release CLOSED**。不得把历史 SHA、PR merge SHA 或单个绿色局部门禁当作发布证据。
 
 ## 过程怎么记录
 
