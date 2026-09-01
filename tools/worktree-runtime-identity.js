@@ -90,10 +90,11 @@ function gitHead(rootDir) {
 function gitWorktreeIdentity(rootDir, options = {}) {
   const commit = gitHead(rootDir);
   const modeOptions = options.ignoreFileMode === true ? ['-c', 'core.filemode=false'] : [];
-  const fullDiff = git(rootDir, [...modeOptions, 'diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.']);
+  const eolOptions = ['--ignore-space-at-eol'];
+  const fullDiff = git(rootDir, [...modeOptions, 'diff', '--binary', '--no-ext-diff', ...eolOptions, 'HEAD', '--', '.']);
   const runtimeDiff = git(rootDir, [
     ...modeOptions,
-    'diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.',
+    'diff', '--binary', '--no-ext-diff', ...eolOptions, 'HEAD', '--', '.',
     ...ARTIFACT_PREFIXES.map((prefix) => `:(exclude)${prefix}**`),
     ...GOVERNANCE_PATHS.map((name) => `:(exclude)${name}`),
     ...GOVERNANCE_PREFIXES.map((prefix) => `:(exclude)${prefix}**`),
