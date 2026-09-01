@@ -122,6 +122,7 @@ jobs:
             --viewports desktop=1600x1000,laptop=1366x900,tablet=1024x900,narrow=390x844 \
             --sections public-release \
             --scale-scenarios single \
+            --bounded-matrix \
             --strict-responsive \
             --out _acceptance/route-matrix-${{ github.sha }}
 
