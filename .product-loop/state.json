@@ -1,0 +1,126 @@
+{
+  "objective": "Rebuild the public mobile RouterOS monitor as an independent, dense, trustworthy operational product and verify every release gate.",
+  "stage": "verify",
+  "created_at": "2026-07-14T10:36:29+00:00",
+  "updated_at": "2026-09-01T07:04:06.837Z",
+  "gates": {
+    "product": {
+      "status": "pending",
+      "evidence": [
+        "PRODUCT.md"
+      ],
+      "note": "step1188-product-review-historical:current local review is historical until the new SHA is re-reviewed",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    },
+    "spec": {
+      "status": "pass",
+      "evidence": [
+        "docs/mobile-product-contract.md"
+      ],
+      "note": "step1188-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "updated_at": "2026-07-14T10:41:28+00:00"
+    },
+    "design": {
+      "status": "pending",
+      "evidence": [
+        "_acceptance/release-matrix-mobile-independent-final2/public-single-narrow-overview.png",
+        "_acceptance/mobile-native-runtime/report.json"
+      ],
+      "note": "step1188-design-review-historical:accepted phone and desktop art unchanged; current review is historical",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    },
+    "architecture": {
+      "status": "pass",
+      "evidence": [
+        "tools/check-overview-architecture.js"
+      ],
+      "note": "step1188-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "updated_at": "2026-07-14T17:51:12+00:00"
+    },
+    "implementation": {
+      "status": "pass",
+      "evidence": [
+        "src/panel-framework/overview/mobile-app/RouterMobileApp.tsx",
+        "public/assets/framework/panel-framework.js"
+      ],
+      "note": "step1188-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "updated_at": "2026-07-14T17:51:15+00:00"
+    },
+    "code-review": {
+      "status": "pass",
+      "evidence": [
+        "docs/mobile-loop-review.md"
+      ],
+      "note": "step1188-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "updated_at": "2026-07-14T11:12:19+00:00"
+    },
+    "visual-qa": {
+      "status": "pending",
+      "evidence": [
+        "_acceptance/release-matrix-mobile-independent-final2/public-resource-full-narrow-overview.png"
+      ],
+      "note": "step1188-visual-review-historical:no visual product change in this CI-fix step",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    },
+    "state-matrix": {
+      "status": "pending",
+      "evidence": [
+        "_acceptance/release-matrix-mobile-independent-final2/report.json"
+      ],
+      "note": "step1188-matrix-pending:new exact-SHA evidence required after source change",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    },
+    "security": {
+      "status": "pass",
+      "evidence": [
+        "docs/mobile-loop-review.md"
+      ],
+      "note": "step1188-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "updated_at": "2026-07-14T11:12:23+00:00"
+    },
+    "accessibility": {
+      "status": "pass",
+      "evidence": [
+        "docs/mobile-loop-review.md"
+      ],
+      "note": "step1188-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "updated_at": "2026-07-14T11:12:25+00:00"
+    },
+    "release-hygiene": {
+      "status": "pass",
+      "evidence": [
+        "tools/check-public-release-readiness.js"
+      ],
+      "note": "step1197-clean-candidate-fbfad26:tracked tree clean; local internal artifacts excluded",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    },
+    "ci-linux": {
+      "status": "pending",
+      "evidence": [
+        "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
+      ],
+      "note": "step1196-run-33316260102-cancelled:Windows failed first; no Linux terminal result inferred",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    },
+    "ci-windows": {
+      "status": "pending",
+      "evidence": [
+        "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
+      ],
+      "note": "step1196-run-33316260102:find-zoom-in found 0 after 12 bounded UIA searches; second popup correction awaits commit",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    },
+    "ci-container": {
+      "status": "pending",
+      "evidence": [
+        "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328479359",
+        "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328766281"
+      ],
+      "note": "step1196-next-candidate-required:CL/GHCR evidence must bind to the corrected SHA",
+      "updated_at": "2026-08-30T12:08:48.440Z"
+    }
+  },
+  "latest_decision_step": 1188,
+  "latest_decision_outcome": "1188:remote-old-run-separated-and-protected-branch-publish-next",
+  "current_surface_step": 1188
+}

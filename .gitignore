@@ -16,7 +16,8 @@ dist/
 /_backup/
 /_staging_*/
 /_acceptance/
-/.product-loop/
+/.product-loop/*
+!/.product-loop/state.json
 /test-results/
 /_npm_cache/
 /_pwtemp/
