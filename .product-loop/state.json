@@ -2,7 +2,7 @@
   "objective": "Rebuild the public mobile RouterOS monitor as an independent, dense, trustworthy operational product and verify every release gate.",
   "stage": "verify",
   "created_at": "2026-07-14T10:36:29+00:00",
-  "updated_at": "2026-09-01T07:15:29.188Z",
+  "updated_at": "2026-09-01T07:32:28.888Z",
   "gates": {
     "product": {
       "status": "pending",
@@ -87,12 +87,12 @@
       "updated_at": "2026-07-14T11:12:25+00:00"
     },
     "release-hygiene": {
-      "status": "pass",
+      "status": "pending",
       "evidence": [
         "tools/check-public-release-readiness.js"
       ],
-      "note": "step1188-9025d25-candidate:tracked tree clean; local internal artifacts excluded; remote CI not yet all green",
-      "updated_at": "2026-09-01T07:15:29.188Z"
+      "note": "step1188-afe4bbf-current-candidate:tracked tree is clean locally; release hygiene remains pending until current exact-SHA evidence is complete",
+      "updated_at": "2026-09-01T07:32:28.888Z"
     },
     "ci-linux": {
       "status": "pending",
