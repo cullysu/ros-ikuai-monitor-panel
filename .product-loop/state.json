@@ -2,7 +2,7 @@
   "objective": "Rebuild the public mobile RouterOS monitor as an independent, dense, trustworthy operational product and verify every release gate.",
   "stage": "verify",
   "created_at": "2026-07-14T10:36:29+00:00",
-  "updated_at": "2026-09-01T07:04:06.837Z",
+  "updated_at": "2026-09-01T07:15:29.188Z",
   "gates": {
     "product": {
       "status": "pending",
@@ -91,24 +91,24 @@
       "evidence": [
         "tools/check-public-release-readiness.js"
       ],
-      "note": "step1197-clean-candidate-fbfad26:tracked tree clean; local internal artifacts excluded",
-      "updated_at": "2026-08-30T12:08:48.440Z"
+      "note": "step1188-9025d25-candidate:tracked tree clean; local internal artifacts excluded; remote CI not yet all green",
+      "updated_at": "2026-09-01T07:15:29.188Z"
     },
     "ci-linux": {
       "status": "pending",
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1196-run-33316260102-cancelled:Windows failed first; no Linux terminal result inferred",
-      "updated_at": "2026-08-30T12:08:48.440Z"
+      "note": "step1188-9025d25-linux:run33480644933 Linux failed in check-decision-ledger-sync because four gate notes were stale; correction pending",
+      "updated_at": "2026-09-01T07:15:29.188Z"
     },
     "ci-windows": {
       "status": "pending",
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1196-run-33316260102:find-zoom-in found 0 after 12 bounded UIA searches; second popup correction awaits commit",
-      "updated_at": "2026-08-30T12:08:48.440Z"
+      "note": "step1188-9025d25-windows:run33480644933 Windows was still running at the last observation in the Edge matrix; no terminal result inferred",
+      "updated_at": "2026-09-01T07:15:29.188Z"
     },
     "ci-container": {
       "status": "pending",
@@ -116,8 +116,8 @@
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328479359",
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328766281"
       ],
-      "note": "step1196-next-candidate-required:CL/GHCR evidence must bind to the corrected SHA",
-      "updated_at": "2026-08-30T12:08:48.440Z"
+      "note": "step1188-9025d25-container:no CL/GHCR evidence is bound to 9025d25; rerun required on the corrected candidate",
+      "updated_at": "2026-09-01T07:15:29.188Z"
     }
   },
   "latest_decision_step": 1188,
