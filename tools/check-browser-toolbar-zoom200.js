@@ -884,13 +884,13 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
        const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
        const insideScrollRoot = Boolean(!trafficScrollRect || (labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
        return !insideChart || !insideScrollRoot;
-     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null, scrollRect: trafficScrollRect?.toJSON() || null }));
+     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null }));
      const trafficFooterGeometryErrors = trafficTimeLabels.filter((label) => {
        const labelRect = label.getBoundingClientRect();
        const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
        const insideScrollRoot = Boolean(!trafficScrollRect || (labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
        return !insideChart || !insideScrollRoot;
-     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null, scrollRect: trafficScrollRect?.toJSON() || null }));
+     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null }));
     return {
       mainCount: document.querySelectorAll("main").length,
        expectedMain: main instanceof HTMLElement,
