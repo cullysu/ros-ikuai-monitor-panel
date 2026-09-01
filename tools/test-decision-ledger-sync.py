@@ -122,6 +122,26 @@ class CurrentSurfaceFreshnessTest(unittest.TestCase):
         self.assertTrue(state["currentStateFail"])
         self.assertTrue(state["handoffFail"])
 
+    def test_compact_release_journal_owns_current_step_over_historical_tail(self) -> None:
+        self.write(
+            "docs/decision-system/release-journal.md",
+            "- currentStep: `10`\n"
+            "- currentOutcome: `10:current-boundary`\n"
+            "- latestStepOutcome: `10:current-boundary`\n",
+        )
+        self.write("docs/panel-redesign-decision-log.md", "## 第 9 步：历史尾部\n")
+        self.write("docs/decision-system/current-state.md", "- latestRecordedStep: `10`\n- latestStepOutcome: `10:current-boundary`\n- currentConclusionForStep: `10`\n")
+        self.write("docs/decision-system/README.md", "- latestRecordedStep: `10`\n- latestStepOutcome: `10:current-boundary`\n- currentBoundaryForStep: `10`\n")
+        self.write("docs/product-loop-current.md", "- latestRecordedStep: `10`\n- latestStepOutcome: `10:current-boundary`\n- currentHandoffForStep: `10`\n")
+        self.write_machine({"latest_decision_step": 10, "latest_decision_outcome": "10:current-boundary", "current_surface_step": 10, "gates": {}})
+
+        self.assertEqual(MODULE.semantic_steps(self.root)["journal"], 10)
+        self.assertEqual(MODULE.semantic_outcomes(self.root)["journal"], "10:current-boundary")
+
+    def test_current_gate_notes_accept_colon_step_prefix(self) -> None:
+        machine = {"gates": {"ci-linux": {"status": "pending", "note": "step9:current-run-pending"}}}
+        self.assertEqual(MODULE.stale_gate_notes(machine, 9), [])
+
 
 if __name__ == "__main__":
     unittest.main()

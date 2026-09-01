@@ -30650,3 +30650,37 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 提交本步已验证的源代码与决策文档，生成新的 exact SHA；仅在新 SHA 上传后读取其 Linux、Windows、CL/GHCR 终态，继续修复首个新失败。
 
 - outcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+
+---
+
+## Step 1198：修复决策账本对当前日志指针和门禁备注的误判（2026-09-01）
+
+### 已核实事实
+
+- Run `33500400256` 的 Linux 首个失败步骤是 `Python syntax and collector regressions`。
+- 当前工作树复现该步骤时，`tools/check-decision-ledger-sync.py` 将历史流水日志的旧尾部当成当前步骤，并把合法的 `step1197:` 门禁备注误判为过期。
+- 该误判发生在产品代码和 CI runner 之前，因此后续 Linux 检查被跳过；Windows 仍停留在 Edge toolbar 200% 矩阵，CL/GHCR 尚无同一 exact SHA 证据。
+
+### 修复与取舍
+
+- `check-decision-ledger-sync.py` 改为从紧凑 `docs/decision-system/release-journal.md` 读取当前步骤和当前结果；完整 `panel-redesign-decision-log.md` 继续只作为历史流水。
+- 当前门禁备注同时接受 `stepN-` 和 `stepN:` 两种既有格式；仍拒绝落后步骤和未知前缀，保持 fail-closed。
+- 新增回归测试覆盖“紧凑发布日志高于历史尾部”和冒号格式门禁备注。
+- 不修改手机 UI、iPad/桌面美术基线、网络服务或凭据边界。
+
+### 验证证据
+
+- `tools/check-decision-ledger-sync.py`：PASS，所有步骤、结果、当前表面和门禁备注一致。
+- `tools/test-decision-ledger-sync.py -v`：8/8 PASS。
+- Python syntax / collector 回归步骤其余本地可运行检查：compileall、py_compile、backend release blockers、backend security 均 PASS；bundled Python 缺少 `requests`，security 检查使用已安装 Python 3.13 复验 PASS。
+- 发布边界仍为 **FAIL / CLOSED**；当前修复尚未形成新的远端 exact SHA。
+
+### 下一步
+
+提交并发布本步修复及同步状态文档，然后只读取新 exact SHA 的 Linux、Windows、CL/GHCR 结果；继续修复首个真实失败，未全绿前不上传、不发布。
+
+### 心得
+
+当前指针和历史流水必须严格分层。检查器把历史尾部当成当前真相，或把合法格式误判为陈旧，就会在产品代码尚未运行前制造假失败；修复门禁本身也必须有回归测试保护。
+
+- outcome: `1198:fix-decision-ledger-current-pointer-and-gate-note-contract`
