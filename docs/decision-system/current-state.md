@@ -1,4 +1,4 @@
-- validForCommit: false; current worktree is uncommitted and is not a clean candidate; Step1188 decision record is documented and untracked review/work artifacts remain excluded
+- validForCommit: false; release remains closed until the current candidate has fresh exact-SHA Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
 - currentBoundaryForStep: `1188`
@@ -11,362 +11,47 @@
 
 ## Current conclusion
 
-**FAIL overall for release / the user-supplied four-screen mobile reference remains the sole phone baseline / accepted phone art is unchanged / local repair commit exists but has no fresh remote CI / clean exact-SHA, GitHub upload and exact-SHA Linux/Windows/GHCR CL remain open / release CLOSED.**
+**FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
 ## Current decision record: Step 1188
 
-- 本地 codex/ci-fix-20260830 的 HEAD 为 dbd4a90799defdaf2a3883d3160384808b89c730，父提交为远端同名分支旧 HEAD 7231e00a2e6822632d847f43d54239d7f7a4194f；远端 main 为 69174b38d3e5bc8eac4272eac3082acb2db37bd9。
-- PR #1 仍开放。旧 Run 33309694877 的 Linux 仍运行、Windows 已失败；它不是新本地修复的证据，Windows 后续失败也不能被拆成独立新根因。
-- 当前工作区仅有未跟踪的历史 .impeccable/ 评审文件与 work/；它们不进入候选提交。手机四屏基线、桌面 192.168.3.5 / iPad 基线和产品代码本轮均不变。
-- 当前已确认的新修复是 Edge popup UIA 所有者查找、toolbar 离线契约与决策镜像语义修复；新的 GitHub CI 仍未开始。
-- 机器 ci-windows gate 已纠正为 pending；旧 Run 33309694877 的 Windows failure 只作为历史证据保留，不代表新 SHA。
-- 本轮没有使用 rg.exe、没有启动浏览器矩阵、没有终止用户进程；外部更新将采用 lease-protected 分支路径，并在更新后只认新 SHA 的真实 Linux、Windows、CL/GHCR 结果。
-- outcome: 1188:remote-old-run-separated-and-protected-branch-publish-next
-- next action: 复核当前候选 HEAD 与远端分支 lease，更新同名 GitHub 分支并读取新 SHA 的真实 Linux、Windows、CL/GHCR 结果。
-
-## Previous decision record: Step 1186
-
-- 远端 Run 33309694877 绑定提交 7231e00a2e6822632d847f43d54239d7f7a4194f；Windows packaging 在 Real Edge toolbar 200 percent matrix 失败，后续 Windows manifest/upload 失败均为前置失败级联，不能当作独立根因。
-- 根因判断：现有 Windows UIA 菜单查找只依赖 Desktop.windows(process=...)，无法稳定取得 Edge 瞬时 Settings popup 的顶层 HWND，因此 Zoom in 控件可能报告 found 0。
-- 本地修复：新增 owned_uia_windows()，只通过 Win32 EnumWindows 枚举当前 Edge 进程且处于原始 Edge HWND owner chain 内的顶层窗口，再把这些已绑定窗口交给 UIA；没有恢复桌面级 UIA 扫描，也没有使用全局键盘或物理鼠标输入。
-- 同步修正 Windows toolbar 离线契约测试：实际 UIA 调用是 pywinauto control.click()，捕获函数提取正则同时接受 CRLF/LF；这两个修正只恢复测试与实现的真实契约，不放宽验收标准。
-- 新鲜本地证据：test-browser-toolbar-zoom200.js 通过（24 cells），test-browser-toolbar-zoom200-readiness.js 通过，windows_browser_zoom.py py_compile 通过。
-- 当前远端状态仍不能宣称通过：Run 33309694877 是修复前提交的旧失败证据；本地修复尚未形成新提交，也尚未产生新的 Linux、Windows、CL/GHCR 终态证据。
-- CPU 纪律：本轮没有使用 rg.exe、没有启动浏览器门禁、没有终止用户进程；后续仍按单次、低负载、可复现检查推进。
-- outcome: `1186:edge-uia-popup-owner-fix-and-fresh-ci-next`
-- next action: 运行最小源契约与类型/发布边界检查，提交并推送本修复，然后读取新 SHA 的 Linux、Windows 与 CL/GHCR 真实结果；任何失败继续按首个根因纠正，不把级联失败当成通过。
-## Previous decision record: Step 1163
-
-- Wide landscape tablets at `667×375` and `844×390` now use the desktop/browser owner; the accepted phone reference and portrait tablet owner remain unchanged.
-- Focused runtime `wide-landscape-browser-owner-v1` verified overview and interfaces for both wide landscape viewports.
-- The Edge 200% matrix must be regenerated because both the product owner boundary and toolbar verifier owner contract changed; old partial cells are not reusable.
-- Low-load execution continues under dynamic `1.00% / 0.25% / 0.05%` task quotas; explicit browser action timeout overrides are preserved while the default remains bounded.
-- outcome: `1163:wide-landscape-tablet-browser-owner-runtime-green-edge-matrix-rebased`
-- next action: regenerate the new owner-split Edge 200% matrix, then replay 28/76/266, readiness, regressions and independent signoff.
-
-## Previous decision record: Step 1153
-
-- A second tablet inspection rejected the still-empty opposite column produced by placing every incident task board after the longest column.
-- The tightened runtime gate failed red on the old 656px full-width interface board.
-- Interface/Fleet now use a left object master list and right evidence/task rail. All-offline uses left impact/task context and right affected-WAN/source evidence.
-- Phone uses `display:contents` for the outage grouping and retains the accepted sequence and visuals.
-- TypeScript, model and production builds pass. Fresh interface tablet, outage tablet and outage phone cells pass; current identity is `3/56`.
-- No `rg.exe`, GitHub upload or CL run occurred; independent signoff and release evidence remain pending.
-- outcome: `1153:tablet-incident-master-detail-rails-red-green-current3of56-full-replay-next`
-- next action: complete the remaining current-identity mobile cells serially by scenario through the one-core low-load wrapper.
-
-## Previous decision record: Step 1152
-
-- A complete 56/56 plus 14/14 engineering replay was visually vetoed because non-normal tablet pages still left most of the iPad work area unused; that report is not reused.
-- The runtime gate failed red on the old no-snapshot tablet, then every overview scene gained the same real four-destination object patrol workspace below its scene-specific proof.
-- Current scenes show current task counts/status. Historical and unavailable scenes state `历史待核实` or `不可核实` rather than fabricated zeros.
-- Phone CSS still hides the tablet workspace; no accepted phone visual rule changed.
-- Model, architecture, TypeScript, production builds and the scenario-wrapper contract pass. Fresh collection-down tablet768 passes at 51.1%/50.9% CPU; current identity is `1/56`.
-- No `rg.exe`, GitHub upload or CL run occurred; independent signoff and release evidence remain pending.
-- outcome: `1152:tablet-incident-task-workspace-red-green-current1of56-full-replay-next`
-- next action: complete the remaining current-identity mobile cells serially by scenario through the one-core low-load wrapper.
-
-## Previous decision record: Step 1150
-
-- Fresh `interfaces-down × phone390` places three failed interfaces before two healthy comparisons and labels the mixed list `接口状态 5 项`; the incident banner alone states three affected objects.
-- Highest-risk object and first actionable row agree. Missing rate/quality evidence remains unavailable; healthy comparison rates remain current.
-- Interface rows open real dedicated details with route relation, address, rates, quality, reason and evidence source.
-- The low-load wrapper admitted at 42.2% and 44.3% whole-system CPU. Current identity is `3/56`, `remaining=53`, `pass=false`, `complete=false`.
-- All seven scenarios have now received focused 390px adjudication. Full current-identity responsive replay is next, serially under the same CPU envelope.
-- No `rg.exe`, GitHub upload or CL run occurred; independent signoff and release evidence remain pending.
-- outcome: `1150:interfaces-down-phone390-pass-focused-adjudication-closed-full-replay-next`
-- next action: complete the remaining current-identity mobile cells serially through the one-core low-load wrapper.
-
-## Previous decision record: Step 1149
-
-- Fresh `resource-full × phone390` keeps the user-approved phone visual grammar and correctly prioritizes CPU, memory and disk with value, threshold, samples, direction and trend.
-- The impact section does not duplicate resource metrics and does not invent unmeasured forwarding/business consequences.
-- Resource detail adds threshold delta, trailing consecutive samples and a real time-window trend instead of replaying the home proof.
-- The low-load wrapper admitted at 44.6% and 49.4% whole-system CPU. Current identity is `2/56`, `remaining=54`, `pass=false`, `complete=false`.
-- No product/style edit was needed. No `rg.exe`, GitHub upload or CL run occurred; independent signoff and release evidence remain pending.
-- outcome: `1149:resource-full-phone390-visual-and-semantics-pass-focused-adjudication-active`
-- next action: visually adjudicate `interfaces-down × phone390` through the one-core wrapper before full replay.
-
-## Previous decision record: Step 1148
-
-- The first guarded launch correctly stopped before capture after Edge raised whole-system samples to 68.2%, 73.6% and 67.3%; cleanup left zero owned Edge processes.
-- Local Windows acceptance now refuses direct execution. The permanent wrapper constrains the complete Node/Edge descendant tree to one logical processor, below-normal priority and a 55% whole-system admission ceiling.
-- Collection-down visual review found that REST/SSH and business trust were explicit but the forwarding-plane boundary was absent.
-- Model/runtime contracts failed first; the collection ledger now states `转发状态 / 未测量`, preventing management-plane failure from being read as a proven forwarding outage.
-- Model, types, production builds and fresh collection-down phone390 pass. The accepted visual grammar is unchanged.
-- Source/public identity changed, so prior focused cells were discarded. The current report is `completed=1`, `remaining=55`, `pass=false`, `complete=false`.
-- No `rg.exe`, GitHub upload or CL run occurred. Independent signoff, the remaining matrix, clean exact-SHA and remote CL remain pending; release stays CLOSED.
-- outcome: `1148:collection-forwarding-boundary-red-green-focused-adjudication-active`
-- next action: append the next identity-bound cell through the one-core low-load wrapper only, without changing the locked art.
-
-## Previous decision record: Step 1118
-
-- Step1118 executes the remaining product-depth slice without changing the accepted mobile art direction. The sole mobile baseline remains `_design/accepted-mobile-reference/accepted-four-screen.png`; the sole mobile owner remains `src/panel-framework/mobile-reference-ui/`; no retired mobile presentation was restored.
-- Interface objects now have a typed detail surface with operational reason, route relation, address/evidence facts and read-only source facts. Resource objects now expose a real time-window chart with percentage scale, threshold reference and sample count instead of repeated proof values.
-- Mobile workspaces now provide real search, domain filter, sort and bounded pagination controls. Search is evaluated against the visible compact row, so every result remains explainable in the phone surface.
-- Current verification is green for types, production build, mobile model, mobile architecture, mobile runtime `56/56`, mobile accessibility `11/11`, public overview `28/28`, route-responsive `76/76` and route-state `266/266`.
-- The fresh Edge toolbar 200% replay did not earn a pass: after the earlier focus-visibility fix, the Windows run exceeded the bounded `180000ms` cell timeout at `phone-390::normal` and cleanup also timed out. The prior `22/22` report is historical for the earlier worktree identity and is not reused as current proof.
-- Product/Visual independent current re-signoff, clean exact-SHA, GitHub publication and post-upload Linux/Windows/GHCR CL evidence remain absent. Release stays closed.
-- outcome: `1119:edge-uia-action-timeout-budget-static-green-release-closed`
-- next action: reproduce the Edge 200% current-identity run with bounded global timeout/cleanup, then obtain current four-role independent re-signoff without changing the accepted mobile visual baseline.
-
-## Previous decision record: Step 1116
-
-- Step1116 corrected the acceptance tool rather than the product: Edge menu fallback now limits UIA enumeration to the owned Edge process, preventing unrelated desktop windows from causing a bounded timeout. The accepted mobile visual baseline and product code were not changed.
-- Final current-identity engineering evidence is green: mobile `56/56`, accessibility `11/11`, public overview `28/28`, route-responsive `76/76` bounded, route-state `266/266`, and real Edge toolbar 200% `22/22`; decision repository/D-drive mirror is `16/16` byte-identical.
-- This is engineering evidence only. Current independent four-role signoff, clean exact-SHA, GitHub publication and post-upload Linux/Windows/GHCR CL evidence remain absent, so release stays closed.
-
-## Historical decision record: Step 1112
-
-- Step1112 preserves the user-selected four-screen visual baseline and only corrects graph truth: the WAN SVG now contains an accessible title/description, and resource sparklines use uniform aspect-ratio scaling instead of stretching their trend geometry.
-- Current-identity evidence is green after the change: mobile runtime `56/56`, accessibility `11/11`, public overview `28/28`, route-responsive `76/76`, route-state `266/266`, and real Edge toolbar 200% `22/22`.
-- Engineering readiness passes in dirty-worktree mode. Current independent four-role records, a clean exact-SHA candidate and post-upload CL evidence do not exist, so release remains closed.
-
-## Previous decision record: Step 1111
-
-- Step1111 regenerated evidence after temporary inspection helpers were removed, so the release matrix, route matrix, route-state matrix and Edge toolbar report now share the current worktree identity.
-- Verified current evidence: public overview `28/28`; route-responsive `76/76`; route-state `266/266`; real Edge toolbar 200% `22/22`. The mobile runtime remains `56/56` and accessibility remains `11/11`.
-- The screenshot audit confirms the accepted mobile grammar remains unchanged: compact top bar, shallow status/incident banner, grouped white sections, compact WAN facts/chart, scenario-specific resource/interface evidence and four stable navigation roots.
-- Engineering readiness passes only in dirty-worktree mode. Independent current Product/Visual/Accessibility/Engineering records are absent, so no synthetic sign-off is created and no GitHub upload is authorized.
-
-## Current decision record: Step 1110
-
-- Step1110 corrected the remaining accepted-baseline product defects without changing the visual direction: the interface overflow action no longer inherits the row grid and remains a single horizontal touch target at 390px; portrait tablet composition now uses a full-width status and WAN sequence followed by paired evidence groups and a full-width current-state group; landscape short-height composition remains a two-zone workspace.
-- Step1110 migrated two stale validators: interface evidence dedup now checks `mobile-reference-ui`, and tablet continuity now checks the public overview without waiting for a retired login form. Both pass; no old presentation owner was restored.
-
-- The product owner explicitly selected `accepted-mobile-reference/accepted-four-screen.png` as the only mobile design reference. Older phone directions are not alternate candidates; they are deleted artifacts and forbidden references.
-- The new owner is `src/panel-framework/mobile-reference-ui/` with its own `MobileReferenceSurface.tsx` and `mobile-reference.css`. Desktop presentation ownership is separate and unchanged.
-- The implementation follows the accepted four-screen grammar: compact top bar, shallow status banner, white grouped data sections, blue/green/red semantic accents, dual-line WAN chart, resource rows with real sparklines, interface comparison rows, evidence/source rows, and four-entry bottom navigation.
-- Route and evidence truth is preserved while matching the visual baseline: an active route is shown as verified only when an explicit route/WAN relationship exists; missing rates remain unavailable; resource impact rows do not repeat CPU/memory/disk proof rows.
-- The first focused visual pass found and corrected four concrete mismatches: alert tone was leaking into dark headings, resource order was not CPU/memory/disk, resource rows lacked real trend marks, and WAN detail titles exposed an unhelpful “provider not recorded” suffix. The corrected four-screen capture was manually inspected.
-- The current four-screen smoke is evidence of focused visual alignment only. It is not a public release sign-off.
-- Step1094 migrated the remaining active validators from deleted mobile owners to `mobile-reference-ui`; old owner strings remain only in negative historical/deletion assertions. Canonical route, backend public contract, route maturity, visual surface, release blocker and semantic-gate checks now read the current owner.
-- Step1095 completed the current-owner route and scenario replay: overview is `28/28`, route-state is `266/266`, the mobile reference runtime is `56/56`, mobile accessibility is `9/9`, and static/matrix/time/release-blocker contracts are green. Empty object routes now state that no verifiable object is available, and WAN operation targets are 44px.
-- The accepted 390×844 normal, resource-full and interfaces-down captures preserve the four-screen reference grammar: compact header, shallow status/incident banner, grouped white sections, blue/green/red semantics, dual WAN chart and four stable roots. This is engineering and focused visual evidence, not an independent Product/Visual receipt.
-- `check-public-release-readiness --engineering-worktree` now passes for the current dirty worktree, including a real current-identity Edge toolbar 200% report. This remains engineering evidence only; GitHub and release remain untouched.
-- Step1096 corrected the duplicate missing-uptime wording in the WAN header and prevented non-default WAN details from borrowing the verified default route gateway. Step1097 then reserved the fixed-nav safe area, guarded non-default WAN live traffic, added exception evidence and domain-specific object facts, added chart window/resource trend semantics, added interface overflow handoff, and introduced a real two-column tablet/landscape task workspace. Current mobile runtime is 56/56, mobile accessibility is 11/11, and the current route-state matrix is 266/266. The overview 28/28 and route-responsive 76/76 reports must be regenerated after this decision-log sync before being treated as current.
-- Step1098 closed the independent Product and Visual gates at P0=0/P1=0. Product confirmed the corrected outage/collection evidence semantics; Visual confirmed the corrected 667/844 landscape two-zone workspace. Remaining P2 notes are non-blocking. Current mobile runtime is 56/56, accessibility 11/11, overview 28/28 and route-state 266/266.
-- Step1108 generated independent 390×844 interface, route, resource and terminal detail captures from real object rows, and changed all-offline WAN rows to explicitly label zero rates as the last observation. The rebuilt mobile runtime is 56/56, the current route-responsive report is 76/76 and the current route-state single report is 266/266. A later duplicate route replay hit a real Windows `ERR_NO_BUFFER_SPACE`; it is retained as environmental failure evidence and does not replace the earlier current-identity 76/76 report.
-
-- Step1155–1159 add a hard 55% admission / 70% termination envelope, fix synchronous route-click CDP blocking, and close current overview `28/28`, route-responsive `76/76` and route-state `266/266`.
-- Step1160–1161 make actual Windows Edge toolbar 200% evidence identity-bound and resumable. The hard stop correctly terminated a run when whole-system CPU reached 83.4%; bounded resumable batches then completed all `22/22` cells.
-- No phone art, typography, color, radius, icon or component composition changed in these steps. Final fixed-name matrices must be rebound after the tooling changes before independent signoff.
+- Candidate commit `b3528c39be0fd3a9551edf7b394c8a81ee43974` is the current branch tip after refreshing the tracked `.product-loop/state.json` gate notes.
+- Local decision-ledger validation passes: `python tools/check-decision-ledger-sync.py`; regression suite passes: `python tools/test-decision-ledger-sync.py -v` (6 tests).
+- Remote Run `33481348678` is bound to candidate `b3528c39be0fd3a9551edf7b394c8a81ee43974`.
+- In that run, Linux passed Python syntax/collector regressions, then failed at `Current decision truth authority` because `docs/decision-system/current-state.md` exceeded its 180-line scan budget (373 lines). This compact-state correction is the next candidate change.
+- Windows packaging is still running at `Real Edge toolbar 200 percent matrix`; no Windows pass is inferred while it has no terminal conclusion.
+- No CL/GHCR result is treated as current evidence for this candidate. Any artifact or check must bind to the final candidate SHA, not a PR merge SHA guessed from metadata.
+- No UI or network product behavior is changed by this repair. No `rg.exe`, uncontrolled browser scan, user-process termination, or credential write is part of this step.
+- outcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
 
 ## Gate status
 
-| Gate | Status | Boundary |
+| Gate | Status | Evidence boundary |
 |---|---|---|
-| R07 Product / mobile direction | pending | Sole baseline is the user-supplied accepted four-screen reference; current-identity independent re-signoff is pending. |
-| Mobile ownership / architecture | pass | Old mobile owners and D-drive mobile contracts were removed; new owner is isolated. |
-| Mobile focused runtime | pass | `check:types`, production build, interface/resource detail evidence and workspace controls pass. |
-| Mobile full state matrix | pass | Current mobile identity is 56/56 with all 14 workflows; accessibility is 11/11 including actual text-only 200%. |
-| R09 Visual | pending | Step1098 is historical after later implementation/tooling changes; current-identity independent re-signoff is pending. |
-| R10 Accessibility / security | pending independent receipt | Mobile accessibility evidence remains green; current-identity real Windows Edge toolbar 200% is 1/22 and still incomplete. |
+| R07 Product / mobile direction | pending | Current independent re-signoff for the accepted mobile baseline is absent. |
+| Mobile ownership / architecture | pass | Current owner is `src/panel-framework/mobile-reference-ui/`; retired phone owners are not restored. |
+| Mobile focused runtime | pending exact-SHA replay | Existing local evidence is historical after the CI repair candidate changed. |
+| Mobile full state matrix | pending exact-SHA replay | Existing matrix evidence is not reused as current release proof. |
+| R09 Visual | pending | Current-identity independent visual receipt is absent. |
+| R10 Accessibility / security | pending | Current-identity Windows Edge 200% and independent receipt remain open. |
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
-| Release hygiene | pending | Dirty worktree and generated assets are not a clean candidate. |
-| R14 Release | closed | GitHub untouched; exact-SHA Linux/Windows/GHCR CL not started. |
+| Release hygiene | pass locally / pending remote | Local tracked candidate is clean; remote candidate gates are not all green. |
+| CI Linux | failed on Run 33481348678 | Current-state compactness gate failed; correction is in progress. |
+| CI Windows | running on Run 33481348678 | Edge toolbar 200% matrix has no terminal result yet. |
+| CL/GHCR | pending | No current exact-SHA evidence is available for `b3528c3`. |
+| R14 Release | closed | Do not upload or publish until every required gate is green on one exact SHA. |
 
 ## One next action
 
-在外部 Edge 负载稳定后，低负载串行重跑当前身份 Edge toolbar 200%，再重跑 route76/state266、readiness、focused regressions 和独立签收。不得改变手机美术基线、使用 `rg.exe`、启动子代理或在证据完整前发布。
+Commit and push this compact current-state correction, then inspect the new exact-SHA Linux, Windows, and CL/GHCR results; fix only the first fresh failure and repeat until all required gates are green.
 
 ## Authority links
 
 - Mobile baseline: `../../docs/mobile-reference-baseline.md`
 - Mobile owner: `../../src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx`
 - Mobile styles: `../../src/panel-framework/mobile-reference-ui/mobile-reference.css`
-- Focused captures: `../../_acceptance/mobile-reference-only/`
-- Full mobile matrix: `../../_acceptance/mobile-reference-runtime/report.json`
 - Desktop owner: `../../src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx`
 - Full history: `../panel-redesign-decision-log.md`
 - Historical index: `historical-index.md`
 - Current handoff: `../product-loop-current.md`
 - Release chronology: `release-journal.md`
-
----
-
-
-## Step 1189：新 SHA 首轮远端 CL 失败，保留 Linux 运行并锁定 Windows 首个根因（2026-08-30）
-
-### 已核实现场
-
-- 当前候选 SHA：`b18ada8ee828c621538a686b45beecfce930e693`，分支：`codex/ci-fix-20260830`。
-- GitHub Actions Run `33313772840` 已确认 Windows packaging 失败；首个失败步骤是 `Real Edge toolbar 200 percent matrix`。
-- Windows 在该步骤之前的 Edge toolbar source contract、Python/Node 环境和依赖安装均通过；其后的 package manifest/upload 失败是上游失败的级联结果，不能单独修复或解读为新根因。
-- Linux validation 仍停留在 `Release blocking contract gates` 运行中，尚未取得终态；当前不能声称 Linux、Windows、CL/GHCR 全部通过。
-- 失败日志在 Run 仍进行时不可下载；没有用旧 SHA 的历史报告冒充当前证据，也没有重复启动新的 CI。
-
-### 本步决策
-
-1. 只修复 Windows 的首个真实失败；不先处理由它级联的 manifest/artifact 缺失。
-2. 继续保持手机/桌面美术基线不变，本步属于发布验收基础设施，不借机改 UI。
-3. 等当前 Run `33313772840` 自然结束后读取精确 job 日志；若根因与现有 UIA 所有权实现不一致，再做最小修复并生成新 SHA。
-4. 所有后续修改、提交、推送和 CL 读取都必须同步本日志、D 盘镜像及状态文档；任一远端 CL 失败都继续纠正，直到同一精确 SHA 的 Linux、Windows、CL/GHCR 全绿。
-
-### 资源与安全记录
-
-- 本轮未使用 `rg.exe`，未启动新的本地浏览器矩阵，未终止用户进程。
-- 上下文脚本曾因执行层 ACL 初始化失败而未运行；没有把该失败伪装成 checkpoint 或验收结果。
-- 之后只进行了有界的 Git/CI 查询、源码读取和文档同步；未修改手机或桌面美术。
-
-### 心得
-
-CI 的“上传后失败”必须按首个失败步骤追根，而不是看到后续产物缺失就批量补文件。当前证据只说明候选已上传且 Windows 首个门禁失败、Linux 未结束；因此发布状态继续为 FAIL/CLOSED。
-
-### outcome
-
-- outcome: `1189:current-sha-windows-edge-toolbar-failed-linux-running-root-log-pending`
-
----
-
-
-## Step 1190：读取首个远端失败日志并修复 Edge popup 搜索边界（2026-08-30）
-
-### 已核实现场
-
-- Run `33313772840` 的 Windows 日志已公开完整首因：第 1 格 `phone-320::normal` 在 `find-zoom-in` 阶段经过 12 次有界 UIA 搜索仍找到 0 个 Zoom in 控件，退出码为 1。
-- Windows 的 package manifest、bundle 和 SHA256 manifest 失败均发生在该步骤之后，是上游失败的级联结果。
-- Linux 在 `Release blocking contract gates` 运行约 36 分钟仍无步骤推进；为避免继续占用远端资源已提交取消，取消不被解读为 Linux 产品失败或通过。
-- 当前仍没有同一新 SHA 的 Linux、Windows、CL/GHCR 全绿证据。
-
-### 实施的最小修复
-
-- 修改 `tools/acceptance/accessibility-v2/windows_browser_zoom.py`：UIA popup 根枚举仍只从已绑定的 Edge 进程枚举可见顶层窗口；当 Edge 瞬态菜单缺失可用 Win32 owner 链时，以同一 `msedge.exe` 进程和 Chromium 顶层窗口类作为受限 fallback。
-- UIA 激活继续复核控件进程、顶层窗口可见性和前台归属；只有选中的同进程 popup 可以作为前台例外，不恢复全局 UIA、全局键盘、物理鼠标或 `click_input()`。
-- 修改 `tools/test-browser-toolbar-zoom200-readiness.js`，把选中的同进程 popup 前台边界固定为源码契约。
-- 未修改手机/桌面产品美术、布局、数据语义或用户确认的视觉基线。
-
-### 本地验证
-
-- `node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js`：PASS。
-- `py -3 -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py`：PASS。
-- `git diff --check`：无错误；仅报告既有文档 CRLF 将在 Git 下次处理时转为 LF 的提示。
-- 没有在本机启动真实 Edge 200% 矩阵；上述结果不能替代 GitHub Windows runner 的新鲜真实证据。
-
-### 下一步
-
-把本步修复与验证继续同步到 D 盘镜像，清理只属于本任务的临时工件，形成新的 clean exact-SHA；然后用 lease 保护更新 GitHub 分支，并只读取该新 SHA 的 Linux、Windows、CL/GHCR 终态。任何一端失败继续按首个根因纠正。
-
-### outcome
-
-- outcome: `1190:windows-edge-popup-fallback-static-green-clean-candidate-next`
-
----
-
-
-## Step 1191：保留历史工件并以本地排除收口 clean candidate（2026-08-30）
-
-### 已核实现场
-
-- `git clean -nd -- .impeccable work` 显示这些目录含有既有评审记录和本任务临时脚本；无法证明每个文件都可安全删除，因此没有执行不可逆清理。
-- 已在当前仓库本地 `.git/info/exclude` 增加 `.impeccable/` 与 `work/`；文件本体保留，不进入提交、GitHub tree 或发布证据。
-- 重新读取 `git status --short --branch` 后，仅剩本轮 UIA 修复和决策文档的六组已跟踪修改；未把任何产品文件隐藏或删除。
-
-### 决策
-
-采用“保留文件、只在本地排除”的可逆方案，而不是为了制造 clean 状态删除可能有历史价值的评审/工作工件。候选提交只包含已审查的 UIA 修复与同步后的决策文档；推送前还要用 Git 的实际暂存内容和 exact-SHA 身份检查确认。
-
-### 下一步
-
-先运行低负载静态/类型/构建相关门禁，随后检查暂存清单与 exact-SHA 身份；若全部通过，再提交并用 lease protection 更新 GitHub 分支，等待该新 SHA 的 Linux、Windows、CL/GHCR 结果。
-
-### outcome
-
-- outcome: `1191:task-artifacts-preserved-local-exclude-clean-candidate-gates-next`
-
----
-
-
-## Step 1192：形成新的 clean exact-SHA 候选并准备 lease-protected 推送（2026-08-30）
-
-### 已完成
-
-- 经过本地静态契约、Python 语法和补丁检查后，提交了候选：`78de7b964e914806331f237624fa688f6194abe5`。
-- 提交内容仅包含 Edge popup UIA fallback、对应 readiness 源码契约和已同步的决策文档；本地 `git status --short --branch` 仅显示分支行，内部 `.impeccable/` 与 `work/` 由本地排除规则保留且不会进入 Git tree。
-- 推送前重新 fetch：远端 `origin/codex/ci-fix-20260830` 当前保护值为 `b18ada8ee828c621538a686b45beecfce930e693`；本候选正是其直接后继。
-- `git diff --check HEAD^ HEAD` 无错误。
-
-### 发布边界
-
-还没有推送这个新 SHA，也没有把已取消的 Run 或旧 SHA 结果当成当前证明。下一次只允许用 `--force-with-lease` 且明确指定上述旧 SHA 更新同名分支；推送后只读取 `78de7b9...` 对应的 Linux、Windows、CL/GHCR 结果。
-
-### 下一步
-
-执行一次受 lease 保护的精确 SHA 推送；随后记录 GitHub 新 Run 编号，并等待/读取该 SHA 的真实三端结果。任一失败继续按首个失败步骤修复，不发布未验证候选。
-
-### outcome
-
-- outcome: `1192:clean-exact-sha-78de7b9-ready-for-lease-protected-push`
-
----
-
-
-## Step 1193：文档同步后重新封装候选，避免把旧提交当作最终 SHA（2026-08-30）
-
-### 已核实现场
-
-- Step1192 记录的 `78de7b9` 是源码修复提交，不是包含 Step1190—1192 全部文档镜像的最终候选；本轮文档同步发生在该提交之后，因此不能继续把 `78de7b9` 称为当前最终 SHA。
-- 当前待提交内容仍只包含 Edge popup UIA fallback、readiness 源码契约和决策/发布文档；未跟踪 `.impeccable/` 与 `work/` 由本地排除规则保留，不进入 Git tree。
-- 新候选的精确 SHA 将在本步提交后由 Git 读取；远端分支 lease 保护值仍是 `b18ada8ee828c621538a686b45beecfce930e693`，不能盲目覆盖。
-
-### 决策
-
-先把本轮文档同步完整纳入候选，再读取提交后的真实 SHA；不使用旧提交或旧 CI 结果做新候选证明。候选形成后再执行一次 lease-protected 推送，推送后的 CI 必须绑定新 SHA。
-
-### 下一步
-
-提交当前已审查文件，读取新的精确 SHA 与远端父提交，使用 `--force-with-lease` 推送；随后等待并核对该 SHA 的 Linux、Windows、CL/GHCR 结果。
-
-### outcome
-
-- outcome: `1193:documentation-synchronized-candidate-commit-and-lease-push-next`
-
----
-
-
-## Step 1195：第二次远端复现仍为零匹配，收窄过度过滤并准备重发（2026-08-30）
-
-### 已核实现场
-
-- 新 Run `33316260102` 的 Windows packaging 仍在第 1 格 `phone-320::normal` 的 `find-zoom-in` 阶段失败，首因仍是经过 12 次有界 UIA 搜索找到 0 个 Zoom in 控件。
-- 这证明 Step1190 的“同进程 + Chromium 类 + 可见顶层窗口”fallback 仍然过窄；不是 package manifest 或 artifact 上传逻辑的首因。
-- Run `33316260102` 的 Linux 结果仍未取得可用终态；本轮不得把 Windows 失败或 Linux 取消/未完成当作发布通过。
-
-### 实施的最小纠正
-
-- 保留 UIA 搜索只从已解析的 Edge 进程顶层窗口开始；取消对瞬态 popup 的 Win32 可见性和窗口类预过滤，避免 Edge runner 的 UIA/Win32 投影短暂不一致时把真实菜单根排除在外。
-- 保留零匹配/多匹配 fail-closed；控件激活仍要求精确 `msedge.exe` 进程、可见顶层窗口和前台归属，非 owner 链 popup 只能作为当前选中的同进程窗口。
-- 手机/桌面 UI、美术基线、数据语义均未修改。
-
-### 本地验证
-
-- `node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js`：PASS。
-- `py -3 -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py`：PASS。
-- 未启动新的本地真实 Edge 矩阵；远端真实 Windows runner 复验仍是必须证据。
-
-### 下一步
-
-同步本步到 D 盘并提交新的源代码/文档候选；不要复用 Run `33316260102` 的失败结果。新 SHA 推送后重新读取其精确 Linux、Windows、CL/GHCR 结果。
-
-### outcome
-
-- outcome: `1195:edge-popup-filter-too-narrow-static-green-new-candidate-next`
-
----
-
-
-## Step 1196：停止已失败的旧候选运行，准备提交第二次 popup 纠正（2026-08-30）
-
-### 已核实现场
-
-- Run `33316260102` 的 Windows packaging 已确认与上一轮相同：`phone-320::normal` 在 `find-zoom-in` 阶段经过 12 次有界 UIA 搜索仍得到 0 个 Zoom in 控件。
-- 该 Run 的 Linux validation 未形成终态；由于同一候选 Windows 已失败且 Linux 长时间停留在总门禁，已提交取消，不能把取消结果解读为 Linux 通过或失败。
-- 当前工作树的第二次 popup 纠正已完成本地静态验证，尚未提交和推送。
-
-### 下一步
-
-提交本步源代码和文档，读取新的 exact SHA；以远端 `b18ada8...` 为 lease 保护值推送新候选，然后只核对新 SHA 的 Linux、Windows、CL/GHCR 结果。
-
-### outcome
-
-- outcome: `1196:failed-run-cancelled-second-popup-correction-commit-next`
