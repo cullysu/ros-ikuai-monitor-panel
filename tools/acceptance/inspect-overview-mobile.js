@@ -8,7 +8,8 @@ function mobileReferenceOwnsViewport(width, height) {
 async function inspectOverviewMobileInteraction({ sectionName, viewport }) {
   const width = Number(viewport?.width || innerWidth);
   const height = Number(viewport?.height || innerHeight);
-  if (sectionName !== 'overview' || !mobileReferenceOwnsViewport(width, height)) {
+  const mobileReferenceViewportOwner = width <= 599 || (width <= 1199 && height >= width);
+  if (sectionName !== 'overview' || !mobileReferenceViewportOwner) {
     return {
       mobileReferenceInteractionOk: true,
       mobileReferenceInteractionProbe: { applicable: false },
@@ -41,7 +42,8 @@ async function inspectOverviewMobileInteraction({ sectionName, viewport }) {
 function inspectMobileNativeOverview(context) {
   const width = Number(context.viewport?.width || innerWidth);
   const height = Number(context.viewport?.height || innerHeight);
-  if (context.sectionName !== 'overview' || !mobileReferenceOwnsViewport(width, height)) return null;
+  const mobileReferenceViewportOwner = width <= 599 || (width <= 1199 && height >= width);
+  if (context.sectionName !== 'overview' || !mobileReferenceViewportOwner) return null;
   const root = document.querySelector('[data-mobile-reference-home]');
   const navigation = document.querySelector('[data-mobile-reference-navigation]');
   const evidenceMode = root?.getAttribute('data-evidence-mode') || '';
