@@ -555,7 +555,7 @@ function inspectReleaseCandidateEvidence(options, { root = ROOT, verifySoak = ve
   let candidateRuntimeIdentity = null;
   try {
     withIsolatedCandidateWorktree(root, options.candidateCommit, (candidateRoot) => {
-      candidateRuntimeIdentity = gitWorktreeIdentity(candidateRoot);
+      candidateRuntimeIdentity = gitWorktreeIdentity(candidateRoot, { ignoreFileMode: true });
       routeManifest = verifyRoute(frozen, candidateRoot);
       if (loadSoakReport(frozen).ok) {
         soakVerification = verifySoak({ root: candidateRoot, candidateCommit: options.candidateCommit, soakBytes: frozen.soak.bytes, minSoakSeconds: options.minSoakSeconds, minSoakSamples: options.minSoakSamples, timeoutMs: options.soakVerifierTimeoutMs });

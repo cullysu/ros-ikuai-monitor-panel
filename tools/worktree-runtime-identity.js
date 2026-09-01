@@ -87,10 +87,12 @@ function gitHead(rootDir) {
   return result.status === 0 ? String(result.stdout || '').trim() : 'unknown';
 }
 
-function gitWorktreeIdentity(rootDir) {
+function gitWorktreeIdentity(rootDir, options = {}) {
   const commit = gitHead(rootDir);
-  const fullDiff = git(rootDir, ['diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.']);
+  const modeOptions = options.ignoreFileMode === true ? ['-c', 'core.filemode=false'] : [];
+  const fullDiff = git(rootDir, [...modeOptions, 'diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.']);
   const runtimeDiff = git(rootDir, [
+    ...modeOptions,
     'diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.',
     ...ARTIFACT_PREFIXES.map((prefix) => `:(exclude)${prefix}**`),
     ...GOVERNANCE_PATHS.map((name) => `:(exclude)${name}`),

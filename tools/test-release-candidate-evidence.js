@@ -70,7 +70,7 @@ try {
   assert.equal(manifest.pass, true, 'fixture manifest must be generated from the active route registry and policy');
   const candidateRuntimeIdentity = checker.withIsolatedCandidateWorktree(root, candidate, (candidateRoot) => {
     assert.notEqual(path.resolve(candidateRoot), root, 'candidate verification must execute outside the mutable workspace');
-    return gitWorktreeIdentity(candidateRoot);
+    return gitWorktreeIdentity(candidateRoot, { ignoreFileMode: true });
   });
   assert.equal(candidateRuntimeIdentity.commit, candidate, 'clean candidate identity must bind the candidate commit');
   assert.equal(candidateRuntimeIdentity.worktreeClean, true, 'candidate identity must come from a clean isolated worktree');
