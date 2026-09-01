@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1188`
-- currentOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
-- currentBoundary: `1188`
-- latestRecordedStep: `1188`
-- latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
+- currentStep: `1197`
+- currentOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- currentBoundary: `1197`
+- latestRecordedStep: `1197`
+- latestStepOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
 
 ## Current pointer
 

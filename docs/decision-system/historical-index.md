@@ -1,12 +1,12 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: Step1185 current decision boundary; historical entries remain immutable
+- validForCommit: Step1197 current decision boundary; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `1185`
-- latestRecordedStep: `1185`
+- coveredStepMax: `1197`
+- latestRecordedStep: `1197`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 

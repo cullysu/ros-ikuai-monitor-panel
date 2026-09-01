@@ -99,16 +99,16 @@
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1188-9025d25-linux:run33480644933 Linux failed in check-decision-ledger-sync because four gate notes were stale; correction pending",
-      "updated_at": "2026-09-01T07:15:29.188Z"
+      "note": "step1196:Run 33316260102 Linux was cancelled without a terminal product result; fresh exact-SHA Linux evidence is required after the next correction",
+      "updated_at": "2026-09-01T09:26:17.830Z"
     },
     "ci-windows": {
       "status": "pending",
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1188-9025d25-windows:run33480644933 Windows was still running at the last observation in the Edge matrix; no terminal result inferred",
-      "updated_at": "2026-09-01T07:15:29.188Z"
+      "note": "step1196:Run 33316260102 failed at phone-320::normal find-zoom-in with zero Zoom in matches; popup correction is not yet published",
+      "updated_at": "2026-09-01T09:26:17.830Z"
     },
     "ci-container": {
       "status": "pending",
@@ -116,11 +116,11 @@
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328479359",
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328766281"
       ],
-      "note": "step1188-9025d25-container:no CL/GHCR evidence is bound to 9025d25; rerun required on the corrected candidate",
-      "updated_at": "2026-09-01T07:15:29.188Z"
+      "note": "step1196:no CL/GHCR evidence is bound to the next corrected candidate; rerun is required after exact-SHA publication",
+      "updated_at": "2026-09-01T09:26:17.830Z"
     }
   },
-  "latest_decision_step": 1188,
-  "latest_decision_outcome": "1188:remote-old-run-separated-and-protected-branch-publish-next",
-  "current_surface_step": 1188
+  "latest_decision_step": 1197,
+  "latest_decision_outcome": "1197:decision-boundaries-synchronized-and-release-remains-closed",
+  "current_surface_step": 1197
 }

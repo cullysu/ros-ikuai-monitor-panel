@@ -30617,3 +30617,36 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 ### outcome
 
 - outcome: `1196:failed-run-cancelled-second-popup-correction-commit-next`
+
+
+---
+
+## Step 1197：修复决策仓库边界漂移并保持发布门禁关闭（2026-09-01）
+
+### 已核实事实
+
+- Linux 首个失败已定位为历史索引覆盖范围落后于完整决策日志：日志最高步骤为1196，而索引仍声明1185。
+- 决策权威检查器只识别“第 N 步”标题，未识别后续使用的“Step N”标题，导致完整日志的最新步骤计算错误。
+- 当前候选的 Windows 失败仍是 Run 33316260102 的 phone-320::normal / find-zoom-in 零匹配；Linux 未形成终态，CL/GHCR 没有当前 exact-SHA 绿色证据。
+
+### 修复与取舍
+
+- 历史索引、current-state、current-index、决策 README、handoff、机器状态和发布日志统一绑定到本步最新边界；完整历史日志继续保留，不覆盖历史证据。
+- 决策权威检查器改为同时识别“第 N 步”和“Step N”，避免新增记录后错误回退到旧步骤。
+- 发布日志压缩为当前边界和指针，完整过程仍只保留在 append-only 历史日志，避免当前表面再次超过扫描预算。
+- D 盘根 README 重新同步并通过逐字节镜像检查。
+
+### 验证
+
+- archive map、current-state authority、root README freshness、decision repository compaction 和完整 decision-system 门禁通过；本地 Python pointer 检查受本机 Python trampoline 权限错误阻塞，未伪称通过。
+- 发布边界仍为 FAIL/CLOSED；没有推送新候选，没有复用旧 SHA 的 CI 结果，也没有把局部绿色门禁当作发布证据。
+
+### 心得
+
+当前索引必须随完整日志原子推进，不能只修正文档表面或让门禁读取旧步骤。CI 的失败、取消和未完成状态必须保持可见，直到同一 exact SHA 的 Linux、Windows、CL/GHCR 真实结果全部形成。
+
+### 下一步
+
+提交本步已验证的源代码与决策文档，生成新的 exact SHA；仅在新 SHA 上传后读取其 Linux、Windows、CL/GHCR 终态，继续修复首个新失败。
+
+- outcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
