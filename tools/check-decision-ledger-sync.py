@@ -17,6 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MIRROR = Path(r"D:\想法\面板")
+RELEASE_JOURNAL = Path("docs/decision-system/release-journal.md")
 DECISION_SYSTEM_FILES = (
     "architecture-adr.md",
     "current-state.md",
@@ -64,6 +65,25 @@ def read_step(path: Path, pattern: str, *, current: bool = False) -> int:
     return int(matches[0] if current else matches[-1])
 
 
+def read_current_journal_step(root: Path = ROOT) -> int:
+    """Read the current pointer from the compact release journal.
+
+    ``panel-redesign-decision-log.md`` is append-only history and is allowed
+    to end before the current operational boundary.  The compact journal is
+    the authoritative current pointer for this check.
+    """
+
+    return read_step(root / RELEASE_JOURNAL, r"^- currentStep:\s*`(\d+)`", current=True)
+
+
+def read_current_journal_outcome(root: Path = ROOT) -> str:
+    journal = (root / RELEASE_JOURNAL).read_text(encoding="utf-8")
+    matches = re.findall(r"^- currentOutcome:\s*`([^`]+)`", journal, flags=re.MULTILINE)
+    if not matches:
+        raise ValueError(f"current journal outcome not found in {root / RELEASE_JOURNAL}")
+    return matches[0]
+
+
 def load_machine_state(root: Path = ROOT) -> tuple[dict[str, object], bool]:
     state = root / ".product-loop" / "state.json"
     try:
@@ -96,10 +116,11 @@ def load_machine_state(root: Path = ROOT) -> tuple[dict[str, object], bool]:
         }, False
 
 def semantic_steps(root: Path = ROOT) -> dict[str, int]:
-    log = root / "docs" / "panel-redesign-decision-log.md"
     machine, _ = load_machine_state(root)
     return {
-        "journal": read_step(log, r"^## 第\s*(\d+)\s*步"),
+        # The long decision log is historical.  Compare current surfaces to
+        # the compact release-journal pointer instead of its older tail.
+        "journal": read_current_journal_step(root),
         "currentState": read_step(
             root / "docs" / "decision-system" / "current-state.md",
             r"^- latestRecordedStep:\s*`(\d+)`",
@@ -135,7 +156,7 @@ def read_outcome(path: Path, *, current: bool = False) -> str:
 def semantic_outcomes(root: Path = ROOT) -> dict[str, str]:
     machine, _ = load_machine_state(root)
     return {
-        "journal": read_outcome(root / "docs" / "panel-redesign-decision-log.md"),
+        "journal": read_current_journal_outcome(root),
         "currentState": read_outcome(root / "docs" / "decision-system" / "current-state.md", current=True),
         "decisionIndex": read_outcome(root / "docs" / "decision-system" / "README.md", current=True),
         "loopHandoff": read_outcome(root / "docs" / "product-loop-current.md", current=True),
@@ -212,7 +233,7 @@ def authority_header_state(root: Path = ROOT) -> dict[str, object]:
 
 
 def stale_gate_notes(machine: dict[str, object], latest_step: int) -> list[dict[str, str]]:
-    expected = f"step{latest_step}-"
+    expected_prefixes = (f"step{latest_step}-", f"step{latest_step}:")
     stale: list[dict[str, str]] = []
     gates = machine.get("gates")
     if not isinstance(gates, dict):
@@ -222,7 +243,7 @@ def stale_gate_notes(machine: dict[str, object], latest_step: int) -> list[dict[
         status = str(gate.get("status") or "missing")
         note = str(gate.get("note") or "")
         historical = name in HISTORICAL_GATE_NAMES and note.startswith("historical-")
-        if not note.startswith(expected) and not historical:
+        if not note.startswith(expected_prefixes) and not historical:
             stale.append({"gate": str(name), "status": status, "note": note})
     return stale
 

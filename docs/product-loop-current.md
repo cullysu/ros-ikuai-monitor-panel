@@ -1,22 +1,22 @@
 - status: `current-handoff`
 - validForCommit: false; this is a local repair candidate only and is not release evidence
-- currentHandoffForStep: `1197`
+- currentHandoffForStep: `1198`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
 - updated: `2026-09-01`
-- latestRecordedStep: `1197`
-- latestStepOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- latestRecordedStep: `1198`
+- latestStepOutcome: `1198:fix-decision-ledger-current-pointer-and-gate-note-contract`
 - releaseCandidate: none; this is not a release candidate and GitHub publication is closed
-- currentConclusion: **FAIL overall / the accepted four-screen phone reference remains unchanged / the next exact-SHA candidate still needs fresh Linux, Windows and CL/GHCR evidence.**
+- currentConclusion: **FAIL overall / the accepted four-screen phone reference remains unchanged / the corrected candidate still needs fresh Linux, Windows and CL/GHCR evidence.**
 
 ## Current handoff: Step 1197
 
-- The current branch contains the Edge popup correction and synchronized decision-state repairs. The current candidate is not release-eligible until it is committed, independently checked and bound to fresh exact-SHA CI evidence.
+- The current branch contains the Edge popup correction, synchronized decision-state repairs, and the locally validated Linux gate correction. The current candidate is not release-eligible until it is committed, independently checked and bound to fresh exact-SHA CI evidence.
 - The decision pointer validator now reads the compact `docs/decision-system/release-journal.md` header; the append-only `docs/panel-redesign-decision-log.md` remains history only. This prevents a valid compact pointer from failing because the historical tail has no current header.
 - Run `33489058119` is historical evidence for remote SHA `ba2e73f`; Linux failed at `Current decision truth authority`, and Windows failed at `Real Edge toolbar 200 percent matrix`. Those results are not evidence for the local candidate.
 - The accepted four-screen mobile reference and the user-selected `192.168.3.5` / iPad desktop direction remain unchanged. This repair does not modify product UI or network behavior.
 - The release remains **FAIL / CLOSED**. No upload, publish, or CL/GHCR claim is valid until one clean exact SHA has fresh green Linux, Windows and CL/GHCR evidence.
-- outcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- outcome: `1198:fix-decision-ledger-current-pointer-and-gate-note-contract`
 
 ## Gate boundary
 

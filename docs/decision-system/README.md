@@ -1,9 +1,9 @@
 - validForCommit: false; Step1188 is a documented pre-publication boundary and the clean candidate is not yet formed
 - status: `current-index`
 - supersededBy: `null`
-- currentBoundaryForStep: `1197`
-- latestRecordedStep: `1197`
-- latestStepOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- currentBoundaryForStep: `1198`
+- latestRecordedStep: `1198`
+- latestStepOutcome: `1198:fix-decision-ledger-current-pointer-and-gate-note-contract`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.
@@ -16,4 +16,4 @@ The current conclusion is owned only by `current-state.md`; this page is navigat
 - Full historical journal: `../panel-redesign-decision-log.md`
 - Historical index: `historical-index.md`
 
-Step1188 records the separation of local dbd4a90, remote branch 7231e00 and remote main 69174b3, with untracked review/work artifacts excluded. The old remote Run 33309694877 remains Windows-red; protected branch publication and fresh exact-SHA Linux/Windows/GHCR CL remain open.
+Step1198 records the correction of the Linux decision-ledger gate after Run 33500400256. The current candidate is still unpublished; protected branch publication and fresh exact-SHA Linux/Windows/GHCR CL remain open.
