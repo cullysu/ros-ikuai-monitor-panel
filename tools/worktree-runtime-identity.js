@@ -103,7 +103,7 @@ function gitWorktreeIdentity(rootDir, options = {}) {
     maxBuffer: 8 * 1024 * 1024,
   });
   const allUntracked = others.status === 0
-    ? String(others.stdout || '').split(/\r?\n/).map(normalizedPath).filter((name) => name && !isArtifactPath(name)).sort()
+    ? String(others.stdout || '').split(/\r?\n/).map(normalizedPath).filter((name) => name && name !== '.git' && !isArtifactPath(name)).sort()
     : [];
   const runtimeUntracked = allUntracked.filter((name) => !isGovernancePath(name));
   const hash = crypto.createHash('sha256');
