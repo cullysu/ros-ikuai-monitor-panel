@@ -360,24 +360,12 @@ jobs:
             if ($indexText -match [regex]::Escape($publicPath)) { throw "Bundled index eagerly loads the $($asset.Name) instead of deferring surface selection to the loader." }
           }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
-          Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing loopback bind default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_TRUST_PROXY_HEADERS=0" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing proxy header default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing localhost host-forward default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_LOCALHOST_FORWARD_TOKEN=" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing localhost forward token default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_PROFILE=routeros_only" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing RouterOS-only profile default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing panel address write default." }
-          }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet)) { throw "Windows env is missing loopback bind default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_TRUST_PROXY_HEADERS=0" -Quiet)) { throw "Windows env is missing proxy header default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0" -Quiet)) { throw "Windows env is missing localhost host-forward default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_LOCALHOST_FORWARD_TOKEN=" -Quiet)) { throw "Windows env is missing localhost forward token default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_PROFILE=routeros_only" -Quiet)) { throw "Windows env is missing RouterOS-only profile default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1" -Quiet)) { throw "Windows env is missing panel address write default." }
 
       - name: Create SHA-bound Windows package manifest
         if: success()
