@@ -878,17 +878,31 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
     const trafficTimeLabels = trafficChart ? Array.from(trafficChart.querySelectorAll('.ref-chart__footer span')) : [];
      const trafficChartRect = trafficChart?.getBoundingClientRect() || null;
      const trafficScrollRoot = trafficChart?.closest(".ref-scroll, main") || null;
-     const trafficScrollRect = trafficScrollRoot?.getBoundingClientRect() || null;
+    const trafficScrollRect = trafficScrollRoot?.getBoundingClientRect() || null;
+    const trafficScrollStyle = trafficScrollRoot ? getComputedStyle(trafficScrollRoot) : null;
+    const trafficScrollContentRect = trafficScrollRoot && trafficScrollRect ? {
+      left: trafficScrollRect.left - trafficScrollRoot.scrollLeft,
+      top: trafficScrollRect.top - trafficScrollRoot.scrollTop,
+      right: trafficScrollRect.left - trafficScrollRoot.scrollLeft + trafficScrollRoot.scrollWidth,
+      bottom: trafficScrollRect.top - trafficScrollRoot.scrollTop + trafficScrollRoot.scrollHeight,
+    } : null;
+    const trafficScrollsContent = Boolean(trafficScrollRoot && trafficScrollStyle &&
+      (/(auto|scroll|overlay)/.test(trafficScrollStyle.overflowX) || /(auto|scroll|overlay)/.test(trafficScrollStyle.overflowY)) &&
+      (trafficScrollRoot.scrollWidth > trafficScrollRoot.clientWidth + 1 || trafficScrollRoot.scrollHeight > trafficScrollRoot.clientHeight + 1));
      const trafficLegendGeometryErrors = trafficLegend.filter((label) => {
        const labelRect = label.getBoundingClientRect();
        const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
-       const insideScrollRoot = Boolean(!trafficScrollRect || (labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
+       const insideScrollRoot = Boolean(!trafficScrollRect || (trafficScrollsContent
+         ? labelRect.left >= trafficScrollContentRect.left - 1 && labelRect.right <= trafficScrollContentRect.right + 1 && labelRect.top >= trafficScrollContentRect.top - 1 && labelRect.bottom <= trafficScrollContentRect.bottom + 1
+         : labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
        return !insideChart || !insideScrollRoot;
      }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null }));
      const trafficFooterGeometryErrors = trafficTimeLabels.filter((label) => {
        const labelRect = label.getBoundingClientRect();
        const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
-       const insideScrollRoot = Boolean(!trafficScrollRect || (labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
+       const insideScrollRoot = Boolean(!trafficScrollRect || (trafficScrollsContent
+         ? labelRect.left >= trafficScrollContentRect.left - 1 && labelRect.right <= trafficScrollContentRect.right + 1 && labelRect.top >= trafficScrollContentRect.top - 1 && labelRect.bottom <= trafficScrollContentRect.bottom + 1
+         : labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
        return !insideChart || !insideScrollRoot;
      }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null }));
     return {
