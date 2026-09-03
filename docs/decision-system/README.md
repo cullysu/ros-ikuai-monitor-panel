@@ -1,9 +1,9 @@
 - validForCommit: false; Step1188 is a documented pre-publication boundary and the clean candidate is not yet formed
 - status: `current-index`
 - supersededBy: `null`
-- currentBoundaryForStep: `1197`
-- latestRecordedStep: `1197`
-- latestStepOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- currentBoundaryForStep: `1200`
+- latestRecordedStep: `1200`
+- latestStepOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.

@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1197`
-- currentOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
-- currentBoundary: `1197`
-- latestRecordedStep: `1197`
-- latestStepOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- currentStep: `1200`
+- currentOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+- currentBoundary: `1200`
+- latestRecordedStep: `1200`
+- latestStepOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
 
 ## Current pointer
 

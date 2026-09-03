@@ -30650,3 +30650,38 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 提交本步已验证的源代码与决策文档，生成新的 exact SHA；仅在新 SHA 上传后读取其 Linux、Windows、CL/GHCR 终态，继续修复首个新失败。
 
 - outcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+
+---
+
+## Step 1200：409 根因关闭、横屏裁切修复与分片退出语义契约对齐（2026-09-04）
+
+### 已核实现场
+
+- 权威工作区 `ros-ikuai-monitor-panel-github-sync-20260707-accept`，分支 `codex/ci-fix-20260830`，起点 HEAD `2e3f823`（clean，未推送；父提交 `34d4be1` = 远端分支头 = 失败 Run 33521172930 的 head SHA）。
+- 远端自 2026-09-01 后无新 Run；release 保持 CLOSED / remote-green UNPROVEN。
+- Linux 首失败根因（Run 33521172930 job 99900507521）：full-route 76/76 全部 PASS 后，有界分片因 `complete=false` 以 "incomplete release matrix" 退出 1；`2e3f823` 的 `finalizeReportTruth` allowIncompleteMatrix 修复正是该语义，新增契约测试 `test-bounded-matrix-contract.js` 本地 PASS。
+- Windows 首失败根因（job 99900507863）：第 21/24 格 `landscape-667x375::normal` 在 inspectSurface 断言可见运维文本被非滚动容器裁切。CI artifact 的 partial-report 只含已过 20 格；本地以 CSS 等效复现（667×375、DPR2、single 快照、同一裁切检测语义）定位：8 个 `legacy-summary-tile` 数值 `<b>` 在 13px × line-height 1.1（14.3px 行盒）小于字形内容盒（约 17px），且 `<b>` 自身 overflow:hidden，造成自裁切；`844x390` 同样命中 8 条。
+- 桌面 density 两条 409：为测试 server 增加请求级诊断后真实运行，唯一非 200 是两次浏览器自动 `/favicon.ico` 探测，被既有 204 处理正确服务；pass/complete/stagePass=true，console/request/page errors 全空。历史 409 即 favicon 探测在 `3317591` 之前落入 build attestation 守卫所致。
+
+### 实施的最小修复
+
+1. `legacy-desktop.css`：600–899 横屏短高媒体查询内 `.legacy-summary-tile > b` 增加 `line-height: 1.4`；同查询内将 10–11px 标签规则显式抬到 12px 可读性下限（22 个选择器）。桌面 1366/1440 基线与手机基线不受影响（媒体查询不覆盖）。
+2. `tools/check-desktop-resource-density-v2.js`：测试 server 增加低噪声请求记录（含 409 原因）与 `server-requests.json` 旁路报告；修正 `listen()` 以 runtimeServer 对象调用。
+3. `tools/check-report-truth.js`：`finalizerInvokedAtClose` 正则同步到当前 `finalizeReportTruth(report, matrixBlocksTopLevelPass, {allowIncompleteMatrix})` 调用形态；该失配是 `2e3f823` 引入的潜在 CI 阻断，本轮在推送前发现并修复。
+4. `npm run build` 重建 framework 资产与 manifest 摘要（desktop.css/panel-surface-loader.js 新哈希 + index.html + manifest.json）。
+
+### 本地验证
+
+- `node --check` 全部 `tools/*.js` 通过；python compileall tools/app.py/panel_backend 通过。
+- `check:asset-identity` 4 项、`check:static-assets`、`check-release-blockers`、`check-report-truth`、`check:workflow-release-integrity`、report/completeness/artifact-identity quarantine 全部 PASS。
+- `check:desktop-resource-density-v2` 新鲜 PASS（identity 绑定当前工作树，consoleErrors=0）。
+- CSS 等效复现：667x375 / 844x390 容器裁切 = 0；<12px 文本仅剩非托管渲染才出现的 fixture bar（真实托管运行不渲染）。
+- 本机真实 Edge 200% UIA 阶段受阻于 find-settings-and-more 0 匹配（环境性问题，非产品代码）；该阶段在远端 Windows runner 曾通过，真实性由 exact-SHA CI 复验。
+
+### 边界
+
+- 未修改手机四屏基线、桌面 1366/1440 视觉、数据语义。
+- work/ 诊断脚本与日志仅本地保留；候选不含 openai.yaml 改动。
+- release 仍 CLOSED：完整 24 格真实 Edge 矩阵与 Linux/Windows/GHCR exact-SHA CL 全部待推送后复验；推送需用户明确授权。
+
+- outcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`

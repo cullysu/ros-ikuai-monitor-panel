@@ -95,25 +95,37 @@ async function buildSourceRuntime() {
 
 function createRuntimeServer(runtimeDirectory, sourceRuntime) {
   const sockets = new Set();
+  const requestLog = [];
   const server = http.createServer((request, response) => {
     const pathname = new URL(request.url || "/", "http://127.0.0.1").pathname;
+    const record = (status, reason) => {
+      const entry = { pathname, status, reason };
+      requestLog.push(entry);
+      if (status !== 200) console.log(`[server-request] ${status} ${pathname} ${reason}`);
+      return entry;
+    };
     if (pathname === "/favicon.ico") {
+      record(204, "favicon-no-content");
       response.writeHead(204, { "Cache-Control": "no-store" });
       response.end();
       return;
     }
     if (pathname === "/") {
+      record(200, "panel-shell");
       response.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
       response.end("<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"stylesheet\" href=\"/style.css\"><link rel=\"stylesheet\" href=\"/desktop-overview.css\" media=\"(min-width:1200px)\"></head><body><div id=\"app\"></div><script src=\"/panel-framework.js\"></script></body></html>");
       return;
     }
     try {
       const body = readAttestedRuntimeFile(runtimeDirectory, pathname, sourceRuntime);
+      record(200, "attested-runtime");
       response.writeHead(200, { "Content-Type": pathname.endsWith(".css") ? "text/css; charset=utf-8" : "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
       response.end(body);
     } catch (error) {
+      const reason = String(error?.message || error);
+      record(409, reason);
       response.writeHead(409, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
-      response.end(String(error?.message || error));
+      response.end(reason);
     }
   });
   server.on("connection", (socket) => {
@@ -122,6 +134,7 @@ function createRuntimeServer(runtimeDirectory, sourceRuntime) {
   });
   return {
     server,
+    requestLog,
     async close() {
       for (const socket of sockets) socket.destroy();
       await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
@@ -190,6 +203,7 @@ async function inspectViewport(page, viewport, screenshotPath) {
 
 async function main() {
   const startIdentity = captureProjectIdentity(root);
+  const serverDiagnostics = { requests: [] };
   await bounded("desktop.output.mkdir", () => fsp.mkdir(outputDirectory, { recursive: true }), STEP_TIMEOUT_MS);
   // A source build already consumed 12.5s on this machine. It is preparation,
   // not browser scenario work, so keeping it inside scenario.run made the 15s
@@ -205,9 +219,11 @@ async function main() {
     cleanupTimeoutMs: CLEANUP_TIMEOUT_MS,
   }, async ({ context, page, registerCleanup, signal }) => {
     if (signal.aborted) throw signal.reason || new LifecycleError("STEP_ABORTED", "desktop source build aborted");
-    const server = createRuntimeServer(runtimeDirectory, sourceRuntime);
+    const runtimeServer = createRuntimeServer(runtimeDirectory, sourceRuntime);
+    const server = runtimeServer.server;
+    serverDiagnostics.requests = runtimeServer.requestLog;
     registerCleanup("runtime-server.close", () => server.close(), CLEANUP_TIMEOUT_MS);
-    const url = (await bounded("desktop.runtime.listen", () => listen(server), STEP_TIMEOUT_MS)).value;
+    const url = (await bounded("desktop.runtime.listen", () => listen(runtimeServer), STEP_TIMEOUT_MS)).value;
     await bounded("desktop.snapshot.inject", () => context.addInitScript((snapshot) => { window.__PANEL_TEST_SNAPSHOT__ = snapshot; }, resourceFullSnapshot()), STEP_TIMEOUT_MS);
     const pageErrors = [];
     const consoleErrors = [];
@@ -280,6 +296,11 @@ async function main() {
     await bounded("desktop.report.write", () => fsp.writeFile(path.join(outputDirectory, "report.json"), JSON.stringify(report, null, 2), "utf8"), STEP_TIMEOUT_MS);
     return report;
   });
+  try {
+    await bounded("desktop.requestlog.write", () => fsp.writeFile(path.join(outputDirectory, "server-requests.json"), JSON.stringify(serverDiagnostics.requests, null, 2), "utf8"), STEP_TIMEOUT_MS);
+  } catch (error) {
+    console.log(`[server-request] diagnostic log write failed: ${String(error?.message || error)}`);
+  }
   if (!outcome.ok) {
     throw new Error(`${outcome.error?.message || "desktop resource density lifecycle failed"}\n${JSON.stringify(outcome.diagnostics, null, 2)}`);
   }

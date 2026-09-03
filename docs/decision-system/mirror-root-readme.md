@@ -3,9 +3,9 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall for release / 
 这是当前面板工作的决策仓库入口。手机视觉基线仍是用户确认的四屏参考，桌面视觉基线仍是 192.168.3.5 / iPad 方向；本轮只修复 CI 与决策状态同步，不改变产品美术或网络行为。
 
 - status: `current-mirror-entry`
-- currentStep: `1197`
-- currentOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
-- currentBoundary: `1197`
+- currentStep: `1200`
+- currentOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+- currentBoundary: `1200`
 - authority: `decision-system/current-state.md`
 
 ## 入口

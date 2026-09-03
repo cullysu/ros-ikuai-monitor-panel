@@ -1,9 +1,9 @@
 - status: `current-journal`
-- validForCommit: false; Step1197 records synchronized decision boundaries after the latest failed candidate; the next correction is not yet published
+- validForCommit: false; Step1200 closes the desktop-density 409 root cause, repairs the landscape clipping, and re-syncs the report-truth contract; the next candidate is not yet published
 - supersededBy: null
-- currentStep: `1197`
-- currentOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
-- latestStepOutcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+- currentStep: `1200`
+- currentOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+- latestStepOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 
