@@ -966,7 +966,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   // Edge toolbar 200% can make Playwright fullPage capture a blank, off-target
   // canvas (observed 660x1088 for a 667x375 cell). Viewport capture stays bound
   // to the verified CSS geometry that the Windows HWND screenshot already proves.
-  await page.screenshot({ path: diagnosticFile, fullPage: false, animations: "disabled" });
+  await page.screenshot({ path: diagnosticFile, fullPage: false, animations: "disabled", scale: "css" });
   return {
     label,
     viewport,

@@ -900,6 +900,17 @@ async function startMock({ transport = 'tcp', preferIpv4 = false } = {}) {
             upRate: 9000000 - (index * 400000),
           })));
           payload.pppoe = payload.wan.map((row) => ({ ...row }));
+          // Fleet still needs one current interface failure so the phone
+          // overview selects the interfaces scene. Keep this object off the
+          // first-scan WAN list so fleet and interfaces-down remain distinct.
+          payload.interfaces.push({
+            name: "sfp-sata",
+            type: "sfp",
+            role: "LAN",
+            parent: "switch1",
+            running: false,
+            disabled: false,
+          });
         }
         // Keep the fleet fixture focused on scale.  Interface failures belong
         // to the dedicated interfaces-down fixture; combining both made the
