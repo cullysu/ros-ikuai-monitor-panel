@@ -30826,3 +30826,30 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
 
 - outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1205：readiness 手机报告字段对齐与 route 横屏工作区可压缩列（2026-09-04）
+
+### 已核实现场
+
+- Run `33860099898`（head `bdd3005`）终态双失败。
+- Linux `Public release readiness`：手机矩阵步骤本身完整（runPass=true/complete=true，capture 到全部 49 格），但 readiness 读到 total=0——生成器把 49 cells 写在顶层 `report.cells`，校验器却读 `matrix.cells`，属于消费者字段错配而非证据缺失。
+- Windows 第 22/24 格 `landscape-667x375::interfaces-down`：真实 Edge 200% 下 route 文本被 `section.desktop-domain-workspace` 的 overflow:hidden 截断；本地等效复现 667×375 有 38 条、844×390 有 22 条 x 轴容器裁切，根因为 `.ddw-body` 默认列下限 520px+430px，1200px 以下没有压缩规则。
+
+### 实施的最小修复
+
+1. `check-public-release-readiness.js`：手机 runtime 专用校验读取顶层 `report.cells`（与生成器一致）；overview/route 矩阵继续读 `matrix.cells` 不变。同步 `test-public-release-semantic-gates.js` fixture 与三条损坏注入用例的字段路径。
+2. `desktop-domain.css`：为 600–899 横屏短高（桌面 owner 断点）新增可压缩两列 `.ddw-body`（minmax(0,fr)）与配套工具栏/表格/检查器紧凑规则；表格 pane 自身保留 overflow:auto 滚动。
+
+### 本地验证
+
+- route 裁切复现：667×375 容器裁切 38→0；844×390 22→0。
+- test-public-release-semantic-gates PASS（含 48-cell 缺失、哈希篡改、PNG 损坏三条 fail-closed 用例）。
+- build / types / asset-identity / toolbar readiness fixture PASS。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`

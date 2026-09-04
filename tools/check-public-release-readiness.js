@@ -794,7 +794,7 @@ function validateMobileRuntimeReport(reportPath, currentIdentity, options = {}) 
   const evidenceRoot = path.resolve(reportPath, '..', '..', '..');
   const push = (message) => errors.push(message);
   const matrix = report?.matrix;
-  const cells = Array.isArray(matrix?.cells) ? matrix.cells : [];
+  const cells = Array.isArray(report?.cells) ? report.cells : [];
   const actualCellIds = cells.map(mobileCellId);
   const actualSet = new Set(actualCellIds);
   const missingCells = MOBILE_MATRIX_CELL_IDS.filter((id) => !actualSet.has(id));

@@ -409,7 +409,8 @@ assert.throws(
     runtimeStart: runtimePhase, runtimeEnd: runtimePhase, evidenceErrors: [],
     outputDirectory: '_acceptance/mobile-reference-runtime',
     workflows,
-    matrix: { ...shared, mode: 'full', append: false, required: 49, completed: 49, failed: 0, remaining: 0, cells },
+    matrix: { ...shared, mode: 'full', append: false, required: 49, completed: 49, failed: 0, remaining: 0 },
+    cells,
   };
   const reportPath = path.join(outputDirectory, 'report.json');
   try {
@@ -417,7 +418,7 @@ assert.throws(
     assert.deepEqual(validateMobileRuntimeReport(reportPath, currentIdentity).errors, []);
 
     const incomplete = JSON.parse(JSON.stringify(report));
-    incomplete.matrix.cells.pop();
+    incomplete.cells.pop();
     incomplete.matrix.completed = 48;
     incomplete.matrix.remaining = 1;
     fs.writeFileSync(reportPath, JSON.stringify(incomplete));
@@ -426,13 +427,13 @@ assert.throws(
     assert(errors.some((item) => item.includes('missing=1')), 'every required mobile cell must be explicit');
 
     const staleHash = JSON.parse(JSON.stringify(report));
-    staleHash.matrix.cells[0].png.sha256 = '0'.repeat(64);
+    staleHash.cells[0].png.sha256 = '0'.repeat(64);
     fs.writeFileSync(reportPath, JSON.stringify(staleHash));
     errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
     assert(errors.some((item) => item.includes('sha256 does not match')), 'recorded screenshot hashes must be re-read from files');
 
     const corruptFile = JSON.parse(JSON.stringify(report));
-    fs.writeFileSync(path.join(evidenceRoot, corruptFile.matrix.cells[1].file), Buffer.from('not-a-png'));
+    fs.writeFileSync(path.join(evidenceRoot, corruptFile.cells[1].file), Buffer.from('not-a-png'));
     fs.writeFileSync(reportPath, JSON.stringify(corruptFile));
     errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
     assert(errors.some((item) => item.includes('file is not a PNG')), 'release validation must decode every screenshot');

@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1204`
-- currentOutcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
-- currentBoundary: `1204`
-- latestRecordedStep: `1204`
-- latestStepOutcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+- currentStep: `1205`
+- currentOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
+- currentBoundary: `1205`
+- latestRecordedStep: `1205`
+- latestStepOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
 
 ## Current pointer
 

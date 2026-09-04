@@ -937,6 +937,51 @@
   .ddi-body { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 }
 
+/* Wide short-landscape tablets own the desktop route workbench with only
+ * ~600px of content width. Reuse the compressible two-column grammar so the
+ * workspace shrinks inside its overflow-hidden shell instead of being clipped;
+ * the table pane keeps its own horizontal scroller. */
+@media (min-width: 600px) and (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
+  .ddw-body { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
+
+  .ddw-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 42px;
+    padding: 5px 8px;
+  }
+
+  .ddw-search input,
+  .ddw-sort select { min-height: 30px; }
+
+  .ddw-table-pane > header {
+    min-height: 34px;
+    padding: 4px 9px;
+  }
+
+  .ddw-table-scroll th,
+  .ddw-table-scroll td { padding: 5px 8px; }
+
+  .ddw-inspector { padding: 0 9px 9px; }
+
+  .ddi-boundary {
+    min-height: 34px;
+    margin: 0 -9px;
+    padding: 4px 9px;
+  }
+
+  .ddi-heading { padding: 8px 64px 6px 0; }
+
+  .ddi-body {
+    gap: 5px;
+    padding-top: 6px;
+  }
+
+  .ddi-block > header { padding: 5px 8px; }
+
+  .ddi-facts > div,
+  .ddi-timeline li { padding: 5px 8px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .desktop-domain-workspace *,
   .desktop-domain-workspace *::before,

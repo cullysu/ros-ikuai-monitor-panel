@@ -1,10 +1,10 @@
-- validForCommit: false; current worktree is uncommitted (Step1204 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
+- validForCommit: false; current worktree is uncommitted (Step1205 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1204`
-- currentConclusionForStep: `1204`
-- latestRecordedStep: `1204`
-- latestStepOutcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1205`
+- currentConclusionForStep: `1205`
+- latestRecordedStep: `1205`
+- latestStepOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,14 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1204
+## Current decision record: Step 1205
+
+- Run `33860099898` failed on both ends after further progress. Linux passed the mobile runtime matrix itself (runPass/complete true, all 49 cells captured) but readiness reported total=0 because the validator read `matrix.cells` while the generator writes top-level `report.cells`; the consumer is now aligned and the three fail-closed fixture cases moved with it.
+- Windows reached cell 22/24 and failed `landscape-667x375::interfaces-down` with route text clipped by the overflow-hidden domain workspace: `.ddw-body` minimum columns (520+430px) exceeded the ~600px workbench. A compressible two-column grammar now applies on the 600–899 short-landscape desktop breakpoint; local reproduction drops container clipping 38/22 to 0/0.
+- Local readiness semantics, build, types, asset identity and toolbar fixtures pass. Release stays CLOSED pending the next exact-SHA CI.
+- outcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
+
+## Previous decision record: Step 1204
 
 - Run `33850371045` failed after passing fleet and route matrices: Linux stopped at collection-down × tablet768 with workspace bottom 632px against the 634.88px first-screen threshold; the minimum height is now 220px and the wrapper single-cell check passes at bottom 636px. Windows stopped at phone-320::normal because Edge 200% produced a truthful 640×1136 device-pixel diagnostic; the validator now accepts CSS pixels or the verified DPR-sized image while retaining undersize and hash-reuse rejection.
 - Local mobile model, mock architecture, toolbar fixtures, types, build, asset identity, and workflow integrity pass. Release remains CLOSED pending the next exact-SHA CI.
@@ -68,7 +75,7 @@
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
 | Release hygiene | pending | Local tracked candidate is clean; current exact-SHA release evidence is not complete. |
 | CI Linux | pending | Run 33832746276 passed all route matrices; readiness evidence completed via the real mobile matrix plus explicit Edge delegation; fresh exact-SHA run required. |
-| CI Windows | failed on Run 33850371045 | `phone-320::normal` device-pixel diagnostic was rejected by the old CSS-size check; DPR-aware evidence validation fixed, fresh exact-SHA run required. |
+| CI Windows | failed on Run 33860099898 | cell 22/24 route text clipped at 667 landscape; compressible workspace columns fixed, fresh exact-SHA run required. |
 | CL/GHCR | pending | No current exact-SHA evidence is available for the next candidate. |
 | R14 Release | closed | Do not upload or publish until every required gate is green on one exact SHA. |
 

@@ -1,9 +1,9 @@
 - validForCommit: false; Step1188 is a documented pre-publication boundary and the clean candidate is not yet formed
 - status: `current-index`
 - supersededBy: `null`
-- currentBoundaryForStep: `1204`
-- latestRecordedStep: `1204`
-- latestStepOutcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1205`
+- latestRecordedStep: `1205`
+- latestStepOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.

@@ -1,9 +1,9 @@
 - status: `current-journal`
 - validForCommit: false; Step1201 bounds the WAN rail and rebinds machine gate notes, repairs the landscape clipping, and re-syncs the report-truth contract; the next candidate is not yet published
 - supersededBy: null
-- currentStep: `1204`
-- currentOutcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
-- latestStepOutcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+- currentStep: `1205`
+- currentOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
+- latestStepOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 
