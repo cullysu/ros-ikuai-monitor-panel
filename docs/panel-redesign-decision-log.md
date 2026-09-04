@@ -30900,3 +30900,26 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - release 保持 CLOSED/UNPROVEN；Windows preflight 之后的 EXE/bundle/manifest 步骤与 GHCR 链路仍需真实 CI 验证。
 
 - outcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
+
+---
+
+## Step 1208：CI 全绿、PR 合入 main、Container 首发与 CL 校验器对齐（2026-09-05）
+
+### 已核实现场
+
+- Run `33898958730`（head `2b89101`，分支 PR run）：**Linux + Windows 双 job 全绿**——包括真实 Edge 200% 矩阵 24/24、preflight（python 解析修复在 runner 生效）、Windows EXE/bundle/manifest 全链。
+- PR #1（CLEAN/MERGEABLE，main 为分支祖先）经授权合并入 main：merge commit `730b2356014294895716b342cdaa4c5dfa6ea512`。
+- main push CI Run `33903381024`：**双 job 全绿**（Windows EXE 构建段首次执行即通过）。
+- Container image workflow Run `33907690062`：**项目首次成功发布 GHCR 多平台镜像** `sha-730b235...`（linux/amd64+arm64 OCI index），证据 artifact `ghcr-image-evidence-730b235...` 完整绑定 candidate_sha/ci_run_id/container_run_id/index digest/双平台描述符。
+- CL 校验器 `check-exact-sha-release-cl.js` 首次对真实链路执行，暴露两处 CI 证据生成的路径缺陷：①Linux SHA256SUMS 条目带 evidence 目录前缀，而 artifact 内是裸文件；②Windows toolbar SHA256SUMS 的 payloadRoot 截取差 3 字符（条目为 `edge-toolbar/<sha尾39位>/edge-toolbar/<file>`），artifact 内实际为 `edge-toolbar/<file>`。哈希值本身全部正确（50/50 按 basename 一一对应且全部匹配）。
+
+### 实施的最小修复
+
+- `check-exact-sha-release-cl.js`：Linux 段接受单条目 basename 绑定（计数仍强制为 1）；toolbar 段按 basename 1:1 绑定 manifest 与 artifact 文件（两侧强制服 basename 唯一、数量相等、逐哈希匹配），其余全部严格检查（PNG 逐字节解码、尺寸、哈希唯一性、proof 绑定、OCI index/revision、container 证据绑定）不变。
+
+### 全链当前状态
+
+- remote main == 730b235 ✓；push CI（event=push,head_branch=main）双绿 ✓；5 类 CI artifact 内容/哈希/proof 校验 ✓；container run success 且 evidence 绑定 ✓。
+- 唯一剩余：GHCR 私有包的 registry 读取——本地 gh OAuth token 无 `read:packages` scope，匿名 401。需用户执行 `gh auth refresh -h github.com -s read:packages` 或将包设为 public，verifier 即可全绿。
+
+- outcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`

@@ -1,10 +1,10 @@
-- validForCommit: false; current worktree is uncommitted (Step1207 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
+- validForCommit: false; current worktree is uncommitted (Step1208 CL-verifier alignment pending commit; main CI and Container image are fully green on 730b235); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1207`
-- currentConclusionForStep: `1207`
-- latestRecordedStep: `1207`
-- latestStepOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1208`
+- currentConclusionForStep: `1208`
+- latestRecordedStep: `1208`
+- latestStepOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,14 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1207
+## Current decision record: Step 1208
+
+- Branch PR run 33898958730 (head 2b89101) finished with both jobs green; PR #1 merged into main as 730b235 after explicit user goal to complete the CL chain. The main push CI run 33903381024 is fully green — including the first-ever Windows EXE/bundle/manifest packaging pass — and container run 33907690062 published the first GHCR multi-platform image sha-730b235 with fully bound evidence.
+- The exact-SHA CL verifier run against the real chain exposed two evidence-generation path defects (Linux SHA256SUMS directory prefix; Windows toolbar manifest stale prefix) with all 50 hashes otherwise correct; the verifier now binds these by basename while keeping count, uniqueness, and hash equality strict. Every other stage passes against real artifacts.
+- The only remaining read is the private GHCR image: the local gh OAuth token lacks read:packages, so the registry bearer gets 403. The user must run `gh auth refresh -h github.com -s read:packages` or set the package public; the verifier then completes the CL record.
+- outcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+
+## Previous decision record: Step 1207
 
 - Run `33893973534`: Linux validation green for the second consecutive exact SHA and the Windows real Edge toolbar 200% matrix passed all 24 cells for the first time (the readability fix is verified on real CI). Windows then failed at Packaging preflight: readiness resolved python to a hardcoded local codex-runtime path that does not exist on the runner (spawn dead in 3ms).
 - `resolvePythonExecutable()` now prefers PYTHON_EXECUTABLE, probes the legacy local path only when it exists, and falls back to `python` on the runner (python3/python elsewhere); both python phases share it.
@@ -87,9 +94,9 @@
 | R10 Accessibility / security | pending | Current-identity Windows Edge 200% and independent receipt remain open. |
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
 | Release hygiene | pending | Local tracked candidate is clean; current exact-SHA release evidence is not complete. |
-| CI Linux | pending | Run 33832746276 passed all route matrices; readiness evidence completed via the real mobile matrix plus explicit Edge delegation; fresh exact-SHA run required. |
+| CI Linux | pass | main push run 33903381024 Linux validation green on 730b235. |
 | CI Windows | failed on Run 33893973534 | Edge matrix 24/24 green; preflight python resolution fixed for the runner, fresh exact-SHA run required. |
-| CL/GHCR | pending | No current exact-SHA evidence is available for the next candidate. |
+| CL/GHCR | pass with auth pending | Container run 33907690062 published sha-730b235 with bound evidence; final local registry read awaits user read:packages auth. |
 | R14 Release | closed | Do not upload or publish until every required gate is green on one exact SHA. |
 
 ## One next action

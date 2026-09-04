@@ -540,7 +540,11 @@ function verifyLinuxEvidence(reportFiles, manifestFiles, sha) {
   const proof = parseJson(fileByBasename(reportFiles, 'artifact-proof.json', 'Linux report artifact'), 'Linux artifact proof');
   const manifest = fileByBasename(manifestFiles, 'SHA256SUMS', 'Linux manifest artifact');
   const entries = parseSha256Sums(manifest, 'Linux SHA256SUMS');
-  if (entries.size !== 1 || entries.get('validation-report.json') !== sha256(report)) {
+  // sha256sum is invoked with the evidence-directory path, so the single
+  // manifest entry names that directory; the uploaded artifact stores the
+  // bare file. Bind on the basename while keeping the entry count at one.
+  const linuxEntry = entries.size === 1 ? [...entries.entries()][0] : null;
+  if (!linuxEntry || linuxEntry[0].split('/').pop() !== 'validation-report.json' || linuxEntry[1] !== sha256(report)) {
     throw new ReleaseVerificationError('CI_ARTIFACT_MANIFEST_MISMATCH', 'Linux SHA256SUMS does not exactly bind validation-report.json.');
   }
   verifyProof(proof, sha, 'linux-validation', sha256(manifest), 'Linux artifact proof');
@@ -576,8 +580,24 @@ function verifyWindowsEvidence(bundleFiles, manifestFiles, sha) {
 function verifyWindowsToolbarEvidence(files, sha) {
   const manifest = fileByBasename(files, 'SHA256SUMS', 'Windows Edge toolbar artifact');
   const proof = parseJson(fileByBasename(files, 'artifact-proof.json', 'Windows Edge toolbar artifact'), 'Windows Edge toolbar proof');
-  const entries = parseSha256Sums(manifest, 'Windows Edge toolbar SHA256SUMS');
-  const payload = new Map([...files.entries()].filter(([name]) => name !== 'SHA256SUMS' && name !== 'artifact-proof.json'));
+  const entriesRaw = parseSha256Sums(manifest, 'Windows Edge toolbar SHA256SUMS');
+  // The workflow hashes payload files with a stale directory prefix in the
+  // manifest path, while upload-artifact stores the payload contents at the
+  // archive root. Every basename is unique, so bind entries to files 1:1 by
+  // basename; counts and hashes must still match exactly on both sides.
+  const entries = new Map();
+  for (const [name, digest] of entriesRaw) {
+    const base = name.split('/').pop();
+    if (entries.has(base)) throw new ReleaseVerificationError('CI_ARTIFACT_MANIFEST_MISMATCH', 'Windows Edge toolbar SHA256SUMS has duplicate basenames.');
+    entries.set(base, digest);
+  }
+  const payloadRaw = new Map([...files.entries()].filter(([name]) => name !== 'SHA256SUMS' && name !== 'artifact-proof.json'));
+  const payload = new Map();
+  for (const [name, data] of payloadRaw) {
+    const base = name.split('/').pop();
+    if (payload.has(base)) throw new ReleaseVerificationError('CI_ARTIFACT_BUNDLE_INVALID', 'Windows Edge toolbar artifact has duplicate basenames.');
+    payload.set(base, data);
+  }
   if (payload.size === 0 || payload.size !== entries.size) {
     throw new ReleaseVerificationError('CI_ARTIFACT_MANIFEST_MISMATCH', 'Windows Edge toolbar artifact-root files and SHA256SUMS have different file counts.');
   }
@@ -586,7 +606,7 @@ function verifyWindowsToolbarEvidence(files, sha) {
       throw new ReleaseVerificationError('CI_ARTIFACT_MANIFEST_MISMATCH', `Windows Edge toolbar evidence does not match SHA256SUMS for ${name}.`);
     }
   }
-  const report = payload.get('edge-toolbar/report.json');
+  const report = payload.get('report.json');
   if (!report) throw new ReleaseVerificationError('CI_ARTIFACT_CONTENT_INVALID', 'Windows Edge toolbar evidence must contain edge-toolbar/report.json.');
   if (!proof || proof.schema !== 'windows-edge-toolbar-zoom200-evidence-v1' || proof.candidate_sha !== sha || proof.job !== 'windows-packaging' || proof.status !== 'success' || proof.report_sha256 !== sha256(report) || proof.manifest_sha256 !== sha256(manifest)) {
     throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', 'Windows Edge toolbar proof does not bind a successful Windows job, report, manifest, and requested SHA.');
@@ -605,8 +625,8 @@ function verifyWindowsToolbarEvidence(files, sha) {
     const diagnosticScreenshot = cell?.surface?.playwrightDiagnosticScreenshot;
     const screenshotName = String(screenshot?.file || '').split(/[\\/]/u).pop();
     const diagnosticName = String(diagnosticScreenshot?.file || '').split(/[\\/]/u).pop();
-    const screenshotData = screenshotName ? payload.get(`edge-toolbar/${screenshotName}`) : null;
-    const diagnosticData = diagnosticName ? payload.get(`edge-toolbar/${diagnosticName}`) : null;
+    const screenshotData = screenshotName ? payload.get(screenshotName) : null;
+    const diagnosticData = diagnosticName ? payload.get(diagnosticName) : null;
     if (!screenshotName || !screenshotData || sha256(screenshotData) !== screenshot?.sha256 ||
         !diagnosticName || !diagnosticData || sha256(diagnosticData) !== diagnosticScreenshot?.sha256) {
       throw new ReleaseVerificationError('CI_ARTIFACT_PROOF_INVALID', `Windows Edge toolbar cell ${cell?.viewport?.id || '?'}::${cell?.scenario || '?'} lacks complete zoom or screenshot evidence.`);

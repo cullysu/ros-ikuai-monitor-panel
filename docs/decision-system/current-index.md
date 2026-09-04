@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1207`
-- currentOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
-- currentBoundary: `1207`
-- latestRecordedStep: `1207`
-- latestStepOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
+- currentStep: `1208`
+- currentOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+- currentBoundary: `1208`
+- latestRecordedStep: `1208`
+- latestStepOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
 
 ## Current pointer
 
