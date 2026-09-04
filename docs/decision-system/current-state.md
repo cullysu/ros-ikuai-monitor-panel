@@ -1,10 +1,10 @@
-- validForCommit: false; current worktree is uncommitted (Step1202 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
+- validForCommit: false; current worktree is uncommitted (Step1204 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1202`
-- currentConclusionForStep: `1202`
-- latestRecordedStep: `1202`
-- latestStepOutcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1204`
+- currentConclusionForStep: `1204`
+- latestRecordedStep: `1204`
+- latestStepOutcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,15 +13,21 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1202
+## Current decision record: Step 1204
 
-- Run `33832746276` validated both Step1201 repairs on real CI: Linux passed the full-route, overview and route-state matrices for the first time, and the Windows landscape-667x375 cell passed the primary reachability assertion.
-- Linux now fails only on evidence the workflow never produced: the mobile reference runtime matrix report and the Windows-only real Edge toolbar report. The Linux job now runs the full mobile reference runtime matrix, and readiness accepts `--edge-evidence-gated-by=windows-packaging` to delegate exactly the Edge report boundary to the same-SHA Windows job; every other matrix requirement stays enforced and the workflow-integrity contract pins the new invocation.
-- Windows fails only on keyboard traversal: the normal desktop overview rendered zero tab stops because the object workspace exists only in the risk branch. The normal branch now offers a real interfaces navigation entry (12px, 2px focus ring); local reproduction shows 1/1 controls visited with compliant focus.
-- Desktop contracts (v1030, no-snapshot, incident hierarchy, normal density, information efficiency, top-band continuity, resource density) all pass locally after the change; release stays CLOSED until the next exact-SHA three-way CI result.
-- outcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
+- Run `33850371045` failed after passing fleet and route matrices: Linux stopped at collection-down × tablet768 with workspace bottom 632px against the 634.88px first-screen threshold; the minimum height is now 220px and the wrapper single-cell check passes at bottom 636px. Windows stopped at phone-320::normal because Edge 200% produced a truthful 640×1136 device-pixel diagnostic; the validator now accepts CSS pixels or the verified DPR-sized image while retaining undersize and hash-reuse rejection.
+- Local mobile model, mock architecture, toolbar fixtures, types, build, asset identity, and workflow integrity pass. Release remains CLOSED pending the next exact-SHA CI.
+- outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
 
-## Previous decision record: Step 1201
+## Previous decision record: Step 1203
+
+- Run `33850371045`（head `a64650b`）确认 Linux 已通过三大路由矩阵与 fleet 手机场景；新失败是 `collection-down × tablet768` 工作区底部 632px，低于 1024×0.62 的 634.88px 门槛约 3px。collection 平板任务区最小高度已调整至 220px，并由 wrapper 单格复验通过（bottom=636px，cell pass=true）。
+- 同一 Run 的 Windows 第一格 diagnostic PNG 为 640×1136（Edge 200% 的设备像素），前一轮 `scale:"css"` 在远端未按预期生效。toolbar 证据校验现接受 CSS 像素或已验证 DPR 对应的设备像素，仍拒绝不足尺寸、非目标和复用哈希；Windows HWND 实拍仍单独绑定 owned capture。
+- fleet 手机矩阵此前在 mock 中停留 normal；fleet mock 已增加不在首屏 WAN 列表的失败 SFP，runtime 打开 cell 后等待实际 scene 属性达到期望值，避免 React 更新时序导致假失败。
+- 本地 mobile model、mock architecture、toolbar readiness/offline fixture、types、build、asset identity、workflow integrity 全部通过。release 仍 CLOSED，等待新 exact-SHA CI。
+- outcome: `1203:fleet-scene-wait-collection-tablet-first-screen-edge-dpr-evidence-fixed-awaiting-exact-sha-ci`
+
+## Previous decision record: Step 1202
 
 - Run `33828015082` (head SHA `4169a4a`) returned the first fresh exact-SHA evidence: Linux passed compile, py_compile, and the ledger regression suite, then `check-decision-ledger-sync.py` failed because the machine gate notes were still bound to step1197; Windows passed all 20 earlier cells and moved past the Step1200 clipping/readability fixes, then failed `landscape-667x375::normal` at "primary task is not reachable inside main or is obscured by navigation".
 - Linux correction: all 14 machine gate notes are rebound to step1201 with the Run `33828015082` facts; the remaining five commands of that CI step (backend blockers, backend security, merge-matrix tests, release-checkpoint tests) pass locally.

@@ -30743,3 +30743,59 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - 发布保持 CLOSED/UNPROVEN；本候选推送后需同一 exact SHA 的 Linux/Windows/CL 复验；real Edge 矩阵仍由 Windows job 独立把关。
 
 - outcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
+
+---
+
+## Step 1203：修复 fleet 场景等待、collection 平板首屏与 Edge DPR 证据尺寸（2026-09-04）
+
+### 已核实现场
+
+- Run `33850371045`（head `a64650b`）终态 failure，Linux 与 Windows 均失败。
+- Linux 已通过三大路由矩阵与 fleet 手机场景；新失败为 `collection-down × tablet768` 工作区底部 `632px`，门槛为 `1024 × 0.62 = 634.88px`，差约 3px。
+- Windows 第一格 `phone-320::normal` 的 diagnostic PNG 实际为 `640×1136`（Edge 200% DPR=2 的设备像素），前一轮的 `scale:"css"` 在远端未按预期生效，导致尺寸契约错误。
+
+### 实施的最小修复
+
+1. `mobile-reference.css`：collection 场景平板任务工作区最小高度从 218px 调整为 220px，使其进入 active first-screen region（保留宽度/四按钮/手机基线）。
+2. `check-browser-toolbar-zoom200.js`：保留真实 Edge/Playwright 截图证据，不再假设 diagnostic 必须是 CSS 像素；校验现在接受 CSS 像素或与已验证 DPR 对应的设备像素，仍拒绝不足尺寸、非目标和复用哈希；Windows HWND 实拍仍单独要求与 owned capture 尺寸一致。`scale:"css"` 保留为优先请求。
+3. `check-mobile-reference-runtime.js`：打开手机矩阵 cell 后等待实际 `data-mobile-reference-scene` 达到场景期望值，避免 mock/React 更新尚未完成就截图。
+4. `current-runtime-mock.js`：fleet 增加一条不在首屏 WAN 列表的失败 SFP，使 fleet 的 interfaces 场景语义与真实 fixture 一致，同时不退化为 interfaces-down 视觉重复。
+
+### 本地验证
+
+- `collection-down × tablet768` 通过：workspace bottom=636px，cell pass=true。
+- mobile model、mock architecture、toolbar readiness/offline fixture、types、build、asset identity、workflow integrity 通过。
+- Run `33850371045` 的所有失败均已按首因修复；旧 Run 不再作为当前证据。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选必须重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1203:fleet-scene-wait-collection-tablet-first-screen-edge-dpr-evidence-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1204：collection 平板阈值与 Edge DPR 证据尺寸修复（2026-09-04）
+
+### 已核实现场
+
+- Run `33850371045`（head `a64650b`）已终态 failure，Linux/Windows 均失败。
+- Linux 首失败：`Public mobile reference runtime matrix` 的 `collection-down × tablet768`；工作区 bottom=632px，门槛为 1024×0.62=634.88px，差约3px。fleet 场景已在该 Run 通过。
+- Windows 首失败：`phone-320::normal` 的 Playwright diagnostic PNG 为 640×1136（Edge 200% device pixels），而此前校验只接受 CSS 320×568。
+
+### 实施的最小修复
+
+1. collection 场景平板任务区最小高度由218px调为220px；保持四按钮、宽度和其他场景布局不变。
+2. Edge diagnostic 校验接受两种真实表达：CSS 像素尺寸，或与 cell 已验证 DPR 对应的设备像素尺寸；仍拒绝不足尺寸、非目标尺寸和复用哈希；Windows HWND 实拍仍独立绑定 owned capture。
+3. fleet/手机 runtime 的 scene 等待与 mock 失败 SFP修复保留，确保真实场景语义和截图时序稳定。
+
+### 本地验证
+
+- wrapper 单格 `collection-down × tablet768`：cell pass=true，workspace bottom=636px。
+- mobile model、mock architecture、toolbar readiness/offline fixture、types、build、asset identity、workflow integrity 全部通过。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`

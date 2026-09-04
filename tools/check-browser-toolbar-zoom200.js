@@ -326,18 +326,24 @@ function toolbarCellEvidenceErrors(cell, expected, stableIdentity = null) {
     errors.push(`${expectedId}: screenshot hash/dimension evidence is incomplete`);
   }
   const captureDimensions = surface?.windowsCapture?.capture;
-  const diagnosticDimensions = surface?.playwrightDiagnosticScreenshot?.dimensions;
-  // Windows evidence is a physical capture of the headed Edge window, not a
-  // CSS-pixel renderer dump.  On a bounded desktop surface its height can be
-  // smaller than the zoomed CSS viewport while the separately hashed renderer
-  // screenshot still proves the complete target geometry.
   if (!sameScreenshotDimensions(surface?.screenshot?.dimensions, captureDimensions)) {
     errors.push(`${expectedId}: Windows screenshot dimensions do not match its owned capture`);
   }
-  if (Number(diagnosticDimensions?.width) !== Number(expectedViewport.cssViewport?.width) ||
-      !Number.isInteger(Number(diagnosticDimensions?.height)) ||
-      Number(diagnosticDimensions?.height) < Number(expectedViewport.cssViewport?.height)) {
-    errors.push(`${expectedId}: renderer screenshot dimensions do not cover the target CSS viewport`);
+  const diagnosticDimensions = surface?.playwrightDiagnosticScreenshot?.dimensions;
+  // Headed Edge reports the CSS viewport, while Playwright may encode the
+  // renderer diagnostic at CSS pixels or at the verified device-pixel ratio.
+  // Accept either truthful representation, but reject undersized or unrelated
+  // captures such as the blank 660px-wide fullPage artifact.
+  const targetWidth = Number(expectedViewport.cssViewport?.width);
+  const targetHeight = Number(expectedViewport.cssViewport?.height);
+  const devicePixelRatio = Number(cell?.zoomed?.devicePixelRatio);
+  const diagnosticCssSized = Number(diagnosticDimensions?.width) === targetWidth &&
+    Number.isInteger(Number(diagnosticDimensions?.height)) && Number(diagnosticDimensions?.height) >= targetHeight;
+  const diagnosticDeviceSized = Number.isFinite(devicePixelRatio) && devicePixelRatio >= 1.5 &&
+    Number(diagnosticDimensions?.width) === Math.round(targetWidth * devicePixelRatio) &&
+    Number.isInteger(Number(diagnosticDimensions?.height)) && Number(diagnosticDimensions?.height) >= Math.round(targetHeight * devicePixelRatio);
+  if (!diagnosticCssSized && !diagnosticDeviceSized) {
+    errors.push(`${expectedId}: renderer screenshot dimensions do not cover the target CSS viewport at CSS or verified device-pixel size`);
   }
   if (String(surface?.screenshot?.sha256 || "").toLowerCase() === String(surface?.playwrightDiagnosticScreenshot?.sha256 || "").toLowerCase()) {
     errors.push(`${expectedId}: Windows and renderer screenshots reuse the same visual evidence hash`);
@@ -963,9 +969,10 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   const windowsCapture = await runPythonToolbarZoom(windowTitle, { capturePath: windowsFile, captureOnly: true, windowHandle, browserPid });
   assert(validWindowsCapture(windowsCapture, windowHandle), `${label} Windows screenshot is not exclusively unobscured foreground Edge evidence`, windowsCapture);
   const diagnosticFile = path.join(artifactDir, screenshotName.replace(/\.png$/, "-playwright-diagnostic.png"));
-  // Edge toolbar 200% can make Playwright fullPage capture a blank, off-target
-  // canvas (observed 660x1088 for a 667x375 cell). Viewport capture stays bound
-  // to the verified CSS geometry that the Windows HWND screenshot already proves.
+  // Edge toolbar 200% can encode Playwright's renderer diagnostic at device
+  // pixels even when the page geometry is reported in CSS pixels. The
+  // validator accepts either truthful representation; the Windows HWND
+  // screenshot remains the separate foreground proof.
   await page.screenshot({ path: diagnosticFile, fullPage: false, animations: "disabled", scale: "css" });
   return {
     label,

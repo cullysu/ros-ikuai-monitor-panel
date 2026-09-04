@@ -9,7 +9,7 @@
       "evidence": [
         "PRODUCT.md"
       ],
-      "note": "step1202-product-review-historical:current local review is historical until the new SHA is re-reviewed",
+      "note": "step1204-product-review-historical:current local review is historical until the new SHA is re-reviewed",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "spec": {
@@ -17,7 +17,7 @@
       "evidence": [
         "docs/mobile-product-contract.md"
       ],
-      "note": "step1202-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1204-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T10:41:28+00:00"
     },
     "design": {
@@ -26,7 +26,7 @@
         "_acceptance/release-matrix-mobile-independent-final2/public-single-narrow-overview.png",
         "_acceptance/mobile-native-runtime/report.json"
       ],
-      "note": "step1202-design-review-historical:accepted phone and desktop art unchanged; current review is historical",
+      "note": "step1204-design-review-historical:accepted phone and desktop art unchanged; current review is historical",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "architecture": {
@@ -34,7 +34,7 @@
       "evidence": [
         "tools/check-overview-architecture.js"
       ],
-      "note": "step1202-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1204-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T17:51:12+00:00"
     },
     "implementation": {
@@ -43,7 +43,7 @@
         "src/panel-framework/overview/mobile-app/RouterMobileApp.tsx",
         "public/assets/framework/panel-framework.js"
       ],
-      "note": "step1202-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1204-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T17:51:15+00:00"
     },
     "code-review": {
@@ -51,7 +51,7 @@
       "evidence": [
         "docs/mobile-loop-review.md"
       ],
-      "note": "step1202-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1204-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T11:12:19+00:00"
     },
     "visual-qa": {
@@ -59,7 +59,7 @@
       "evidence": [
         "_acceptance/release-matrix-mobile-independent-final2/public-resource-full-narrow-overview.png"
       ],
-      "note": "step1202-visual-review-historical:landscape compact-media readability lift only; no accepted-art change",
+      "note": "step1204-visual-review-historical:landscape compact-media readability lift only; no accepted-art change",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "state-matrix": {
@@ -67,7 +67,7 @@
       "evidence": [
         "_acceptance/release-matrix-mobile-independent-final2/report.json"
       ],
-      "note": "step1202-matrix-pending:new exact-SHA evidence required after source change",
+      "note": "step1204-matrix-pending:new exact-SHA evidence required after source change",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "security": {
@@ -75,7 +75,7 @@
       "evidence": [
         "docs/mobile-loop-review.md"
       ],
-      "note": "step1202-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1204-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T11:12:23+00:00"
     },
     "accessibility": {
@@ -83,7 +83,7 @@
       "evidence": [
         "docs/mobile-loop-review.md"
       ],
-      "note": "step1202-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1204-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T11:12:25+00:00"
     },
     "release-hygiene": {
@@ -91,7 +91,7 @@
       "evidence": [
         "tools/check-public-release-readiness.js"
       ],
-      "note": "step1202-4169a4a-current-candidate:tracked tree committed clean; release hygiene remains pending until current exact-SHA evidence is complete",
+      "note": "step1204-4169a4a-current-candidate:tracked tree committed clean; release hygiene remains pending until current exact-SHA evidence is complete",
       "updated_at": "2026-09-04T00:00:00.000Z"
     },
     "ci-linux": {
@@ -99,7 +99,7 @@
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1202:Run 33832746276 Linux passed all three route matrices; readiness now gets the real mobile matrix and delegates Edge evidence to the Windows job; fresh exact-SHA evidence required",
+      "note": "step1204:Run 33850371045 passed fleet; collection tablet workspace threshold fixed and fresh exact-SHA evidence required",
       "updated_at": "2026-09-01T09:26:17.830Z"
     },
     "ci-windows": {
@@ -107,7 +107,7 @@
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1202:Run 33832746276 Windows passed primary reachability; keyboard entry added to the normal desktop overview; fresh exact-SHA evidence required",
+      "note": "step1204:Run 33850371045 reached DPR-sized diagnostic evidence; validator now accepts verified CSS/device pixels and fresh exact-SHA evidence required",
       "updated_at": "2026-09-01T09:26:17.830Z"
     },
     "ci-container": {
@@ -116,11 +116,11 @@
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328479359",
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328766281"
       ],
-      "note": "step1202:no CL/GHCR evidence is bound to the next corrected candidate; rerun is required after exact-SHA publication",
+      "note": "step1204:no CL/GHCR evidence is bound to the next corrected candidate; rerun is required after exact-SHA publication",
       "updated_at": "2026-09-01T09:26:17.830Z"
     }
   },
-  "latest_decision_step": 1202,
-  "latest_decision_outcome": "1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci",
-  "current_surface_step": 1202
+  "latest_decision_step": 1204,
+  "latest_decision_outcome": "1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci",
+  "current_surface_step": 1204
 }

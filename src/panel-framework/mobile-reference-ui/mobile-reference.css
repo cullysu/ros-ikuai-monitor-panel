@@ -201,6 +201,7 @@ html[data-panel-input-modality="pointer"] :is(.ref-mobile,.ref-connect) button:n
 @media (min-width:600px) and (max-width:1199px) and (orientation:portrait) { .ref-content:not(.ref-home-content) > .ref-tablet-tasks { display:block; grid-column:1 / -1; grid-row:auto; margin-bottom:0; } .ref-content:not(.ref-home-content) .ref-tablet-tasks button { min-height:88px; } }
 @media (min-width:600px) and (max-width:1199px) and (orientation:portrait) {
   .ref-content.ref-scene-interfaces:not(.ref-home-content) > .ref-tablet-tasks { grid-column:2; grid-row:3; }
+  .ref-content.ref-scene-collection:not(.ref-home-content) > .ref-tablet-tasks { min-height:220px; }
   .ref-scene-interfaces .ref-tablet-tasks__grid,
   .ref-scene-outage .ref-tablet-tasks__grid { grid-template-columns:1fr; }
   .ref-scene-interfaces .ref-tablet-tasks button,
