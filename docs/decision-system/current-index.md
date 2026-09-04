@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1200`
-- currentOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
-- currentBoundary: `1200`
-- latestRecordedStep: `1200`
-- latestStepOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+- currentStep: `1201`
+- currentOutcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
+- currentBoundary: `1201`
+- latestRecordedStep: `1201`
+- latestStepOutcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
 
 ## Current pointer
 

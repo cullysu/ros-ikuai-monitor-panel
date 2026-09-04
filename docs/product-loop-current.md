@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: false; this is a local repair candidate only and is not release evidence
-- currentHandoffForStep: `1200`
+- currentHandoffForStep: `1201`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
 - updated: `2026-09-04`
-- latestRecordedStep: `1200`
-- latestStepOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+- latestRecordedStep: `1201`
+- latestStepOutcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
 - releaseCandidate: none; this is not a release candidate and GitHub publication is closed
 - currentConclusion: **FAIL overall / the accepted four-screen phone reference remains unchanged / the next exact-SHA candidate still needs fresh Linux, Windows and CL/GHCR evidence.**
 
@@ -16,7 +16,7 @@
 - Run `33489058119` is historical evidence for remote SHA `ba2e73f`; Linux failed at `Current decision truth authority`, and Windows failed at `Real Edge toolbar 200 percent matrix`. Those results are not evidence for the local candidate.
 - The accepted four-screen mobile reference and the user-selected `192.168.3.5` / iPad desktop direction remain unchanged. This repair does not modify product UI or network behavior.
 - The release remains **FAIL / CLOSED**. No upload, publish, or CL/GHCR claim is valid until one clean exact SHA has fresh green Linux, Windows and CL/GHCR evidence.
-- outcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+- outcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
 
 ## Gate boundary
 

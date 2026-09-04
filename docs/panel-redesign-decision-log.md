@@ -30685,3 +30685,30 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - release 仍 CLOSED：完整 24 格真实 Edge 矩阵与 Linux/Windows/GHCR exact-SHA CL 全部待推送后复验；推送需用户明确授权。
 
 - outcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+
+---
+
+## Step 1201：WAN 栏限高内滚修复 primary 可达性并重绑机器门禁注记（2026-09-04）
+
+### 已核实现场
+
+- 用户授权后，`4169a4a` 以 `--force-with-lease=refs/heads/codex/ci-fix-20260830:34d4be1` 推送成功（快进，无竞争覆盖）；新 Run `33828015082`（head SHA `4169a4a`）终态 failure。
+- Linux 首失败步骤：`Python syntax and collector regressions`。compileall、py_compile、ledger 回归 8 测试全过；第 4 条命令 `check-decision-ledger-sync.py` 因 14 个机器门禁 note 仍绑 `step1197-` 判 pass=false 退出 1（Step1200 文档扫荡遗漏的最后一层）。
+- Windows 首失败：第 21/24 格 `landscape-667x375::normal` 通过了 Step1200 的裁切与 12px 修复，随后在 "primary task is not reachable inside main or is obscured by navigation" 失败。primary = `[data-desktop-wan-evidence]` 整段 WAN 左栏（667 下高约 506px > 375px 视口，任何页面滚动都无法整体呈现；scrollIntoViewIfNeeded 后底部恒钉在视口+1.17px，超 1px 容差）。
+
+### 实施的最小修复
+
+1. `legacy-desktop.css` 横屏短高查询内 `.legacy-wan-column` 变为有界内滚面板：`box-sizing: border-box; max-height: calc(100vh - 24px); scroll-margin-bottom: 8px; overflow-y: auto;`。scroll 容器不触发非滚动裁切判定；键盘遍历依赖聚焦自动滚动，与手机面已验证模式一致。实测 667×375 bottom=368.17、844×390 bottom=383.17，均留 7px 余量；容器裁切 0；两列工作台语法与其余尺寸不变。
+2. `.product-loop/state.json` 全部 14 个 gate note 重绑 `step1201-`，ci-linux/ci-windows 注记写入 Run `33828015082` 真实事实。
+3. `npm run build` 重建 framework 资产与 manifest；决策文档指针（current-state/current-index/decision README/mirror-root-readme/historical-index/release-journal/product-loop/机器状态）统一绑定 Step1201。
+
+### 本地验证
+
+- CSS 等效复现：667×375 与 844×390 容器裁切 0、primary 四边全在容差内且不被导航遮挡；<12px 文本仅剩托管运行不渲染的 fixture bar。
+- `check-decision-ledger-sync.py` pass=true；CI 步骤其余命令（backend blockers/security、merge-matrix、release-checkpoint）本地全过；asset-identity、static-assets、report-truth、workflow-integrity、桌面 density 新鲜运行全绿。
+
+### 边界
+
+- 未修改手机基线、桌面 1366/1440 视觉、数据语义；发布保持 CLOSED/UNPROVEN，等待本候选推送后的三端 exact-SHA 证据。
+
+- outcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`

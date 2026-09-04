@@ -1099,6 +1099,20 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
     border-radius: 8px;
   }
 
+  /* At the 200% workbench the primary WAN evidence must stay reachable
+   * inside the first viewport, so the WAN rail becomes a bounded,
+   * internally scrollable pane instead of a taller-than-viewport section
+   * that no amount of page scrolling can fully reveal. */
+  .legacy-wan-column {
+    box-sizing: border-box;
+    max-height: calc(100vh - 24px);
+    /* scrollIntoView aligns the rail bottom against the scrollport bottom
+     * with a fractional overshoot; the margin keeps the revealed box inside
+     * the viewport instead of 1–2px past it. */
+    scroll-margin-bottom: 8px;
+    overflow-y: auto;
+  }
+
   .legacy-section-heading {
     min-height: 20px;
     margin-bottom: 5px;

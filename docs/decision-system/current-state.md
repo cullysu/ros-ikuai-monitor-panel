@@ -1,10 +1,10 @@
-- validForCommit: false; current worktree is uncommitted (Step1200 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
+- validForCommit: false; current worktree is uncommitted (Step1201 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1200`
-- currentConclusionForStep: `1200`
-- latestRecordedStep: `1200`
-- latestStepOutcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1201`
+- currentConclusionForStep: `1201`
+- latestRecordedStep: `1201`
+- latestStepOutcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,16 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1200
+## Current decision record: Step 1201
+
+- Run `33828015082` (head SHA `4169a4a`) returned the first fresh exact-SHA evidence: Linux passed compile, py_compile, and the ledger regression suite, then `check-decision-ledger-sync.py` failed because the machine gate notes were still bound to step1197; Windows passed all 20 earlier cells and moved past the Step1200 clipping/readability fixes, then failed `landscape-667x375::normal` at "primary task is not reachable inside main or is obscured by navigation".
+- Linux correction: all 14 machine gate notes are rebound to step1201 with the Run `33828015082` facts; the remaining five commands of that CI step (backend blockers, backend security, merge-matrix tests, release-checkpoint tests) pass locally.
+- Windows root cause: the primary `[data-desktop-wan-evidence]` section is a ~506px stack that cannot fit a 375px/390px first viewport, and `scrollIntoViewIfNeeded` leaves its bottom 1.17px past the 1px tolerance. The compact landscape workbench now bounds the WAN rail (`max-height: calc(100vh - 24px)`, border-box, internal vertical scroll, `scroll-margin-bottom: 8px`), so the revealed rail box lands at viewport bottom minus ~7px with zero clipping and no sub-12px text; the two-column grammar and all other sizes are unchanged.
+- Local verification: CSS-equivalent reproduction shows container clipping 0 and primary reachable at both 667×375 and 844×390; asset identity, static assets, report truth, workflow integrity, and a fresh desktop-density run all pass after rebuild.
+- No Linux, Windows, or CL/GHCR result is current green evidence for the next candidate. Every result must bind to the exact SHA after this correction is committed and pushed.
+- outcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
+
+## Previous decision record: Step 1200
 
 - The Linux first failure (Run 33521172930) is the bounded-shard exit semantics: full-route 76/76 passed and the shard exited 1 only on `complete=false`; the `2e3f823` `allowIncompleteMatrix` fix supplies exactly this semantics and its contract test passes locally.
 - The Windows first failure is `landscape-667x375-normal-overview` clipped operational text; a CSS-equivalent reproduction located 8 self-clipping `legacy-summary-tile` values (13px × 1.1 line box under the glyph box inside `overflow:hidden`), and the compact landscape media query now raises the value line-height to 1.4 and lifts 10–11px labels to the 12px readability floor. The 1366/1440 desktop and phone baselines are untouched.
@@ -44,8 +53,8 @@
 | R10 Accessibility / security | pending | Current-identity Windows Edge 200% and independent receipt remain open. |
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
 | Release hygiene | pending | Local tracked candidate is clean; current exact-SHA release evidence is not complete. |
-| CI Linux | pending | Run 33521172930 first failure was bounded-shard exit semantics; the fix awaits a fresh exact-SHA run. |
-| CI Windows | failed on Run 33521172930 | `landscape-667x375-normal-overview` clipped operational text; CSS repair awaits a fresh exact-SHA run. |
+| CI Linux | pending | Run 33828015082 failed on stale step1197 machine gate notes; notes rebound to Step1201 and a fresh exact-SHA run is required. |
+| CI Windows | failed on Run 33828015082 | `landscape-667x375-normal-overview` primary-task reachability; the WAN rail is now a bounded internally scrollable pane awaiting a fresh exact-SHA run. |
 | CL/GHCR | pending | No current exact-SHA evidence is available for the next candidate. |
 | R14 Release | closed | Do not upload or publish until every required gate is green on one exact SHA. |
 
