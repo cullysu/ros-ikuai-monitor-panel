@@ -448,6 +448,9 @@ function loadPartialCells(stableIdentity) {
 
 function writePartialCells(identity, stableIdentity, cells) {
   const validation = validateToolbarCells(cells, { requireComplete: false, stableIdentity });
+  if (!validation.pass) {
+    process.stderr.write(`[edge-toolbar-zoom200] partial evidence rejected: ${validation.errors.join(" | ")}\n`);
+  }
   assert(validation.pass, "refusing to persist invalid or duplicate partial Edge evidence", validation);
   fs.writeFileSync(partialReportPath, `${JSON.stringify({
     contract: TOOLBAR_CONTRACT,
@@ -960,7 +963,10 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   const windowsCapture = await runPythonToolbarZoom(windowTitle, { capturePath: windowsFile, captureOnly: true, windowHandle, browserPid });
   assert(validWindowsCapture(windowsCapture, windowHandle), `${label} Windows screenshot is not exclusively unobscured foreground Edge evidence`, windowsCapture);
   const diagnosticFile = path.join(artifactDir, screenshotName.replace(/\.png$/, "-playwright-diagnostic.png"));
-  await page.screenshot({ path: diagnosticFile, fullPage: true, animations: "disabled" });
+  // Edge toolbar 200% can make Playwright fullPage capture a blank, off-target
+  // canvas (observed 660x1088 for a 667x375 cell). Viewport capture stays bound
+  // to the verified CSS geometry that the Windows HWND screenshot already proves.
+  await page.screenshot({ path: diagnosticFile, fullPage: false, animations: "disabled" });
   return {
     label,
     viewport,
