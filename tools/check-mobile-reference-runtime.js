@@ -104,6 +104,11 @@ async function openHome(page, runtime, scenario, viewport) {
   await page.goto(routeUrl(runtime.mock.url, "overview"), { waitUntil: "domcontentloaded", timeout: ACTION_TIMEOUT_MS });
   const home = page.locator("[data-mobile-reference-home]");
   await home.waitFor({ state: "visible", timeout: ACTION_TIMEOUT_MS });
+  await page.waitForFunction(
+    (expectedScene) => document.querySelector("[data-mobile-reference-home]")?.getAttribute("data-mobile-reference-scene") === expectedScene,
+    scenario[2],
+    { timeout: ACTION_TIMEOUT_MS },
+  );
   await page.waitForTimeout(50);
   return home;
 }
@@ -393,7 +398,7 @@ async function main() {
   await waitForCpuBudget("runtime-launch");
   const identityStart = gitWorktreeIdentity(root);
   fs.mkdirSync(output, { recursive: true });
-  const reportPath = path.join(output, "report.json");
+  const reportPath = path.join(output, smoke ? "report-smoke.json" : "report.json");
   if (!append) {
     for (const name of fs.readdirSync(output)) {
       const item = path.join(output, name);

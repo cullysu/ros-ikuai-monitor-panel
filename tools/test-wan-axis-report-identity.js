@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const {
+  browserCandidates,
   buildAttestation,
   validateBrowserOnlyAttestation,
 } = require('./check-wan-axis-label-integrity-v1');
@@ -35,6 +36,10 @@ function fixtureIdentity() {
 }
 
 function main() {
+  assert.ok(browserCandidates.includes("/usr/bin/google-chrome"), "Linux Google Chrome candidate must be present");
+  assert.ok(browserCandidates.includes("/usr/bin/google-chrome-stable"), "Linux stable Chrome candidate must be present");
+  assert.ok(browserCandidates.includes("/usr/bin/chromium"), "Linux Chromium candidate must be present");
+  assert.ok(browserCandidates.includes("/usr/bin/chromium-browser"), "Linux Chromium browser candidate must be present");
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wan-axis-report-identity-'));
   const runtimeDirectory = path.join(fixtureRoot, 'source-runtime');
   const reportPath = path.join(fixtureRoot, 'source-runtime-attestation.json');

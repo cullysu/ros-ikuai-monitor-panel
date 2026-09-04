@@ -1,1 +1,2 @@
+--require-hashes
 -r requirements.lock

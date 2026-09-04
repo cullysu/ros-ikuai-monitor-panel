@@ -154,10 +154,13 @@ function withIsolatedCandidateWorktree(root, candidateCommit, operation) {
   try {
     runGit(root, ['worktree', 'add', '--detach', temporary, candidateCommit]);
     attached = true;
+    // Normalize only non-ignored residue. Do not use -x: the linked worktree's
+    // .git control file is intentionally untracked and must remain present.
+    runGit(temporary, ['reset', '--hard', '--quiet', candidateCommit]);
     return operation(temporary);
   } finally {
     if (attached) spawnSync('git', ['worktree', 'remove', '--force', temporary], { cwd: root, encoding: 'utf8', timeout: managedChildTimeoutMs(30_000), windowsHide: true });
-    fs.rmSync(temporary, { recursive: true, force: true, maxRetries: 2 });
+    fs.rmSync(temporary, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 });
   }
 }
 
@@ -551,7 +554,7 @@ function inspectReleaseCandidateEvidence(options, { root = ROOT, verifySoak = ve
   let candidateRuntimeIdentity = null;
   try {
     withIsolatedCandidateWorktree(root, options.candidateCommit, (candidateRoot) => {
-      candidateRuntimeIdentity = gitWorktreeIdentity(candidateRoot);
+      candidateRuntimeIdentity = gitWorktreeIdentity(candidateRoot, { ignoreFileMode: true });
       routeManifest = verifyRoute(frozen, candidateRoot);
       if (loadSoakReport(frozen).ok) {
         soakVerification = verifySoak({ root: candidateRoot, candidateCommit: options.candidateCommit, soakBytes: frozen.soak.bytes, minSoakSeconds: options.minSoakSeconds, minSoakSamples: options.minSoakSamples, timeoutMs: options.soakVerifierTimeoutMs });

@@ -288,15 +288,15 @@ assert.doesNotMatch(
 );
 assert.match(
   windowsCaptureSource,
-  /def invoke_owned_control[\s\S]*?control_process_id != owned_process_id[\s\S]*?require_owned_foreground_process[\s\S]*?control\.invoke\(\)/,
-  "every Edge control invocation must verify control-process and foreground-process ownership",
+  /def invoke_owned_control[\s\S]*?control_process_id not in accepted_process_ids[\s\S]*?require_owned_foreground_process[\s\S]*?(?:semantic_action\(\)|legacy_action\(\))/,
+  "every Edge control invocation must verify its accepted Edge process set and foreground ownership before semantic UIA activation",
 );
 assert.match(
   windowsCaptureSource,
   /menu_remains_open[\s\S]*?invoke_owned_control\(more, owned_process_id, handle, "Edge Settings and more close control"\)/,
   "the process-owned menu path must close a persistent Edge popup without global input",
 );
-const captureOwnedEdgeSource = windowsCaptureSource.match(/def capture_owned_edge\([\s\S]*?\n\ndef /)?.[0] || "";
+const captureOwnedEdgeSource = windowsCaptureSource.match(/def capture_owned_edge\([\s\S]*?\r?\n\r?\ndef /)?.[0] || "";
 assert.match(
   captureOwnedEdgeSource,
   /focus_owned_window\(handle,[\s\S]*?inspect_edge_visibility\(handle\)/,

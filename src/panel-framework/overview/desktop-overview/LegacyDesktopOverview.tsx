@@ -130,6 +130,22 @@ function TrafficChart({ traffic, direction, label, color }: { traffic: OverviewT
   );
 }
 
+function TrafficAccumulating({ traffic }: { traffic: OverviewTrafficInstrument }) {
+  return (
+    <div className="legacy-traffic-pending" data-traffic-accumulating role="status" aria-label="WAN 趋势样本正在积累">
+      <div className="legacy-traffic-pending-head">
+        <div><b>趋势样本正在积累</b><small>当前上下行已取得，至少需要 2 个原子样本才能绘制趋势</small></div>
+        <span>{traffic.sampleCount} 点</span>
+      </div>
+      <div className="legacy-traffic-pending-values">
+        <div><span>当前上行</span><b>{traffic.currentUp}</b></div>
+        <div><span>当前下行</span><b>{traffic.currentDown}</b></div>
+        <div><span>状态</span><b>待积累</b></div>
+      </div>
+    </div>
+  );
+}
+
 function ResourceChart({ label, value, threshold, color, points }: { label: string; value: number | null; threshold: number; color: string; points: Array<{ timestamp: number; value: number }> }) {
   const max = Math.max(100, threshold, ...points.map((point) => point.value));
   const start = points[0]?.timestamp || 0;
@@ -282,7 +298,11 @@ export function LegacyDesktopOverview({ snapshot, state, onNavigate, runtimeMana
       </section>
       <section className="legacy-right-column" aria-label="实时监控">
         <div className="legacy-section-heading"><h2>实时速率趋势</h2><span>{traffic?.windowLabel || "最新采样窗口"}</span></div>
-        {traffic ? <div className="legacy-trend-grid"><TrafficChart traffic={traffic} direction="up" label="实时上行速率" color="#2463ed" /><TrafficChart traffic={traffic} direction="down" label="实时下行速率" color="#10b981" /></div> : <div className="legacy-empty-chart is-wide"><Gauge aria-hidden="true" size={24} /><div><b>WAN 趋势证据未形成</b><small>当前值、历史尾点或采样时间窗不一致，因此不绘制看似实时的曲线。</small></div><button type="button" onClick={() => onNavigate("trafficAudit")}>查看流量证据</button></div>}
+        {traffic?.status === "ready" && traffic.points.length >= 2
+          ? <div className="legacy-trend-grid"><TrafficChart traffic={traffic} direction="up" label="实时上行速率" color="#2463ed" /><TrafficChart traffic={traffic} direction="down" label="实时下行速率" color="#10b981" /></div>
+          : traffic?.status === "accumulating"
+            ? <TrafficAccumulating traffic={traffic} />
+            : <div className="legacy-empty-chart is-wide"><Gauge aria-hidden="true" size={24} /><div><b>WAN 趋势证据未形成</b><small>当前值、历史尾点或采样时间窗不一致，因此不绘制看似实时的曲线。</small></div><button type="button" onClick={() => onNavigate("trafficAudit")}>查看流量证据</button></div>}
         <div className="legacy-section-heading legacy-resource-heading"><h2>系统负载</h2><span>CPU / 内存 / 磁盘分图</span></div>
         <div className="legacy-resource-grid" data-desktop-resource-evidence>{resourceMetrics.map((metric) => <ResourceChart key={metric.key} label={metric.label} value={metric.value} threshold={metric.threshold} points={metric.points} color={resourceColor(metric.key, metric.value, metric.threshold)} />)}</div>
         {risk ? <>
@@ -304,6 +324,9 @@ export function LegacyDesktopOverview({ snapshot, state, onNavigate, runtimeMana
             <SummaryTile label="连接数" value={compactCount(model.evidenceMode === "unavailable" ? null : state.facts.connections.total)} note={modeNote} />
             <SummaryTile label="活跃会话" value={model.evidenceMode === "unavailable" ? "—" : String(state.facts.connections.active)} note={modeNote} />
           </div>
+          {/* The no-risk overview must still leave keyboard users an operational
+           * entry inside main; without it the surface exposes zero tab stops. */}
+          <button className="legacy-focus-link" type="button" onClick={() => onNavigate("interfaces")}>查看接口状态<ChevronRight aria-hidden="true" size={16} /></button>
         </>}
       </section>
     </div>

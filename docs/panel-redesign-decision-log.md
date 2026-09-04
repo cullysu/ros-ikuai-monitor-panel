@@ -30295,3 +30295,608 @@ Product、Design、Visual 继续保持 failed；工程矩阵和 Accessibility �
 - outcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
 - next action: 同步并验证 D 盘决策镜像，随后建立严格排除无关 `.agents/skills/router-panel-product-loop/agents/openai.yaml` 的 clean exact-SHA 候选并重放发布证据。
 - latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+
+## 第 1186 步：修复 Edge 瞬时菜单的 UIA popup 所有权查找（2026-08-30）
+
+### 已观察事实
+
+- 远端 Run 33309694877（提交 7231e00a2e6822632d847f43d54239d7f7a4194f）中，Linux 仍在 Release blocking contract gates，Windows 在 Real Edge toolbar 200 percent matrix 失败；Windows 后面的 manifest/upload 是级联失败；本次 pull_request 没有创建 CL/GHCR job。
+- 官方日志下载 API 对当前访问身份返回 403 admin rights，因此不能伪造更细的远端日志内容；已有远端阶段证据与历史重复失败共同指向 find-zoom-in 找不到控件。
+
+### 判断与取舍
+
+- 不修改后续 manifest/upload 步骤，也不把失败的旧 Run 改写成通过。修复首个失败的 Edge UIA popup 查找。
+- 不放宽到桌面级 UIA 扫描：只枚举 Win32 顶层窗口，再按原始 Edge HWND 的 owner chain 与同一 msedge.exe 进程过滤，保持进程边界与低负载边界。
+- 不改变手机或桌面产品美术、路由、数据语义；本步是发布验收基础设施修复。
+
+### 为什么这样做
+
+Edge 的 Settings and more 菜单是瞬时 popup，在不同版本中不一定出现在 Desktop.windows(process=...) 的 ControlView。若只继续增加重试，无法改变可见窗口集合；把已验证的 Win32 owner chain 作为 UIA 容器来源，才能补齐真实 popup，同时避免误触另一个 Edge 窗口。
+
+### 修改的文件
+
+- tools/acceptance/accessibility-v2/windows_browser_zoom.py
+- tools/test-browser-toolbar-zoom200.js
+- tools/test-browser-toolbar-zoom200-readiness.js
+- .product-loop/state.json
+- docs/decision-system/current-state.md
+- docs/decision-system/current-index.md
+- docs/decision-system/README.md
+- docs/product-loop-current.md
+- docs/decision-system/release-journal.md
+- docs/panel-redesign-decision-log.md
+
+### 验证证据
+
+- node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200.js：PASS，24 cells。
+- node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js：PASS。
+- python -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py：PASS（通过 Node 子进程调用 Python，未启动浏览器）。
+- 旧远端 Run 33309694877：Windows failure，不能作为本修复后的结果；新提交后的远端验收尚未开始。
+
+### 未解决风险
+
+- 当前本地修复仍未提交和推送；未取得新鲜 Linux、Windows、CL/GHCR 全部通过证据。
+- 本机桌面环境没有暴露完整 Edge Settings and more 控件，不能用本机单测替代远端 Windows 证据。
+
+### 心得
+
+验收器的可靠性取决于它看到的对象是否真实存在，而不只是重试次数。遇到瞬时 UIA popup，先修正所有权和容器边界，比继续堆重试更接近根因；同时必须把测试契约与实际调用方式保持一致。
+
+### 下一步
+
+先执行最小源契约与发布边界检查，再提交并推送；随后只以新 SHA 的远端 Linux、Windows、CL/GHCR 结果决定是否继续修复或关闭发布门。
+
+### outcome
+
+- outcome: `1186:edge-uia-popup-owner-fix-and-fresh-ci-next`
+## 第 1187 步：修复决策镜像语义指针与用户辅助文档误报（2026-08-30）
+
+### 已观察事实
+
+- Step1186 的镜像同步已实际复制 16 个文档且字节一致，但同步报告仍失败：历史日志最后的 latestStepOutcome 还是 1185，机器 gate 中若干已通过项 note 为空，D 盘还有用户已有的 部署说明并执行清单.md。
+
+### 判断与取舍
+
+- 不删除 D 盘用户文档，也不把镜像中存在的用户辅助文档当成产品发布证据。把它列入明确的保留白名单。
+- 不把旧的 review 记录伪装成当前签收；Step1185 四角色记录继续标记为 superseded，当前产品/视觉 gate 仍保持 FAIL/PENDING。
+
+### 为什么这样做
+
+镜像同步门禁应能区分“缺失或未知的生成文件”和“用户明确保留的辅助文档”。同时，历史流水的最后一个 latestStepOutcome 必须与 current-state、current-index、handoff 和机器状态相同，否则报告会在复制成功后仍然给出误导性的失败原因。
+
+### 修改的文件
+
+- tools/check-decision-ledger-sync.py
+- .product-loop/state.json
+- docs/panel-redesign-decision-log.md
+- docs/decision-system/current-state.md
+- docs/decision-system/current-index.md
+- docs/decision-system/README.md
+- docs/product-loop-current.md
+- docs/decision-system/release-journal.md
+
+### 验证证据
+
+- 决策镜像同步的下一次验证必须同时检查 semantic outcomes、stale gate notes、镜像字节一致性和允许的辅助文档；在本步修复完成前尚未宣称通过。
+- Step1186 的 toolbar 24-cell 离线契约、readiness fixture、Python syntax compile 仍为 PASS。
+
+### 未解决风险
+
+- 远端 Run 33309694877 仍是旧提交失败结果；本地新修复尚未提交、推送和远端验证。
+
+### 心得
+
+文档同步不是把文件复制过去就算完成；当前指针、状态语义和用户保留文件边界也必须可解释、可复现。
+
+### 下一步
+
+执行一次新鲜镜像/源契约/发布边界验证；确认通过后再提交、推送并检查新 SHA 的 Linux、Windows 与 CL/GHCR。
+
+- outcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+- latestStepOutcome: `1187:decision-mirror-contract-repaired-and-ci-next`
+
+## 第 1188 步：确认新提交与 GitHub 旧运行边界，准备受保护分支发布（2026-08-30）
+
+### 已观察事实
+
+- 当前本地分支为 codex/ci-fix-20260830，HEAD 为 dbd4a90799defdaf2a3883d3160384808b89c730；该提交的父提交为远端同名分支旧 HEAD 7231e00a2e6822632d847f43d54239d7f7a4194f。
+- GitHub 同名分支仍停在 7231e00a2e6822632d847f43d54239d7f7a4194f；PR #1 仍开放。Run 33309694877 的 Linux 仍在运行、Windows 已失败，后续结果不能代表 dbd4a90 修复后的 SHA。
+- 远端 main 为 69174b38d3e5bc8eac4272eac3082acb2db37bd9，因此本分支是基于 main 的 PR 分支，不能把远端 main 误当成当前候选分支 HEAD。
+- 工作区没有已跟踪改动；仅有历史评审文件和 work/ 未跟踪目录。它们不属于本次修复候选，不会被加入提交。
+- 本轮检查未运行 rg.exe，未启动浏览器门禁，未终止用户进程；用户要求的文档同步和 GitHub 更新仍需继续完成。
+
+### 判断与取舍
+
+- 保持已经确认的四屏手机视觉基线和 192.168.3.5 / iPad 桌面基线不变；本轮只处理 Edge 验收器与决策镜像，不借机重新改 UI。
+- 不复用旧 Run 的 Linux/Windows/CL 结论，也不以本地退出码冒充远端发布通过。新 SHA 必须先进入 GitHub，再读取该 SHA 的真实 CI 结果；若失败，只修复首个根因。
+- 采用不覆盖远端新提交的 lease-protected 分支更新，并显式排除 .impeccable/ 与 work/ 未跟踪临时工件；不使用无条件强推或普通无保护发布。
+
+### 本步操作记录
+
+- 读取了当前分支、远端 refs、HEAD 提交元数据、PR #1 状态、项目发布脚本和当前决策状态。
+- 确认本地 dbd4a90 已包含 Step1186 的 Edge popup UIA owner 修复和 Step1187 的决策镜像语义修复；尚未有该 SHA 的 GitHub CI 结果。
+- 后续受管决策文档已提交到本地分支；未跟踪 .impeccable/ 与 work/ 仍未进入候选。
+- 当前进程环境未暴露 GITHUB_TOKEN；后续优先使用已登录 GitHub CLI 的受保护分支更新路径，不在日志或输出中显示任何凭据。
+- 纠正：机器门禁中的 ci-windows 仅表示新 SHA 是否已有结果；旧 Run 的 Windows failure 保留在历史说明中，当前新 SHA 状态必须保持 pending，避免历史失败被误当成当前候选结果。
+
+### 心得
+
+先把“本地修复已存在”“远端旧运行失败”“新 SHA 尚未验证”三件事分开，才能避免再次把旧失败或单次本地检查包装成发布通过。推送本身只是把候选送进验证链，不是验收结论。
+
+### 下一步
+
+同步并验证 Step1188 决策镜像，执行最小源契约与发布边界检查，形成只包含受管文件的 clean candidate；随后用 lease-protected 方式更新同名 GitHub 分支并读取新 SHA 的 Linux、Windows、CL/GHCR 真实结果。
+
+- outcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
+- latestStepOutcome: `1188:remote-old-run-separated-and-protected-branch-publish-next`
+
+---
+
+
+## Step 1189：新 SHA 首轮远端 CL 失败，保留 Linux 运行并锁定 Windows 首个根因（2026-08-30）
+
+### 已核实现场
+
+- 当前候选 SHA：`b18ada8ee828c621538a686b45beecfce930e693`，分支：`codex/ci-fix-20260830`。
+- GitHub Actions Run `33313772840` 已确认 Windows packaging 失败；首个失败步骤是 `Real Edge toolbar 200 percent matrix`。
+- Windows 在该步骤之前的 Edge toolbar source contract、Python/Node 环境和依赖安装均通过；其后的 package manifest/upload 失败是上游失败的级联结果，不能单独修复或解读为新根因。
+- Linux validation 仍停留在 `Release blocking contract gates` 运行中，尚未取得终态；当前不能声称 Linux、Windows、CL/GHCR 全部通过。
+- 失败日志在 Run 仍进行时不可下载；没有用旧 SHA 的历史报告冒充当前证据，也没有重复启动新的 CI。
+
+### 本步决策
+
+1. 只修复 Windows 的首个真实失败；不先处理由它级联的 manifest/artifact 缺失。
+2. 继续保持手机/桌面美术基线不变，本步属于发布验收基础设施，不借机改 UI。
+3. 等当前 Run `33313772840` 自然结束后读取精确 job 日志；若根因与现有 UIA 所有权实现不一致，再做最小修复并生成新 SHA。
+4. 所有后续修改、提交、推送和 CL 读取都必须同步本日志、D 盘镜像及状态文档；任一远端 CL 失败都继续纠正，直到同一精确 SHA 的 Linux、Windows、CL/GHCR 全绿。
+
+### 资源与安全记录
+
+- 本轮未使用 `rg.exe`，未启动新的本地浏览器矩阵，未终止用户进程。
+- 上下文脚本曾因执行层 ACL 初始化失败而未运行；没有把该失败伪装成 checkpoint 或验收结果。
+- 之后只进行了有界的 Git/CI 查询、源码读取和文档同步；未修改手机或桌面美术。
+
+### 心得
+
+CI 的“上传后失败”必须按首个失败步骤追根，而不是看到后续产物缺失就批量补文件。当前证据只说明候选已上传且 Windows 首个门禁失败、Linux 未结束；因此发布状态继续为 FAIL/CLOSED。
+
+### outcome
+
+- outcome: `1189:current-sha-windows-edge-toolbar-failed-linux-running-root-log-pending`
+
+---
+
+
+## Step 1190：读取首个远端失败日志并修复 Edge popup 搜索边界（2026-08-30）
+
+### 已核实现场
+
+- Run `33313772840` 的 Windows 日志已公开完整首因：第 1 格 `phone-320::normal` 在 `find-zoom-in` 阶段经过 12 次有界 UIA 搜索仍找到 0 个 Zoom in 控件，退出码为 1。
+- Windows 的 package manifest、bundle 和 SHA256 manifest 失败均发生在该步骤之后，是上游失败的级联结果。
+- Linux 在 `Release blocking contract gates` 运行约 36 分钟仍无步骤推进；为避免继续占用远端资源已提交取消，取消不被解读为 Linux 产品失败或通过。
+- 当前仍没有同一新 SHA 的 Linux、Windows、CL/GHCR 全绿证据。
+
+### 实施的最小修复
+
+- 修改 `tools/acceptance/accessibility-v2/windows_browser_zoom.py`：UIA popup 根枚举仍只从已绑定的 Edge 进程枚举可见顶层窗口；当 Edge 瞬态菜单缺失可用 Win32 owner 链时，以同一 `msedge.exe` 进程和 Chromium 顶层窗口类作为受限 fallback。
+- UIA 激活继续复核控件进程、顶层窗口可见性和前台归属；只有选中的同进程 popup 可以作为前台例外，不恢复全局 UIA、全局键盘、物理鼠标或 `click_input()`。
+- 修改 `tools/test-browser-toolbar-zoom200-readiness.js`，把选中的同进程 popup 前台边界固定为源码契约。
+- 未修改手机/桌面产品美术、布局、数据语义或用户确认的视觉基线。
+
+### 本地验证
+
+- `node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js`：PASS。
+- `py -3 -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py`：PASS。
+- `git diff --check`：无错误；仅报告既有文档 CRLF 将在 Git 下次处理时转为 LF 的提示。
+- 没有在本机启动真实 Edge 200% 矩阵；上述结果不能替代 GitHub Windows runner 的新鲜真实证据。
+
+### 下一步
+
+把本步修复与验证继续同步到 D 盘镜像，清理只属于本任务的临时工件，形成新的 clean exact-SHA；然后用 lease 保护更新 GitHub 分支，并只读取该新 SHA 的 Linux、Windows、CL/GHCR 终态。任何一端失败继续按首个根因纠正。
+
+### outcome
+
+- outcome: `1190:windows-edge-popup-fallback-static-green-clean-candidate-next`
+
+---
+
+
+## Step 1191：保留历史工件并以本地排除收口 clean candidate（2026-08-30）
+
+### 已核实现场
+
+- `git clean -nd -- .impeccable work` 显示这些目录含有既有评审记录和本任务临时脚本；无法证明每个文件都可安全删除，因此没有执行不可逆清理。
+- 已在当前仓库本地 `.git/info/exclude` 增加 `.impeccable/` 与 `work/`；文件本体保留，不进入提交、GitHub tree 或发布证据。
+- 重新读取 `git status --short --branch` 后，仅剩本轮 UIA 修复和决策文档的六组已跟踪修改；未把任何产品文件隐藏或删除。
+
+### 决策
+
+采用“保留文件、只在本地排除”的可逆方案，而不是为了制造 clean 状态删除可能有历史价值的评审/工作工件。候选提交只包含已审查的 UIA 修复与同步后的决策文档；推送前还要用 Git 的实际暂存内容和 exact-SHA 身份检查确认。
+
+### 下一步
+
+先运行低负载静态/类型/构建相关门禁，随后检查暂存清单与 exact-SHA 身份；若全部通过，再提交并用 lease protection 更新 GitHub 分支，等待该新 SHA 的 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1191:task-artifacts-preserved-local-exclude-clean-candidate-gates-next`
+
+---
+
+
+## Step 1192：形成新的 clean exact-SHA 候选并准备 lease-protected 推送（2026-08-30）
+
+### 已完成
+
+- 经过本地静态契约、Python 语法和补丁检查后，提交了候选：`78de7b964e914806331f237624fa688f6194abe5`。
+- 提交内容仅包含 Edge popup UIA fallback、对应 readiness 源码契约和已同步的决策文档；本地 `git status --short --branch` 仅显示分支行，内部 `.impeccable/` 与 `work/` 由本地排除规则保留且不会进入 Git tree。
+- 推送前重新 fetch：远端 `origin/codex/ci-fix-20260830` 当前保护值为 `b18ada8ee828c621538a686b45beecfce930e693`；本候选正是其直接后继。
+- `git diff --check HEAD^ HEAD` 无错误。
+
+### 发布边界
+
+还没有推送这个新 SHA，也没有把已取消的 Run 或旧 SHA 结果当成当前证明。下一次只允许用 `--force-with-lease` 且明确指定上述旧 SHA 更新同名分支；推送后只读取 `78de7b9...` 对应的 Linux、Windows、CL/GHCR 结果。
+
+### 下一步
+
+执行一次受 lease 保护的精确 SHA 推送；随后记录 GitHub 新 Run 编号，并等待/读取该 SHA 的真实三端结果。任一失败继续按首个失败步骤修复，不发布未验证候选。
+
+### outcome
+
+- outcome: `1192:clean-exact-sha-78de7b9-ready-for-lease-protected-push`
+
+---
+
+
+## Step 1193：文档同步后重新封装候选，避免把旧提交当作最终 SHA（2026-08-30）
+
+### 已核实现场
+
+- Step1192 记录的 `78de7b9` 是源码修复提交，不是包含 Step1190—1192 全部文档镜像的最终候选；本轮文档同步发生在该提交之后，因此不能继续把 `78de7b9` 称为当前最终 SHA。
+- 当前待提交内容仍只包含 Edge popup UIA fallback、readiness 源码契约和决策/发布文档；未跟踪 `.impeccable/` 与 `work/` 由本地排除规则保留，不进入 Git tree。
+- 新候选的精确 SHA 将在本步提交后由 Git 读取；远端分支 lease 保护值仍是 `b18ada8ee828c621538a686b45beecfce930e693`，不能盲目覆盖。
+
+### 决策
+
+先把本轮文档同步完整纳入候选，再读取提交后的真实 SHA；不使用旧提交或旧 CI 结果做新候选证明。候选形成后再执行一次 lease-protected 推送，推送后的 CI 必须绑定新 SHA。
+
+### 下一步
+
+提交当前已审查文件，读取新的精确 SHA 与远端父提交，使用 `--force-with-lease` 推送；随后等待并核对该 SHA 的 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1193:documentation-synchronized-candidate-commit-and-lease-push-next`
+
+---
+
+
+## Step 1195：第二次远端复现仍为零匹配，收窄过度过滤并准备重发（2026-08-30）
+
+### 已核实现场
+
+- 新 Run `33316260102` 的 Windows packaging 仍在第 1 格 `phone-320::normal` 的 `find-zoom-in` 阶段失败，首因仍是经过 12 次有界 UIA 搜索找到 0 个 Zoom in 控件。
+- 这证明 Step1190 的“同进程 + Chromium 类 + 可见顶层窗口”fallback 仍然过窄；不是 package manifest 或 artifact 上传逻辑的首因。
+- Run `33316260102` 的 Linux 结果仍未取得可用终态；本轮不得把 Windows 失败或 Linux 取消/未完成当作发布通过。
+
+### 实施的最小纠正
+
+- 保留 UIA 搜索只从已解析的 Edge 进程顶层窗口开始；取消对瞬态 popup 的 Win32 可见性和窗口类预过滤，避免 Edge runner 的 UIA/Win32 投影短暂不一致时把真实菜单根排除在外。
+- 保留零匹配/多匹配 fail-closed；控件激活仍要求精确 `msedge.exe` 进程、可见顶层窗口和前台归属，非 owner 链 popup 只能作为当前选中的同进程窗口。
+- 手机/桌面 UI、美术基线、数据语义均未修改。
+
+### 本地验证
+
+- `node --max-old-space-size=2048 tools/test-browser-toolbar-zoom200-readiness.js`：PASS。
+- `py -3 -m py_compile tools/acceptance/accessibility-v2/windows_browser_zoom.py`：PASS。
+- 未启动新的本地真实 Edge 矩阵；远端真实 Windows runner 复验仍是必须证据。
+
+### 下一步
+
+同步本步到 D 盘并提交新的源代码/文档候选；不要复用 Run `33316260102` 的失败结果。新 SHA 推送后重新读取其精确 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1195:edge-popup-filter-too-narrow-static-green-new-candidate-next`
+
+---
+
+
+## Step 1196：停止已失败的旧候选运行，准备提交第二次 popup 纠正（2026-08-30）
+
+### 已核实现场
+
+- Run `33316260102` 的 Windows packaging 已确认与上一轮相同：`phone-320::normal` 在 `find-zoom-in` 阶段经过 12 次有界 UIA 搜索仍得到 0 个 Zoom in 控件。
+- 该 Run 的 Linux validation 未形成终态；由于同一候选 Windows 已失败且 Linux 长时间停留在总门禁，已提交取消，不能把取消结果解读为 Linux 通过或失败。
+- 当前工作树的第二次 popup 纠正已完成本地静态验证，尚未提交和推送。
+
+### 下一步
+
+提交本步源代码和文档，读取新的 exact SHA；以远端 `b18ada8...` 为 lease 保护值推送新候选，然后只核对新 SHA 的 Linux、Windows、CL/GHCR 结果。
+
+### outcome
+
+- outcome: `1196:failed-run-cancelled-second-popup-correction-commit-next`
+
+
+---
+
+## Step 1197：修复决策仓库边界漂移并保持发布门禁关闭（2026-09-01）
+
+### 已核实事实
+
+- Linux 首个失败已定位为历史索引覆盖范围落后于完整决策日志：日志最高步骤为1196，而索引仍声明1185。
+- 决策权威检查器只识别“第 N 步”标题，未识别后续使用的“Step N”标题，导致完整日志的最新步骤计算错误。
+- 当前候选的 Windows 失败仍是 Run 33316260102 的 phone-320::normal / find-zoom-in 零匹配；Linux 未形成终态，CL/GHCR 没有当前 exact-SHA 绿色证据。
+
+### 修复与取舍
+
+- 历史索引、current-state、current-index、决策 README、handoff、机器状态和发布日志统一绑定到本步最新边界；完整历史日志继续保留，不覆盖历史证据。
+- 决策权威检查器改为同时识别“第 N 步”和“Step N”，避免新增记录后错误回退到旧步骤。
+- 发布日志压缩为当前边界和指针，完整过程仍只保留在 append-only 历史日志，避免当前表面再次超过扫描预算。
+- D 盘根 README 重新同步并通过逐字节镜像检查。
+
+### 验证
+
+- archive map、current-state authority、root README freshness、decision repository compaction 和完整 decision-system 门禁通过；本地 Python pointer 检查受本机 Python trampoline 权限错误阻塞，未伪称通过。
+- 发布边界仍为 FAIL/CLOSED；没有推送新候选，没有复用旧 SHA 的 CI 结果，也没有把局部绿色门禁当作发布证据。
+
+### 心得
+
+当前索引必须随完整日志原子推进，不能只修正文档表面或让门禁读取旧步骤。CI 的失败、取消和未完成状态必须保持可见，直到同一 exact SHA 的 Linux、Windows、CL/GHCR 真实结果全部形成。
+
+### 下一步
+
+提交本步已验证的源代码与决策文档，生成新的 exact SHA；仅在新 SHA 上传后读取其 Linux、Windows、CL/GHCR 终态，继续修复首个新失败。
+
+- outcome: `1197:decision-boundaries-synchronized-and-release-remains-closed`
+
+---
+
+## Step 1200：409 根因关闭、横屏裁切修复与分片退出语义契约对齐（2026-09-04）
+
+### 已核实现场
+
+- 权威工作区 `ros-ikuai-monitor-panel-github-sync-20260707-accept`，分支 `codex/ci-fix-20260830`，起点 HEAD `2e3f823`（clean，未推送；父提交 `34d4be1` = 远端分支头 = 失败 Run 33521172930 的 head SHA）。
+- 远端自 2026-09-01 后无新 Run；release 保持 CLOSED / remote-green UNPROVEN。
+- Linux 首失败根因（Run 33521172930 job 99900507521）：full-route 76/76 全部 PASS 后，有界分片因 `complete=false` 以 "incomplete release matrix" 退出 1；`2e3f823` 的 `finalizeReportTruth` allowIncompleteMatrix 修复正是该语义，新增契约测试 `test-bounded-matrix-contract.js` 本地 PASS。
+- Windows 首失败根因（job 99900507863）：第 21/24 格 `landscape-667x375::normal` 在 inspectSurface 断言可见运维文本被非滚动容器裁切。CI artifact 的 partial-report 只含已过 20 格；本地以 CSS 等效复现（667×375、DPR2、single 快照、同一裁切检测语义）定位：8 个 `legacy-summary-tile` 数值 `<b>` 在 13px × line-height 1.1（14.3px 行盒）小于字形内容盒（约 17px），且 `<b>` 自身 overflow:hidden，造成自裁切；`844x390` 同样命中 8 条。
+- 桌面 density 两条 409：为测试 server 增加请求级诊断后真实运行，唯一非 200 是两次浏览器自动 `/favicon.ico` 探测，被既有 204 处理正确服务；pass/complete/stagePass=true，console/request/page errors 全空。历史 409 即 favicon 探测在 `3317591` 之前落入 build attestation 守卫所致。
+
+### 实施的最小修复
+
+1. `legacy-desktop.css`：600–899 横屏短高媒体查询内 `.legacy-summary-tile > b` 增加 `line-height: 1.4`；同查询内将 10–11px 标签规则显式抬到 12px 可读性下限（22 个选择器）。桌面 1366/1440 基线与手机基线不受影响（媒体查询不覆盖）。
+2. `tools/check-desktop-resource-density-v2.js`：测试 server 增加低噪声请求记录（含 409 原因）与 `server-requests.json` 旁路报告；修正 `listen()` 以 runtimeServer 对象调用。
+3. `tools/check-report-truth.js`：`finalizerInvokedAtClose` 正则同步到当前 `finalizeReportTruth(report, matrixBlocksTopLevelPass, {allowIncompleteMatrix})` 调用形态；该失配是 `2e3f823` 引入的潜在 CI 阻断，本轮在推送前发现并修复。
+4. `npm run build` 重建 framework 资产与 manifest 摘要（desktop.css/panel-surface-loader.js 新哈希 + index.html + manifest.json）。
+
+### 本地验证
+
+- `node --check` 全部 `tools/*.js` 通过；python compileall tools/app.py/panel_backend 通过。
+- `check:asset-identity` 4 项、`check:static-assets`、`check-release-blockers`、`check-report-truth`、`check:workflow-release-integrity`、report/completeness/artifact-identity quarantine 全部 PASS。
+- `check:desktop-resource-density-v2` 新鲜 PASS（identity 绑定当前工作树，consoleErrors=0）。
+- CSS 等效复现：667x375 / 844x390 容器裁切 = 0；<12px 文本仅剩非托管渲染才出现的 fixture bar（真实托管运行不渲染）。
+- 本机真实 Edge 200% UIA 阶段受阻于 find-settings-and-more 0 匹配（环境性问题，非产品代码）；该阶段在远端 Windows runner 曾通过，真实性由 exact-SHA CI 复验。
+
+### 边界
+
+- 未修改手机四屏基线、桌面 1366/1440 视觉、数据语义。
+- work/ 诊断脚本与日志仅本地保留；候选不含 openai.yaml 改动。
+- release 仍 CLOSED：完整 24 格真实 Edge 矩阵与 Linux/Windows/GHCR exact-SHA CL 全部待推送后复验；推送需用户明确授权。
+
+- outcome: `1200:409-closed-landscape-clip-fixed-report-truth-synced-awaiting-exact-sha-ci`
+
+---
+
+## Step 1201：WAN 栏限高内滚修复 primary 可达性并重绑机器门禁注记（2026-09-04）
+
+### 已核实现场
+
+- 用户授权后，`4169a4a` 以 `--force-with-lease=refs/heads/codex/ci-fix-20260830:34d4be1` 推送成功（快进，无竞争覆盖）；新 Run `33828015082`（head SHA `4169a4a`）终态 failure。
+- Linux 首失败步骤：`Python syntax and collector regressions`。compileall、py_compile、ledger 回归 8 测试全过；第 4 条命令 `check-decision-ledger-sync.py` 因 14 个机器门禁 note 仍绑 `step1197-` 判 pass=false 退出 1（Step1200 文档扫荡遗漏的最后一层）。
+- Windows 首失败：第 21/24 格 `landscape-667x375::normal` 通过了 Step1200 的裁切与 12px 修复，随后在 "primary task is not reachable inside main or is obscured by navigation" 失败。primary = `[data-desktop-wan-evidence]` 整段 WAN 左栏（667 下高约 506px > 375px 视口，任何页面滚动都无法整体呈现；scrollIntoViewIfNeeded 后底部恒钉在视口+1.17px，超 1px 容差）。
+
+### 实施的最小修复
+
+1. `legacy-desktop.css` 横屏短高查询内 `.legacy-wan-column` 变为有界内滚面板：`box-sizing: border-box; max-height: calc(100vh - 24px); scroll-margin-bottom: 8px; overflow-y: auto;`。scroll 容器不触发非滚动裁切判定；键盘遍历依赖聚焦自动滚动，与手机面已验证模式一致。实测 667×375 bottom=368.17、844×390 bottom=383.17，均留 7px 余量；容器裁切 0；两列工作台语法与其余尺寸不变。
+2. `.product-loop/state.json` 全部 14 个 gate note 重绑 `step1201-`，ci-linux/ci-windows 注记写入 Run `33828015082` 真实事实。
+3. `npm run build` 重建 framework 资产与 manifest；决策文档指针（current-state/current-index/decision README/mirror-root-readme/historical-index/release-journal/product-loop/机器状态）统一绑定 Step1201。
+
+### 本地验证
+
+- CSS 等效复现：667×375 与 844×390 容器裁切 0、primary 四边全在容差内且不被导航遮挡；<12px 文本仅剩托管运行不渲染的 fixture bar。
+- `check-decision-ledger-sync.py` pass=true；CI 步骤其余命令（backend blockers/security、merge-matrix、release-checkpoint）本地全过；asset-identity、static-assets、report-truth、workflow-integrity、桌面 density 新鲜运行全绿。
+
+### 边界
+
+- 未修改手机基线、桌面 1366/1440 视觉、数据语义；发布保持 CLOSED/UNPROVEN，等待本候选推送后的三端 exact-SHA 证据。
+
+- outcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
+
+---
+
+## Step 1202：Linux 补齐手机矩阵证据、Edge 证据显式委托、桌面 normal 场景键盘入口（2026-09-04）
+
+### 已核实现场
+
+- Run `33832746276`（head SHA `d3e6762`）终态 failure，但两端各推进一层：
+  - Linux 首次通过 full-route / overview / route-state 三个矩阵（有界分片退出语义修复获真实 CI 验证），新失败在 `Public release readiness`：默认模式要求 `_acceptance/mobile-reference-runtime/report.json`（workflow 从未在 CI 生成）与 `_acceptance/edge-toolbar-zoom200/report.json`（仅 Windows job 产出，并行 job 结构上不可能回流 Linux）。该默认模式 readiness 步骤自 2026-06（8f0310e）就在 CI 里，此前所有 Run 都死在更早步骤，本轮首次被执行到。
+  - Windows 首次通过 `landscape-667x375::normal` 的 primary 可达断言（WAN 栏限高内滚修复获真实 CI 验证），推进到键盘遍历断言失败。
+- 键盘遍历根因（本地 CSS 等效复现确认）：桌面概览的对象工作区（全部按钮）只在 risk 分支渲染；normal 分支是纯展示的带宽摘要——main 内可 Tab 控件数为 0，`expectedCount > 0` 结构性失败，667/844 横屏 normal 格永远无法通过。1366 下同样为 0（density 检查能过是因为它用 resource-full 场景）。
+
+### 实施的最小修复
+
+1. `tools/check-public-release-readiness.js`：新增 `--edge-evidence-gated-by=<job>`——显式把真实 Edge 200% 证据边界委托给同 SHA 的 Windows job，其余全部矩阵证据照常强制；禁止与 `--release-candidate` 和 `--static-only` 组合；委托边界在输出中显式打印。
+2. `.github/workflows/ci.yml`：Linux job 在 readiness 前新增 `npm run check:mobile-reference-runtime`（真实 7×8 手机矩阵证据，非 smoke）；readiness 改为带 `--edge-evidence-gated-by=windows-packaging` 调用。
+3. `tools/check-workflow-release-integrity.js`：契约新增断言钉住上述两处（防止回退为裸默认或 static-only）。
+4. `LegacyDesktopOverview.tsx`：normal 分支带宽摘要下新增真实导航入口按钮（`.legacy-focus-link` 复用既有 12px 字号与 2px :focus-visible 焦点环），目标为接口状态页；risk 分支与其余尺寸不变。
+
+### 本地验证
+
+- 键盘遍历复现：expected=1/visited=1、focusVisible=true、outline=2px solid、fullyVisible、withinMain、不被遮挡。
+- 裁切 0（667/844）、<12px 仅剩托管运行不渲染的 fixture bar；build/types/asset-identity/static-assets 绿。
+- CI 同款桌面契约：desktop-v1030、no-snapshot、incident-hierarchy、normal-density、information-efficiency、top-band-continuity、resource-density-v2 全部 PASS。
+- decision-ledger-sync、current-pointer、workflow-release-integrity 本地 PASS。
+
+### 边界
+
+- 发布保持 CLOSED/UNPROVEN；本候选推送后需同一 exact SHA 的 Linux/Windows/CL 复验；real Edge 矩阵仍由 Windows job 独立把关。
+
+- outcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
+
+---
+
+## Step 1203：修复 fleet 场景等待、collection 平板首屏与 Edge DPR 证据尺寸（2026-09-04）
+
+### 已核实现场
+
+- Run `33850371045`（head `a64650b`）终态 failure，Linux 与 Windows 均失败。
+- Linux 已通过三大路由矩阵与 fleet 手机场景；新失败为 `collection-down × tablet768` 工作区底部 `632px`，门槛为 `1024 × 0.62 = 634.88px`，差约 3px。
+- Windows 第一格 `phone-320::normal` 的 diagnostic PNG 实际为 `640×1136`（Edge 200% DPR=2 的设备像素），前一轮的 `scale:"css"` 在远端未按预期生效，导致尺寸契约错误。
+
+### 实施的最小修复
+
+1. `mobile-reference.css`：collection 场景平板任务工作区最小高度从 218px 调整为 220px，使其进入 active first-screen region（保留宽度/四按钮/手机基线）。
+2. `check-browser-toolbar-zoom200.js`：保留真实 Edge/Playwright 截图证据，不再假设 diagnostic 必须是 CSS 像素；校验现在接受 CSS 像素或与已验证 DPR 对应的设备像素，仍拒绝不足尺寸、非目标和复用哈希；Windows HWND 实拍仍单独要求与 owned capture 尺寸一致。`scale:"css"` 保留为优先请求。
+3. `check-mobile-reference-runtime.js`：打开手机矩阵 cell 后等待实际 `data-mobile-reference-scene` 达到场景期望值，避免 mock/React 更新尚未完成就截图。
+4. `current-runtime-mock.js`：fleet 增加一条不在首屏 WAN 列表的失败 SFP，使 fleet 的 interfaces 场景语义与真实 fixture 一致，同时不退化为 interfaces-down 视觉重复。
+
+### 本地验证
+
+- `collection-down × tablet768` 通过：workspace bottom=636px，cell pass=true。
+- mobile model、mock architecture、toolbar readiness/offline fixture、types、build、asset identity、workflow integrity 通过。
+- Run `33850371045` 的所有失败均已按首因修复；旧 Run 不再作为当前证据。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选必须重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1203:fleet-scene-wait-collection-tablet-first-screen-edge-dpr-evidence-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1204：collection 平板阈值与 Edge DPR 证据尺寸修复（2026-09-04）
+
+### 已核实现场
+
+- Run `33850371045`（head `a64650b`）已终态 failure，Linux/Windows 均失败。
+- Linux 首失败：`Public mobile reference runtime matrix` 的 `collection-down × tablet768`；工作区 bottom=632px，门槛为 1024×0.62=634.88px，差约3px。fleet 场景已在该 Run 通过。
+- Windows 首失败：`phone-320::normal` 的 Playwright diagnostic PNG 为 640×1136（Edge 200% device pixels），而此前校验只接受 CSS 320×568。
+
+### 实施的最小修复
+
+1. collection 场景平板任务区最小高度由218px调为220px；保持四按钮、宽度和其他场景布局不变。
+2. Edge diagnostic 校验接受两种真实表达：CSS 像素尺寸，或与 cell 已验证 DPR 对应的设备像素尺寸；仍拒绝不足尺寸、非目标尺寸和复用哈希；Windows HWND 实拍仍独立绑定 owned capture。
+3. fleet/手机 runtime 的 scene 等待与 mock 失败 SFP修复保留，确保真实场景语义和截图时序稳定。
+
+### 本地验证
+
+- wrapper 单格 `collection-down × tablet768`：cell pass=true，workspace bottom=636px。
+- mobile model、mock architecture、toolbar readiness/offline fixture、types、build、asset identity、workflow integrity 全部通过。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1204：collection 平板阈值与 Edge DPR 证据尺寸修复（2026-09-04）
+
+### 已核实现场
+
+- Run `33850371045`（head `a64650b`）终态 failure，Linux/Windows 均失败。
+- Linux 首失败为 `collection-down × tablet768`，工作区 bottom=632px，门槛 1024×0.62=634.88px；fleet 场景已经通过。
+- Windows 首失败为 `phone-320::normal`，diagnostic PNG 为 640×1136（Edge 200% 设备像素），旧校验只接受 CSS 320×568。
+
+### 实施的最小修复
+
+1. collection 场景平板任务区最小高度由 218px 调为 220px；wrapper 单格复验 bottom=636px、cell pass=true。
+2. Edge diagnostic 校验接受 CSS 像素或与已验证 DPR 对应的设备像素；仍拒绝不足尺寸、非目标尺寸和复用哈希，Windows HWND 实拍仍独立绑定 owned capture。
+3. fleet/手机 runtime scene 等待与 mock 失败 SFP 修复保留。
+
+### 本地验证
+
+- `collection-down × tablet768` 单格 pass=true。
+- mobile model、mock architecture、toolbar readiness/offline fixture、types、build、asset identity、workflow integrity 全部通过。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1205：readiness 手机报告字段对齐与 route 横屏工作区可压缩列（2026-09-04）
+
+### 已核实现场
+
+- Run `33860099898`（head `bdd3005`）终态双失败。
+- Linux `Public release readiness`：手机矩阵步骤本身完整（runPass=true/complete=true，capture 到全部 49 格），但 readiness 读到 total=0——生成器把 49 cells 写在顶层 `report.cells`，校验器却读 `matrix.cells`，属于消费者字段错配而非证据缺失。
+- Windows 第 22/24 格 `landscape-667x375::interfaces-down`：真实 Edge 200% 下 route 文本被 `section.desktop-domain-workspace` 的 overflow:hidden 截断；本地等效复现 667×375 有 38 条、844×390 有 22 条 x 轴容器裁切，根因为 `.ddw-body` 默认列下限 520px+430px，1200px 以下没有压缩规则。
+
+### 实施的最小修复
+
+1. `check-public-release-readiness.js`：手机 runtime 专用校验读取顶层 `report.cells`（与生成器一致）；overview/route 矩阵继续读 `matrix.cells` 不变。同步 `test-public-release-semantic-gates.js` fixture 与三条损坏注入用例的字段路径。
+2. `desktop-domain.css`：为 600–899 横屏短高（桌面 owner 断点）新增可压缩两列 `.ddw-body`（minmax(0,fr)）与配套工具栏/表格/检查器紧凑规则；表格 pane 自身保留 overflow:auto 滚动。
+
+### 本地验证
+
+- route 裁切复现：667×375 容器裁切 38→0；844×390 22→0。
+- test-public-release-semantic-gates PASS（含 48-cell 缺失、哈希篡改、PNG 损坏三条 fail-closed 用例）。
+- build / types / asset-identity / toolbar readiness fixture PASS。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1206：route 表头 small 提升至 12px 可读性下限（2026-09-04）
+
+### 已核实现场
+
+- Run `33889082307`（head `11983b9`）：**Linux validation 首次全绿**（含三大路由矩阵、49/49 手机矩阵、readiness 字段修复）。Windows 推进到 22/24：`landscape-667x375::interfaces-down` 通过了容器裁切断言（列压缩修复生效），随即失败于 "operational text below the 12px readability floor"。
+- 本地等效复现（同 fixture/同视口/同 CSS）：route 页面唯一 <12px 节点是 `.ddw-table-pane > header` 内的 `<small>`"当前只读快照"——header 字号 12px，`<small>` 无显式规则，被 UA `smaller` 折算为 10px。
+
+### 实施的最小修复
+
+- 在 Step1205 的 600–899 横屏短高断点内为 `.ddw-table-pane > header small` 显式设置 `font-size: 12px`。不改桌面 1366/1440 基线与手机基线。
+
+### 本地验证
+
+- route 可读性扫描：667×375 与 844×390 的 <12px 组数均为 0。
+- route 容器裁切保持 0/0；build、types、asset-identity、semantic-gates、toolbar readiness/offline fixture、mobile model、workflow-integrity 全部 PASS。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；等待新 exact-SHA 的 Linux/Windows/CL/GHCR。
+
+- outcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1207：readiness Python 解析 runner 化与 Windows preflight 解雷（2026-09-05）
+
+### 已核实现场
+
+- Run `33893973534`（head `28938db`）：**Linux validation 连续第二次全绿；Windows 真实 Edge 200% 矩阵 24/24 首次全部通过**（Step1206 可读性修复获真实 CI 验证）。新失败推进到 `Packaging preflight`（步骤 11）：`python:decision-ledger-sync` 阶段 elapsedMs=3、status=null——readiness 在 win32 硬编码本机 codex-runtime python 路径，GitHub runner 不存在导致 spawn 即死。这是 Windows job 历史上首次活着走过矩阵后踩到的老雷。
+- 子代理预检（GLM-5.3-Flash）：844×390 剩余两格本地全项 PASS（裁切 0、<12px 0、primary 可达、route 键盘 14/14）；CL/GHCR 收口链路已产出 runbook（GHCR 仅 push→main 触发，PR run 不作 CL 证据）。
+
+### 实施的最小修复
+
+- `check-public-release-readiness.js`：新增 `resolvePythonExecutable()`——PYTHON_EXECUTABLE 优先；win32 先探测既有本机路径（存在才用），否则回落 `python`（runner 的 setup-python）；非 win32 保持 python3/python。decision-ledger-sync 与 dependency-lock 两处共用。
+
+### 本地验证
+
+- 本机 static-only readiness PASS（本地路径解析行为不变）；semantic-gates、release-blockers、workflow-integrity PASS；语法检查通过。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；Windows preflight 之后的 EXE/bundle/manifest 步骤与 GHCR 链路仍需真实 CI 验证。
+
+- outcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`

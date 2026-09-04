@@ -263,6 +263,7 @@ assert.deepEqual(parseArgs(['--engineering-worktree']), {
   staticOnly: false,
   allowDirtyEngineering: true,
   releaseCandidate: false,
+  edgeEvidenceGatedBy: '',
   candidateEvidenceArgs: [],
   help: false,
 });
@@ -272,15 +273,38 @@ assert.deepEqual(
     staticOnly: false,
     allowDirtyEngineering: false,
     releaseCandidate: true,
+    edgeEvidenceGatedBy: '',
     candidateEvidenceArgs: [`--candidate-commit=${'a'.repeat(40)}`],
     help: false,
   },
   'release-candidate mode must preserve exact external evidence arguments'
 );
+assert.deepEqual(
+  parseArgs(['--edge-evidence-gated-by=windows-packaging']),
+  {
+    staticOnly: false,
+    allowDirtyEngineering: false,
+    releaseCandidate: false,
+    edgeEvidenceGatedBy: 'windows-packaging',
+    candidateEvidenceArgs: [],
+    help: false,
+  },
+  'Linux CI may delegate only the real Edge toolbar report to the Windows job'
+);
 assert.throws(
   () => parseArgs([`--candidate-commit=${'a'.repeat(40)}`]),
   /require --release-candidate/,
   'candidate evidence cannot be smuggled into an ordinary readiness run'
+);
+assert.throws(
+  () => parseArgs(['--edge-evidence-gated-by=windows-packaging', '--release-candidate']),
+  /cannot be combined with --release-candidate/,
+  'Edge delegation cannot be used to skip release-candidate Edge evidence'
+);
+assert.throws(
+  () => parseArgs(['--edge-evidence-gated-by=windows-packaging', '--static-only']),
+  /cannot be combined with static-only/,
+  'Edge delegation is a matrix-evidence boundary and cannot hide inside static-only'
 );
 const currentAccessibilityGateSource = fs.readFileSync(path.join(__dirname, 'check-mobile-reference-accessibility-runtime.js'), 'utf8');
 const responsiveBoundaryGateSource = fs.readFileSync(path.join(__dirname, 'check-responsive-boundary-contract.js'), 'utf8');
@@ -385,7 +409,8 @@ assert.throws(
     runtimeStart: runtimePhase, runtimeEnd: runtimePhase, evidenceErrors: [],
     outputDirectory: '_acceptance/mobile-reference-runtime',
     workflows,
-    matrix: { ...shared, mode: 'full', append: false, required: 49, completed: 49, failed: 0, remaining: 0, cells },
+    matrix: { ...shared, mode: 'full', append: false, required: 49, completed: 49, failed: 0, remaining: 0 },
+    cells,
   };
   const reportPath = path.join(outputDirectory, 'report.json');
   try {
@@ -393,7 +418,7 @@ assert.throws(
     assert.deepEqual(validateMobileRuntimeReport(reportPath, currentIdentity).errors, []);
 
     const incomplete = JSON.parse(JSON.stringify(report));
-    incomplete.matrix.cells.pop();
+    incomplete.cells.pop();
     incomplete.matrix.completed = 48;
     incomplete.matrix.remaining = 1;
     fs.writeFileSync(reportPath, JSON.stringify(incomplete));
@@ -402,13 +427,13 @@ assert.throws(
     assert(errors.some((item) => item.includes('missing=1')), 'every required mobile cell must be explicit');
 
     const staleHash = JSON.parse(JSON.stringify(report));
-    staleHash.matrix.cells[0].png.sha256 = '0'.repeat(64);
+    staleHash.cells[0].png.sha256 = '0'.repeat(64);
     fs.writeFileSync(reportPath, JSON.stringify(staleHash));
     errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
     assert(errors.some((item) => item.includes('sha256 does not match')), 'recorded screenshot hashes must be re-read from files');
 
     const corruptFile = JSON.parse(JSON.stringify(report));
-    fs.writeFileSync(path.join(evidenceRoot, corruptFile.matrix.cells[1].file), Buffer.from('not-a-png'));
+    fs.writeFileSync(path.join(evidenceRoot, corruptFile.cells[1].file), Buffer.from('not-a-png'));
     fs.writeFileSync(reportPath, JSON.stringify(corruptFile));
     errors = validateMobileRuntimeReport(reportPath, currentIdentity).errors;
     assert(errors.some((item) => item.includes('file is not a PNG')), 'release validation must decode every screenshot');

@@ -9,7 +9,7 @@ const source = fs.readFileSync(path.join(root, 'tools/local-predeploy-check.js')
 const checks = {
   finalizerDefined: /function finalizeReportTruth\s*\(/.test(source),
   derivesFailuresFromChecks: /report\.checks[\s\S]{0,500}(applicable|pass)/.test(source) && /check\.pass\s*!==\s*true/.test(source),
-  finalizerInvokedAtClose: /finalizeReportTruth\s*\(\s*report\s*,\s*matrixBlocksTopLevelPass\s*\)/.test(source),
+  finalizerInvokedAtClose: /finalizeReportTruth\s*\(\s*report\s*,\s*matrixBlocksTopLevelPass\b/.test(source),
   finalizerExportedForRegression: /finalizeReportTruth\s*,/.test(source),
 };
 

@@ -621,6 +621,68 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   gap: 10px;
 }
 
+.legacy-traffic-pending {
+  min-height: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--legacy-line);
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.legacy-traffic-pending-head,
+.legacy-traffic-pending-values {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.legacy-traffic-pending-head b {
+  display: block;
+  color: var(--legacy-ink);
+  font-size: 13px;
+}
+
+.legacy-traffic-pending-head small {
+  display: block;
+  margin-top: 3px;
+  color: var(--legacy-muted);
+  font-size: 11px;
+}
+
+.legacy-traffic-pending-head > span {
+  flex: 0 0 auto;
+  color: var(--legacy-blue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.legacy-traffic-pending-values {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid #e1ebf7;
+}
+
+.legacy-traffic-pending-values div {
+  min-width: 0;
+}
+
+.legacy-traffic-pending-values span,
+.legacy-traffic-pending-values b {
+  display: block;
+}
+
+.legacy-traffic-pending-values span {
+  color: var(--legacy-muted);
+  font-size: 10px;
+}
+
+.legacy-traffic-pending-values b {
+  margin-top: 2px;
+  color: var(--legacy-ink);
+  font-size: 13px;
+}
+
 .legacy-chart {
   min-width: 0;
   padding: 10px;
@@ -1020,6 +1082,9 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   .legacy-summary-tile > b {
     margin: 1px 0 2px;
     font-size: 13px;
+    /* 13px × 1.1 built a line box smaller than the glyph content box, so the
+     * overflow-hidden value clipped its own ink at these workbench sizes. */
+    line-height: 1.4;
   }
 
   .legacy-main-grid {
@@ -1032,6 +1097,20 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   .legacy-right-column {
     padding: 7px;
     border-radius: 8px;
+  }
+
+  /* At the 200% workbench the primary WAN evidence must stay reachable
+   * inside the first viewport, so the WAN rail becomes a bounded,
+   * internally scrollable pane instead of a taller-than-viewport section
+   * that no amount of page scrolling can fully reveal. */
+  .legacy-wan-column {
+    box-sizing: border-box;
+    max-height: calc(100vh - 24px);
+    /* scrollIntoView aligns the rail bottom against the scrollport bottom
+     * with a fractional overshoot; the margin keeps the revealed box inside
+     * the viewport instead of 1–2px past it. */
+    scroll-margin-bottom: 8px;
+    overflow-y: auto;
   }
 
   .legacy-section-heading {
@@ -1127,6 +1206,35 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   .legacy-object-row {
     min-height: 38px;
     padding: 4px 7px;
+  }
+
+  /* This is the only desktop-owner size class exposed to the Edge 200% toolbar
+   * gate, which fails closed on operational text under the 12px readability
+   * floor. The compact workbench labels were 10–11px, so raise exactly those
+   * rules here; the desktop and phone baselines keep their accepted sizes. */
+  .legacy-kicker,
+  .legacy-verdict span,
+  .legacy-verdict small,
+  .legacy-summary-tile > span,
+  .legacy-summary-tile > small,
+  .legacy-section-heading span,
+  .legacy-wan-lead-head small,
+  .legacy-wan-lead > small,
+  .legacy-pill,
+  .legacy-route-chip,
+  .legacy-fact-grid span,
+  .legacy-wan-rate-card span,
+  .legacy-wan-rate-card small,
+  .legacy-traffic-pending-head small,
+  .legacy-traffic-pending-values span,
+  .legacy-chart-axis,
+  .legacy-resource-card small,
+  .legacy-object-category,
+  .legacy-object-row small,
+  .legacy-object-state,
+  .legacy-empty-chart small,
+  .legacy-empty-chart button {
+    font-size: 12px;
   }
 }
 

@@ -19,9 +19,20 @@ function portablePath(value) {
   return value.split(path.sep).join('/');
 }
 
+function deterministicPathCompare(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function normalizeFrameworkInputBody(body) {
+  // Git checkouts may materialize repository text as CRLF on Windows and LF
+  // on Linux. Hash the canonical LF representation so one commit has one
+  // framework identity on every supported runner.
+  return Buffer.from(body.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
+}
+
 function collectFiles(directory, projectRoot, output) {
   const entries = fs.readdirSync(directory, { withFileTypes: true })
-    .sort((left, right) => left.name.localeCompare(right.name, 'en'));
+    .sort((left, right) => deterministicPathCompare(left.name, right.name));
   for (const entry of entries) {
     const absolute = path.join(directory, entry.name);
     if (entry.isSymbolicLink()) {
@@ -44,7 +55,7 @@ function frameworkInputFiles(projectRoot) {
 
   const files = [...REQUIRED_INPUT_FILES];
   collectFiles(sourceRoot, resolvedRoot, files);
-  const unique = [...new Set(files)].sort((left, right) => left.localeCompare(right, 'en'));
+  const unique = [...new Set(files)].sort(deterministicPathCompare);
   for (const relative of unique) {
     const absolute = path.join(resolvedRoot, ...relative.split('/'));
     if (!fs.statSync(absolute, { throwIfNoEntry: false })?.isFile()) {
@@ -61,7 +72,7 @@ function computeFrameworkInputIdentity(projectRoot) {
   hash.update(FRAMEWORK_INPUT_SCHEMA, 'utf8');
   hash.update('\0', 'utf8');
   for (const relative of files) {
-    const body = fs.readFileSync(path.join(resolvedRoot, ...relative.split('/')));
+    const body = normalizeFrameworkInputBody(fs.readFileSync(path.join(resolvedRoot, ...relative.split('/'))));
     hash.update(relative, 'utf8');
     hash.update('\0', 'utf8');
     hash.update(String(body.length), 'utf8');

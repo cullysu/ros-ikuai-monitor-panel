@@ -87,11 +87,14 @@ function gitHead(rootDir) {
   return result.status === 0 ? String(result.stdout || '').trim() : 'unknown';
 }
 
-function gitWorktreeIdentity(rootDir) {
+function gitWorktreeIdentity(rootDir, options = {}) {
   const commit = gitHead(rootDir);
-  const fullDiff = git(rootDir, ['diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.']);
+  const modeOptions = options.ignoreFileMode === true ? ['-c', 'core.filemode=false'] : [];
+  const eolOptions = ['--ignore-space-at-eol'];
+  const fullDiff = git(rootDir, [...modeOptions, 'diff', '--binary', '--no-ext-diff', ...eolOptions, 'HEAD', '--', '.']);
   const runtimeDiff = git(rootDir, [
-    'diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.',
+    ...modeOptions,
+    'diff', '--binary', '--no-ext-diff', ...eolOptions, 'HEAD', '--', '.',
     ...ARTIFACT_PREFIXES.map((prefix) => `:(exclude)${prefix}**`),
     ...GOVERNANCE_PATHS.map((name) => `:(exclude)${name}`),
     ...GOVERNANCE_PREFIXES.map((prefix) => `:(exclude)${prefix}**`),
@@ -101,7 +104,7 @@ function gitWorktreeIdentity(rootDir) {
     maxBuffer: 8 * 1024 * 1024,
   });
   const allUntracked = others.status === 0
-    ? String(others.stdout || '').split(/\r?\n/).map(normalizedPath).filter((name) => name && !isArtifactPath(name)).sort()
+    ? String(others.stdout || '').split(/\r?\n/).map(normalizedPath).filter((name) => name && name !== '.git' && !isArtifactPath(name)).sort()
     : [];
   const runtimeUntracked = allUntracked.filter((name) => !isGovernancePath(name));
   const hash = crypto.createHash('sha256');

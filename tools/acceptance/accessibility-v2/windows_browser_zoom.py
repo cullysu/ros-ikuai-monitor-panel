@@ -56,44 +56,143 @@ def process_image_name(process_id: int) -> str:
         kernel32.CloseHandle(process)
 
 
-def validate_owned_edge_window(handle: int, title: str) -> int:
+def browser_process_tree_ids(root_process_id: int, max_processes: int = 128) -> set[int]:
+    """Return the bounded msedge process tree rooted at the owned browser PID."""
+    if root_process_id <= 0:
+        return set()
+
+    class ProcessEntry32W(ctypes.Structure):
+        _fields_ = [
+            ("dwSize", wintypes.DWORD),
+            ("cntUsage", wintypes.DWORD),
+            ("th32ProcessID", wintypes.DWORD),
+            ("th32DefaultHeapID", ctypes.c_size_t),
+            ("th32ModuleID", wintypes.DWORD),
+            ("cntThreads", wintypes.DWORD),
+            ("th32ParentProcessID", wintypes.DWORD),
+            ("pcPriClassBase", wintypes.LONG),
+            ("dwFlags", wintypes.DWORD),
+            ("szExeFile", wintypes.WCHAR * 260),
+        ]
+
+    kernel32 = ctypes.windll.kernel32
+    kernel32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+    kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    kernel32.Process32FirstW.argtypes = [wintypes.HANDLE, ctypes.POINTER(ProcessEntry32W)]
+    kernel32.Process32FirstW.restype = wintypes.BOOL
+    kernel32.Process32NextW.argtypes = [wintypes.HANDLE, ctypes.POINTER(ProcessEntry32W)]
+    kernel32.Process32NextW.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+
+    snapshot = kernel32.CreateToolhelp32Snapshot(0x00000002, 0)  # TH32CS_SNAPPROCESS
+    invalid_handle = ctypes.c_void_p(-1).value
+    if snapshot in (None, 0, invalid_handle):
+        return {root_process_id}
+    try:
+        parents: dict[int, int] = {}
+        entry = ProcessEntry32W()
+        entry.dwSize = ctypes.sizeof(entry)
+        if kernel32.Process32FirstW(snapshot, ctypes.byref(entry)):
+            while True:
+                process_id = int(entry.th32ProcessID)
+                if process_id > 0:
+                    parents[process_id] = int(entry.th32ParentProcessID)
+                if not kernel32.Process32NextW(snapshot, ctypes.byref(entry)):
+                    break
+        owned = {root_process_id}
+        changed = True
+        while changed and len(owned) < max_processes:
+            changed = False
+            for process_id, parent_id in parents.items():
+                if process_id not in owned and parent_id in owned:
+                    owned.add(process_id)
+                    changed = True
+                    if len(owned) >= max_processes:
+                        break
+        return owned
+    finally:
+        kernel32.CloseHandle(snapshot)
+
+
+def validate_owned_edge_window(
+    handle: int,
+    title: str,
+    require_visible: bool = True,
+    expected_process_ids: set[int] | None = None,
+    require_title: bool = True,
+) -> int:
     user32 = ctypes.windll.user32
-    if not user32.IsWindow(handle) or not user32.IsWindowVisible(handle):
-        raise RuntimeError("owned Edge window handle is no longer valid and visible")
-    if title not in window_text(handle):
+    if not user32.IsWindow(handle) or (require_visible and not user32.IsWindowVisible(handle)):
+        visibility = " and visible" if require_visible else ""
+        raise RuntimeError(f"owned Edge window handle is no longer valid{visibility}")
+    if require_title and title not in window_text(handle):
         raise RuntimeError("owned Edge window title no longer matches the unique task title")
     if not window_class_name(handle).startswith("Chrome_WidgetWin"):
         raise RuntimeError("owned window is not an Edge Chromium top-level window")
     process_id = owned_process_id_for_window(handle)
     if process_image_name(process_id) != "msedge.exe":
         raise RuntimeError("owned window process image is not msedge.exe")
+    if expected_process_ids and process_id not in expected_process_ids:
+        raise RuntimeError("owned window process is outside the exact browser process tree")
     return process_id
 
 
-def find_owned_window_handle(title: str, timeout_seconds: float) -> int:
-    """Find the uniquely titled headed Edge window without asking UIA to scan every Edge tab."""
+def find_owned_window_handle(title: str, timeout_seconds: float, browser_pid: int = 0) -> int:
+    """Find the exact Edge window by title, with a bounded owned-PID fallback."""
     user32 = ctypes.windll.user32
     deadline = time.time() + timeout_seconds
+    expected_process_ids = browser_process_tree_ids(browser_pid)
     while time.time() < deadline:
-        matches: list[int] = []
+        title_matches: list[int] = []
+        process_matches: list[int] = []
         callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
 
         @callback_type
         def collect(hwnd, _lparam):
-            if not user32.IsWindowVisible(hwnd):
-                return True
             try:
-                validate_owned_edge_window(int(hwnd), title)
-                matches.append(int(hwnd))
-            except RuntimeError:
+                handle = int(hwnd)
+                if expected_process_ids:
+                    process_id = owned_process_id_for_window(handle)
+                    if process_id not in expected_process_ids:
+                        return True
+                text = window_text(handle)
+                if title and title in text:
+                    validate_owned_edge_window(
+                        handle,
+                        title,
+                        require_visible=False,
+                        expected_process_ids=expected_process_ids,
+                    )
+                    title_matches.append(handle)
+                elif browser_pid > 0:
+                    # A very large pre-zoom viewport can leave the Chromium
+                    # top-level window without its document title in the Win32
+                    # projection. The exact browser process tree is the
+                    # ownership boundary in that case; require one candidate
+                    # and revalidate visibility after focus before UIA action.
+                    validate_owned_edge_window(
+                        handle,
+                        title,
+                        require_visible=False,
+                        expected_process_ids=expected_process_ids,
+                        require_title=False,
+                    )
+                    process_matches.append(handle)
+            except (RuntimeError, OSError):
                 pass
             return True
 
         user32.EnumWindows(collect, 0)
-        if len(matches) == 1:
-            return matches[0]
+        title_matches = sorted(set(title_matches))
+        process_matches = sorted(set(process_matches))
+        if len(title_matches) == 1:
+            return title_matches[0]
+        if not title_matches and browser_pid > 0 and len(process_matches) == 1:
+            trace_stage("owned-window-found-by-browser-process")
+            return process_matches[0]
         time.sleep(0.05)
-    raise RuntimeError("could not find exactly one visible owned Edge window by its unique title")
+    raise RuntimeError("could not find exactly one owned Edge window by title or exact browser process tree")
 
 
 def focus_owned_window(handle: int, timeout_seconds: float) -> None:
@@ -139,17 +238,30 @@ def owned_process_id_for_window(handle: int) -> int:
     return value
 
 
-def require_owned_foreground_process(owned_process_id: int, owned_window_handle: int) -> int:
-    """Fail closed unless foreground is the original Edge HWND or its owned popup."""
+def require_owned_foreground_process(
+    owned_process_id: int,
+    owned_window_handle: int,
+    allowed_popup_handle: int = 0,
+    allowed_process_ids: tuple[int, ...] = (),
+) -> int:
+    """Fail closed unless foreground is the original Edge owner chain."""
     user32 = ctypes.windll.user32
     foreground = int(user32.GetForegroundWindow())
     if foreground <= 0:
         raise RuntimeError("no foreground window is available for the owned Edge UIA action")
-    if not window_is_owned_by(foreground, owned_window_handle):
-        raise RuntimeError("foreground ownership moved outside the original Edge HWND chain")
     foreground_process_id = owned_process_id_for_window(foreground)
-    if foreground_process_id != owned_process_id:
-        raise RuntimeError("foreground ownership changed before the Edge UIA action")
+    accepted_process_ids = {owned_process_id, *(int(value) for value in allowed_process_ids if int(value) > 0)}
+    original_chain = window_is_owned_by(foreground, owned_window_handle)
+    selected_popup = bool(
+        allowed_popup_handle
+        and foreground == allowed_popup_handle
+        and foreground_process_id in accepted_process_ids
+        and user32.IsWindowVisible(foreground)
+    )
+    if not original_chain and not selected_popup:
+        raise RuntimeError("foreground ownership moved outside the original Edge HWND chain")
+    if foreground_process_id not in accepted_process_ids:
+        raise RuntimeError("foreground ownership changed outside the verified Edge owner processes")
     return foreground
 
 
@@ -171,6 +283,212 @@ def window_is_owned_by(candidate_handle: int, owned_window_handle: int) -> bool:
     return False
 
 
+def ui_control_names(control) -> tuple[str, ...]:
+    """Read the UIA Name property first, then the Win32 text projection."""
+    names: list[str] = []
+    try:
+        element_name = str(getattr(control.element_info, "name", "") or "").strip()
+    except Exception:
+        element_name = ""
+    try:
+        legacy_name = str(getattr(control.element_info, "legacy_name", "") or "").strip()
+    except Exception:
+        legacy_name = ""
+    try:
+        rich_text = str(getattr(control.element_info, "rich_text", "") or "").strip()
+    except Exception:
+        rich_text = ""
+    try:
+        window_name = str(control.window_text() or "").strip()
+    except Exception:
+        window_name = ""
+    for candidate in (element_name, legacy_name, rich_text, window_name):
+        normalized = " ".join(candidate.lower().split())
+        if normalized and normalized not in names:
+            names.append(normalized)
+    return tuple(names)
+
+
+EDGE_ACCELERATOR_SUFFIX = re.compile(
+    r"\s+\((?:alt|ctrl|shift|meta|win)(?:\s*\+[a-z0-9]+)+\)\s*$",
+    re.IGNORECASE,
+)
+
+
+def canonical_ui_name(name: str) -> str:
+    """Normalize one visible name and remove only a known accelerator suffix."""
+    normalized = " ".join(str(name or "").strip().lower().split())
+    return EDGE_ACCELERATOR_SUFFIX.sub("", normalized).strip()
+
+
+def ui_name_matches(name: str, tokens: tuple[str, ...], exact: bool = False) -> bool:
+    """Match a visible UIA name without reopening broad substring ambiguity."""
+    normalized_name = canonical_ui_name(name)
+    normalized_tokens = tuple(canonical_ui_name(token) for token in tokens)
+    if not normalized_name:
+        return False
+    if exact:
+        return normalized_name in normalized_tokens
+    return any(token in normalized_name for token in normalized_tokens)
+
+
+def safe_exception_message(error: BaseException) -> str:
+    """Keep failure diagnostics useful without serializing UIA control metadata."""
+    message = str(error).strip()
+    return message or type(error).__name__
+
+
+def trace_stage(label: str) -> None:
+    """Emit a bounded diagnostic channel that never contaminates JSON stdout."""
+    print(f"[edge-uia-stage] {label}", file=sys.stderr, flush=True)
+
+def raw_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> list:
+    """Walk one already-bound UIA tree through RawView, never the desktop root."""
+    from pywinauto.controls.uiawrapper import UIAWrapper  # type: ignore
+    from pywinauto.uia_defines import IUIA  # type: ignore
+    from pywinauto.uia_element_info import UIAElementInfo  # type: ignore
+
+    root_element = getattr(control.element_info, "element", None)
+    if root_element is None:
+        return []
+    walker = IUIA().iuia.RawViewWalker
+    found = []
+    stack = [(root_element, 0)]
+    while stack and len(found) < max_nodes:
+        parent, depth = stack.pop()
+        if depth >= max_depth:
+            continue
+        try:
+            child = walker.GetFirstChildElement(parent)
+        except Exception:
+            continue
+        while child is not None and len(found) < max_nodes:
+            try:
+                wrapper = UIAWrapper(UIAElementInfo(child))
+                found.append(wrapper)
+                if depth + 1 < max_depth:
+                    stack.append((child, depth + 1))
+                child = walker.GetNextSiblingElement(child)
+            except Exception:
+                break
+    return found
+
+
+def control_view_descendants(control, max_depth: int = 8, max_nodes: int = 512) -> list:
+    """Walk one already-bound UIA tree through ControlView with hard bounds."""
+    from pywinauto.controls.uiawrapper import UIAWrapper  # type: ignore
+    from pywinauto.uia_defines import IUIA  # type: ignore
+    from pywinauto.uia_element_info import UIAElementInfo  # type: ignore
+
+    root_element = getattr(control.element_info, "element", None)
+    if root_element is None:
+        return []
+    walker = IUIA().iuia.ControlViewWalker
+    found = []
+    stack = [(root_element, 0)]
+    while stack and len(found) < max_nodes:
+        parent, depth = stack.pop()
+        if depth >= max_depth:
+            continue
+        try:
+            child = walker.GetFirstChildElement(parent)
+        except Exception:
+            continue
+        while child is not None and len(found) < max_nodes:
+            try:
+                wrapper = UIAWrapper(UIAElementInfo(child))
+                found.append(wrapper)
+                if depth + 1 < max_depth:
+                    stack.append((child, depth + 1))
+                child = walker.GetNextSiblingElement(child)
+            except Exception:
+                break
+    return found
+
+
+def edge_owner_process_ids(owned_process_id: int, owned_window_handle: int) -> tuple[int, ...]:
+    """Collect only msedge.exe processes that own a window in the exact Edge owner chain."""
+    user32 = ctypes.windll.user32
+    process_ids = {int(owned_process_id)}
+    callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    @callback_type
+    def collect(hwnd, _lparam):
+        handle = int(hwnd)
+        if handle <= 0 or handle == owned_window_handle or not user32.IsWindowVisible(handle):
+            return True
+        if not window_is_owned_by(handle, owned_window_handle):
+            return True
+        try:
+            process_id = owned_process_id_for_window(handle)
+            if process_image_name(process_id) == "msedge.exe":
+                process_ids.add(process_id)
+        except Exception:
+            pass
+        return True
+
+    user32.EnumWindows(collect, 0)
+    return tuple(sorted(process_ids))
+
+
+def owned_uia_windows(desktop, owned_process_id: int, owned_window_handle: int, allowed_process_ids: tuple[int, ...] = ()) -> list:
+    """Return UIA roots for the original Edge HWND and bounded Edge owner-chain menus."""
+    user32 = ctypes.windll.user32
+    containers = []
+    seen: set[int] = set()
+    accepted_process_ids = {owned_process_id, *(int(value) for value in allowed_process_ids if int(value) > 0)}
+
+    def add_window(handle: int) -> None:
+        if handle <= 0 or handle in seen:
+            return
+        try:
+            process_id = owned_process_id_for_window(handle)
+            if process_id not in accepted_process_ids:
+                return
+            if (
+                handle != owned_window_handle
+                and process_id != owned_process_id
+                and not window_is_owned_by(handle, owned_window_handle)
+            ):
+                return
+            containers.append(desktop.window(handle=handle))
+            seen.add(handle)
+        except Exception:
+            return
+
+    add_window(owned_window_handle)
+    callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    @callback_type
+    def collect(hwnd, _lparam):
+        add_window(int(hwnd))
+        return True
+
+    user32.EnumWindows(collect, 0)
+    # Edge menu projections can be child HWNDs instead of top-level popup
+    # windows. Discover only a bounded child set below the already-owned Edge
+    # HWND; this avoids the expensive desktop/UIA tree enumeration that caused
+    # the previous CI hangs while still covering the real menu surface.
+    child_count = 0
+
+    @callback_type
+    def collect_child(hwnd, _lparam):
+        nonlocal child_count
+        if child_count >= 256:
+            return False
+        child_count += 1
+        add_window(int(hwnd))
+        return True
+
+    user32.EnumChildWindows(owned_window_handle, collect_child, 0)
+    # Do not call Desktop.windows(process=...) here.  That asks UIA to enumerate
+    # every window in the Edge process and can block behind a transient popup for
+    # tens of seconds on hosted Windows runners.  The bounded Win32 enumeration
+    # above is enough to discover a visible menu root while preserving the exact
+    # HWND/process boundary; the original Edge window remains the first search
+    # container.
+    return containers
+
 def control_top_level_handle(control) -> int:
     try:
         return int(control.top_level_parent().handle or 0)
@@ -178,18 +496,74 @@ def control_top_level_handle(control) -> int:
         raise RuntimeError(f"could not resolve UIA control top-level HWND: {error}") from error
 
 
-def invoke_owned_control(control, owned_process_id: int, owned_window_handle: int, label: str) -> None:
-    """Invoke one UIA control only after binding it to the exact Edge window."""
+def invoke_owned_control(
+    control,
+    owned_process_id: int,
+    owned_window_handle: int,
+    label: str,
+    allow_stale_enabled: bool = False,
+    allowed_process_ids: tuple[int, ...] = (),
+    prefer_legacy_action: bool = False,
+) -> None:
+    """Activate one UIA control only after binding it to the exact Edge window."""
     control_process_id = int(getattr(control.element_info, "process_id", 0) or 0)
-    if control_process_id != owned_process_id:
-        raise RuntimeError(f"{label} is not owned by the expected Edge process")
-    if not window_is_owned_by(control_top_level_handle(control), owned_window_handle):
-        raise RuntimeError(f"{label} is not owned by the original Edge HWND")
-    require_owned_foreground_process(owned_process_id, owned_window_handle)
-    if not control.is_enabled():
+    accepted_process_ids = {owned_process_id, *(int(value) for value in allowed_process_ids if int(value) > 0)}
+    if control_process_id not in accepted_process_ids:
+        raise RuntimeError(f"{label} is not owned by the verified Edge owner processes")
+    control_window_handle = control_top_level_handle(control)
+    if not window_is_owned_by(control_window_handle, owned_window_handle):
+        if (
+            owned_process_id_for_window(control_window_handle) not in accepted_process_ids
+            or not ctypes.windll.user32.IsWindowVisible(control_window_handle)
+        ):
+            raise RuntimeError(f"{label} is not owned by the original Edge process")
+    require_owned_foreground_process(
+        owned_process_id,
+        owned_window_handle,
+        allowed_popup_handle=control_window_handle,
+        allowed_process_ids=tuple(accepted_process_ids),
+    )
+    # Prefer the semantic UIA Invoke/Select patterns. UIAWrapper.click can fall
+    # back to input simulation on some pywinauto versions, which is both less
+    # deterministic and less appropriate for a headed CI runner.
+    if not allow_stale_enabled and not control.is_enabled():
         raise RuntimeError(f"{label} is disabled")
-    control.invoke()
-    require_owned_foreground_process(owned_process_id, owned_window_handle)
+    from pywinauto.uia_defines import NoPatternInterfaceError  # type: ignore
+    invoke = getattr(control, "invoke", None)
+    select = getattr(control, "select", None)
+    semantic_action = invoke if callable(invoke) else select if callable(select) else None
+    def legacy_action() -> None:
+        import pywinauto.uia_defines as uia_defs  # type: ignore
+        legacy_interface = uia_defs.get_elem_interface(control.element_info.element, "LegacyIAccessible")
+        legacy_interface.DoDefaultAction()
+
+    if prefer_legacy_action:
+        try:
+            legacy_action()
+        except Exception:
+            if semantic_action is None:
+                raise
+            semantic_action()
+    elif semantic_action is None:
+        legacy_action()
+    else:
+        try:
+            semantic_action()
+        except NoPatternInterfaceError:
+            legacy_action()
+    require_owned_foreground_process(
+        owned_process_id,
+        owned_window_handle,
+        allowed_process_ids=tuple(accepted_process_ids),
+    )
+
+
+def dispatch_uia_pattern(control, pattern_name: str, method_name: str) -> None:
+    """Dispatch one explicit UIA pattern without falling back to input simulation."""
+    import pywinauto.uia_defines as uia_defs  # type: ignore
+
+    interface = uia_defs.get_elem_interface(control.element_info.element, pattern_name)
+    getattr(interface, method_name)()
 
 
 def non_sensitive_window_identity(handle: int, owned_process_id: int) -> dict:
@@ -281,6 +655,36 @@ def inspect_edge_visibility(handle: int) -> dict:
         "sampleCount": len(samples),
         "blockedSamples": blocked,
     }
+
+
+def dismiss_owned_obscuring_popups(handle: int, blocked_samples: list[dict]) -> bool:
+    """Close only same-process Edge popup HWNDs proven to obscure the capture."""
+    user32 = ctypes.windll.user32
+    owned_process_id = owned_process_id_for_window(handle)
+    closed = False
+    seen: set[int] = set()
+    for sample in blocked_samples:
+        root_handle = int(sample.get("coveringRoot", 0) or 0)
+        if root_handle <= 0 or root_handle in seen or root_handle == handle:
+            continue
+        seen.add(root_handle)
+        if (
+            int(sample.get("coveringProcessId", 0) or 0) != owned_process_id
+            or str(sample.get("coveringClass", "")) != "Chrome_WidgetWin_2"
+            or not bool(sample.get("sameProcess"))
+        ):
+            continue
+        trace_stage(f"obscuring-edge-popup-found:{root_handle}")
+        if not user32.PostMessageW(root_handle, 0x0010, 0, 0):  # WM_CLOSE
+            raise RuntimeError("could not close the same-process Edge popup obscuring capture")
+        deadline = time.time() + 2
+        while time.time() < deadline and user32.IsWindowVisible(root_handle):
+            time.sleep(0.05)
+        if user32.IsWindowVisible(root_handle):
+            raise RuntimeError("same-process Edge popup obscuring capture did not close")
+        trace_stage("obscuring-edge-popup-closed")
+        closed = True
+    return closed
 
 
 def print_owned_window(handle: int, width: int, height: int):
@@ -478,6 +882,7 @@ def capture_owned_edge(handle: int, target: Path, focus_timeout_seconds: float) 
     # layout settling. Reclaim only the uniquely owned HWND at the last possible
     # moment, then fail closed if another process repeatedly takes it back.
     user32 = ctypes.windll.user32
+    dismiss_owned_translation_popups(handle)
     get_window_long = getattr(user32, "GetWindowLongW", user32.GetWindowLongA)
     set_window_pos = user32.SetWindowPos
     set_window_pos.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.UINT]
@@ -494,6 +899,9 @@ def capture_owned_edge(handle: int, target: Path, focus_timeout_seconds: float) 
             focus_owned_window(handle, max(0.1, deadline - time.time()))
             try:
                 state = inspect_edge_visibility(handle)
+                if not state["unobscured"] and dismiss_owned_obscuring_popups(handle, state["blockedSamples"]):
+                    focus_owned_window(handle, max(0.1, deadline - time.time()))
+                    state = inspect_edge_visibility(handle)
                 break
             except RuntimeError as error:
                 if "not foreground immediately before screen capture" not in str(error) or time.time() >= deadline:
@@ -531,6 +939,48 @@ def capture_owned_edge(handle: int, target: Path, focus_timeout_seconds: float) 
             set_window_pos(ctypes.c_void_p(handle), ctypes.c_void_p(-2), 0, 0, 0, 0, z_flags)  # HWND_NOTOPMOST
 
 
+def dismiss_owned_translation_popups(handle: int) -> bool:
+    """Close only Edge-owned translation overlays before screen capture."""
+    user32 = ctypes.windll.user32
+    owned_process_id = owned_process_id_for_window(handle)
+    allowed_process_ids = edge_owner_process_ids(owned_process_id, handle)
+    candidates = []
+    callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    @callback_type
+    def collect(hwnd, _lparam):
+        root_handle = int(hwnd)
+        if root_handle <= 0 or root_handle == handle or not user32.IsWindowVisible(root_handle):
+            return True
+        try:
+            process_id = owned_process_id_for_window(root_handle)
+            class_name = window_class_name(root_handle)
+            text = window_text(root_handle).lower()
+            if (
+                process_id in allowed_process_ids
+                and class_name == "Chrome_WidgetWin_2"
+                and ("translate" in text or "翻译" in text)
+                and (window_is_owned_by(root_handle, handle) or process_id == owned_process_id)
+            ):
+                candidates.append(root_handle)
+        except Exception:
+            pass
+        return True
+
+    user32.EnumWindows(collect, 0)
+    for root_handle in candidates[:2]:
+        trace_stage(f"translation-popup-found:{root_handle}")
+        if not user32.PostMessageW(root_handle, 0x0010, 0, 0):  # WM_CLOSE
+            raise RuntimeError("could not close the owned Edge translation popup")
+        deadline = time.time() + 2
+        while time.time() < deadline and user32.IsWindowVisible(root_handle):
+            time.sleep(0.05)
+        if user32.IsWindowVisible(root_handle):
+            raise RuntimeError("owned translation popup did not close after WM_CLOSE")
+        trace_stage("translation-popup-closed")
+    return bool(candidates)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--title", required=True)
@@ -540,10 +990,12 @@ def main() -> None:
     parser.add_argument("--capture-path")
     parser.add_argument("--capture-only", action="store_true")
     parser.add_argument("--window-handle", type=int)
+    parser.add_argument("--browser-pid", type=int, default=0)
     args = parser.parse_args()
 
     if sys.platform != "win32":
         emit({"pass": False, "code": "WINDOWS_REQUIRED", "message": "actual Edge toolbar zoom acceptance only runs on Windows"}, 2)
+    expected_process_ids = browser_process_tree_ids(args.browser_pid)
     if args.capture_only and not args.capture_path:
         emit({"pass": False, "code": "CAPTURE_PATH_REQUIRED", "message": "capture-only requires --capture-path"}, 2)
 
@@ -552,8 +1004,13 @@ def main() -> None:
         try:
             user32 = ctypes.windll.user32
             handle = int(args.window_handle)
-            validate_owned_edge_window(handle, args.title)
-            if find_owned_window_handle(args.title, args.timeout_seconds) != handle:
+            validate_owned_edge_window(
+                handle,
+                args.title,
+                expected_process_ids=expected_process_ids,
+                require_title=args.browser_pid <= 0,
+            )
+            if find_owned_window_handle(args.title, args.timeout_seconds, args.browser_pid) != handle:
                 raise RuntimeError("capture handle differs from the uniquely titled original Edge window")
             focus_owned_window(handle, args.timeout_seconds)
             time.sleep(args.settle_milliseconds / 1000)
@@ -565,6 +1022,7 @@ def main() -> None:
                 "title": args.title,
                 "windowHandle": handle,
                 "increments": 0,
+                "action": "capture",
                 "captureOnly": True,
                 "captureState": capture_state,
                 "capture": capture,
@@ -586,12 +1044,46 @@ def main() -> None:
         emit({"pass": False, "code": "PYWINAUTO_REQUIRED", "message": "pywinauto is not installed"}, 2)
 
     started_at = time.time()
+    stage = "reuse-owned-window" if args.window_handle else "find-owned-window"
     try:
-        handle = find_owned_window_handle(args.title, args.timeout_seconds)
-        validate_owned_edge_window(handle, args.title)
+        trace_stage(stage)
+        # Every menu-plus invocation already carries the HWND returned by the
+        # validated baseline inspection. Re-discovering that same window by
+        # title is fragile for oversized tablet viewports: Chromium can expose
+        # the title late or through a different Win32 projection. Reuse the
+        # validated handle when present; only the initial inspect action needs
+        # title/process-tree discovery.
+        if args.window_handle:
+            handle = int(args.window_handle)
+            validate_owned_edge_window(
+                handle,
+                args.title,
+                require_visible=False,
+                expected_process_ids=expected_process_ids,
+                require_title=args.browser_pid <= 0,
+            )
+        else:
+            handle = find_owned_window_handle(args.title, args.timeout_seconds, args.browser_pid)
+        stage = "validate-owned-window"
+        trace_stage(stage)
+        validate_owned_edge_window(
+            handle,
+            args.title,
+            require_visible=False,
+            expected_process_ids=expected_process_ids,
+            require_title=args.browser_pid <= 0,
+        )
         if args.window_handle and int(args.window_handle) != handle:
             raise RuntimeError("UIA action handle differs from the original Edge window")
+        stage = "focus-owned-window"
+        trace_stage(stage)
         focus_owned_window(handle, args.timeout_seconds)
+        validate_owned_edge_window(
+            handle,
+            args.title,
+            expected_process_ids=browser_process_tree_ids(args.browser_pid),
+            require_title=args.browser_pid <= 0,
+        )
         if not args.capture_only:
             # This helper performs one process-owned toolbar operation at a
             # time. The Node gate observes DPR/layout after every invocation;
@@ -605,65 +1097,367 @@ def main() -> None:
                 desktop = Desktop(backend="uia")
                 window = desktop.window(handle=handle)
                 owned_process_id = owned_process_id_for_window(handle)
+                allowed_process_ids = edge_owner_process_ids(owned_process_id, handle)
                 if int(window.process_id()) != owned_process_id:
                     raise RuntimeError("UIA window is not bound to the expected Edge process")
-                more_tokens = ("settings and more", "settings", "设置及更多", "设置和更多", "更多")
-                zoom_in_tokens = ("zoom in", "放大", "增大")
+                more_tokens = ("settings and more", "设置及更多", "设置和更多", "更多")
+                more_automation_ids = ("SettingsAndMoreButton", "MoreButton", "AppMenuButton")
+                zoom_in_tokens = ("zoom in", "increase zoom", "zoom plus", "放大", "增大")
+                zoom_in_automation_ids = (
+                    "ZoomInButton",
+                    "zoomInButton",
+                    "zoomIn",
+                    "zoom_in",
+                    "IncreaseZoomButton",
+                    "increaseZoom",
+                    "ZoomIn",
+                    "ZoomPlusButton",
+                    "zoomPlusButton",
+                )
 
-                def find_buttons(containers, tokens):
+                def ui_control_is_visible_and_enabled(control):
+                    try:
+                        if not bool(control.is_enabled()):
+                            return False
+                        if bool(control.is_visible()):
+                            return True
+                        # Edge's transient menu projections can report a stale
+                        # UIA Visible=false during/after the popup animation.
+                        # Keep the fallback bounded to a non-empty rectangle
+                        # inside the already process-owned visible top-level
+                        # window; never turn this into a desktop-wide search.
+                        rect = control.rectangle()
+                        top_level = control_top_level_handle(control)
+                        return (
+                            int(rect.right) > int(rect.left)
+                            and int(rect.bottom) > int(rect.top)
+                            and bool(ctypes.windll.user32.IsWindowVisible(top_level))
+                        )
+                    except Exception:
+                        return False
+
+                def control_rect_key(control):
+                    try:
+                        rect = control.rectangle()
+                        return (int(rect.left), int(rect.top), int(rect.right), int(rect.bottom))
+                    except Exception:
+                        return ()
+
+                def has_visible_bounds(control):
+                    try:
+                        rect = control.rectangle()
+                        top_level = control_top_level_handle(control)
+                        return (
+                            int(rect.right) > int(rect.left)
+                            and int(rect.bottom) > int(rect.top)
+                            and bool(ctypes.windll.user32.IsWindowVisible(top_level))
+                        )
+                    except Exception:
+                        return False
+
+                def find_buttons(containers, tokens, exact=False, automation_ids=(), include_raw=False, allow_known_automation_ids=False):
                     matches = {}
+                    normalized_tokens = {" ".join(token.lower().split()) for token in tokens}
+                    normalized_automation_ids = {" ".join(str(token).lower().split()) for token in automation_ids}
                     for container in containers:
                         try:
-                            buttons = [
-                                *container.descendants(control_type="Button"),
-                                *container.descendants(control_type="MenuItem"),
-                            ]
+                            buttons = list(container.descendants())
+                            if include_raw:
+                                buttons.extend(raw_view_descendants(container))
                         except Exception:
                             continue
                         for button in buttons:
-                            try:
-                                name = str(button.window_text() or "").strip().lower()
-                            except Exception:
+                            names = ui_control_names(button)
+                            matched = any(
+                                ui_name_matches(candidate, tuple(normalized_tokens), exact=exact)
+                                for candidate in names
+                            )
+                            automation_id = " ".join(str(getattr(button.element_info, "automation_id", "") or "").lower().split())
+                            matched_id = bool(automation_id and automation_id in normalized_automation_ids)
+                            if not matched and not matched_id:
                                 continue
-                            if name and any(token in name for token in tokens):
-                                info = button.element_info
-                                runtime_id = tuple(getattr(info, "runtime_id", ()) or ())
-                                key = runtime_id or (
-                                    int(getattr(info, "handle", 0) or 0),
-                                    str(getattr(info, "automation_id", "") or ""),
-                                    name,
-                                )
-                                matches[key] = button
+                            if not ui_control_is_visible_and_enabled(button):
+                                # Transient Edge flyouts can report a stale
+                                # Visible/Enabled projection while their
+                                # matched button still has a real on-screen
+                                # rectangle. The caller enables this only for
+                                # the selected popup-root fallback, never for
+                                # the full browser window.
+                                if not (allow_known_automation_ids and has_visible_bounds(button)):
+                                    continue
+                            name = names[0] if names else automation_id
+                            if not name:
+                                continue
+                            info = button.element_info
+                            rect_key = control_rect_key(button)
+                            key = (
+                                int(getattr(info, "process_id", 0) or 0),
+                                automation_id,
+                                name,
+                                rect_key,
+                            )
+                            if not rect_key:
+                                key += (tuple(getattr(info, "runtime_id", ()) or ()),)
+                            matches[key] = button
                     return list(matches.values())
 
+                def find_direct_automation_id_matches(containers, automation_ids):
+                    """Resolve a known Edge menu control with bounded direct lookups."""
+                    matches = {}
+                    normalized_ids = {" ".join(str(value).lower().split()) for value in automation_ids}
+                    for container in containers:
+                        for automation_id in automation_ids:
+                            try:
+                                specification = container.child_window(auto_id=automation_id)
+                                # Probe the WindowSpecification before resolving
+                                # a wrapper. wrapper_object() performs its own
+                                # default wait and can block on a transient Edge
+                                # popup even though this lookup is intended to
+                                # be zero-wait and bounded.
+                                if not specification.exists(timeout=0):
+                                    continue
+                                candidate = specification.wrapper_object()
+                                actual_id = " ".join(str(getattr(candidate.element_info, "automation_id", "") or "").lower().split())
+                                if actual_id not in normalized_ids or not has_visible_bounds(candidate):
+                                    continue
+                                info = candidate.element_info
+                                rect_key = control_rect_key(candidate)
+                                key = (
+                                    int(getattr(info, "process_id", 0) or 0),
+                                    actual_id,
+                                    rect_key,
+                                )
+                                matches[key] = candidate
+                            except Exception:
+                                continue
+                    return list(matches.values())
+
+                def find_bounded_raw_matches(containers, tokens, automation_ids=(), exact=False):
+                    """Search only bounded RawView descendants of already-owned roots."""
+                    matches = {}
+                    normalized_automation_ids = {" ".join(str(value).lower().split()) for value in automation_ids}
+                    for container in containers:
+                        for control in raw_view_descendants(container, max_depth=8, max_nodes=512):
+                            names = ui_control_names(control)
+                            automation_id = " ".join(str(getattr(control.element_info, "automation_id", "") or "").lower().split())
+                            matched_name = any(ui_name_matches(name, tokens, exact=exact) for name in names)
+                            matched_id = bool(automation_id and automation_id in normalized_automation_ids)
+                            if not matched_name and not matched_id:
+                                continue
+                            if not ui_control_is_visible_and_enabled(control):
+                                if not (matched_id and has_visible_bounds(control)):
+                                    continue
+                            info = control.element_info
+                            key = (
+                                int(getattr(info, "process_id", 0) or 0),
+                                automation_id,
+                                names[0] if names else "",
+                                control_rect_key(control),
+                            )
+                            matches[key] = control
+                    return list(matches.values())
+
+                def is_original_edge_shell_control(control):
+                    try:
+                        return control_top_level_handle(control) == handle
+                    except Exception:
+                        return False
+
+                def find_bounded_control_matches(containers, tokens, automation_ids=(), exact=False):
+                    """Search bounded ControlView descendants for semantic Edge controls."""
+                    matches = {}
+                    normalized_automation_ids = {" ".join(str(value).lower().split()) for value in automation_ids}
+                    for container in containers:
+                        for control in control_view_descendants(container, max_depth=8, max_nodes=512):
+                            names = ui_control_names(control)
+                            automation_id = " ".join(str(getattr(control.element_info, "automation_id", "") or "").lower().split())
+                            matched_name = any(ui_name_matches(name, tokens, exact=exact) for name in names)
+                            matched_id = bool(automation_id and automation_id in normalized_automation_ids)
+                            if not matched_name and not matched_id:
+                                continue
+                            if not ui_control_is_visible_and_enabled(control):
+                                if not (matched_id and has_visible_bounds(control)):
+                                    continue
+                            info = control.element_info
+                            key = (
+                                int(getattr(info, "process_id", 0) or 0),
+                                automation_id,
+                                names[0] if names else "",
+                                control_rect_key(control),
+                            )
+                            matches[key] = control
+                    return list(matches.values())
+
+                def bounded_root_diagnostic(containers):
+                    """Emit a small, non-sensitive view of bounded Edge roots on failure."""
+                    roots = []
+                    for container in containers:
+                        handle_value = int(getattr(container, "handle", 0) or 0)
+                        entries = []
+                        try:
+                            controls = raw_view_descendants(container, max_depth=5, max_nodes=96)
+                        except Exception:
+                            controls = []
+                        for control in controls[:48]:
+                            names = ui_control_names(control)
+                            automation_id = str(getattr(control.element_info, "automation_id", "") or "").strip()
+                            control_type = str(getattr(control.element_info, "control_type", "") or "").strip()
+                            if names or automation_id or control_type:
+                                entries.append({
+                                    "name": names[0] if names else "",
+                                    "automationId": automation_id,
+                                    "controlType": control_type,
+                                })
+                        roots.append({
+                            "handle": handle_value,
+                            "class": window_class_name(handle_value) if handle_value else "",
+                            "text": window_text(handle_value) if handle_value else "",
+                            "visible": bool(handle_value and ctypes.windll.user32.IsWindowVisible(handle_value)),
+                            "entries": entries[:24],
+                        })
+                    diagnostic = json.dumps(roots, ensure_ascii=False, separators=(",", ":"))
+                    trace_stage(f"zoom-root-diagnostic:{diagnostic[:12000]}")
+
+                def discover_zoom_controls():
+                    """Discover the menu Zoom control within the exact Edge owner chain."""
+                    current_process_ids = edge_owner_process_ids(owned_process_id, handle)
+                    discovered_popup_windows = []
+                    discovered_owned_windows = [window]
+                    foreground_handle = 0
+                    for discovery_round in range(2):
+                        trace_stage(f"zoom-popup-roots-start:{discovery_round + 1}")
+                        all_owned_windows = owned_uia_windows(
+                            desktop,
+                            owned_process_id,
+                            handle,
+                            current_process_ids,
+                        )
+                        foreground_handle = int(ctypes.windll.user32.GetForegroundWindow() or 0)
+                        discovered_popup_windows = [
+                            candidate for candidate in all_owned_windows
+                            if (
+                                int(getattr(candidate, "handle", 0) or 0) != handle
+                                and (
+                                    bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                                    or window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
+                                )
+                            )
+                        ]
+                        discovered_popup_windows.sort(
+                            key=lambda candidate: (
+                                0 if bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0))) else 1,
+                                0 if int(getattr(candidate, "handle", 0) or 0) == foreground_handle else 1,
+                                0 if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle) else 1,
+                            )
+                        )
+                        # Keep discovery bounded, but leave room for IME and
+                        # translation helper HWNDs alongside the actual flyout.
+                        discovered_popup_windows = discovered_popup_windows[:12]
+                        if discovered_popup_windows:
+                            break
+                        if discovery_round == 0:
+                            time.sleep(0.15)
+                    discovered_owned_windows = discovered_popup_windows or [window]
+                    trace_stage(
+                        f"zoom-popup-roots-end:popup={len(discovered_popup_windows)};search={len(discovered_owned_windows)}"
+                    )
+                    raw_search_containers = tuple(discovered_owned_windows)
+                    if window not in raw_search_containers:
+                        raw_search_containers += (window,)
+                    trace_stage("zoom-direct-popup-start")
+                    matches = find_direct_automation_id_matches(
+                        tuple(discovered_owned_windows),
+                        zoom_in_automation_ids,
+                    )
+                    trace_stage(f"zoom-direct-popup-end:{len(matches)}")
+                    if not matches:
+                        trace_stage("zoom-direct-browser-start")
+                        matches = find_direct_automation_id_matches((window,), zoom_in_automation_ids)
+                        trace_stage(f"zoom-direct-browser-end:{len(matches)}")
+                    if not matches:
+                        trace_stage("zoom-raw-bounded-start")
+                        matches = find_bounded_raw_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                        trace_stage(f"zoom-raw-bounded-end:{len(matches)}")
+                    if not matches:
+                        trace_stage("zoom-control-bounded-start")
+                        matches = find_bounded_control_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                        trace_stage(f"zoom-control-bounded-end:{len(matches)}")
+                    if not matches and discovered_popup_windows:
+                        trace_stage("zoom-popup-descendants-start")
+                        matches = find_buttons(
+                            tuple(discovered_popup_windows),
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                            allow_known_automation_ids=True,
+                        )
+                        trace_stage(f"zoom-popup-descendants-end:{len(matches)}")
+                    return matches, discovered_popup_windows, discovered_owned_windows, current_process_ids
+
+                stage = "find-settings-and-more"
+                trace_stage(stage)
                 more = None
-                for auto_id in ("SettingsAndMoreButton", "MoreButton", "AppMenuButton"):
+                for auto_id in more_automation_ids:
                     try:
                         candidate = window.child_window(auto_id=auto_id).wrapper_object()
-                        if candidate.exists(timeout=0.5):
+                        if (
+                            candidate.exists(timeout=0)
+                            and is_original_edge_shell_control(candidate)
+                            and ui_control_is_visible_and_enabled(candidate)
+                        ):
                             more = candidate
                             break
                     except Exception:
                         continue
                 if more is None:
-                    more_matches = find_buttons((window,), more_tokens)
+                    more_matches = find_bounded_raw_matches(
+                        (window,),
+                        more_tokens,
+                        exact=True,
+                        automation_ids=more_automation_ids,
+                    )
+                    more_matches = [candidate for candidate in more_matches if is_original_edge_shell_control(candidate)]
                     if len(more_matches) != 1:
                         raise RuntimeError(f"expected exactly one Edge Settings and more control, found {len(more_matches)}")
                     more = more_matches[0]
-                if more is None:
-                    observed = []
-                    try:
-                        for control in window.descendants()[:80]:
-                            info = control.element_info
-                            name = str(getattr(info, "name", "") or "").strip()
-                            automation_id = str(getattr(info, "automation_id", "") or "").strip()
-                            if name or automation_id:
-                                observed.append({"type": getattr(info, "control_type", ""), "name": name[:80], "id": automation_id[:80]})
-                    except Exception as inspect_error:
-                        observed.append({"inspectError": str(inspect_error)[:120]})
-                    raise RuntimeError("could not locate the real Edge Settings and more button for menu zoom fallback; observed=" + json.dumps(observed[:30], ensure_ascii=False))
-                invoke_owned_control(more, owned_process_id, handle, "Edge Settings and more control")
+                try:
+                    more_info = more.element_info
+                    trace_stage(
+                        "settings-and-more-control:"
+                        + json.dumps(
+                            {
+                                "name": ui_control_names(more)[:2],
+                                "automationId": str(getattr(more_info, "automation_id", "") or ""),
+                                "topLevel": control_top_level_handle(more),
+                                "window": handle,
+                            },
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                        )
+                    )
+                except Exception:
+                    trace_stage("settings-and-more-control:unavailable")
+                stage = "invoke-settings-and-more"
+                trace_stage(stage)
+                invoke_owned_control(
+                    more,
+                    owned_process_id,
+                    handle,
+                    "Edge Settings and more control",
+                    prefer_legacy_action=True,
+                )
                 time.sleep(args.settle_milliseconds / 1000)
+                # The menu may be created lazily in a second msedge.exe owner
+                # process only after the toolbar action is invoked. Refresh the
+                # bounded owner-process set after the transition, not before it.
+                allowed_process_ids = edge_owner_process_ids(owned_process_id, handle)
                 # Do not scan every visible UIA window on the desktop here.
                 # A headed Edge run can coexist with many unrelated Edge
                 # windows/processes, and a global UIA enumeration can stall
@@ -671,15 +1465,204 @@ def main() -> None:
                 # product failure.  The menu popup is owned by the same Edge
                 # process, so keep the search bounded to that process and the
                 # already-owned window.
-                owned_windows = [
-                    candidate for candidate in desktop.windows(process=owned_process_id, visible_only=True)
-                    if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
-                ]
-                zoom_matches = find_buttons((window, *owned_windows), zoom_in_tokens)
+                stage = "find-zoom-in"
+                trace_stage(stage)
+                # The transient menu is normally a small same-process popup.
+                # Do not probe the original Edge UIA tree first: that call can
+                # block on the full browser accessibility tree while the menu is
+                # already available in its popup HWND.
+                zoom_search_attempts = 1
+                popup_windows = []
+                owned_windows = [window]
+                foreground_handle = 0
+                for discovery_round in range(2):
+                    trace_stage(f"zoom-popup-roots-start:{discovery_round + 1}")
+                    all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle, allowed_process_ids)
+                    foreground_handle = int(ctypes.windll.user32.GetForegroundWindow() or 0)
+                    popup_windows = [
+                        candidate for candidate in all_owned_windows
+                        if (
+                            int(getattr(candidate, "handle", 0) or 0) != handle
+                            and (
+                                bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                                or window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
+                            )
+                        )
+                    ]
+                    popup_windows.sort(
+                        key=lambda candidate: (
+                            0 if bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0))) else 1,
+                            0 if int(getattr(candidate, "handle", 0) or 0) == foreground_handle else 1,
+                            0 if window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle) else 1,
+                        )
+                    )
+                    # Keep the search bounded, but do not let IME/translation
+                    # helper HWNDs crowd the actual Edge flyout out of the
+                    # candidate set. Hosted runners commonly expose 5-8
+                    # same-process roots while a menu is open.
+                    popup_windows = popup_windows[:12]
+                    if popup_windows:
+                        zoom_search_attempts = discovery_round + 1
+                        break
+                    if discovery_round == 0:
+                        time.sleep(0.15)
+                owned_windows = popup_windows or [window]
+                trace_stage(f"zoom-popup-roots-end:popup={len(popup_windows)};search={len(owned_windows)}")
+                zoom_search_attempts = 2
+                trace_stage("zoom-direct-popup-start")
+                # Chromium Edge often exposes the menu button's AutomationId
+                # on a popup root even when its RawView projection omits the
+                # localized label. A direct AutomationId lookup is bounded to
+                # the already discovered same-process roots and does not touch
+                # the potentially expensive original browser tree.
+                zoom_matches = find_direct_automation_id_matches(
+                    tuple(owned_windows),
+                    zoom_in_automation_ids,
+                )
+                trace_stage(f"zoom-direct-popup-end:{len(zoom_matches)}")
+                if not zoom_matches:
+                    # Chromium Edge can keep the menu projection under the
+                    # original browser root. The zero-wait existence probe is
+                    # safe here; wrapper resolution is attempted only after
+                    # Edge reports a matching AutomationId.
+                    trace_stage("zoom-direct-browser-start")
+                    zoom_matches = find_direct_automation_id_matches(
+                        (window,),
+                        zoom_in_automation_ids,
+                    )
+                    trace_stage(f"zoom-direct-browser-end:{len(zoom_matches)}")
+                zoom_search_attempts = 3
+                trace_stage("zoom-raw-bounded-start")
+                if not zoom_matches:
+                    raw_search_containers = tuple(owned_windows)
+                    if window not in raw_search_containers:
+                        # The flyout can be projected as a child of the main
+                        # Edge HWND rather than as its own top-level popup. The
+                        # original root is allowed only through the bounded
+                        # RawView walker; never reopen an unbounded UIA tree
+                        # query against the browser window.
+                        raw_search_containers += (window,)
+                    zoom_matches = find_bounded_raw_matches(
+                        raw_search_containers,
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                    )
+                trace_stage(f"zoom-raw-bounded-end:{len(zoom_matches)}")
+                if not zoom_matches:
+                    trace_stage("zoom-control-bounded-start")
+                    zoom_matches = find_bounded_control_matches(
+                        raw_search_containers,
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                    )
+                    trace_stage(f"zoom-control-bounded-end:{len(zoom_matches)}")
+                if not zoom_matches and popup_windows:
+                    # Some Edge builds expose the flyout through the popup's
+                    # ControlView descendants but do not expose it through
+                    # either direct AutomationId lookup or the RawView walker.
+                    # This is still bounded to the already selected visible
+                    # popup roots; the original browser tree is never passed
+                    # to descendants().
+                    trace_stage("zoom-popup-descendants-start")
+                    zoom_matches = find_buttons(
+                        tuple(popup_windows),
+                        zoom_in_tokens,
+                        automation_ids=zoom_in_automation_ids,
+                        allow_known_automation_ids=True,
+                    )
+                    trace_stage(f"zoom-popup-descendants-end:{len(zoom_matches)}")
+                if not zoom_matches:
+                    # A subset of hosted Edge builds exposes the toolbar
+                    # button to UIA but silently drops both InvokePattern and
+                    # LegacyIAccessible.DoDefaultAction. Try one semantic
+                    # re-dispatch before declaring the browser contract
+                    # failed.
+                    trace_stage("settings-and-more-semantic-recovery")
+                    invoke_owned_control(
+                        more,
+                        owned_process_id,
+                        handle,
+                        "Edge Settings and more semantic recovery",
+                        allowed_process_ids=allowed_process_ids,
+                    )
+                    time.sleep(args.settle_milliseconds / 1000)
+                    allowed_process_ids = edge_owner_process_ids(owned_process_id, handle)
+                    all_owned_windows = owned_uia_windows(desktop, owned_process_id, handle, allowed_process_ids)
+                    popup_windows = [
+                        candidate for candidate in all_owned_windows
+                        if int(getattr(candidate, "handle", 0) or 0) != handle
+                        and (
+                            bool(ctypes.windll.user32.IsWindowVisible(int(getattr(candidate, "handle", 0) or 0)))
+                            or window_is_owned_by(int(getattr(candidate, "handle", 0) or 0), handle)
+                        )
+                    ]
+                    popup_windows = popup_windows[:12]
+                    owned_windows = popup_windows or [window]
+                    raw_search_containers = tuple(owned_windows)
+                    if window not in raw_search_containers:
+                        raw_search_containers += (window,)
+                    zoom_matches = find_direct_automation_id_matches(tuple(owned_windows), zoom_in_automation_ids)
+                    if not zoom_matches:
+                        zoom_matches = find_bounded_raw_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                    if not zoom_matches:
+                        zoom_matches = find_bounded_control_matches(
+                            raw_search_containers,
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                        )
+                    if not zoom_matches and popup_windows:
+                        zoom_matches = find_buttons(
+                            tuple(popup_windows),
+                            zoom_in_tokens,
+                            automation_ids=zoom_in_automation_ids,
+                            allow_known_automation_ids=True,
+                        )
+                    trace_stage(f"settings-and-more-semantic-recovery-result:{len(zoom_matches)}")
+                if not zoom_matches:
+                    for pattern_name, method_name in (
+                        ("Toggle", "Toggle"),
+                        ("ExpandCollapse", "Expand"),
+                    ):
+                        trace_stage(f"settings-and-more-pattern-recovery:{pattern_name}")
+                        try:
+                            require_owned_foreground_process(
+                                owned_process_id,
+                                handle,
+                                allowed_process_ids=tuple(allowed_process_ids),
+                            )
+                            dispatch_uia_pattern(more, pattern_name, method_name)
+                            time.sleep(args.settle_milliseconds / 1000)
+                            zoom_matches, popup_windows, owned_windows, allowed_process_ids = discover_zoom_controls()
+                            trace_stage(
+                                f"settings-and-more-pattern-recovery-result:{pattern_name}:{len(zoom_matches)}"
+                            )
+                            if zoom_matches:
+                                break
+                        except Exception as error:
+                            trace_stage(
+                                f"settings-and-more-pattern-recovery-error:{pattern_name}:{safe_exception_message(error)}"
+                            )
                 if len(zoom_matches) != 1:
-                    raise RuntimeError(f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)}")
+                    bounded_root_diagnostic(tuple(owned_windows))
+                    raise RuntimeError(
+                        f"expected exactly one real Edge Zoom in menu button, found {len(zoom_matches)} "
+                        f"after {zoom_search_attempts} bounded UIA searches across {len(owned_windows)} same-process roots"
+                    )
                 zoom_control = zoom_matches[0]
-                invoke_owned_control(zoom_control, owned_process_id, handle, "Edge Zoom in control")
+                stage = "invoke-zoom-in"
+                trace_stage(stage)
+                invoke_owned_control(
+                    zoom_control,
+                    owned_process_id,
+                    handle,
+                    "Edge Zoom in control",
+                    allow_stale_enabled=True,
+                    allowed_process_ids=allowed_process_ids,
+                )
                 time.sleep(args.settle_milliseconds / 1000)
                 # Edge normally keeps its Settings menu open after the Zoom
                 # in control is invoked. Close it through the same owned UIA
@@ -695,6 +1678,7 @@ def main() -> None:
             time.sleep(args.settle_milliseconds / 1000)
 
         capture = None
+        stage = "capture-owned-edge"
         if args.capture_path:
             target = Path(args.capture_path).resolve()
             # Playwright's page screenshot is rasterized at the context scale,
@@ -722,7 +1706,8 @@ def main() -> None:
         emit({
             "pass": False,
             "code": "EDGE_WINDOW_AUTOMATION_FAILED",
-            "message": str(error),
+            "message": f"{stage}: {safe_exception_message(error)}",
+            "stage": stage,
             "title": args.title,
             "elapsedMs": round((time.time() - started_at) * 1000),
         }, 1)

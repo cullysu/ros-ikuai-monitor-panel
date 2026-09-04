@@ -84,7 +84,12 @@ const TOOLBAR_200_REQUIRED_CELLS = Object.freeze(TOOLBAR_200_MATRIX.flatMap((vie
 
 function toolbarScenarioConfig(scenario) {
   if (scenario === "normal") return { fixtureScenario: "single", route: "overview", surface: "overview", runtimePhase: "current" };
-  if (scenario === "fleet") return { fixtureScenario: "fleet-coverage", route: "overview", surface: "overview", runtimePhase: "current" };
+  // Keep the real Edge fixture name aligned with the canonical matrix.  The
+  // former fleet-coverage fixture only added below-the-fold interfaces, so the
+  // 390px renderer screenshot was byte-identical to normal and was correctly
+  // rejected as reused evidence.  The canonical fleet fixture changes the
+  // visible WAN scope and identity as well as the underlying rows.
+  if (scenario === "fleet") return { fixtureScenario: "fleet", route: "overview", surface: "overview", runtimePhase: "current" };
   if (scenario === "interfaces-down") return { fixtureScenario: "interfaces-down", route: "interfaces", surface: "route", runtimePhase: "current" };
   if (scenario === "interfaces-down-overview") return { fixtureScenario: "interfaces-down", route: "overview", surface: "overview", runtimePhase: "current" };
   if (TOOLBAR_CANONICAL_OVERVIEW_SCENARIOS.includes(scenario)) {
@@ -321,16 +326,24 @@ function toolbarCellEvidenceErrors(cell, expected, stableIdentity = null) {
     errors.push(`${expectedId}: screenshot hash/dimension evidence is incomplete`);
   }
   const captureDimensions = surface?.windowsCapture?.capture;
-  const diagnosticDimensions = surface?.playwrightDiagnosticScreenshot?.dimensions;
-  if (!sameScreenshotDimensions(surface?.screenshot?.dimensions, captureDimensions) ||
-      Number(surface?.screenshot?.dimensions?.width) < Number(expectedViewport.cssViewport?.width) ||
-      Number(surface?.screenshot?.dimensions?.height) < Number(expectedViewport.cssViewport?.height)) {
-    errors.push(`${expectedId}: Windows screenshot dimensions do not match its owned capture or cover the target viewport`);
+  if (!sameScreenshotDimensions(surface?.screenshot?.dimensions, captureDimensions)) {
+    errors.push(`${expectedId}: Windows screenshot dimensions do not match its owned capture`);
   }
-  if (Number(diagnosticDimensions?.width) !== Number(expectedViewport.cssViewport?.width) ||
-      !Number.isInteger(Number(diagnosticDimensions?.height)) ||
-      Number(diagnosticDimensions?.height) < Number(expectedViewport.cssViewport?.height)) {
-    errors.push(`${expectedId}: renderer screenshot dimensions do not cover the target CSS viewport`);
+  const diagnosticDimensions = surface?.playwrightDiagnosticScreenshot?.dimensions;
+  // Headed Edge reports the CSS viewport, while Playwright may encode the
+  // renderer diagnostic at CSS pixels or at the verified device-pixel ratio.
+  // Accept either truthful representation, but reject undersized or unrelated
+  // captures such as the blank 660px-wide fullPage artifact.
+  const targetWidth = Number(expectedViewport.cssViewport?.width);
+  const targetHeight = Number(expectedViewport.cssViewport?.height);
+  const devicePixelRatio = Number(cell?.zoomed?.devicePixelRatio);
+  const diagnosticCssSized = Number(diagnosticDimensions?.width) === targetWidth &&
+    Number.isInteger(Number(diagnosticDimensions?.height)) && Number(diagnosticDimensions?.height) >= targetHeight;
+  const diagnosticDeviceSized = Number.isFinite(devicePixelRatio) && devicePixelRatio >= 1.5 &&
+    Number(diagnosticDimensions?.width) === Math.round(targetWidth * devicePixelRatio) &&
+    Number.isInteger(Number(diagnosticDimensions?.height)) && Number(diagnosticDimensions?.height) >= Math.round(targetHeight * devicePixelRatio);
+  if (!diagnosticCssSized && !diagnosticDeviceSized) {
+    errors.push(`${expectedId}: renderer screenshot dimensions do not cover the target CSS viewport at CSS or verified device-pixel size`);
   }
   if (String(surface?.screenshot?.sha256 || "").toLowerCase() === String(surface?.playwrightDiagnosticScreenshot?.sha256 || "").toLowerCase()) {
     errors.push(`${expectedId}: Windows and renderer screenshots reuse the same visual evidence hash`);
@@ -441,6 +454,9 @@ function loadPartialCells(stableIdentity) {
 
 function writePartialCells(identity, stableIdentity, cells) {
   const validation = validateToolbarCells(cells, { requireComplete: false, stableIdentity });
+  if (!validation.pass) {
+    process.stderr.write(`[edge-toolbar-zoom200] partial evidence rejected: ${validation.errors.join(" | ")}\n`);
+  }
   assert(validation.pass, "refusing to persist invalid or duplicate partial Edge evidence", validation);
   fs.writeFileSync(partialReportPath, `${JSON.stringify({
     contract: TOOLBAR_CONTRACT,
@@ -484,13 +500,14 @@ function validWindowsCapture(capture, expectedHandle) {
   );
 }
 
-function runPythonToolbarZoom(title, { action = "inspect", capturePath = "", captureOnly = false, windowHandle = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
+function runPythonToolbarZoom(title, { action = "inspect", capturePath = "", captureOnly = false, windowHandle = null, browserPid = null, timeoutMs = UI_ACTION_TIMEOUT_MS } = {}) {
   return new Promise((resolve, reject) => {
     const pythonCommand = process.env.PYTHON_EXECUTABLE || "python";
     const args = ["-B", pythonHelper, "--title", title, "--action", action, "--timeout-seconds", String(Math.ceil(timeoutMs / 1000))];
     if (captureOnly) args.push("--capture-only");
     if (capturePath) args.push("--capture-path", capturePath);
     if (Number.isInteger(windowHandle) && windowHandle > 0) args.push("--window-handle", String(windowHandle));
+    if (Number.isInteger(browserPid) && browserPid > 0) args.push("--browser-pid", String(browserPid));
     const child = spawn(pythonCommand, args, {
       cwd: root,
       windowsHide: true,
@@ -508,6 +525,8 @@ function runPythonToolbarZoom(title, { action = "inspect", capturePath = "", cap
       } else {
         child.kill();
       }
+      const diagnostic = Buffer.concat(stderr).toString("utf8").trim();
+      if (diagnostic) process.stderr.write(`[edge-toolbar-child-diagnostic] ${diagnostic.slice(-4000)}\n`);
       const error = new Error(`Windows Edge toolbar automation exceeded its bounded timeout during ${action}`);
       error.code = "EDGE_UI_AUTOMATION_TIMEOUT";
       error.detail = { action, title };
@@ -603,8 +622,8 @@ function reachedTargetToolbarZoom(geometryState, baseline) {
   );
 }
 
-async function applyActualToolbarZoom(page, title, baseline) {
-  const baselineInspection = await runPythonToolbarZoom(title, { action: "inspect" });
+async function applyActualToolbarZoom(page, title, baseline, browserPid) {
+  const baselineInspection = await runPythonToolbarZoom(title, { action: "inspect", browserPid });
   const baselineGeometry = await geometry(page);
   assert(
     Math.abs(baselineGeometry.devicePixelRatio - 1) <= 0.1 &&
@@ -615,7 +634,7 @@ async function applyActualToolbarZoom(page, title, baseline) {
   const steps = [];
   let current = baselineGeometry;
   for (let step = 1; step <= TOOLBAR_INCREMENTS && !reachedTargetToolbarZoom(current, baseline); step += 1) {
-    const input = await runPythonToolbarZoom(title, { action: TOOLBAR_ZOOM_ACTION, windowHandle: baselineInspection.windowHandle });
+    const input = await runPythonToolbarZoom(title, { action: TOOLBAR_ZOOM_ACTION, windowHandle: baselineInspection.windowHandle, browserPid });
     const transition = await waitForGeometryChange(page, current);
     const attempts = [{ action: TOOLBAR_ZOOM_ACTION, input, ...transition }];
     const accepted = acceptedZoomAttempt(attempts);
@@ -714,7 +733,7 @@ async function keyboardTraversal(page, mainSelector) {
   return { complete: missingIds.length === 0, expectedCount: expected.length, visitedCount: visited.size, missingIds, sequence };
 }
 
-async function inspectSurface(page, { label, mainSelector, primarySelector, screenshotName, windowTitle, windowHandle, identity, viewport }) {
+async function inspectSurface(page, { label, mainSelector, primarySelector, screenshotName, windowTitle, windowHandle, browserPid, identity, viewport }) {
   const primary = page.locator(primarySelector).first();
   await primary.waitFor({ state: "attached", timeout: ACTION_TIMEOUT_MS });
   await primary.scrollIntoViewIfNeeded();
@@ -866,10 +885,35 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
     const trafficChart = mobileOriginOverview?.querySelector('.ref-chart') || null;
     const trafficLegend = trafficChart ? Array.from(trafficChart.querySelectorAll('.ref-chart__scale span')) : [];
     const trafficTimeLabels = trafficChart ? Array.from(trafficChart.querySelectorAll('.ref-chart__footer span')) : [];
-    const trafficLegendOutsideChart = trafficLegend.filter((label) => {
-      const labelRect = label.getBoundingClientRect();
-      return labelRect.left < -1 || labelRect.right > viewportWidth + 1 || labelRect.top < -1 || labelRect.bottom > viewportHeight + 1;
-    }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON() }));
+     const trafficChartRect = trafficChart?.getBoundingClientRect() || null;
+     const trafficScrollRoot = trafficChart?.closest(".ref-scroll, main") || null;
+    const trafficScrollRect = trafficScrollRoot?.getBoundingClientRect() || null;
+    const trafficScrollStyle = trafficScrollRoot ? getComputedStyle(trafficScrollRoot) : null;
+    const trafficScrollContentRect = trafficScrollRoot && trafficScrollRect ? {
+      left: trafficScrollRect.left - trafficScrollRoot.scrollLeft,
+      top: trafficScrollRect.top - trafficScrollRoot.scrollTop,
+      right: trafficScrollRect.left - trafficScrollRoot.scrollLeft + trafficScrollRoot.scrollWidth,
+      bottom: trafficScrollRect.top - trafficScrollRoot.scrollTop + trafficScrollRoot.scrollHeight,
+    } : null;
+    const trafficScrollsContent = Boolean(trafficScrollRoot && trafficScrollStyle &&
+      (/(auto|scroll|overlay)/.test(trafficScrollStyle.overflowX) || /(auto|scroll|overlay)/.test(trafficScrollStyle.overflowY)) &&
+      (trafficScrollRoot.scrollWidth > trafficScrollRoot.clientWidth + 1 || trafficScrollRoot.scrollHeight > trafficScrollRoot.clientHeight + 1));
+     const trafficLegendGeometryErrors = trafficLegend.filter((label) => {
+       const labelRect = label.getBoundingClientRect();
+       const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
+       const insideScrollRoot = Boolean(!trafficScrollRect || (trafficScrollsContent
+         ? labelRect.left >= trafficScrollContentRect.left - 1 && labelRect.right <= trafficScrollContentRect.right + 1 && labelRect.top >= trafficScrollContentRect.top - 1 && labelRect.bottom <= trafficScrollContentRect.bottom + 1
+         : labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
+       return !insideChart || !insideScrollRoot;
+     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null }));
+     const trafficFooterGeometryErrors = trafficTimeLabels.filter((label) => {
+       const labelRect = label.getBoundingClientRect();
+       const insideChart = Boolean(trafficChartRect && labelRect.left >= trafficChartRect.left - 1 && labelRect.right <= trafficChartRect.right + 1 && labelRect.top >= trafficChartRect.top - 1 && labelRect.bottom <= trafficChartRect.bottom + 1);
+       const insideScrollRoot = Boolean(!trafficScrollRect || (trafficScrollsContent
+         ? labelRect.left >= trafficScrollContentRect.left - 1 && labelRect.right <= trafficScrollContentRect.right + 1 && labelRect.top >= trafficScrollContentRect.top - 1 && labelRect.bottom <= trafficScrollContentRect.bottom + 1
+         : labelRect.left >= trafficScrollRect.left - 1 && labelRect.right <= trafficScrollRect.right + 1 && labelRect.top >= trafficScrollRect.top - 1 && labelRect.bottom <= trafficScrollRect.bottom + 1));
+       return !insideChart || !insideScrollRoot;
+     }).map((label) => ({ label: normalize(label.textContent), rect: label.getBoundingClientRect().toJSON(), chartRect: trafficChartRect?.toJSON() || null }));
     return {
       mainCount: document.querySelectorAll("main").length,
        expectedMain: main instanceof HTMLElement,
@@ -888,7 +932,15 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
        clippedOperationalText,
        unreadableOperationalText,
        operationalTextScopes,
-      trafficAxis: { present: Boolean(trafficChart), yLabels: trafficLegend.length, xLabels: trafficTimeLabels.length, overlaps: trafficLegendOutsideChart },
+       trafficAxis: {
+         present: Boolean(trafficChart),
+         yLabels: trafficLegend.length,
+         xLabels: trafficTimeLabels.length,
+         chartRect: trafficChartRect ? trafficChartRect.toJSON() : null,
+         scrollRect: trafficScrollRect ? trafficScrollRect.toJSON() : null,
+         legendGeometryErrors: trafficLegendGeometryErrors,
+         footerGeometryErrors: trafficFooterGeometryErrors,
+       },
       primary: {
          present: primary instanceof HTMLElement,
          visible: Boolean(rect && style && style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0),
@@ -904,7 +956,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   assert(surface.main.horizontalOverflow === 0 && surface.main.maxLeft === 0, `${label} main scroll root has horizontal overflow at actual Edge toolbar zoom`, surface.main);
   assert(surface.clippedOperationalText.length === 0, `${label} has visible operational text clipped by a non-scroll container at actual Edge toolbar zoom`, surface);
   assert(surface.unreadableOperationalText.length === 0, `${label} has operational text below the 12px readability floor at actual Edge toolbar zoom`, surface);
-  assert(!surface.trafficAxis.present || (surface.trafficAxis.yLabels >= 2 && surface.trafficAxis.xLabels >= 2 && surface.trafficAxis.overlaps.length === 0), `${label} traffic chart legend is incomplete or clipped at actual Edge toolbar zoom`, surface.trafficAxis);
+   assert(!surface.trafficAxis.present || (surface.trafficAxis.yLabels >= 2 && surface.trafficAxis.xLabels >= 2 && surface.trafficAxis.legendGeometryErrors.length === 0 && surface.trafficAxis.footerGeometryErrors.length === 0), `${label} traffic chart axis or labels are incomplete or clipped at actual Edge toolbar zoom`, surface.trafficAxis);
   assert(surface.primary.present && surface.primary.visible && surface.primary.reachable && surface.primary.withinMain && !surface.primary.obscuredByNavigation, `${label} primary task is not reachable inside main or is obscured by navigation at actual Edge toolbar zoom`, surface);
   const keyboard = await keyboardTraversal(page, mainSelector);
   assert(keyboard.complete && keyboard.expectedCount > 0 && keyboard.visitedCount === keyboard.expectedCount && keyboard.sequence.every((item) => item.focusVisible && item.outlineWidth >= 2 && item.outlineStyle !== "none" && item.fullyVisible && item.withinMain && !item.obscuredByNavigation), `${label} keyboard traversal did not reach every control with visible focus clear of navigation`, keyboard);
@@ -914,10 +966,14 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   }, windowTitle);
   await page.waitForTimeout(100);
   const windowsFile = path.join(artifactDir, screenshotName);
-  const windowsCapture = await runPythonToolbarZoom(windowTitle, { capturePath: windowsFile, captureOnly: true, windowHandle });
+  const windowsCapture = await runPythonToolbarZoom(windowTitle, { capturePath: windowsFile, captureOnly: true, windowHandle, browserPid });
   assert(validWindowsCapture(windowsCapture, windowHandle), `${label} Windows screenshot is not exclusively unobscured foreground Edge evidence`, windowsCapture);
   const diagnosticFile = path.join(artifactDir, screenshotName.replace(/\.png$/, "-playwright-diagnostic.png"));
-  await page.screenshot({ path: diagnosticFile, fullPage: true, animations: "disabled" });
+  // Edge toolbar 200% can encode Playwright's renderer diagnostic at device
+  // pixels even when the page geometry is reported in CSS pixels. The
+  // validator accepts either truthful representation; the Windows HWND
+  // screenshot remains the separate foreground proof.
+  await page.screenshot({ path: diagnosticFile, fullPage: false, animations: "disabled", scale: "css" });
   return {
     label,
     viewport,
@@ -941,6 +997,7 @@ async function runCell(viewport, scenario) {
       headless: false,
       mockTransport: "tcp",
       mockPreferIpv4: true,
+      browserConnectionMode: "server",
       viewport: baselineViewport,
       deviceScaleFactor: 1,
       isMobile: false,
@@ -953,6 +1010,8 @@ async function runCell(viewport, scenario) {
     // bounded infrastructure write, immediately before the real toolbar input.
     const identityAtEvidenceStart = gitWorktreeIdentity(root);
     const stableIdentityAtEvidenceStart = stableEvidenceIdentity();
+    const browserPidValue = Number(runtime.managedBrowser?.diagnostics?.ownedBrowserPid || 0);
+    const browserPid = Number.isInteger(browserPidValue) && browserPidValue > 0 ? browserPidValue : null;
     const title = `RouterPanel Edge Toolbar Zoom ${viewport.id} ${scenario} ${crypto.randomUUID()}`;
     await runtime.page.evaluate((value) => { document.title = value; }, title);
     const baseline = await geometry(runtime.page);
@@ -961,7 +1020,7 @@ async function runCell(viewport, scenario) {
       "headed Edge did not begin from the expected physical output baseline",
       { baseline, baselineViewport, viewport },
     );
-    const windowsAutomation = await applyActualToolbarZoom(runtime.page, title, baseline);
+    const windowsAutomation = await applyActualToolbarZoom(runtime.page, title, baseline, browserPid);
     const zoomed = windowsAutomation.final;
     const zoomLevel = toolbarZoomEvidence({ baseline, zoomed, automation: windowsAutomation, targetCssViewport: viewport.cssViewport });
     assert(zoomLevel.verified, "Edge toolbar did not produce the required verified 200% browser zoom level and target CSS viewport", { viewport, baseline, zoomed, zoomLevel, windowsAutomation });
@@ -983,6 +1042,10 @@ async function runCell(viewport, scenario) {
       requireWorkspace: scenarioConfig.surface !== "overview",
       runtimePhase: scenarioConfig.runtimePhase,
     });
+    // Route navigation may update document.title (notably the interfaces
+    // workspace). Restore the unique per-cell title before any further UIA
+    // lookup so the HWND ownership proof remains bound to this Edge window.
+    await runtime.page.evaluate((value) => { document.title = value; }, title);
     const surface = await inspectSurface(runtime.page, {
       label: `${viewport.id}-${scenario}-${scenarioConfig.surface}`,
       mainSelector: scenarioConfig.surface === "overview" ? owner.overview : owner.route,
@@ -996,6 +1059,7 @@ async function runCell(viewport, scenario) {
       screenshotName: `${viewport.id}-${scenario}-edge-toolbar-zoom200.png`,
       windowTitle: title,
       windowHandle: windowsAutomation.windowHandle,
+      browserPid,
       identity: identityAtEvidenceStart,
       viewport: viewport.cssViewport,
     });

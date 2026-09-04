@@ -84,6 +84,7 @@ async function withTimeout(label, operation, timeoutMs = ACTION_TIMEOUT_MS) {
   let settled = false;
   let timer = null;
   let abortPromise = null;
+  const abortController = new AbortController();
   const abort = () => {
     if (!abortPromise) {
       abortPromise = boundedAbortCleanup(closeActiveRuntimes, ABORT_CLEANUP_TIMEOUT_MS);
@@ -94,12 +95,14 @@ async function withTimeout(label, operation, timeoutMs = ACTION_TIMEOUT_MS) {
     timer = setTimeout(() => {
       if (settled) return;
       settled = true;
+      const timeout = timeoutError(label, timeoutMs);
+      abortController.abort(timeout);
       abort().then(
-        () => reject(timeoutError(label, timeoutMs)),
+        () => reject(timeout),
         (cleanupError) => reject(timeoutError(label, timeoutMs, cleanupError)),
       );
     }, timeoutMs);
-    Promise.resolve().then(operation).then(
+    Promise.resolve().then(() => operation(abortController.signal)).then(
       (value) => {
         if (settled) return;
         settled = true;
@@ -146,6 +149,8 @@ async function cleanupStep(runtime, label, operation, timeoutMs = CLEANUP_TIMEOU
 }
 
 async function launchRuntime(options = {}) {
+  const { signal } = options;
+  if (signal?.aborted) throw signal.reason || new LifecycleError("ABORTED", "accessibility runtime was aborted");
   const executablePath = browserExecutable();
   if (!executablePath) throw new LifecycleError("BROWSER_UNAVAILABLE", "Edge/Chrome executable not found");
   const runtime = {
@@ -166,17 +171,21 @@ async function launchRuntime(options = {}) {
       headless = true,
       mockTransport = process.platform === "win32" ? "pipe" : "tcp",
       mockPreferIpv4 = false,
+      browserConnectionMode = process.platform === "win32" ? "pipe" : "server",
+      signal: _ignoredSignal,
       ...contextOptions
     } = options;
     runtime.mock = (await bounded("a11y.mock.start", () => startMock({ transport: mockTransport, preferIpv4: mockPreferIpv4 }), LAUNCH_TIMEOUT_MS)).value;
+    if (signal?.aborted) throw signal.reason || new LifecycleError("ABORTED", "accessibility runtime was aborted");
     runtime.managedBrowser = (await bounded("a11y.browser.launch", () => launchManagedBrowser({
       executablePath,
       headless,
       args: [...(process.platform === "linux" ? ["--no-sandbox"] : []), ...browserArgs],
-      connectionMode: process.platform === "win32" ? "pipe" : "server",
+      connectionMode: browserConnectionMode,
       launchTimeoutMs: LAUNCH_TIMEOUT_MS,
       cleanupTimeoutMs: CLEANUP_TIMEOUT_MS,
     }), LAUNCH_TIMEOUT_MS)).value;
+    if (signal?.aborted) throw signal.reason || new LifecycleError("ABORTED", "accessibility runtime was aborted");
     runtime.browser = runtime.managedBrowser.browser;
     runtime.context = (await bounded("a11y.context.create", () => runtime.managedBrowser.openContext({
       viewport: VIEWPORT,
@@ -185,10 +194,12 @@ async function launchRuntime(options = {}) {
       hasTouch: true,
       ...contextOptions,
     }), LAUNCH_TIMEOUT_MS)).value;
+    if (signal?.aborted) throw signal.reason || new LifecycleError("ABORTED", "accessibility runtime was aborted");
     if (typeof runtime.mock.installRoute === "function") {
       await bounded("a11y.mock.route", () => runtime.mock.installRoute(runtime.context), LAUNCH_TIMEOUT_MS);
     }
     runtime.page = (await bounded("a11y.page.create", () => runtime.context.newPage(), LAUNCH_TIMEOUT_MS)).value;
+    if (signal?.aborted) throw signal.reason || new LifecycleError("ABORTED", "accessibility runtime was aborted");
     runtime.page.setDefaultTimeout(ACTION_TIMEOUT_MS);
     runtime.page.setDefaultNavigationTimeout(ACTION_TIMEOUT_MS);
     return runtime;

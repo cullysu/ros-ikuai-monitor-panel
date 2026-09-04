@@ -25,6 +25,13 @@ from pathlib import Path
 import psutil
 
 
+# psutil exposes Windows priority constants only on Windows.  The browser
+# launcher also runs in Linux CI, where the equivalent conservative nice
+# values must be supplied explicitly instead of importing Windows-only names.
+IDLE_PRIORITY_CLASS = getattr(psutil, "IDLE_PRIORITY_CLASS", 19)
+BELOW_NORMAL_PRIORITY_CLASS = getattr(psutil, "BELOW_NORMAL_PRIORITY_CLASS", 10)
+
+
 # Keep ordinary work conservative: the managed tree is one-core and below
 # normal priority, and is paused well before the user's 70% whole-machine
 # ceiling because this launcher cannot control unrelated system processes.
@@ -209,9 +216,9 @@ def apply_limits(
         try:
             candidate.cpu_affinity([0])
             candidate.nice(
-                psutil.IDLE_PRIORITY_CLASS
+                IDLE_PRIORITY_CLASS
                 if idle_priority
-                else psutil.BELOW_NORMAL_PRIORITY_CLASS
+                else BELOW_NORMAL_PRIORITY_CLASS
             )
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
@@ -668,7 +675,7 @@ def main() -> int:
         maximum_runtime_load = max(maximum_runtime_load, load)
         if browser_mode:
             now = time.monotonic()
-            if now - last_browser_member_refresh >= BROWSER_MEMBER_REFRESH_SECONDS:
+            if os.name == "nt" and now - last_browser_member_refresh >= BROWSER_MEMBER_REFRESH_SECONDS:
                 browser_job_members = apply_windows_job_member_limits(job_handle)
                 if managed.pid not in browser_job_members:
                     # The owner may exit normally between the poll above and
@@ -689,7 +696,8 @@ def main() -> int:
                 browser_cpu_rate, load, browser_recover_samples
             )
             if next_rate != browser_cpu_rate:
-                set_windows_job_cpu_cap(job_handle, next_rate)
+                if os.name == "nt":
+                    set_windows_job_cpu_cap(job_handle, next_rate)
                 browser_cpu_rate = next_rate
                 if next_rate == BROWSER_CPU_RATE_DEGRADED:
                     action = "system busy; browser task quota reduced"

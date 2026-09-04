@@ -3,8 +3,8 @@
   "step": 1185,
   "role": "engineering-code-review",
   "scope": "local-independent-scope",
-  "status": "current",
-  "currentEvidence": true,
+  "status": "superseded",
+  "currentEvidence": false,
   "historicalEvidenceOnly": false,
   "releaseEligible": false,
   "reviewerAgentId": "main-agent-isolated-engineering-role-step1185",
@@ -47,5 +47,6 @@
       "result": "pass",
       "summary": "手机运行报告现在记录生成时间并保持 releaseEvidenceEligible=false；缺矩阵、脏工作树或缺签收均继续 fail closed。"
     }
-  ]
+  ],
+  "supersededBy": "Step1186"
 }

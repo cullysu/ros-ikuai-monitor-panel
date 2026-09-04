@@ -892,7 +892,11 @@ function reportNestedPassFalsePaths(value, currentPath = '') {
   return paths;
 }
 
-function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
+function finalizeReportTruth(
+  report,
+  matrixBlocksTopLevelPass = false,
+  { allowIncompleteMatrix = false } = {},
+) {
   const failures = Array.isArray(report.failures) ? [...report.failures] : [];
   if (!Array.isArray(report.failures)) {
     failures.push({
@@ -918,6 +922,7 @@ function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
   }
   const matrixPresent = report.matrix && typeof report.matrix === 'object';
   const matrixIncomplete = Boolean(
+    !allowIncompleteMatrix &&
     matrixPresent && (
       report.matrix.complete !== true ||
       report.matrix.requestedComplete !== true
@@ -3717,7 +3722,11 @@ async function main() {
         missingCells: report.matrix.requestedMissingCells,
       });
     }
-    finalizeReportTruth(report, matrixBlocksTopLevelPass);
+    finalizeReportTruth(report, matrixBlocksTopLevelPass, {
+      // Explicit bounded/mergeable shards prove only their requested cells;
+      // release completeness remains gated by the merged release run.
+      allowIncompleteMatrix: matrixGate.boundedMatrix || matrixGate.mergeableSubset,
+    });
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
     await writeJsonAtomic(browserResumePath(args), {

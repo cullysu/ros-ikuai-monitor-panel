@@ -134,11 +134,14 @@ function parseArgs(argv = process.argv.slice(2)) {
     staticOnly: false,
     allowDirtyEngineering: false,
     releaseCandidate: false,
+    edgeEvidenceGatedBy: '',
     candidateEvidenceArgs: [],
     help: false,
   };
   for (const item of argv) {
-    if (item === '--static-only' || item === '--skip-matrix') {
+    if (item.startsWith('--edge-evidence-gated-by=')) {
+      args.edgeEvidenceGatedBy = item.slice('--edge-evidence-gated-by='.length).trim();
+    } else if (item === '--static-only' || item === '--skip-matrix') {
       args.staticOnly = true;
     } else if (item === '--require-matrix' || item === '--full-matrix') {
       args.staticOnly = false;
@@ -164,6 +167,12 @@ function parseArgs(argv = process.argv.slice(2)) {
   if (args.releaseCandidate && (args.staticOnly || args.allowDirtyEngineering)) {
     throw new Error('--release-candidate cannot be combined with static-only or dirty engineering modes');
   }
+  if (args.edgeEvidenceGatedBy && args.releaseCandidate) {
+    throw new Error('--edge-evidence-gated-by cannot be combined with --release-candidate: release-candidate evidence must include the real Edge toolbar report');
+  }
+  if (args.edgeEvidenceGatedBy && args.staticOnly) {
+    throw new Error('--edge-evidence-gated-by is a matrix-evidence boundary and cannot be combined with static-only');
+  }
   return args;
 }
 
@@ -180,6 +189,7 @@ Options:
   --engineering-worktree  Validate current dirty-worktree engineering evidence without granting release eligibility.
   --allow-dirty-engineering  Alias for --engineering-worktree.
   --release-candidate  Require clean exact-SHA matrices plus external review/RouterOS-soak candidate evidence; external promotion authority remains separate.
+  --edge-evidence-gated-by=<job>  Delegate the real Edge toolbar 200% report to the named CI job on the same commit; every other matrix evidence requirement stays enforced.
   Candidate evidence options use --name=value and are forwarded to tools/check-release-candidate-evidence.js.
 `.trim();
 }
@@ -330,12 +340,26 @@ function assertNodeContract(relPath, args = []) {
   }
 }
 
+function resolvePythonExecutable() {
+  const candidates = process.platform === 'win32'
+    ? [
+        'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe',
+        'python',
+      ]
+    : ['python3', 'python'];
+  if (process.env.PYTHON_EXECUTABLE) return process.env.PYTHON_EXECUTABLE;
+  for (const candidate of candidates) {
+    if (path.isAbsolute(candidate)) {
+      try { if (fs.existsSync(candidate)) return candidate; } catch { /* probe next */ }
+    } else {
+      return candidate;
+    }
+  }
+  return candidates[candidates.length - 1];
+}
+
 function assertDecisionLedgerFreshness(rootDir = ROOT) {
-  const python =
-    process.env.PYTHON_EXECUTABLE ||
-    (process.platform === 'win32'
-      ? 'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe'
-      : 'python3');
+  const python = resolvePythonExecutable();
   const args = [path.join(rootDir, 'tools', 'check-decision-ledger-sync.py')];
   const result = runReadinessChild('python:decision-ledger-sync', python, args, { cwd: rootDir });
   if (result.error || result.status !== 0) {
@@ -581,11 +605,7 @@ function reportNameMatchesKind(name, kind) {
 }
 
 function assertPythonDependencyLockContract(rootDir = ROOT) {
-  const python =
-    process.env.PYTHON_EXECUTABLE ||
-    (process.platform === 'win32'
-      ? 'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe'
-      : 'python3');
+  const python = resolvePythonExecutable();
   const args = [path.join(rootDir, 'tools', 'check-python-dependency-lock.py')];
   const result = runReadinessChild('python:dependency-lock', python, args, { cwd: rootDir });
   if (result.error || result.status !== 0) {
@@ -599,7 +619,16 @@ function assertPythonDependencyLockContract(rootDir = ROOT) {
   } catch {
     throw new Error('Python dependency lock contract did not return JSON.');
   }
-  if (report?.pass !== true || report?.contract !== 'python-runtime-lock-v1' || report?.hashLocked !== true) {
+  const supportedContracts = new Set([
+    'python-runtime-lock-v1',
+    'python-runtime-and-windows-build-lock-v2',
+  ]);
+  if (
+    report?.pass !== true ||
+    !supportedContracts.has(report?.contract) ||
+    report?.hashLocked !== true ||
+    (report?.contract === 'python-runtime-and-windows-build-lock-v2' && report?.windowsBuildHashLocked !== true)
+  ) {
     throw new Error('Python dependency lock contract did not confirm the immutable runtime lock.');
   }
   return report;
@@ -775,7 +804,7 @@ function validateMobileRuntimeReport(reportPath, currentIdentity, options = {}) 
   const evidenceRoot = path.resolve(reportPath, '..', '..', '..');
   const push = (message) => errors.push(message);
   const matrix = report?.matrix;
-  const cells = Array.isArray(matrix?.cells) ? matrix.cells : [];
+  const cells = Array.isArray(report?.cells) ? report.cells : [];
   const actualCellIds = cells.map(mobileCellId);
   const actualSet = new Set(actualCellIds);
   const missingCells = MOBILE_MATRIX_CELL_IDS.filter((id) => !actualSet.has(id));
@@ -963,7 +992,15 @@ function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
     ROUTE_STATE_MATRIX_CELLS,
     { requiredWorktreeIdentity: currentIdentity, allowBoundedScope: true }
   ));
-  collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
+  if (options.edgeEvidenceGatedBy) {
+    evidence.toolbarZoom200 = {
+      delegated: true,
+      gatedByJob: options.edgeEvidenceGatedBy,
+      boundary: `real Edge toolbar 200% evidence is gated by the "${options.edgeEvidenceGatedBy}" CI job on commit ${currentIdentity.commit}`,
+    };
+  } else {
+    collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
+  }
   collect('focusedSourceRuntime', () => assertFocusedSourceRuntimeReports(rootDir, {
     currentIdentity: focusedCurrentIdentity,
   }));
@@ -1394,7 +1431,11 @@ function main(argv = process.argv.slice(2)) {
   } else {
     const evidence = assertRequiredMatrixEvidence(ROOT, {
       allowDirtyEngineering: args.allowDirtyEngineering,
+      edgeEvidenceGatedBy: args.edgeEvidenceGatedBy,
     });
+    if (evidence.toolbarZoom200?.delegated) {
+      console.log(`[boundary] ${evidence.toolbarZoom200.boundary}`);
+    }
     console.log(matrixEvidenceStatusMessage(
       evidence.matrixIdentity,
       path.relative(ROOT, evidence.overview.reportPath)

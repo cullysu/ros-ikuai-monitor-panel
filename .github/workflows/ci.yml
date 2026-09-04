@@ -13,6 +13,7 @@ jobs:
   linux-validation:
     name: Linux validation
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       CODEX_MEMORY_LIMIT_MB: "2048"
       NODE_OPTIONS: --max-old-space-size=2048
@@ -35,6 +36,8 @@ jobs:
           python -m py_compile .agents/skills/router-panel-product-loop/scripts/merge_matrix_reports.py .agents/skills/router-panel-product-loop/scripts/release_checkpoint.py .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py
           python tools/test-decision-ledger-sync.py -v
           python tools/check-decision-ledger-sync.py
+          python tools/check-backend-release-blockers.py
+          python tools/check-backend-security.py
           python .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py -v
           python .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py -v
 
@@ -119,6 +122,7 @@ jobs:
             --viewports desktop=1600x1000,laptop=1366x900,tablet=1024x900,narrow=390x844 \
             --sections public-release \
             --scale-scenarios single \
+            --bounded-matrix \
             --strict-responsive \
             --out _acceptance/route-matrix-${{ github.sha }}
 
@@ -142,8 +146,11 @@ jobs:
             --strict-responsive \
             --out _acceptance/route-state-matrix-${{ github.sha }}
 
+      - name: Public mobile reference runtime matrix
+        run: npm run check:mobile-reference-runtime
+
       - name: Public release readiness
-        run: node tools/check-public-release-readiness.js
+        run: node tools/check-public-release-readiness.js --edge-evidence-gated-by=windows-packaging
 
       - name: Upload public browser predeploy report
         if: always()
@@ -224,9 +231,11 @@ jobs:
   windows-packaging:
     name: Windows packaging
     runs-on: windows-latest
+    timeout-minutes: 60
     env:
       CODEX_MEMORY_LIMIT_MB: "2048"
       NODE_OPTIONS: --max-old-space-size=2048
+      CODEX_LOW_LOAD_BROWSER_TIMEOUT_MS: "60000"
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -249,8 +258,11 @@ jobs:
       - name: Install Windows Edge toolbar automation dependencies
         run: python -m pip install pywinauto==0.6.9 Pillow==10.4.0
 
-      - name: Real Edge toolbar 200 percent matrix
+      - name: Edge toolbar automation source contract
         run: node tools/test-browser-toolbar-zoom200-readiness.js
+
+      - name: Real Edge toolbar 200 percent matrix
+        run: npm run check:browser-toolbar-zoom200
 
       - name: Create SHA-bound Windows Edge toolbar evidence
         if: always()
@@ -262,7 +274,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $source | Out-Null
           $report = Join-Path $source "report.json"
           if (-not (Test-Path -LiteralPath $report -PathType Leaf)) {
-            '{"pass":true,"contract":"edge-toolbar-zoom200-windows-v10-process-owned-uia-mobile-reference","matrix":{"complete":true},"cells":[]}' | Set-Content -LiteralPath $report -Encoding ascii
+            '{"pass":false,"complete":false,"contract":"edge-toolbar-zoom200-windows-v10-process-owned-uia-mobile-reference","matrix":{"complete":false},"cells":[],"failure":{"code":"report_missing","message":"Real Edge toolbar check did not create report.json."}}' | Set-Content -LiteralPath $report -Encoding ascii
           }
           $evidenceRoot = ".\_release-evidence\windows-edge-toolbar-zoom200-$env:GITHUB_SHA"
           $payloadRoot = Join-Path $evidenceRoot "edge-toolbar"
@@ -352,27 +364,15 @@ jobs:
             if ($indexText -match [regex]::Escape($publicPath)) { throw "Bundled index eagerly loads the $($asset.Name) instead of deferring surface selection to the loader." }
           }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
-          Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing loopback bind default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_TRUST_PROXY_HEADERS=0" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing proxy header default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing localhost host-forward default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_LOCALHOST_FORWARD_TOKEN=" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing localhost forward token default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_PROFILE=routeros_only" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing RouterOS-only profile default." }
-          }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing panel address write default." }
-          }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet)) { throw "Windows env is missing loopback bind default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_TRUST_PROXY_HEADERS=0" -Quiet)) { throw "Windows env is missing proxy header default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0" -Quiet)) { throw "Windows env is missing localhost host-forward default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_LOCALHOST_FORWARD_TOKEN=" -Quiet)) { throw "Windows env is missing localhost forward token default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_PROFILE=routeros_only" -Quiet)) { throw "Windows env is missing RouterOS-only profile default." }
+          if (-not (Select-String -Path $envFile -Pattern "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1" -Quiet)) { throw "Windows env is missing panel address write default." }
 
       - name: Create SHA-bound Windows package manifest
-        if: always()
+        if: success()
         shell: pwsh
         env:
           RELEASE_JOB_STATUS: ${{ job.status }}
@@ -400,7 +400,7 @@ jobs:
           Set-Content -LiteralPath (Join-Path $evidenceRoot "artifact-proof.json") -Value $proof -Encoding ascii
 
       - name: Upload SHA-bound Windows package bundle
-        if: always()
+        if: success()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ci-windows-bundle-${{ github.sha }}
@@ -408,7 +408,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload SHA-bound Windows package SHA256 manifest
-        if: always()
+        if: success()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ci-windows-sha256-manifest-${{ github.sha }}

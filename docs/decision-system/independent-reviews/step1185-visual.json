@@ -3,8 +3,8 @@
   "step": 1185,
   "role": "visual-interaction",
   "scope": "local-independent-scope",
-  "status": "current",
-  "currentEvidence": true,
+  "status": "superseded",
+  "currentEvidence": false,
   "historicalEvidenceOnly": false,
   "releaseEligible": false,
   "reviewerAgentId": "main-agent-isolated-visual-role-step1185",
@@ -46,5 +46,6 @@
       "result": "pass",
       "summary": "768 纵向形成侧栏工作区，667×375 与 844×390 横向由浏览器/桌面所有者承接，不再把手机底栏布局硬塞进横屏平板。"
     }
-  ]
+  ],
+  "supersededBy": "Step1186"
 }

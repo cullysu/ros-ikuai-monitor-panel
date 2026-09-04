@@ -68,10 +68,14 @@ try {
   fs.writeFileSync(path.join(reviews, 'evidence', 'at-session.json'), '{"session":"external-manual-at-evidence"}\n');
   const manifest = checker.loadCurrentRouteManifest(root);
   assert.equal(manifest.pass, true, 'fixture manifest must be generated from the active route registry and policy');
-  const candidateRuntimeIdentity = checker.withIsolatedCandidateWorktree(root, candidate, (candidateRoot) => {
+  const candidateIdentityProbe = checker.withIsolatedCandidateWorktree(root, candidate, (candidateRoot) => {
     assert.notEqual(path.resolve(candidateRoot), root, 'candidate verification must execute outside the mutable workspace');
-    return gitWorktreeIdentity(candidateRoot);
+    const identity = gitWorktreeIdentity(candidateRoot, { ignoreFileMode: true });
+    const probe = (args) => { const result = spawnSync('git', args, { cwd: candidateRoot, encoding: 'utf8' }); return { status: result.status, stdout: result.stdout, stderr: result.stderr }; };
+    return { identity, probes: { status: probe(['status', '--porcelain=v1', '--untracked-files=all']), untracked: probe(['ls-files', '--others', '--exclude-standard']), diff: probe(['diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.']), modeDiff: probe(['-c', 'core.filemode=false', 'diff', '--binary', '--no-ext-diff', 'HEAD', '--', '.']) } };
   });
+  const candidateRuntimeIdentity = candidateIdentityProbe.identity;
+  if (!candidateRuntimeIdentity.worktreeClean) console.log('[candidate-runtime-debug] ' + JSON.stringify(candidateIdentityProbe));
   assert.equal(candidateRuntimeIdentity.commit, candidate, 'clean candidate identity must bind the candidate commit');
   assert.equal(candidateRuntimeIdentity.worktreeClean, true, 'candidate identity must come from a clean isolated worktree');
   assert.equal(candidateRuntimeIdentity.releaseEvidenceEligible, true, 'clean candidate identity must be release-evidence eligible');

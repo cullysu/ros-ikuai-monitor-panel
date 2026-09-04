@@ -59,7 +59,8 @@ function RuntimeActions({ runtime, onMore }: { runtime: PanelRuntimeController; 
 function MobileRuntimeBar({ runtime, onMore }: { runtime: PanelRuntimeController; onMore?: () => void }) {
   return (
     <header className="panel-runtime-bar panel-runtime-bar-mobile" data-panel-runtime-toolbar="mobile">
-      <div className="panel-runtime-device"><b>{runtime.connection.profile?.host || "RouterOS"}</b><span>{mobilePhaseLabel(runtime.snapshot.phase)} · 只读</span></div>
+      <div className="panel-runtime-device"><b>{runtime.connection.profile?.host || "RouterOS"}</b><span>{mobilePhaseLabel(runtime.snapshot.phase)}</span></div>
+      <span className="panel-runtime-mode" aria-label="只读监控模式" title="只读监控模式"><LockKeyhole size={14} aria-hidden="true" /><span>只读</span></span>
       <RuntimeActions runtime={runtime} onMore={onMore} />
     </header>
   );

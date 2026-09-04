@@ -106,6 +106,9 @@ const checks = {
   'local Linux and Windows CI install lockfile dependencies before checks':
     /cd "\$\(dirname "\$0"\)\/\.\."[\s\S]*\nnpm ci\n[\s\S]*check:release-gates/.test(localLinux) &&
     /Push-Location \$RepoRoot[\s\S]*\bnpm ci\b[\s\S]*check:release-gates/.test(localWindows),
+  'Linux CI produces the real mobile runtime matrix and delegates only Edge toolbar evidence to the Windows job':
+    /linux-validation:[\s\S]*Public mobile reference runtime matrix[\s\S]*npm run check:mobile-reference-runtime[\s\S]*Public release readiness[\s\S]*check-public-release-readiness\.js --edge-evidence-gated-by=windows-packaging/.test(ci) &&
+    !/check-public-release-readiness\.js\s*$/m.test(ci),
 };
 const failures = Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name);
 const report = { pass: failures.length === 0, contract: 'workflow-release-integrity-v1', actionRefs, checks, failures };

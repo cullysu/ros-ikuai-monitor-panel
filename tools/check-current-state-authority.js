@@ -17,7 +17,7 @@ const journal = read("docs/panel-redesign-decision-log.md");
 const machine = readJson(".product-loop/state.json");
 
 const requestedStep = process.argv[2] === undefined ? null : Number(process.argv[2]);
-const journalSteps = [...journal.matchAll(/^## 第\s*(\d+)\s*步/gm)].map((match) => Number(match[1]));
+const journalSteps = [...journal.matchAll(/^##\s*(?:(?:第\s*)|(?:Step\s*))?(\d+)\s*/gm)].map((match) => Number(match[1]));
 const latestJournalStep = journalSteps[journalSteps.length - 1];
 const expectedStep = requestedStep === null ? latestJournalStep : requestedStep;
 if (!Number.isInteger(expectedStep)) {

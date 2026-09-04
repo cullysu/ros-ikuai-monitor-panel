@@ -3,8 +3,8 @@
   "step": 1185,
   "role": "accessibility-interaction",
   "scope": "local-independent-scope",
-  "status": "current",
-  "currentEvidence": true,
+  "status": "superseded",
+  "currentEvidence": false,
   "historicalEvidenceOnly": false,
   "releaseEligible": false,
   "reviewerAgentId": "main-agent-isolated-accessibility-role-step1185",
@@ -45,5 +45,6 @@
       "result": "pass",
       "summary": "关键触控目标满足 44px，安全区、减少动态效果、强制颜色和透明度降级分支在本地浏览器范围内通过。"
     }
-  ]
+  ],
+  "supersededBy": "Step1186"
 }

@@ -19,10 +19,15 @@ const attestationPath = path.join(outputDirectory, "source-runtime-attestation.j
 const REPORT_CONTRACT = WAN_AXIS_REPORT_CONTRACT;
 const REQUIRED_RUNTIME_FILES = FOCUSED_REQUIRED_RUNTIME_FILES;
 const browserCandidates = [
+  process.env.BROWSER_EXECUTABLE_PATH,
+  "/usr/bin/google-chrome",
+  "/usr/bin/google-chrome-stable",
+  "/usr/bin/chromium",
+  "/usr/bin/chromium-browser",
   "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
   "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-];
+].filter(Boolean);
 
 function timestamps(now) {
   const end = Date.parse(now);
@@ -317,6 +322,7 @@ if (require.main === module) {
 module.exports = {
   REPORT_CONTRACT,
   REQUIRED_RUNTIME_FILES,
+  browserCandidates,
   buildAttestation,
   validateBrowserOnlyAttestation,
 };

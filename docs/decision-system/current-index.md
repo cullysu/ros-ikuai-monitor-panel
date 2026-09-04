@@ -1,14 +1,16 @@
-- validForCommit: false; current worktree is uncommitted and is not a release candidate
+- validForCommit: false; Step1188 is a documented pre-publication boundary; untracked review/work artifacts remain excluded
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1185`
-- currentOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
-- currentBoundary: `1185`
-- latestRecordedStep: `1185`
-- latestStepOutcome: `1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next`
+- currentStep: `1207`
+- currentOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
+- currentBoundary: `1207`
+- latestRecordedStep: `1207`
+- latestStepOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
 
 ## Current pointer
+
+- Step1188 已区分本地 dbd4a90、远端旧分支 7231e00 与远端 main 69174b3；Step1186 Edge popup 修复仍待新 SHA 远端验证，发布继续关闭。未跟踪 .impeccable/ 与 work/ 不属于候选。
 
 - Sole mobile direction: the user-supplied four-screen iOS/iKuai reference image.
 - Sole mobile owner: `src/panel-framework/mobile-reference-ui/`.
@@ -43,6 +45,6 @@
 - Step1182 raises only the bounded parent timeout for the physical Edge keyboard probe after a failed cell showed delayed input could queue and overshoot 200% to 250%; mobile and desktop product code remain unchanged, and all Edge cells must be regenerated under the new worktree identity.
 - Step1183 changes only the Edge verifier to stop when the real page reaches 200% within a maximum of five probes, accommodating Edge's variable built-in zoom ladder; the v9 contract requires exact target geometry and keeps release closed until the full current matrix is fresh.
 - Step1185 keeps the accepted mobile art unchanged and binds fresh Edge 22/22, overview 28/28, route 76/76, route-state 266/266, mobile 56/56 plus workflows 14/14 and accessibility 11/11 to one artifact. Four local isolated-role reviews pass; clean exact-SHA and remote CL remain open.
-- GitHub remains untouched and release remains CLOSED.
+- GitHub 同名分支尚未更新；发布仍 CLOSED，下一步是复核候选身份并进行 lease-protected 分支更新。
 
 Full process: `docs/panel-redesign-decision-log.md`.

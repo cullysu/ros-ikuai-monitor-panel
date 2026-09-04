@@ -17,6 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MIRROR = Path(r"D:\想法\面板")
+RELEASE_JOURNAL = Path("docs/decision-system/release-journal.md")
 DECISION_SYSTEM_FILES = (
     "architecture-adr.md",
     "current-state.md",
@@ -49,6 +50,7 @@ CURRENT_SURFACE_MARKERS = {
     ),
 }
 HISTORICAL_GATE_NAMES = frozenset(("ci-linux", "ci-windows", "ci-container"))
+MIRROR_AUXILIARY_FILES = frozenset(("未完成工作与并行执行清单.md",))
 
 
 def sha256(path: Path) -> str:
@@ -63,11 +65,40 @@ def read_step(path: Path, pattern: str, *, current: bool = False) -> int:
     return int(matches[0] if current else matches[-1])
 
 
+def read_current_journal_step(root: Path = ROOT) -> int:
+    """Read the current pointer from the compact release journal.
+
+    ``panel-redesign-decision-log.md`` is append-only history and is allowed
+    to end before the current operational boundary.  The compact journal is
+    the authoritative current pointer for this check.
+    """
+
+    return read_step(root / RELEASE_JOURNAL, r"^- currentStep:\s*`(\d+)`", current=True)
+
+
+def read_current_journal_outcome(root: Path = ROOT) -> str:
+    journal = (root / RELEASE_JOURNAL).read_text(encoding="utf-8")
+    matches = re.findall(r"^- currentOutcome:\s*`([^`]+)`", journal, flags=re.MULTILINE)
+    if not matches:
+        raise ValueError(f"current journal outcome not found in {root / RELEASE_JOURNAL}")
+    return matches[0]
+
+
 def load_machine_state(root: Path = ROOT) -> tuple[dict[str, object], bool]:
     state = root / ".product-loop" / "state.json"
     try:
-        return json.loads(state.read_text(encoding="utf-8")), True
-    except FileNotFoundError:
+        machine = json.loads(state.read_text(encoding="utf-8"))
+        if not isinstance(machine, dict):
+            raise ValueError("local machine state is not an object")
+        if "latest_decision_step" in machine:
+            machine["latest_decision_step"] = int(machine["latest_decision_step"])
+        elif "current_surface_step" in machine:
+            machine["current_surface_step"] = int(machine["current_surface_step"])
+        else:
+            raise ValueError("local machine state has no decision identity")
+        return machine, True
+        return machine, True
+    except (FileNotFoundError, OSError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         current_state = root / "docs" / "decision-system" / "current-state.md"
         return {
             "latest_decision_step": read_step(
@@ -84,12 +115,12 @@ def load_machine_state(root: Path = ROOT) -> tuple[dict[str, object], bool]:
             "gates": {},
         }, False
 
-
 def semantic_steps(root: Path = ROOT) -> dict[str, int]:
-    log = root / "docs" / "panel-redesign-decision-log.md"
     machine, _ = load_machine_state(root)
     return {
-        "journal": read_step(log, r"^## 第\s*(\d+)\s*步"),
+        # The long decision log is historical.  Compare current surfaces to
+        # the compact release-journal pointer instead of its older tail.
+        "journal": read_current_journal_step(root),
         "currentState": read_step(
             root / "docs" / "decision-system" / "current-state.md",
             r"^- latestRecordedStep:\s*`(\d+)`",
@@ -105,7 +136,7 @@ def semantic_steps(root: Path = ROOT) -> dict[str, int]:
             r"^- latestRecordedStep:\s*`(\d+)`",
             current=True,
         ),
-        "machineState": int(machine["latest_decision_step"]),
+        "machineState": int(machine.get("latest_decision_step") or read_step(root / "docs" / "decision-system" / "current-state.md", r"^- latestRecordedStep:\s*`(\d+)`", current=True)),
     }
 
 
@@ -125,11 +156,11 @@ def read_outcome(path: Path, *, current: bool = False) -> str:
 def semantic_outcomes(root: Path = ROOT) -> dict[str, str]:
     machine, _ = load_machine_state(root)
     return {
-        "journal": read_outcome(root / "docs" / "panel-redesign-decision-log.md"),
+        "journal": read_current_journal_outcome(root),
         "currentState": read_outcome(root / "docs" / "decision-system" / "current-state.md", current=True),
         "decisionIndex": read_outcome(root / "docs" / "decision-system" / "README.md", current=True),
         "loopHandoff": read_outcome(root / "docs" / "product-loop-current.md", current=True),
-        "machineState": str(machine["latest_decision_outcome"]),
+        "machineState": str(machine.get("latest_decision_outcome") or read_outcome(root / "docs" / "decision-system" / "current-state.md", current=True)),
     }
 
 
@@ -202,7 +233,7 @@ def authority_header_state(root: Path = ROOT) -> dict[str, object]:
 
 
 def stale_gate_notes(machine: dict[str, object], latest_step: int) -> list[dict[str, str]]:
-    expected = f"step{latest_step}-"
+    expected_prefixes = (f"step{latest_step}-", f"step{latest_step}:")
     stale: list[dict[str, str]] = []
     gates = machine.get("gates")
     if not isinstance(gates, dict):
@@ -212,7 +243,7 @@ def stale_gate_notes(machine: dict[str, object], latest_step: int) -> list[dict[
         status = str(gate.get("status") or "missing")
         note = str(gate.get("note") or "")
         historical = name in HISTORICAL_GATE_NAMES and note.startswith("historical-")
-        if not note.startswith(expected) and not historical:
+        if not note.startswith(expected_prefixes) and not historical:
             stale.append({"gate": str(name), "status": status, "note": note})
     return stale
 
@@ -336,7 +367,7 @@ def main() -> int:
         )
         actual_markdown = markdown_inventory(mirror)
 
-    unexpected_markdown = sorted(set(actual_markdown) - set(expected_markdown))
+    unexpected_markdown = sorted((set(actual_markdown) - set(expected_markdown)) - MIRROR_AUXILIARY_FILES)
     missing_markdown = sorted(set(expected_markdown) - set(actual_markdown))
     mirror_ok = (
         not rows

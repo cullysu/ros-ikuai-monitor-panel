@@ -1,1 +1,2 @@
-pyinstaller>=6.0,<7
+--require-hashes
+-r requirements-build.lock

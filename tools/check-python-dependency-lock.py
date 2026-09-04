@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the hash-locked Python runtime dependency contract.
+"""Verify hash-locked Python runtime and Windows packaging dependencies.
 
 ``--verify-platforms`` intentionally performs two download-only resolver runs.
 It proves that the committed hashes accept a CPython 3.12 binary distribution
@@ -20,7 +20,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BASE_IMAGE = "python:3.12.10-slim-bookworm@sha256:fd95fa221297a88e1cf49c55ec1828edd7c5a428187e67b5d1805692d11588db"
 LOCK_NAME = "requirements.lock"
-DIRECT_REQUIREMENTS = {"paramiko", "requests"}
+BUILD_LOCK_NAME = "requirements-build.lock"
+DIRECT_REQUIREMENTS = {"paramiko", "requests", "psutil"}
+BUILD_REQUIREMENTS = {
+    "altgraph",
+    "packaging",
+    "pefile",
+    "pyinstaller",
+    "pyinstaller-hooks-contrib",
+    "pywin32-ctypes",
+    "setuptools",
+}
 PLATFORMS = ("manylinux_2_17_x86_64", "manylinux_2_17_aarch64")
 PINNED_REQUIREMENT = re.compile(r"^([a-z0-9][a-z0-9_.-]*)==([^\s]+)\s*\\$", re.IGNORECASE)
 HASH = re.compile(r"^\s+--hash=sha256:[a-f0-9]{64}\s*(?:\\)?$", re.IGNORECASE)
@@ -75,20 +85,38 @@ def verify_static(root: Path = ROOT) -> dict[str, object]:
         raise LockContractError("runtime stage must enforce dependency hashes")
     if read_text(root / "requirements.txt").strip() != f"--require-hashes\n-r {LOCK_NAME}":
         raise LockContractError("requirements.txt must enforce hashes and delegate only to the immutable lock")
+    if read_text(root / "requirements-build.txt").strip() != f"--require-hashes\n-r {BUILD_LOCK_NAME}":
+        raise LockContractError("requirements-build.txt must enforce hashes and delegate only to the immutable build lock")
     source = read_text(root / "requirements.in")
-    if "paramiko>=3.4,<4" not in source or "requests>=2.32,<3" not in source:
+    if (
+        "paramiko>=3.4,<4" not in source
+        or "requests>=2.32,<3" not in source
+        or "psutil>=7.1,<8" not in source
+    ):
         raise LockContractError("requirements.in must retain the reviewed direct dependency bounds")
     packages = parse_lock(root / LOCK_NAME)
     missing = sorted(DIRECT_REQUIREMENTS - set(packages))
     if missing:
         raise LockContractError(f"lock omits direct dependencies: {', '.join(missing)}")
+    build_packages = parse_lock(root / BUILD_LOCK_NAME)
+    missing_build = sorted(BUILD_REQUIREMENTS - set(build_packages))
+    if missing_build:
+        raise LockContractError(f"build lock omits packaging dependencies: {', '.join(missing_build)}")
+    build_script = read_text(root / "tools" / "build-windows-exe.ps1")
+    runtime_install = '& $BuildPython -m pip install --require-hashes -r (Join-Path $RepoRoot "requirements.txt")'
+    build_install = '& $BuildPython -m pip install -r (Join-Path $RepoRoot "requirements-build.txt")'
+    if runtime_install not in build_script or build_install not in build_script:
+        raise LockContractError("Windows packaging must install both runtime and build hash-lock entrypoints")
     return {
         "pass": True,
-        "contract": "python-runtime-lock-v1",
+        "contract": "python-runtime-and-windows-build-lock-v2",
         "baseImage": BASE_IMAGE,
         "packages": len(packages),
+        "buildPackages": len(build_packages),
         "hashLocked": True,
+        "windowsBuildHashLocked": True,
         "platformTargets": ["linux/amd64", "linux/arm64"],
+        "windowsBuildTarget": "windows/amd64-cpython312",
     }
 
 
