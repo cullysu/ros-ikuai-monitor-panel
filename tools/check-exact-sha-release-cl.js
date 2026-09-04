@@ -208,7 +208,8 @@ function remoteTransport({ repository, environment, fetchImpl = globalThis.fetch
     }
     let response;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
+    const timeoutMs = Number.parseInt(process.env.RELEASE_ARTIFACT_TIMEOUT_MS || '', 10);
+    const timeout = setTimeout(() => controller.abort(), Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 30000);
     try {
       response = await fetchImpl(`${api}/repos/${repository}/actions/artifacts/${artifactId}/zip`, {
         headers: githubHeaders,
@@ -304,6 +305,10 @@ function remoteTransport({ repository, environment, fetchImpl = globalThis.fetch
     async listContainerRuns(sha) {
       const data = await github(`/repos/${repository}/actions/workflows/container-image.yml/runs?event=workflow_run&branch=main&head_sha=${encodeURIComponent(sha)}&per_page=100`);
       return data.workflow_runs || [];
+    },
+    async listContainerArtifacts(runId) {
+      const data = await github(`/repos/${repository}/actions/runs/${encodeURIComponent(runId)}/artifacts?per_page=100`);
+      return data.artifacts || [];
     },
     async getRegistryIndex(tag) {
       const result = await registryGet(`manifests/${encodeURIComponent(tag)}`, INDEX_ACCEPT);

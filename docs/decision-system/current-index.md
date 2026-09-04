@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1208`
-- currentOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
-- currentBoundary: `1208`
-- latestRecordedStep: `1208`
-- latestStepOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+- currentStep: `1209`
+- currentOutcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
+- currentBoundary: `1209`
+- latestRecordedStep: `1209`
+- latestStepOutcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
 
 ## Current pointer
 

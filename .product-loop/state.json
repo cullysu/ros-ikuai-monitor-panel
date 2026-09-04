@@ -9,7 +9,7 @@
       "evidence": [
         "PRODUCT.md"
       ],
-      "note": "step1208-product-review-historical:current local review is historical until the new SHA is re-reviewed",
+      "note": "step1209-product-review-historical:current local review is historical until the new SHA is re-reviewed",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "spec": {
@@ -17,7 +17,7 @@
       "evidence": [
         "docs/mobile-product-contract.md"
       ],
-      "note": "step1208-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1209-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T10:41:28+00:00"
     },
     "design": {
@@ -26,7 +26,7 @@
         "_acceptance/release-matrix-mobile-independent-final2/public-single-narrow-overview.png",
         "_acceptance/mobile-native-runtime/report.json"
       ],
-      "note": "step1208-design-review-historical:accepted phone and desktop art unchanged; current review is historical",
+      "note": "step1209-design-review-historical:accepted phone and desktop art unchanged; current review is historical",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "architecture": {
@@ -34,7 +34,7 @@
       "evidence": [
         "tools/check-overview-architecture.js"
       ],
-      "note": "step1208-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1209-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T17:51:12+00:00"
     },
     "implementation": {
@@ -43,7 +43,7 @@
         "src/panel-framework/overview/mobile-app/RouterMobileApp.tsx",
         "public/assets/framework/panel-framework.js"
       ],
-      "note": "step1208-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1209-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T17:51:15+00:00"
     },
     "code-review": {
@@ -51,7 +51,7 @@
       "evidence": [
         "docs/mobile-loop-review.md"
       ],
-      "note": "step1208-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1209-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T11:12:19+00:00"
     },
     "visual-qa": {
@@ -59,7 +59,7 @@
       "evidence": [
         "_acceptance/release-matrix-mobile-independent-final2/public-resource-full-narrow-overview.png"
       ],
-      "note": "step1208-visual-review-historical:landscape compact-media readability lift only; no accepted-art change",
+      "note": "step1209-visual-review-historical:landscape compact-media readability lift only; no accepted-art change",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "state-matrix": {
@@ -67,7 +67,7 @@
       "evidence": [
         "_acceptance/release-matrix-mobile-independent-final2/report.json"
       ],
-      "note": "step1208-matrix-pending:new exact-SHA evidence required after source change",
+      "note": "step1209-matrix-pending:new exact-SHA evidence required after source change",
       "updated_at": "2026-08-30T12:08:48.440Z"
     },
     "security": {
@@ -75,7 +75,7 @@
       "evidence": [
         "docs/mobile-loop-review.md"
       ],
-      "note": "step1208-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1209-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T11:12:23+00:00"
     },
     "accessibility": {
@@ -83,7 +83,7 @@
       "evidence": [
         "docs/mobile-loop-review.md"
       ],
-      "note": "step1208-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
+      "note": "step1209-carry-forward: unchanged prior verified gate; new source fix still requires exact-SHA replay",
       "updated_at": "2026-07-14T11:12:25+00:00"
     },
     "release-hygiene": {
@@ -91,7 +91,7 @@
       "evidence": [
         "tools/check-public-release-readiness.js"
       ],
-      "note": "step1208-4169a4a-current-candidate:tracked tree committed clean; release hygiene remains pending until current exact-SHA evidence is complete",
+      "note": "step1209-4169a4a-current-candidate:tracked tree committed clean; release hygiene remains pending until current exact-SHA evidence is complete",
       "updated_at": "2026-09-04T00:00:00.000Z"
     },
     "ci-linux": {
@@ -99,7 +99,7 @@
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1208:main push run 33903381024 Linux validation green on merge commit 730b235",
+      "note": "step1209:main push run 33903381024 Linux validation green on merge commit 730b235",
       "updated_at": "2026-09-01T09:26:17.830Z"
     },
     "ci-windows": {
@@ -107,7 +107,7 @@
       "evidence": [
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/33316260102"
       ],
-      "note": "step1208:main push run 33903381024 Windows packaging green including 24/24 Edge matrix, preflight, EXE, bundle, manifest",
+      "note": "step1209:main push run 33903381024 Windows packaging green including 24/24 Edge matrix, preflight, EXE, bundle, manifest",
       "updated_at": "2026-09-01T09:26:17.830Z"
     },
     "ci-container": {
@@ -116,11 +116,11 @@
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328479359",
         "https://github.com/cullysu/ros-ikuai-monitor-panel/actions/runs/29328766281"
       ],
-      "note": "step1208:container run 33907690062 published ghcr image sha-730b235 with bound evidence; local CL verifier aligned to real artifact layouts, GHCR private-package read auth pending user",
+      "note": "step1209:CL VERDICT PASS on main 07caf1e: CI run 33910586387 dual green, container run 33914676606, image sha-07caf1e verified live on GHCR (amd64+arm64)",
       "updated_at": "2026-09-01T09:26:17.830Z"
     }
   },
-  "latest_decision_step": 1208,
-  "latest_decision_outcome": "1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending",
-  "current_surface_step": 1208
+  "latest_decision_step": 1209,
+  "latest_decision_outcome": "1209:exact-sha-cl-verified-pass-on-main-image-published",
+  "current_surface_step": 1209
 }

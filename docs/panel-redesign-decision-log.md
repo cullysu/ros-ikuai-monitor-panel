@@ -30923,3 +30923,24 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - 唯一剩余：GHCR 私有包的 registry 读取——本地 gh OAuth token 无 `read:packages` scope，匿名 401。需用户执行 `gh auth refresh -h github.com -s read:packages` 或将包设为 public，verifier 即可全绿。
 
 - outcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+
+---
+
+## Step 1209：exact-SHA CL 全链 PASS，镜像已发布（2026-09-05）
+
+### 已核实现场
+
+- 用户完成 `gh auth refresh -s read:packages`（浏览器设备授权）。
+- main push CI Run `33910586387`（head `07caf1e285b6e953307e14697cda4cea2d271374`，PR #2 合并）：**双 job 全绿**。
+- Container image Run `33914676606`：成功发布 `ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-07caf1e.../arm64 双平台镜像。
+- `check-exact-sha-release-cl.js 07caf1e...`：**CL VERDICT: PASS**——远端 main、push CI 双绿、5 类 CI artifact（含 24/24 Edge 矩阵 PNG 逐字节解码与哈希唯一性、bundle/manifest 互证、SHA256SUMS 绑定）、container run 证据、GHCR 活体 OCI index（revision 注解 + 双平台描述符）全部通过。
+- verifier 首次真实全链执行暴露并修复两处工具缺陷：artifact 下载 30s 硬编码超时（17.8MB bundle 慢链路不够）→ `RELEASE_ARTIFACT_TIMEOUT_MS` 可配置；远程 transport 缺 `listContainerArtifacts` 方法 → 补齐。
+
+### 发布隐私与安全审计（主对话直查）
+
+- 镜像内容（Dockerfile 上下文仅 requirements/app.py/panel_backend/public）：无邮箱、无个人路径、除产品默认 192.168.88.1 外无内网 IP；`docs/security/CREDENTIALS.md` 为凭据安全指南（非凭据）；`.dockerignore` 排除 .git/.env/data/验收产物。
+- 镜像 labels 仅 title/description/source/revision，无个人信息；后端公开 profile 默认关闭 readonly-diagnostics/IP 写/管理会话暴露，默认绑定 127.0.0.1。
+- 仓库本已 PUBLIC；git 历史作者邮箱与 docs 中桌面基线 IP 192.168.3.5 属已公开事实（P2，不在镜像内）。
+- 包改 Public 的最终开关保留给用户在确认本审计后执行。
+
+- outcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
