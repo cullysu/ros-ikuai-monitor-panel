@@ -34,7 +34,7 @@
 - Windows root cause: the primary `[data-desktop-wan-evidence]` section is a ~506px stack that cannot fit a 375px/390px first viewport, and `scrollIntoViewIfNeeded` leaves its bottom 1.17px past the 1px tolerance. The compact landscape workbench now bounds the WAN rail (`max-height: calc(100vh - 24px)`, border-box, internal vertical scroll, `scroll-margin-bottom: 8px`), so the revealed rail box lands at viewport bottom minus ~7px with zero clipping and no sub-12px text; the two-column grammar and all other sizes are unchanged.
 - Local verification: CSS-equivalent reproduction shows container clipping 0 and primary reachable at both 667×375 and 844×390; asset identity, static assets, report truth, workflow integrity, and a fresh desktop-density run all pass after rebuild.
 - No Linux, Windows, or CL/GHCR result is current green evidence for the next candidate. Every result must bind to the exact SHA after this correction is committed and pushed.
-- outcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
+- outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
 
 ## Previous decision record: Step 1200
 
@@ -68,7 +68,7 @@
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
 | Release hygiene | pending | Local tracked candidate is clean; current exact-SHA release evidence is not complete. |
 | CI Linux | pending | Run 33832746276 passed all route matrices; readiness evidence completed via the real mobile matrix plus explicit Edge delegation; fresh exact-SHA run required. |
-| CI Windows | failed on Run 33832746276 | `landscape-667x375-normal-overview` keyboard traversal; the normal overview now exposes a real keyboard entry awaiting a fresh exact-SHA run. |
+| CI Windows | failed on Run 33850371045 | `phone-320::normal` device-pixel diagnostic was rejected by the old CSS-size check; DPR-aware evidence validation fixed, fresh exact-SHA run required. |
 | CL/GHCR | pending | No current exact-SHA evidence is available for the next candidate. |
 | R14 Release | closed | Do not upload or publish until every required gate is green on one exact SHA. |
 

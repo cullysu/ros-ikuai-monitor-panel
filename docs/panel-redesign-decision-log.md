@@ -30799,3 +30799,30 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
 
 - outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1204：collection 平板阈值与 Edge DPR 证据尺寸修复（2026-09-04）
+
+### 已核实现场
+
+- Run `33850371045`（head `a64650b`）终态 failure，Linux/Windows 均失败。
+- Linux 首失败为 `collection-down × tablet768`，工作区 bottom=632px，门槛 1024×0.62=634.88px；fleet 场景已经通过。
+- Windows 首失败为 `phone-320::normal`，diagnostic PNG 为 640×1136（Edge 200% 设备像素），旧校验只接受 CSS 320×568。
+
+### 实施的最小修复
+
+1. collection 场景平板任务区最小高度由 218px 调为 220px；wrapper 单格复验 bottom=636px、cell pass=true。
+2. Edge diagnostic 校验接受 CSS 像素或与已验证 DPR 对应的设备像素；仍拒绝不足尺寸、非目标尺寸和复用哈希，Windows HWND 实拍仍独立绑定 owned capture。
+3. fleet/手机 runtime scene 等待与 mock 失败 SFP 修复保留。
+
+### 本地验证
+
+- `collection-down × tablet768` 单格 pass=true。
+- mobile model、mock architecture、toolbar readiness/offline fixture、types、build、asset identity、workflow integrity 全部通过。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
+
+- outcome: `1204:collection-tablet-threshold-and-dpr-evidence-fixed-awaiting-exact-sha-ci`
