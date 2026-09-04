@@ -5,7 +5,7 @@
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `1201`
+- coveredStepMax: `1202`
 - latestRecordedStep: `1197`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.

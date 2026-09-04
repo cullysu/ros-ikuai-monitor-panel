@@ -324,6 +324,9 @@ export function LegacyDesktopOverview({ snapshot, state, onNavigate, runtimeMana
             <SummaryTile label="连接数" value={compactCount(model.evidenceMode === "unavailable" ? null : state.facts.connections.total)} note={modeNote} />
             <SummaryTile label="活跃会话" value={model.evidenceMode === "unavailable" ? "—" : String(state.facts.connections.active)} note={modeNote} />
           </div>
+          {/* The no-risk overview must still leave keyboard users an operational
+           * entry inside main; without it the surface exposes zero tab stops. */}
+          <button className="legacy-focus-link" type="button" onClick={() => onNavigate("interfaces")}>查看接口状态<ChevronRight aria-hidden="true" size={16} /></button>
         </>}
       </section>
     </div>

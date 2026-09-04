@@ -1,9 +1,9 @@
 - validForCommit: false; Step1188 is a documented pre-publication boundary and the clean candidate is not yet formed
 - status: `current-index`
 - supersededBy: `null`
-- currentBoundaryForStep: `1201`
-- latestRecordedStep: `1201`
-- latestStepOutcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1202`
+- latestRecordedStep: `1202`
+- latestStepOutcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.

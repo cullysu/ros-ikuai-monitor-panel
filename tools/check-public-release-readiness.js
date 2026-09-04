@@ -134,11 +134,14 @@ function parseArgs(argv = process.argv.slice(2)) {
     staticOnly: false,
     allowDirtyEngineering: false,
     releaseCandidate: false,
+    edgeEvidenceGatedBy: '',
     candidateEvidenceArgs: [],
     help: false,
   };
   for (const item of argv) {
-    if (item === '--static-only' || item === '--skip-matrix') {
+    if (item.startsWith('--edge-evidence-gated-by=')) {
+      args.edgeEvidenceGatedBy = item.slice('--edge-evidence-gated-by='.length).trim();
+    } else if (item === '--static-only' || item === '--skip-matrix') {
       args.staticOnly = true;
     } else if (item === '--require-matrix' || item === '--full-matrix') {
       args.staticOnly = false;
@@ -164,6 +167,12 @@ function parseArgs(argv = process.argv.slice(2)) {
   if (args.releaseCandidate && (args.staticOnly || args.allowDirtyEngineering)) {
     throw new Error('--release-candidate cannot be combined with static-only or dirty engineering modes');
   }
+  if (args.edgeEvidenceGatedBy && args.releaseCandidate) {
+    throw new Error('--edge-evidence-gated-by cannot be combined with --release-candidate: release-candidate evidence must include the real Edge toolbar report');
+  }
+  if (args.edgeEvidenceGatedBy && args.staticOnly) {
+    throw new Error('--edge-evidence-gated-by is a matrix-evidence boundary and cannot be combined with static-only');
+  }
   return args;
 }
 
@@ -180,6 +189,7 @@ Options:
   --engineering-worktree  Validate current dirty-worktree engineering evidence without granting release eligibility.
   --allow-dirty-engineering  Alias for --engineering-worktree.
   --release-candidate  Require clean exact-SHA matrices plus external review/RouterOS-soak candidate evidence; external promotion authority remains separate.
+  --edge-evidence-gated-by=<job>  Delegate the real Edge toolbar 200% report to the named CI job on the same commit; every other matrix evidence requirement stays enforced.
   Candidate evidence options use --name=value and are forwarded to tools/check-release-candidate-evidence.js.
 `.trim();
 }
@@ -972,7 +982,15 @@ function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
     ROUTE_STATE_MATRIX_CELLS,
     { requiredWorktreeIdentity: currentIdentity, allowBoundedScope: true }
   ));
-  collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
+  if (options.edgeEvidenceGatedBy) {
+    evidence.toolbarZoom200 = {
+      delegated: true,
+      gatedByJob: options.edgeEvidenceGatedBy,
+      boundary: `real Edge toolbar 200% evidence is gated by the "${options.edgeEvidenceGatedBy}" CI job on commit ${currentIdentity.commit}`,
+    };
+  } else {
+    collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
+  }
   collect('focusedSourceRuntime', () => assertFocusedSourceRuntimeReports(rootDir, {
     currentIdentity: focusedCurrentIdentity,
   }));
@@ -1403,7 +1421,11 @@ function main(argv = process.argv.slice(2)) {
   } else {
     const evidence = assertRequiredMatrixEvidence(ROOT, {
       allowDirtyEngineering: args.allowDirtyEngineering,
+      edgeEvidenceGatedBy: args.edgeEvidenceGatedBy,
     });
+    if (evidence.toolbarZoom200?.delegated) {
+      console.log(`[boundary] ${evidence.toolbarZoom200.boundary}`);
+    }
     console.log(matrixEvidenceStatusMessage(
       evidence.matrixIdentity,
       path.relative(ROOT, evidence.overview.reportPath)

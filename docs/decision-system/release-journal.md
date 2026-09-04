@@ -1,9 +1,9 @@
 - status: `current-journal`
 - validForCommit: false; Step1201 bounds the WAN rail and rebinds machine gate notes, repairs the landscape clipping, and re-syncs the report-truth contract; the next candidate is not yet published
 - supersededBy: null
-- currentStep: `1201`
-- currentOutcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
-- latestStepOutcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
+- currentStep: `1202`
+- currentOutcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
+- latestStepOutcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 

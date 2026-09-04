@@ -146,8 +146,11 @@ jobs:
             --strict-responsive \
             --out _acceptance/route-state-matrix-${{ github.sha }}
 
+      - name: Public mobile reference runtime matrix
+        run: npm run check:mobile-reference-runtime
+
       - name: Public release readiness
-        run: node tools/check-public-release-readiness.js
+        run: node tools/check-public-release-readiness.js --edge-evidence-gated-by=windows-packaging
 
       - name: Upload public browser predeploy report
         if: always()

@@ -30712,3 +30712,34 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - 未修改手机基线、桌面 1366/1440 视觉、数据语义；发布保持 CLOSED/UNPROVEN，等待本候选推送后的三端 exact-SHA 证据。
 
 - outcome: `1201:wan-rail-bounded-primary-reachable-gate-notes-rebound-awaiting-exact-sha-ci`
+
+---
+
+## Step 1202：Linux 补齐手机矩阵证据、Edge 证据显式委托、桌面 normal 场景键盘入口（2026-09-04）
+
+### 已核实现场
+
+- Run `33832746276`（head SHA `d3e6762`）终态 failure，但两端各推进一层：
+  - Linux 首次通过 full-route / overview / route-state 三个矩阵（有界分片退出语义修复获真实 CI 验证），新失败在 `Public release readiness`：默认模式要求 `_acceptance/mobile-reference-runtime/report.json`（workflow 从未在 CI 生成）与 `_acceptance/edge-toolbar-zoom200/report.json`（仅 Windows job 产出，并行 job 结构上不可能回流 Linux）。该默认模式 readiness 步骤自 2026-06（8f0310e）就在 CI 里，此前所有 Run 都死在更早步骤，本轮首次被执行到。
+  - Windows 首次通过 `landscape-667x375::normal` 的 primary 可达断言（WAN 栏限高内滚修复获真实 CI 验证），推进到键盘遍历断言失败。
+- 键盘遍历根因（本地 CSS 等效复现确认）：桌面概览的对象工作区（全部按钮）只在 risk 分支渲染；normal 分支是纯展示的带宽摘要——main 内可 Tab 控件数为 0，`expectedCount > 0` 结构性失败，667/844 横屏 normal 格永远无法通过。1366 下同样为 0（density 检查能过是因为它用 resource-full 场景）。
+
+### 实施的最小修复
+
+1. `tools/check-public-release-readiness.js`：新增 `--edge-evidence-gated-by=<job>`——显式把真实 Edge 200% 证据边界委托给同 SHA 的 Windows job，其余全部矩阵证据照常强制；禁止与 `--release-candidate` 和 `--static-only` 组合；委托边界在输出中显式打印。
+2. `.github/workflows/ci.yml`：Linux job 在 readiness 前新增 `npm run check:mobile-reference-runtime`（真实 7×8 手机矩阵证据，非 smoke）；readiness 改为带 `--edge-evidence-gated-by=windows-packaging` 调用。
+3. `tools/check-workflow-release-integrity.js`：契约新增断言钉住上述两处（防止回退为裸默认或 static-only）。
+4. `LegacyDesktopOverview.tsx`：normal 分支带宽摘要下新增真实导航入口按钮（`.legacy-focus-link` 复用既有 12px 字号与 2px :focus-visible 焦点环），目标为接口状态页；risk 分支与其余尺寸不变。
+
+### 本地验证
+
+- 键盘遍历复现：expected=1/visited=1、focusVisible=true、outline=2px solid、fullyVisible、withinMain、不被遮挡。
+- 裁切 0（667/844）、<12px 仅剩托管运行不渲染的 fixture bar；build/types/asset-identity/static-assets 绿。
+- CI 同款桌面契约：desktop-v1030、no-snapshot、incident-hierarchy、normal-density、information-efficiency、top-band-continuity、resource-density-v2 全部 PASS。
+- decision-ledger-sync、current-pointer、workflow-release-integrity 本地 PASS。
+
+### 边界
+
+- 发布保持 CLOSED/UNPROVEN；本候选推送后需同一 exact SHA 的 Linux/Windows/CL 复验；real Edge 矩阵仍由 Windows job 独立把关。
+
+- outcome: `1202:linux-matrix-evidence-edge-delegated-keyboard-entry-awaiting-exact-sha-ci`
