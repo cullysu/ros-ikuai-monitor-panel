@@ -1,9 +1,9 @@
 - status: `current-journal`
 - validForCommit: false; Step1201 bounds the WAN rail and rebinds machine gate notes, repairs the landscape clipping, and re-syncs the report-truth contract; the next candidate is not yet published
 - supersededBy: null
-- currentStep: `1207`
-- currentOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
-- latestStepOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
+- currentStep: `1208`
+- currentOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+- latestStepOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 
