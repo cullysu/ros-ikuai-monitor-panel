@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: false; this is a local repair candidate only and is not release evidence
-- currentHandoffForStep: `1208`
+- currentHandoffForStep: `1209`
 - supersededBy: `docs/decision-system/current-state.md`
 - fullHistory: `docs/panel-redesign-decision-log.md`
 - updated: `2026-09-04`
-- latestRecordedStep: `1208`
-- latestStepOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+- latestRecordedStep: `1209`
+- latestStepOutcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
 - releaseCandidate: none; this is not a release candidate and GitHub publication is closed
 - currentConclusion: **FAIL overall / the accepted four-screen phone reference remains unchanged / the next exact-SHA candidate still needs fresh Linux, Windows and CL/GHCR evidence.**
 
@@ -16,7 +16,7 @@
 - Run `33489058119` is historical evidence for remote SHA `ba2e73f`; Linux failed at `Current decision truth authority`, and Windows failed at `Real Edge toolbar 200 percent matrix`. Those results are not evidence for the local candidate.
 - The accepted four-screen mobile reference and the user-selected `192.168.3.5` / iPad desktop direction remain unchanged. This repair does not modify product UI or network behavior.
 - The release remains **FAIL / CLOSED**. No upload, publish, or CL/GHCR claim is valid until one clean exact SHA has fresh green Linux, Windows and CL/GHCR evidence.
-- outcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+- outcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
 
 ## Gate boundary
 

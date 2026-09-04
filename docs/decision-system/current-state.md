@@ -1,10 +1,10 @@
 - validForCommit: false; current worktree is uncommitted (Step1208 CL-verifier alignment pending commit; main CI and Container image are fully green on 730b235); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1208`
-- currentConclusionForStep: `1208`
-- latestRecordedStep: `1208`
-- latestStepOutcome: `1208:ci-and-container-fully-green-on-main-cl-verifier-aligned-github-packages-auth-pending`
+- currentBoundaryForStep: `1209`
+- currentConclusionForStep: `1209`
+- latestRecordedStep: `1209`
+- latestStepOutcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,13 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1208
+## Current decision record: Step 1209
+
+- CL VERDICT: PASS. The exact-SHA release verifier validated the complete chain on main 07caf1e: remote main identity, push CI run 33910586387 with both required jobs green, all five CI evidence artifacts (byte-decoded PNGs, hash uniqueness, SHA256SUMS bindings, artifact proofs), container run 33914676606, and the live GHCR OCI index sha-07caf1e with revision annotation and linux/amd64+arm64 descriptors. Published image digest sha256:66f6d7bbfa0dfb1ba3f202834e78048df6661a97e1714bc9d1e33a5fc33588c0.
+- Verifier tooling fixes from its first real-chain execution: RELEASE_ARTIFACT_TIMEOUT_MS makes the artifact download timeout configurable (30s default kept), and remoteTransport gains the missing listContainerArtifacts method.
+- outcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
+
+## Previous decision record: Step 1208
 
 - Branch PR run 33898958730 (head 2b89101) finished with both jobs green; PR #1 merged into main as 730b235 after explicit user goal to complete the CL chain. The main push CI run 33903381024 is fully green — including the first-ever Windows EXE/bundle/manifest packaging pass — and container run 33907690062 published the first GHCR multi-platform image sha-730b235 with fully bound evidence.
 - The exact-SHA CL verifier run against the real chain exposed two evidence-generation path defects (Linux SHA256SUMS directory prefix; Windows toolbar manifest stale prefix) with all 50 hashes otherwise correct; the verifier now binds these by basename while keeping count, uniqueness, and hash equality strict. Every other stage passes against real artifacts.
