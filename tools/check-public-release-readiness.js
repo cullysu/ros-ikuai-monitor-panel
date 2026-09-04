@@ -340,12 +340,26 @@ function assertNodeContract(relPath, args = []) {
   }
 }
 
+function resolvePythonExecutable() {
+  const candidates = process.platform === 'win32'
+    ? [
+        'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe',
+        'python',
+      ]
+    : ['python3', 'python'];
+  if (process.env.PYTHON_EXECUTABLE) return process.env.PYTHON_EXECUTABLE;
+  for (const candidate of candidates) {
+    if (path.isAbsolute(candidate)) {
+      try { if (fs.existsSync(candidate)) return candidate; } catch { /* probe next */ }
+    } else {
+      return candidate;
+    }
+  }
+  return candidates[candidates.length - 1];
+}
+
 function assertDecisionLedgerFreshness(rootDir = ROOT) {
-  const python =
-    process.env.PYTHON_EXECUTABLE ||
-    (process.platform === 'win32'
-      ? 'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe'
-      : 'python3');
+  const python = resolvePythonExecutable();
   const args = [path.join(rootDir, 'tools', 'check-decision-ledger-sync.py')];
   const result = runReadinessChild('python:decision-ledger-sync', python, args, { cwd: rootDir });
   if (result.error || result.status !== 0) {
@@ -591,11 +605,7 @@ function reportNameMatchesKind(name, kind) {
 }
 
 function assertPythonDependencyLockContract(rootDir = ROOT) {
-  const python =
-    process.env.PYTHON_EXECUTABLE ||
-    (process.platform === 'win32'
-      ? 'C:\\Users\\cully\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe'
-      : 'python3');
+  const python = resolvePythonExecutable();
   const args = [path.join(rootDir, 'tools', 'check-python-dependency-lock.py')];
   const result = runReadinessChild('python:dependency-lock', python, args, { cwd: rootDir });
   if (result.error || result.status !== 0) {

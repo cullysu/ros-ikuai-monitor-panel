@@ -30877,3 +30877,26 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - release 保持 CLOSED/UNPROVEN；等待新 exact-SHA 的 Linux/Windows/CL/GHCR。
 
 - outcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1207：readiness Python 解析 runner 化与 Windows preflight 解雷（2026-09-05）
+
+### 已核实现场
+
+- Run `33893973534`（head `28938db`）：**Linux validation 连续第二次全绿；Windows 真实 Edge 200% 矩阵 24/24 首次全部通过**（Step1206 可读性修复获真实 CI 验证）。新失败推进到 `Packaging preflight`（步骤 11）：`python:decision-ledger-sync` 阶段 elapsedMs=3、status=null——readiness 在 win32 硬编码本机 codex-runtime python 路径，GitHub runner 不存在导致 spawn 即死。这是 Windows job 历史上首次活着走过矩阵后踩到的老雷。
+- 子代理预检（GLM-5.3-Flash）：844×390 剩余两格本地全项 PASS（裁切 0、<12px 0、primary 可达、route 键盘 14/14）；CL/GHCR 收口链路已产出 runbook（GHCR 仅 push→main 触发，PR run 不作 CL 证据）。
+
+### 实施的最小修复
+
+- `check-public-release-readiness.js`：新增 `resolvePythonExecutable()`——PYTHON_EXECUTABLE 优先；win32 先探测既有本机路径（存在才用），否则回落 `python`（runner 的 setup-python）；非 win32 保持 python3/python。decision-ledger-sync 与 dependency-lock 两处共用。
+
+### 本地验证
+
+- 本机 static-only readiness PASS（本地路径解析行为不变）；semantic-gates、release-blockers、workflow-integrity PASS；语法检查通过。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；Windows preflight 之后的 EXE/bundle/manifest 步骤与 GHCR 链路仍需真实 CI 验证。
+
+- outcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`

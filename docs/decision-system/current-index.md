@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1206`
-- currentOutcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
-- currentBoundary: `1206`
-- latestRecordedStep: `1206`
-- latestStepOutcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
+- currentStep: `1207`
+- currentOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
+- currentBoundary: `1207`
+- latestRecordedStep: `1207`
+- latestStepOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
 
 ## Current pointer
 

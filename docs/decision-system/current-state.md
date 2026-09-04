@@ -1,10 +1,10 @@
-- validForCommit: false; current worktree is uncommitted (Step1206 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
+- validForCommit: false; current worktree is uncommitted (Step1207 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1206`
-- currentConclusionForStep: `1206`
-- latestRecordedStep: `1206`
-- latestStepOutcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1207`
+- currentConclusionForStep: `1207`
+- latestRecordedStep: `1207`
+- latestStepOutcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,14 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1206
+## Current decision record: Step 1207
+
+- Run `33893973534`: Linux validation green for the second consecutive exact SHA and the Windows real Edge toolbar 200% matrix passed all 24 cells for the first time (the readability fix is verified on real CI). Windows then failed at Packaging preflight: readiness resolved python to a hardcoded local codex-runtime path that does not exist on the runner (spawn dead in 3ms).
+- `resolvePythonExecutable()` now prefers PYTHON_EXECUTABLE, probes the legacy local path only when it exists, and falls back to `python` on the runner (python3/python elsewhere); both python phases share it.
+- Subagent precheck: the remaining 844x390 cells pass every local gate (clipping 0, readability 0, primary reachable, route keyboard 14/14); the CL/GHCR closeout runbook is recorded under zcode-handoff-20260904.
+- outcome: `1207:edge-matrix-24of24-green-python-resolution-runner-safe-awaiting-exact-sha-ci`
+
+## Previous decision record: Step 1206
 
 - Run `33889082307` delivered the first fully green Linux validation (three route matrices, the complete 49-cell mobile runtime matrix, and the readiness consumer fix all passed). Windows reached cell 22/24 where the landscape-667x375 interfaces route passed the clipping assertion (the compressible-column fix is verified on real CI) and then failed the 12px readability floor: the `.ddw-table-pane > header` `<small>` inherits UA `smaller` sizing (10px).
 - The short-landscape breakpoint now pins that small to 12px. Local reproduction reports zero sub-12px groups and zero container clips at both 667x375 and 844x390; build, types, asset identity, semantic gates, toolbar fixtures, mobile model and workflow integrity pass.
@@ -81,7 +88,7 @@
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
 | Release hygiene | pending | Local tracked candidate is clean; current exact-SHA release evidence is not complete. |
 | CI Linux | pending | Run 33832746276 passed all route matrices; readiness evidence completed via the real mobile matrix plus explicit Edge delegation; fresh exact-SHA run required. |
-| CI Windows | failed on Run 33889082307 | cell 22/24 readability floor; header small pinned to 12px, fresh exact-SHA run required. |
+| CI Windows | failed on Run 33893973534 | Edge matrix 24/24 green; preflight python resolution fixed for the runner, fresh exact-SHA run required. |
 | CL/GHCR | pending | No current exact-SHA evidence is available for the next candidate. |
 | R14 Release | closed | Do not upload or publish until every required gate is green on one exact SHA. |
 
