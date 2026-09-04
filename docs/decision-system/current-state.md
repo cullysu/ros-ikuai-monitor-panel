@@ -1,10 +1,10 @@
-- validForCommit: false; current worktree is uncommitted (Step1205 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
+- validForCommit: false; current worktree is uncommitted (Step1206 CI-repair fixes pending commit as the next clean candidate); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1205`
-- currentConclusionForStep: `1205`
-- latestRecordedStep: `1205`
-- latestStepOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
+- currentBoundaryForStep: `1206`
+- currentConclusionForStep: `1206`
+- latestRecordedStep: `1206`
+- latestStepOutcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,13 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1205
+## Current decision record: Step 1206
+
+- Run `33889082307` delivered the first fully green Linux validation (three route matrices, the complete 49-cell mobile runtime matrix, and the readiness consumer fix all passed). Windows reached cell 22/24 where the landscape-667x375 interfaces route passed the clipping assertion (the compressible-column fix is verified on real CI) and then failed the 12px readability floor: the `.ddw-table-pane > header` `<small>` inherits UA `smaller` sizing (10px).
+- The short-landscape breakpoint now pins that small to 12px. Local reproduction reports zero sub-12px groups and zero container clips at both 667x375 and 844x390; build, types, asset identity, semantic gates, toolbar fixtures, mobile model and workflow integrity pass.
+- outcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
+
+## Previous decision record: Step 1205
 
 - Run `33860099898` failed on both ends after further progress. Linux passed the mobile runtime matrix itself (runPass/complete true, all 49 cells captured) but readiness reported total=0 because the validator read `matrix.cells` while the generator writes top-level `report.cells`; the consumer is now aligned and the three fail-closed fixture cases moved with it.
 - Windows reached cell 22/24 and failed `landscape-667x375::interfaces-down` with route text clipped by the overflow-hidden domain workspace: `.ddw-body` minimum columns (520+430px) exceeded the ~600px workbench. A compressible two-column grammar now applies on the 600–899 short-landscape desktop breakpoint; local reproduction drops container clipping 38/22 to 0/0.
@@ -75,7 +81,7 @@
 | Desktop direction | pass | User-selected 192.168.3.5/iPad desktop direction remains separate. |
 | Release hygiene | pending | Local tracked candidate is clean; current exact-SHA release evidence is not complete. |
 | CI Linux | pending | Run 33832746276 passed all route matrices; readiness evidence completed via the real mobile matrix plus explicit Edge delegation; fresh exact-SHA run required. |
-| CI Windows | failed on Run 33860099898 | cell 22/24 route text clipped at 667 landscape; compressible workspace columns fixed, fresh exact-SHA run required. |
+| CI Windows | failed on Run 33889082307 | cell 22/24 readability floor; header small pinned to 12px, fresh exact-SHA run required. |
 | CL/GHCR | pending | No current exact-SHA evidence is available for the next candidate. |
 | R14 Release | closed | Do not upload or publish until every required gate is green on one exact SHA. |
 

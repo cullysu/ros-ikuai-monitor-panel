@@ -30853,3 +30853,27 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - release 保持 CLOSED/UNPROVEN；新候选需重新跑 Linux/Windows/CL/GHCR exact-SHA。
 
 - outcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
+
+---
+
+## Step 1206：route 表头 small 提升至 12px 可读性下限（2026-09-04）
+
+### 已核实现场
+
+- Run `33889082307`（head `11983b9`）：**Linux validation 首次全绿**（含三大路由矩阵、49/49 手机矩阵、readiness 字段修复）。Windows 推进到 22/24：`landscape-667x375::interfaces-down` 通过了容器裁切断言（列压缩修复生效），随即失败于 "operational text below the 12px readability floor"。
+- 本地等效复现（同 fixture/同视口/同 CSS）：route 页面唯一 <12px 节点是 `.ddw-table-pane > header` 内的 `<small>`"当前只读快照"——header 字号 12px，`<small>` 无显式规则，被 UA `smaller` 折算为 10px。
+
+### 实施的最小修复
+
+- 在 Step1205 的 600–899 横屏短高断点内为 `.ddw-table-pane > header small` 显式设置 `font-size: 12px`。不改桌面 1366/1440 基线与手机基线。
+
+### 本地验证
+
+- route 可读性扫描：667×375 与 844×390 的 <12px 组数均为 0。
+- route 容器裁切保持 0/0；build、types、asset-identity、semantic-gates、toolbar readiness/offline fixture、mobile model、workflow-integrity 全部 PASS。
+
+### 边界
+
+- release 保持 CLOSED/UNPROVEN；等待新 exact-SHA 的 Linux/Windows/CL/GHCR。
+
+- outcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`

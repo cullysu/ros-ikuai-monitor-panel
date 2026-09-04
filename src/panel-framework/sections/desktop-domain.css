@@ -944,6 +944,8 @@
 @media (min-width: 600px) and (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
   .ddw-body { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
 
+  .ddw-table-pane > header small { font-size: 12px; }
+
   .ddw-toolbar {
     grid-template-columns: minmax(0, 1fr) auto;
     min-height: 42px;

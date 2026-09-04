@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1205`
-- currentOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
-- currentBoundary: `1205`
-- latestRecordedStep: `1205`
-- latestStepOutcome: `1205:mobile-report-cells-field-and-route-landscape-columns-fixed-awaiting-exact-sha-ci`
+- currentStep: `1206`
+- currentOutcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
+- currentBoundary: `1206`
+- latestRecordedStep: `1206`
+- latestStepOutcome: `1206:route-header-small-12px-readability-fixed-awaiting-exact-sha-ci`
 
 ## Current pointer
 
