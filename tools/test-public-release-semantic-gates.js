@@ -263,6 +263,7 @@ assert.deepEqual(parseArgs(['--engineering-worktree']), {
   staticOnly: false,
   allowDirtyEngineering: true,
   releaseCandidate: false,
+  edgeEvidenceGatedBy: '',
   candidateEvidenceArgs: [],
   help: false,
 });
@@ -272,15 +273,38 @@ assert.deepEqual(
     staticOnly: false,
     allowDirtyEngineering: false,
     releaseCandidate: true,
+    edgeEvidenceGatedBy: '',
     candidateEvidenceArgs: [`--candidate-commit=${'a'.repeat(40)}`],
     help: false,
   },
   'release-candidate mode must preserve exact external evidence arguments'
 );
+assert.deepEqual(
+  parseArgs(['--edge-evidence-gated-by=windows-packaging']),
+  {
+    staticOnly: false,
+    allowDirtyEngineering: false,
+    releaseCandidate: false,
+    edgeEvidenceGatedBy: 'windows-packaging',
+    candidateEvidenceArgs: [],
+    help: false,
+  },
+  'Linux CI may delegate only the real Edge toolbar report to the Windows job'
+);
 assert.throws(
   () => parseArgs([`--candidate-commit=${'a'.repeat(40)}`]),
   /require --release-candidate/,
   'candidate evidence cannot be smuggled into an ordinary readiness run'
+);
+assert.throws(
+  () => parseArgs(['--edge-evidence-gated-by=windows-packaging', '--release-candidate']),
+  /cannot be combined with --release-candidate/,
+  'Edge delegation cannot be used to skip release-candidate Edge evidence'
+);
+assert.throws(
+  () => parseArgs(['--edge-evidence-gated-by=windows-packaging', '--static-only']),
+  /cannot be combined with static-only/,
+  'Edge delegation is a matrix-evidence boundary and cannot hide inside static-only'
 );
 const currentAccessibilityGateSource = fs.readFileSync(path.join(__dirname, 'check-mobile-reference-accessibility-runtime.js'), 'utf8');
 const responsiveBoundaryGateSource = fs.readFileSync(path.join(__dirname, 'check-responsive-boundary-contract.js'), 'utf8');
