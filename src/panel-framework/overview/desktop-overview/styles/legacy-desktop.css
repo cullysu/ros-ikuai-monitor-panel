@@ -1060,11 +1060,11 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
     white-space: normal;
   }
 
+  /* Real CJK glyphs run wider than the former tofu fallback; the unavailable
+   * verdict must wrap like every other scenario instead of ellipsis-clipping
+   * operational text at this breakpoint. */
   main[data-desktop-overview][data-desktop-overview-scenario="no-snapshot"] .legacy-verdict small {
-    overflow: hidden;
-    overflow-wrap: normal;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   .legacy-summary-strip {
