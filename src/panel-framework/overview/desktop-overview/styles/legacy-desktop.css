@@ -1015,17 +1015,17 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
  */
 @media (orientation: landscape) and (min-width: 600px) and (max-width: 899px) and (max-height: 500px) {
   .legacy-desktop-shell {
-    padding: 7px 10px 20px;
+    padding: 6px 8px 16px;
   }
 
   .legacy-fixture-bar {
-    min-height: 24px;
-    margin: -3px 0 4px;
+    min-height: 22px;
+    margin: -3px 0 3px;
   }
 
   .legacy-page-header {
-    min-height: 34px;
-    padding-bottom: 4px;
+    min-height: 30px;
+    padding-bottom: 3px;
   }
 
   .legacy-page-header h1 {
@@ -1069,13 +1069,13 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
 
   .legacy-summary-strip {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
-    margin-top: 7px;
+    gap: 5px;
+    margin-top: 5px;
   }
 
   .legacy-summary-tile {
-    min-height: 48px;
-    padding: 5px 7px 4px;
+    min-height: 42px;
+    padding: 4px 6px 3px;
     border-radius: 8px;
   }
 
@@ -1089,8 +1089,8 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
 
   .legacy-main-grid {
     grid-template-columns: minmax(210px, 36%) minmax(0, 64%);
-    gap: 8px;
-    margin-top: 8px;
+    gap: 6px;
+    margin-top: 6px;
   }
 
   .legacy-wan-column,
@@ -1114,8 +1114,8 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   }
 
   .legacy-section-heading {
-    min-height: 20px;
-    margin-bottom: 5px;
+    min-height: 18px;
+    margin-bottom: 4px;
   }
 
   .legacy-section-heading h2 {
@@ -1123,7 +1123,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   }
 
   .legacy-wan-lead {
-    padding: 7px;
+    padding: 6px;
     border-radius: 8px;
   }
 
@@ -1143,8 +1143,8 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   }
 
   .legacy-fact-grid > div {
-    min-height: 38px;
-    padding: 5px 0 4px;
+    min-height: 34px;
+    padding: 4px 0 3px;
   }
 
   .legacy-fact-grid b {
@@ -1182,8 +1182,8 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   }
 
   .legacy-chart svg {
-    height: 82px;
-    margin-top: 5px;
+    height: 72px;
+    margin-top: 4px;
   }
 
   .legacy-resource-heading,
@@ -1200,7 +1200,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   }
 
   .legacy-resource-card svg {
-    height: 48px;
+    height: 42px;
   }
 
   .legacy-object-row {
