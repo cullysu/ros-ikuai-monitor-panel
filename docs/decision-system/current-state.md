@@ -1,10 +1,10 @@
 - validForCommit: false; current worktree is uncommitted (Step1208 CL-verifier alignment pending commit; main CI and Container image are fully green on 730b235); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1210`
-- currentConclusionForStep: `1210`
-- latestRecordedStep: `1210`
-- latestStepOutcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
+- currentBoundaryForStep: `1211`
+- currentConclusionForStep: `1211`
+- latestRecordedStep: `1211`
+- latestStepOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,13 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1210
+## Current decision record: Step 1211
+
+- Run 34157894362 Linux failed in the runtime-browser smoke because the tablet workspace thresholds (height >=190, bottom >=0.62 viewport) were coupled to the former 88px task cards; the user-directed 64px cards measured 166px. Thresholds recalibrated to the scaled design (height >=150, bottom >=0.50/0.42 outage) while still failing closed on missing or degenerate workspaces.
+- The full local 49-cell mobile matrix with all 14 interaction workflows passes with the scaled cards; fresh exact-SHA CI is the pass-3 evidence.
+- outcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+
+## Previous decision record: Step 1210
 
 - User-directed full screenshot review (pass 1: all 32 CI captures inspected) found: P0 — every Linux capture renders Chinese as tofu (runner lacks CJK fonts); user-flagged oversized tablet 768 task cards (min-height 88px); user-directed density scaling for the 667 landscape workbench.
 - Fixes: fonts-noto-cjk installed in the Linux job before browser acceptance; tablet task cards scaled to 64px with tighter padding; eleven vertical-rhythm tightenings across the 600–899 landscape breakpoint with fonts kept ≥12px and touch targets untouched.

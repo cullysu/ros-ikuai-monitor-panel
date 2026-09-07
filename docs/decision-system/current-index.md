@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1210`
-- currentOutcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
-- currentBoundary: `1210`
-- latestRecordedStep: `1210`
-- latestStepOutcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
+- currentStep: `1211`
+- currentOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+- currentBoundary: `1211`
+- latestRecordedStep: `1211`
+- latestStepOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
 
 ## Current pointer
 
