@@ -1064,7 +1064,10 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
    * verdict must wrap like every other scenario instead of ellipsis-clipping
    * operational text at this breakpoint. */
   main[data-desktop-overview][data-desktop-overview-scenario="no-snapshot"] .legacy-verdict small {
+    overflow: visible;
     overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
   }
 
   .legacy-summary-strip {
