@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1209`
-- currentOutcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
-- currentBoundary: `1209`
-- latestRecordedStep: `1209`
-- latestStepOutcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
+- currentStep: `1210`
+- currentOutcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
+- currentBoundary: `1210`
+- latestRecordedStep: `1210`
+- latestStepOutcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
 
 ## Current pointer
 

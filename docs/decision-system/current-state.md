@@ -1,10 +1,10 @@
 - validForCommit: false; current worktree is uncommitted (Step1208 CL-verifier alignment pending commit; main CI and Container image are fully green on 730b235); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1209`
-- currentConclusionForStep: `1209`
-- latestRecordedStep: `1209`
-- latestStepOutcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
+- currentBoundaryForStep: `1210`
+- currentConclusionForStep: `1210`
+- latestRecordedStep: `1210`
+- latestStepOutcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,14 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1209
+## Current decision record: Step 1210
+
+- User-directed full screenshot review (pass 1: all 32 CI captures inspected) found: P0 — every Linux capture renders Chinese as tofu (runner lacks CJK fonts); user-flagged oversized tablet 768 task cards (min-height 88px); user-directed density scaling for the 667 landscape workbench.
+- Fixes: fonts-noto-cjk installed in the Linux job before browser acceptance; tablet task cards scaled to 64px with tighter padding; eleven vertical-rhythm tightenings across the 600–899 landscape breakpoint with fonts kept ≥12px and touch targets untouched.
+- Local re-verification (pass 2): landscape gates all hold (clipping 0/0, primary reachable, keyboard 1/1); tablet single-cell recapture shows the scaled cards; full contract suite and desktop density pass. Fresh exact-SHA CI screenshots are the pass-3 evidence for user review.
+- outcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
+
+## Previous decision record: Step 1209
 
 - CL VERDICT: PASS. The exact-SHA release verifier validated the complete chain on main 07caf1e: remote main identity, push CI run 33910586387 with both required jobs green, all five CI evidence artifacts (byte-decoded PNGs, hash uniqueness, SHA256SUMS bindings, artifact proofs), container run 33914676606, and the live GHCR OCI index sha-07caf1e with revision annotation and linux/amd64+arm64 descriptors. Published image digest sha256:66f6d7bbfa0dfb1ba3f202834e78048df6661a97e1714bc9d1e33a5fc33588c0.
 - Verifier tooling fixes from its first real-chain execution: RELEASE_ARTIFACT_TIMEOUT_MS makes the artifact download timeout configurable (30s default kept), and remoteTransport gains the missing listContainerArtifacts method.

@@ -30944,3 +30944,26 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - 包改 Public 的最终开关保留给用户在确认本审计后执行。
 
 - outcome: `1209:exact-sha-cl-verified-pass-on-main-image-published`
+
+---
+
+## Step 1210：CI 中文截图字体修复与用户指示的平板/横屏缩放（2026-09-05）
+
+### 已核实现场（用户指定全面复查第一遍：32 张 CI 截图逐张过目）
+
+- **P0**：全部 Linux 截图（narrow/wide/desktop/desktop1440 × 7 场景）中文渲染为豆腐块——runner 无 CJK 字体；Windows 实拍不受影响。布局结构本身逐张核对无其它缺陷。
+- **用户指出**：平板 768 对象巡检 2×2 卡过大（min-height 88px）；横屏 667 工作台"缩放到合适大小"；手机 320 实拍为 200% 考核照而非日常形态（已向用户澄清，100% 手机面与已确认四屏基线一致）。
+
+### 实施的最小修复
+
+1. `ci.yml` Linux job 在浏览器验收前安装 `fonts-noto-cjk`（screenshot 证据中文正常渲染）。
+2. `mobile-reference.css`：平板巡检卡 min-height 88/82→64px、padding 12→8px 10px、图标列 22→18px、gap 9→7px、卡片头 padding 收紧。
+3. `legacy-desktop.css` 600–899 横屏断点纵向节奏收紧 11 处（壳/页头/瓦片 48→42px/主栅格/标题/WAN lead/事实格 38→34px/图表 82→72px/资源卡 42px），字号全部保持 ≥12px、触控目标不动。
+
+### 本地验证（第二遍）
+
+- 横屏门禁全量复验：容器裁切 0/0；primary bottom 368.17/383.17 不被遮挡；<12px 仅托管不渲染的 fixture bar；键盘 1/1 无违规。
+- 平板 768 单格重拍：对象巡检区 ~210px→~160px，缩放生效（注意运行时吃构建后资产，需 `npm run build` 后再拍——首拍未变即此原因）。
+- types/model/mock/toolbar×2/asset-identity/semantic-gates/workflow-integrity/desktop-density 全部 PASS。
+
+- outcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`

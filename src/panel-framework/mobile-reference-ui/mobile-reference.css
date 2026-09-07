@@ -114,9 +114,9 @@
 .ref-network-actions b { font-size:13px; font-weight:620; }
 .ref-network-actions small { margin-top:2px; color:var(--ref-muted); font-size:12px; }
 .ref-tablet-tasks { display:none; }
-.ref-tablet-tasks > h2 { margin:0; padding:10px 12px; border-bottom:1px solid var(--ref-line); font-size:13px; font-weight:680; }
+.ref-tablet-tasks > h2 { margin:0; padding:8px 10px; border-bottom:1px solid var(--ref-line); font-size:13px; font-weight:680; }
 .ref-tablet-tasks__grid { display:grid; grid-template-columns:1fr 1fr; }
-.ref-tablet-tasks button { display:grid; min-height:82px; padding:12px; border:0; align-items:center; grid-template-columns:22px minmax(0,1fr) auto 16px; gap:9px; color:inherit; background:transparent; text-align:left; }
+.ref-tablet-tasks button { display:grid; min-height:64px; padding:8px 10px; border:0; align-items:center; grid-template-columns:18px minmax(0,1fr) auto 16px; gap:7px; color:inherit; background:transparent; text-align:left; }
 .ref-tablet-tasks button:nth-child(even) { border-left:1px solid var(--ref-line); }
 .ref-tablet-tasks button:nth-child(n+3) { border-top:1px solid var(--ref-line); }
 .ref-tablet-tasks button > svg:first-child { color:var(--ref-blue); }
@@ -198,7 +198,7 @@ html[data-panel-input-modality="pointer"] :is(.ref-mobile,.ref-connect) button:n
 @media (max-width:360px) { .ref-content { padding-inline:9px; } .ref-card,.ref-status { margin-bottom:8px; } .ref-rate b { font-size:22px; } .ref-pair { grid-template-columns:1fr 1fr; gap:6px; } .ref-chart svg { height:98px; } .ref-chart__scale { height:71px; } }
 @media (max-width:360px) and (max-height:620px) { .ref-status { min-height:62px; padding-block:8px; } .ref-wan > header { min-height:48px; padding-block:7px; } .ref-rate { padding-block:7px 6px; } .ref-quality span { padding-block:6px; } .ref-chart { margin-top:4px; } .ref-chart svg { height:78px; } .ref-chart__scale { height:55px; } .ref-chart__meta { margin-top:1px; } }
 @media (min-width:600px) and (max-width:1199px) and (orientation:portrait) { .ref-mobile { margin-left:80px; } .ref-scroll { height:calc(100svh - 58px); } .ref-content { padding:12px 16px 28px; } .ref-content:not(.ref-home-content) { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr); gap:10px; align-items:start; } .ref-content:not(.ref-home-content) > .ref-status { grid-column:1 / -1; } .ref-content:not(.ref-home-content) > :nth-child(2) { grid-column:1; grid-row:2 / span 3; } .ref-content:not(.ref-home-content) > :nth-child(n+3) { grid-column:2; margin-bottom:0; } .ref-navigation { top:0; right:auto; bottom:0; left:0; width:80px; height:100svh; min-height:100svh; padding:max(12px,env(safe-area-inset-top)) 6px; border:0; border-right:1px solid var(--ref-line); border-radius:0; grid-template-columns:1fr; grid-template-rows:repeat(4,64px); align-content:start; background:rgb(255 255 255 / 94%); } .ref-navigation button { width:66px; min-height:58px; } }
-@media (min-width:600px) and (max-width:1199px) and (orientation:portrait) { .ref-content:not(.ref-home-content) > .ref-tablet-tasks { display:block; grid-column:1 / -1; grid-row:auto; margin-bottom:0; } .ref-content:not(.ref-home-content) .ref-tablet-tasks button { min-height:88px; } }
+@media (min-width:600px) and (max-width:1199px) and (orientation:portrait) { .ref-content:not(.ref-home-content) > .ref-tablet-tasks { display:block; grid-column:1 / -1; grid-row:auto; margin-bottom:0; } .ref-content:not(.ref-home-content) .ref-tablet-tasks button { min-height:64px; } }
 @media (min-width:600px) and (max-width:1199px) and (orientation:portrait) {
   .ref-content.ref-scene-interfaces:not(.ref-home-content) > .ref-tablet-tasks { grid-column:2; grid-row:3; }
   .ref-content.ref-scene-collection:not(.ref-home-content) > .ref-tablet-tasks { min-height:220px; }
