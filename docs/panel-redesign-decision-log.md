@@ -30990,3 +30990,7 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 
 - CI Run 34159021818 步骤 20 首失败：装上 Noto CJK 后真实中文比豆腐块宽 13px，`no-snapshot/wide` 的 verdict small（专用 nowrap+ellipsis 覆盖）被裁切（175/188px）。
 - 修复：600–899 横屏断点内 no-snapshot verdict small 改为 `overflow-wrap:anywhere`（与其它场景一致），消除横向裁切根源。本地单格复验 browserChecks 全过、clippedText 清零；其余本地失败为脏工作树级联与 Windows 单格调用的 fetch 尾探针（CI 全矩阵无此项）。
+
+### Step1211 追加 2：补齐换行覆盖声明（2026-09-07）
+
+- Run 34160560007 仍裁切：上一追加只写 overflow-wrap，基础规则的 white-space:nowrap+overflow:hidden 仍获胜。补齐为与同断点其它场景一致的完整声明（overflow:visible / anywhere / clip / normal）。本地单格 browserChecks 全过。
