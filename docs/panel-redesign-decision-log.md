@@ -30985,3 +30985,8 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - **本地全量 49 格手机矩阵 PASS**（含 7 个平板格、14 交互工作流全绿），report pass/complete=true。
 
 - outcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+
+### Step1211 追加：no-snapshot 判定文案在横屏断点改为换行（2026-09-07）
+
+- CI Run 34159021818 步骤 20 首失败：装上 Noto CJK 后真实中文比豆腐块宽 13px，`no-snapshot/wide` 的 verdict small（专用 nowrap+ellipsis 覆盖）被裁切（175/188px）。
+- 修复：600–899 横屏断点内 no-snapshot verdict small 改为 `overflow-wrap:anywhere`（与其它场景一致），消除横向裁切根源。本地单格复验 browserChecks 全过、clippedText 清零；其余本地失败为脏工作树级联与 Windows 单格调用的 fetch 尾探针（CI 全矩阵无此项）。
