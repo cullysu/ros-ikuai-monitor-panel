@@ -220,8 +220,10 @@ async function captureCell(page, runtime, scenario, viewport) {
     const outageWorkspace = scenario[2] === "outage";
     const minimumWidth = railWorkspace ? 240 : outageWorkspace ? 300 : 500;
     const maximumWidth = railWorkspace ? 320 : outageWorkspace ? 410 : Number.POSITIVE_INFINITY;
-    const minimumBottom = outageWorkspace ? viewport[2] * 0.5 : viewport[2] * 0.62;
-    assert(state.tabletWorkspaceRect && state.tabletWorkspaceRect.width >= minimumWidth && state.tabletWorkspaceRect.width <= maximumWidth && state.tabletWorkspaceRect.height >= 190, `${scenario[0]} tablet must expose a scene-appropriate task workspace instead of a mechanical two-column shell: ${JSON.stringify(state.tabletWorkspaceRect)}`);
+    // Step1210 scaled the task cards to 64px per user direction; the workspace
+    // region thresholds follow that design instead of the former 88px cards.
+    const minimumBottom = outageWorkspace ? viewport[2] * 0.42 : viewport[2] * 0.5;
+    assert(state.tabletWorkspaceRect && state.tabletWorkspaceRect.width >= minimumWidth && state.tabletWorkspaceRect.width <= maximumWidth && state.tabletWorkspaceRect.height >= 150, `${scenario[0]} tablet must expose a scene-appropriate task workspace instead of a mechanical two-column shell: ${JSON.stringify(state.tabletWorkspaceRect)}`);
     assert(state.tabletWorkspaceRect.bottom >= minimumBottom, `${scenario[0]} tablet task workspace must occupy its active first-screen region: ${JSON.stringify(state.tabletWorkspaceRect)}`);
     assert(state.tabletWorkspaceButtons.length === 4 && state.tabletWorkspaceButtons.every((item) => item.text && item.width >= 44 && item.height >= 44), `${scenario[0]} tablet task workspace must expose four real touch destinations`);
   }

@@ -3,9 +3,9 @@ RouterOS / iKuai panel decision repository mirror. **FAIL overall for release / 
 这是当前面板工作的决策仓库入口。手机视觉基线仍是用户确认的四屏参考，桌面视觉基线仍是 192.168.3.5 / iPad 方向；本轮只修复 CI 与决策状态同步，不改变产品美术或网络行为。
 
 - status: `current-mirror-entry`
-- currentStep: `1210`
-- currentOutcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
-- currentBoundary: `1210`
+- currentStep: `1211`
+- currentOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+- currentBoundary: `1211`
 - authority: `decision-system/current-state.md`
 
 ## 入口

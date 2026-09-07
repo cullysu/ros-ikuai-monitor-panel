@@ -30967,3 +30967,21 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 - types/model/mock/toolbar×2/asset-identity/semantic-gates/workflow-integrity/desktop-density 全部 PASS。
 
 - outcome: `1210:cjk-fonts-ci-and-user-directed-tablet-landscape-scaling`
+
+---
+
+## Step 1211：平板阈值随用户缩放重校准并本地全矩阵复绿（2026-09-07）
+
+### 已核实现场
+
+- Step1210 推送后 main CI Run 34157894362 Linux 在 release-gates 的 runtime-browser smoke 失败：`single tablet ... height 166 < 190`——手机面检查器里平板工作区高度/底部阈值（190px / 0.62 视口）与旧 88px 卡尺寸耦合，用户指示的 64px 卡使实际值 166 触发假失败。
+
+### 实施的最小修复
+
+- `check-mobile-reference-runtime.js` 平板阈值按新设计重校准：height ≥150（原 190）、非中断 bottom ≥0.50 视口（原 0.62）、outage ≥0.42（原 0.50）。仍对缺失/退化工作区 fail-closed（退化壳 ~40-80px 不达标）。
+
+### 本地验证（第二遍续）
+
+- **本地全量 49 格手机矩阵 PASS**（含 7 个平板格、14 交互工作流全绿），report pass/complete=true。
+
+- outcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
