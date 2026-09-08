@@ -246,3 +246,91 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLogins);
   else loadLogins();
 })();
+
+/* ── 首次连接设置界面（needs_config 时图形化配置）────────────── */
+(function(){
+  let setupBusy = false;
+  function $(id){ return document.getElementById(id); }
+  function esc(v){ const d = document.createElement('div'); d.textContent = v == null ? '' : String(v); return d.innerHTML; }
+  function renderSetupForm(login) {
+    if ($('routerSetupOverlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'router-setup-overlay';
+    overlay.id = 'routerSetupOverlay';
+    const scheme = (login && login.restScheme) || 'https';
+    const restPort = (login && login.restPort) || 443;
+    const sshPort = (login && login.sshPort) || 22;
+    overlay.innerHTML =
+      '<div class="router-setup-card" role="dialog" aria-label="建立设备连接">' +
+        '<header><div class="router-setup-logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1"/><circle cx="6" cy="18" r="1"/></svg></div><div><h1>建立设备连接</h1><p>只读监控 · 凭据仅保存在本机</p></div></header>' +
+        '<div class="router-setup-body">' +
+          '<form id="routerSetupForm" novalidate>' +
+            '<div class="router-setup-field"><label for="suHost">设备地址</label><input id="suHost" name="host" autocomplete="off" value="' + esc((login && login.host) || '192.168.88.1') + '"></div>' +
+            '<div class="router-setup-row">' +
+              '<div class="router-setup-field"><label for="suUser">用户名</label><input id="suUser" name="user" autocomplete="username" value="' + esc((login && login.user) || 'ros-panel-readonly') + '"></div>' +
+              '<div class="router-setup-field"><label for="suPassword">密码</label><input id="suPassword" name="password" type="password" autocomplete="current-password"></div>' +
+            '</div>' +
+            '<details class="router-setup-advanced"><summary>高级连接设置</summary><div class="router-setup-body">' +
+              '<div class="router-setup-row">' +
+                '<div class="router-setup-field"><label for="suSshPort">SSH 端口</label><input id="suSshPort" name="sshPort" type="number" value="' + esc(String(sshPort)) + '"></div>' +
+                '<div class="router-setup-field"><label for="suRestNote">REST 通道</label><input id="suRestNote" value="' + esc(scheme.toUpperCase() + ' ' + restPort) + '" disabled title="REST 通道跟随部署配置（routeros-panel.env）"></div>' +
+              '</div>' +
+            '</div></details>' +
+            '<label class="router-setup-check"><input id="suRemember" type="checkbox" checked> 记住设备资料（保存地址、端口与协议到本机）</label>' +
+            '<div class="router-setup-channel"><span class="dot" id="suRestDot"></span>REST <span class="dot" id="suSshDot"></span>SSH</div>' +
+            '<div id="suMsg" class="router-setup-msg" hidden></div>' +
+            '<div class="router-setup-actions"><button class="router-setup-submit" id="suSubmit" type="submit">连接并进入面板</button></div>' +
+          '</form>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#routerSetupForm').addEventListener('submit', onSubmit);
+  }
+  function setChannel(id, ok) { const el = $(id); if (el) el.className = 'dot' + (ok ? ' ok' : ' bad'); }
+  function showMsg(text, kind) { const el = $('suMsg'); if (!el) return; el.hidden = !text; el.textContent = text || ''; el.className = 'router-setup-msg' + (kind ? ' is-' + kind : ''); }
+  async function onSubmit(event) {
+    event.preventDefault();
+    if (setupBusy) return;
+    setupBusy = true;
+    const btn = $('suSubmit'); if (btn) btn.disabled = true;
+    showMsg('正在验证 REST 与 SSH 通道…');
+    try {
+      if (!window.routerLoginCsrfToken) { await fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(p){ window.routerLoginCsrfToken = p.csrfToken || ''; renderSwitcher(p.routerLogin, p.savedLogins); }); }
+      const response = await fetch('/api/router-login', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.routerLoginCsrfToken || '' },
+        body: JSON.stringify({
+          host: $('suHost').value.trim(),
+          user: $('suUser').value.trim(),
+          password: $('suPassword').value,
+          sshPort: Number($('suSshPort').value) || 22,
+          rememberPassword: $('suRemember').checked
+        })
+      });
+      const payload = await response.json().catch(function(){ return {}; });
+      if (!response.ok || payload.ok === false) throw new Error((payload && (payload.error || (payload.test && ((payload.test.rest && payload.test.rest.error) || (payload.test.ssh && payload.test.ssh.error))))) || '连接失败');
+      const test = payload.test || {};
+      setChannel('suRestDot', test.rest && test.rest.ok === true);
+      setChannel('suSshDot', test.ssh && test.ssh.ok === true);
+      showMsg(payload.warning || '连接成功，正在进入面板…', payload.warning ? 'is-partial' : 'is-ok');
+      if (window.routerLoginState !== undefined) { try { routerLoginState = payload.routerLogin || routerLoginState; } catch (e) {} }
+      renderSwitcher(payload.routerLogin, payload.savedLogins);
+      setTimeout(function(){ const o = $('routerSetupOverlay'); if (o) o.remove(); loadLogins(); }, 900);
+    } catch (error) {
+      showMsg(error.message || '连接失败', 'is-error');
+    } finally {
+      setupBusy = false;
+      const btn = $('suSubmit'); if (btn) btn.disabled = false;
+    }
+  }
+  function bootSetupCheck() {
+    fetch('/api/health', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function(r){ return r.json(); })
+      .then(function(h){
+        if (h && h.status === 'needs_config') renderSetupForm(h.routerLogin || null);
+      })
+      .catch(function(){});
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootSetupCheck);
+  else bootSetupCheck();
+})();

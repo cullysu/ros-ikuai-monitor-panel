@@ -5297,9 +5297,11 @@ class Handler(BaseHTTPRequestHandler):
                         code="saved_login_missing_password",
                     )
                 test = test_router_credentials(host, user, password, ssh_port)
-                if not test.get("ssh", {}).get("ok"):
+                ssh_ok = test.get("ssh", {}).get("ok") is True
+                rest_ok = test.get("rest", {}).get("ok") is True
+                if not ssh_ok and not rest_ok:
                     return self.send_json_error(
-                        test.get("ssh", {}).get("error") or "SSH login failed",
+                        test.get("rest", {}).get("error") or test.get("ssh", {}).get("error") or "RouterOS login failed",
                         status=400,
                         code="router_login_failed",
                         test=test,

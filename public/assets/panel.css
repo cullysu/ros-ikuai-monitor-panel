@@ -1977,3 +1977,35 @@
       font-size: 10.5px;
     }
   
+
+/* ── 首次连接设置（图形化配置界面）────────────────────────── */
+.router-setup-overlay{position:fixed;inset:0;z-index:900;display:flex;align-items:flex-start;justify-content:center;padding:48px 16px;overflow:auto;background:#eef2f6;}
+.router-setup-card{width:100%;max-width:560px;background:#fff;border:1px solid #dce5ea;border-radius:14px;box-shadow:0 12px 32px rgba(16,43,56,.10);overflow:hidden;}
+.router-setup-card>header{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid #e3ebef;background:#f7fafb;}
+.router-setup-card>header .router-setup-logo{display:grid;width:38px;height:38px;place-items:center;border-radius:10px;background:#165dff;color:#fff;}
+.router-setup-card>header h1{margin:0;font-size:18px;font-weight:680;color:#102b38;}
+.router-setup-card>header p{margin:2px 0 0;color:#58717c;font-size:12px;}
+.router-setup-body{padding:18px 22px 22px;display:grid;gap:14px;}
+.router-setup-field{display:grid;gap:6px;}
+.router-setup-field label{color:#3c5662;font-size:12px;font-weight:650;}
+.router-setup-field input,.router-setup-field select{min-height:40px;padding:0 12px;border:1px solid #b9ccd4;border-radius:8px;color:#102b38;background:#fff;font:inherit;font-size:14px;}
+.router-setup-field input:focus,.router-setup-field select:focus{border-color:#0c698e;outline:2px solid rgba(12,105,142,.18);outline-offset:1px;}
+.router-setup-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.router-setup-advanced{border:1px solid #dfe8ec;border-radius:10px;background:#f8fbfc;}
+.router-setup-advanced summary{padding:10px 12px;color:#3c5662;font-size:12px;font-weight:650;cursor:pointer;}
+.router-setup-advanced .router-setup-body{padding:12px;}
+.router-setup-check{display:flex;align-items:center;gap:8px;color:#3c5662;font-size:12px;}
+.router-setup-check input{width:16px;height:16px;}
+.router-setup-actions{display:flex;align-items:center;gap:12px;margin-top:4px;}
+.router-setup-submit{display:inline-flex;min-height:42px;padding:0 18px;border:0;border-radius:9px;align-items:center;justify-content:center;color:#fff;background:#165dff;font:inherit;font-size:14px;font-weight:680;cursor:pointer;}
+.router-setup-submit:disabled{opacity:.6;cursor:default;}
+.router-setup-submit:focus-visible{outline:2px solid #0c698e;outline-offset:2px;}
+.router-setup-msg{margin:0;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.5;}
+.router-setup-msg.is-error{background:#fdf0ef;color:#8e3d49;border:1px solid #f1c8ce;}
+.router-setup-msg.is-partial{background:#fffaf2;color:#80572e;border:1px solid #f5ddb8;}
+.router-setup-msg.is-ok{background:#f0faf3;color:#1f7a45;border:1px solid #c9ecd6;}
+.router-setup-channel{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;}
+.router-setup-channel .dot{width:8px;height:8px;border-radius:50%;background:#c3ced4;}
+.router-setup-channel .dot.ok{background:#34c759;}
+.router-setup-channel .dot.bad{background:#ff3b30;}
+@media (prefers-reduced-motion: reduce){.router-setup-overlay{transition:none;}}
