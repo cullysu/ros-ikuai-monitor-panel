@@ -30994,3 +30994,8 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 ### Step1211 追加 2：补齐换行覆盖声明（2026-09-07）
 
 - Run 34160560007 仍裁切：上一追加只写 overflow-wrap，基础规则的 white-space:nowrap+overflow:hidden 仍获胜。补齐为与同断点其它场景一致的完整声明（overflow:visible / anywhere / clip / normal）。本地单格 browserChecks 全过。
+
+### Step1211 追加 3：真凶=对象行证据 small（2026-09-07）
+
+- 本地元素级诊断（computed style + 祖先链）锁定真凶：被裁文本是 `div.legacy-object-row small`（证据行说明，L822 基础规则 nowrap+hidden+ellipsis），并非此前两次误判的 verdict/tile。真实 CJK 字形比豆腐块宽，844 横屏列宽 175px 装不下 227px 内容。
+- 修复：600–899 横屏断点内 `.legacy-object-category, .legacy-object-row small { white-space:normal; overflow-wrap:anywhere }`（行高自适应，触控目标不变）。本地实测 scrollWidth==width=175，零溢出。
