@@ -1221,6 +1221,9 @@ def public_router_config(config=None):
         "host": source.get("host") or "",
         "user": source.get("user") or "",
         "sshPort": to_int(source.get("sshPort"), 22),
+        # This generation's REST client is plain HTTP on port 80 by design.
+        "restScheme": "http",
+        "restPort": 80,
         "source": source.get("source") or "memory",
         "savedId": source.get("savedId"),
         "updatedAt": source.get("updatedAt"),

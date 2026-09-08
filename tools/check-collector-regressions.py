@@ -674,7 +674,11 @@ def assert_deploy_defaults_are_project_safe():
 
 
 def assert_frontend_charts_skip_missing_values():
-    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    index_source = (
+        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
+    )
     for function_name in ("lineChart", "rateAxisLineChart", "resourcePercentChart"):
         marker = f"function {function_name}"
         start = index_source.find(marker)
@@ -726,7 +730,11 @@ def assert_frontend_wan_aggregate_default():
 
 
 def assert_router_login_password_save_is_opt_in():
-    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    index_source = (
+        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
+    )
     app_source = (ROOT / "app.py").read_text(encoding="utf-8")
     checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
     if checkbox_marker in index_source:
@@ -739,7 +747,11 @@ def assert_router_login_password_save_is_opt_in():
 
 
 def assert_frontend_handles_partial_snapshots():
-    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    index_source = (
+        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
+    )
     assert "const o = snapshot.overview || {};" in index_source
     assert "const history = o.history || {};" in index_source
     assert "const meta = snapshot.meta || {};" in index_source
@@ -768,7 +780,11 @@ def assert_collector_status_messages_are_specific():
     assert "正在启动" in issue["summary"], issue
     assert "未知错误" not in issue["summary"], issue
 
-    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    index_source = (
+        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
+    )
     render_start = index_source.find("function renderApp")
     render_body = index_source[render_start : render_start + 1200]
     if "function collectorStatusMessage" in index_source:

@@ -1,0 +1,1 @@
+{"ok": true, "routerLogin": {"configured": false, "host": "192.168.3.1", "user": "ros-panel-readonly", "sshPort": 22, "restScheme": "http", "restPort": 80, "source": "env", "savedId": null, "updatedAt": null, "passwordSet": false, "lastTest": null}, "savedLogins": [], "savePasswordAvailable": true, "csrfToken": "Gmttu8S4JH8sfS_jwliCraldsoge0kUPLq9mZ6Lqjq4"}
