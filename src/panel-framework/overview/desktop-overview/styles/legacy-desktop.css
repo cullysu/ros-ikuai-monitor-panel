@@ -1211,6 +1211,15 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
     padding: 4px 7px;
   }
 
+  /* Object-row evidence text is operational: real CJK glyphs exceed the tofu
+   * fallback width, so let it wrap inside the row instead of ellipsis-clipping
+   * at this workbench size. */
+  .legacy-object-category,
+  .legacy-object-row small {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   /* This is the only desktop-owner size class exposed to the Edge 200% toolbar
    * gate, which fails closed on operational text under the 12px readability
    * floor. The compact workbench labels were 10–11px, so raise exactly those
