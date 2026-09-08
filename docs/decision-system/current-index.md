@@ -2,11 +2,11 @@
 - status: `reference`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `1211`
-- currentOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
-- currentBoundary: `1211`
-- latestRecordedStep: `1211`
-- latestStepOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+- currentStep: `1212`
+- currentOutcome: `1212:final-cl-pass-with-user-directed-visual-fixes-image-published`
+- currentBoundary: `1212`
+- latestRecordedStep: `1212`
+- latestStepOutcome: `1212:final-cl-pass-with-user-directed-visual-fixes-image-published`
 
 ## Current pointer
 
