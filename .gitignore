@@ -43,3 +43,4 @@ dist/
 /*.tar
 /*.tar.gz
 /*.tgz
+routeros-panel.env

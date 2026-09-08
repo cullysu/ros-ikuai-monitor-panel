@@ -26,3 +26,9 @@
 - EXE 重新打包后，首启即为本界面。
 
 - outcome: `$OUT`
+
+### Step1214 追加：Windows 本地运行须知（2026-09-08）
+
+- 本机 `python` 为 Microsoft Store 空壳（退出码 49 无输出）。`local-predeploy-check.js` 及所有 spawn python 的工具必须显式传 `--python C:/Users/cully/AppData/Local/Programs/Python/Python313/python.exe`（或先修正 PATH）。
+- `local-predeploy-check.js` 会随机选端口并通过子进程 env 传入（`os.environ.setdefault` 语义下 env 文件不会覆盖它），因此 `routeros-panel.env` 中不应写 `ROS_PANEL_PORT`，否则与本机常驻实例端口冲突导致子进程绑定失败。
+- 上述两点已在本地以完整 predeploy 冒烟验证（exit 0, pass=true）。

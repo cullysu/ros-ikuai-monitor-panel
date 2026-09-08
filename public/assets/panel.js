@@ -213,7 +213,7 @@
   function loadLogins() {
     return fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' })
       .then(function(r){ return r.json(); })
-      .then(function(p){ routerLoginState = p.routerLogin || null; renderSwitcher(p.routerLogin, p.savedLogins); return p; })
+      .then(function(p){ routerLoginState = p.routerLogin || null; window.panelRouterSwitcher.render(p.routerLogin, p.savedLogins); return p; })
       .catch(function(){ renderSwitcher(null, []); return null; });
   }
   function switchTo(id) {
@@ -235,7 +235,7 @@
       .catch(function(err){
         if (text) text.textContent = '切换失败';
         window.alert('切换路由器失败：' + ((err && err.message) || err));
-        loadLogins();
+        window.panelRouterSwitcher.reload();
         if (text) text.textContent = prev;
       })
       .finally(function(){ switchBusy = false; });
@@ -245,6 +245,7 @@
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLogins);
   else loadLogins();
+  window.panelRouterSwitcher = { render: renderSwitcher, reload: loadLogins };
 })();
 
 /* ── 首次连接设置界面（needs_config 时图形化配置）────────────── */
@@ -295,7 +296,7 @@
     const btn = $('suSubmit'); if (btn) btn.disabled = true;
     showMsg('正在验证 REST 与 SSH 通道…');
     try {
-      if (!window.routerLoginCsrfToken) { await fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(p){ window.routerLoginCsrfToken = p.csrfToken || ''; renderSwitcher(p.routerLogin, p.savedLogins); }); }
+      if (!window.routerLoginCsrfToken) { await fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(p){ window.routerLoginCsrfToken = p.csrfToken || ''; window.panelRouterSwitcher.render(p.routerLogin, p.savedLogins); }); }
       const response = await fetch('/api/router-login', {
         method: 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.routerLoginCsrfToken || '' },
@@ -314,8 +315,8 @@
       setChannel('suSshDot', test.ssh && test.ssh.ok === true);
       showMsg(payload.warning || '连接成功，正在进入面板…', payload.warning ? 'is-partial' : 'is-ok');
       if (window.routerLoginState !== undefined) { try { routerLoginState = payload.routerLogin || routerLoginState; } catch (e) {} }
-      renderSwitcher(payload.routerLogin, payload.savedLogins);
-      setTimeout(function(){ const o = $('routerSetupOverlay'); if (o) o.remove(); loadLogins(); }, 900);
+      window.panelRouterSwitcher.render(payload.routerLogin, payload.savedLogins);
+      setTimeout(function(){ const o = $('routerSetupOverlay'); if (o) o.remove(); window.panelRouterSwitcher.reload(); }, 900);
     } catch (error) {
       showMsg(error.message || '连接失败', 'is-error');
     } finally {

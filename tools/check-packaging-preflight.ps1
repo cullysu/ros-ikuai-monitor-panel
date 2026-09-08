@@ -92,6 +92,7 @@ try {
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
     $scalePatchText = if (Test-Path -LiteralPath $scalePatchPath) { Get-Content -Raw -LiteralPath $scalePatchPath } else { "" }
+    $frontendAllText = $indexText + (Get-ChildItem -LiteralPath (Join-Path $repoRoot "public/assets") -Include *.css,*.js -Recurse -File | ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName }) -join ""
     $legacyAxisAssets = (
       $indexText -match "axis-tick-label" -and
       $scalePatchText -match "ikuai-wan-chart \.axis-line-chart" -and
@@ -99,11 +100,11 @@ try {
       $scalePatchText -match "data-ikuai-terminal-summary"
     )
     $current35Assets = (
-      $indexText -match "smoothRateNeedleZeros" -and
-      $indexText -match "ik-wan-rate-axis" -and
-      $indexText -match "ops-axis-labels" -and
-      $indexText -match "data-overview-wan-switch" -and
-      $indexText -match "data-overview-rank-grid"
+      $frontendAllText -match "smoothRateNeedleZeros" -and
+      $frontendAllText -match "ik-wan-rate-axis" -and
+      $frontendAllText -match "ops-axis-labels" -and
+      $frontendAllText -match "data-overview-wan-switch" -and
+      $frontendAllText -match "data-overview-rank-grid"
     )
     if ($legacyAxisAssets -or $current35Assets) {
       Add-Check "PASS" "frontend axis assets" "Overview WAN/resource chart axes and terminal/ranking placement markers are present."
