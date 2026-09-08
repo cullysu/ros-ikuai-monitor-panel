@@ -1,10 +1,10 @@
 - validForCommit: false; current worktree is uncommitted (Step1208 CL-verifier alignment pending commit; main CI and Container image are fully green on 730b235); release remains closed until a committed exact SHA reproduces fresh Linux, Windows, and CL/GHCR evidence
 - status: `current`
 - supersededBy: `null`
-- currentBoundaryForStep: `1211`
-- currentConclusionForStep: `1211`
-- latestRecordedStep: `1211`
-- latestStepOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+- currentBoundaryForStep: `1213`
+- currentConclusionForStep: `1213`
+- latestRecordedStep: `1213`
+- latestStepOutcome: `1213:restore-connection-screen-stylesheet-missing-import`
 - authority: This is the only human-readable current-state source.
 
 # Current product and release state
@@ -13,7 +13,18 @@
 
 **FAIL overall for release.** The accepted four-screen mobile reference remains the sole phone baseline, the 192.168.3.5/iPad direction remains the desktop baseline, and no current visual baseline change is part of this CI repair. Release is **CLOSED** because current-identity independent product/visual receipts and exact-SHA Linux, Windows, and CL/GHCR evidence are not all green.
 
-## Current decision record: Step 1211
+## Current decision record: Step 1213
+
+- User-reported on the deployed Windows EXE: the connection screen (first screen for every new user) rendered as unstyled HTML. Element-level checks showed zero router-connection classes in the built desktop.css — the connection stylesheet existed but no entry imported it, a blind spot CI never catches because every acceptance matrix runs with a connected mock and never exercises that screen.
+- Fix: RouterConnectionScreen now imports its stylesheet; the built desktop.css contains all router-connection rules. Types, asset identity, asset budget, semantic gates and workflow integrity pass.
+- outcome: `1213:restore-connection-screen-stylesheet-missing-import`
+
+## Previous decision record: Step 1212
+
+- Final CL VERDICT: PASS on main df02ab6 (PR #8 merge). The main push CI run 34249622145 is dual-green with every user-directed visual fix verified on real CI: Noto CJK screenshots render Chinese perfectly, tablet 768 task cards scaled to 64px, and the 667/844 landscape workbench densified. Container run 34254607762 published sha-df02ab6 (amd64+arm64, digest sha256:2ca0b9d4...).
+- outcome: `1212:final-cl-pass-with-user-directed-visual-fixes-image-published`
+
+## Previous decision record: Step 1211
 
 - Run 34157894362 Linux failed in the runtime-browser smoke because the tablet workspace thresholds (height >=190, bottom >=0.62 viewport) were coupled to the former 88px task cards; the user-directed 64px cards measured 166px. Thresholds recalibrated to the scaled design (height >=150, bottom >=0.50/0.42 outage) while still failing closed on missing or degenerate workspaces.
 - The full local 49-cell mobile matrix with all 14 interaction workflows passes with the scaled cards; fresh exact-SHA CI is the pass-3 evidence.

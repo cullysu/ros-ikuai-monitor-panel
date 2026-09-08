@@ -1,9 +1,9 @@
 - validForCommit: false; Step1188 is a documented pre-publication boundary and the clean candidate is not yet formed
 - status: `current-index`
 - supersededBy: `null`
-- currentBoundaryForStep: `1211`
-- latestRecordedStep: `1211`
-- latestStepOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+- currentBoundaryForStep: `1212`
+- latestRecordedStep: `1212`
+- latestStepOutcome: `1212:final-cl-pass-with-user-directed-visual-fixes-image-published`
 - authority: `docs/decision-system/current-state.md`
 
 The current conclusion is owned only by `current-state.md`; this page is navigation, not a second verdict.

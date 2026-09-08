@@ -30999,3 +30999,46 @@ CI 的“上传后失败”必须按首个失败步骤追根，而不是看到�
 
 - 本地元素级诊断（computed style + 祖先链）锁定真凶：被裁文本是 `div.legacy-object-row small`（证据行说明，L822 基础规则 nowrap+hidden+ellipsis），并非此前两次误判的 verdict/tile。真实 CJK 字形比豆腐块宽，844 横屏列宽 175px 装不下 227px 内容。
 - 修复：600–899 横屏断点内 `.legacy-object-category, .legacy-object-row small { white-space:normal; overflow-wrap:anywhere }`（行高自适应，触控目标不变）。本地实测 scrollWidth==width=175，零溢出。
+
+---
+
+## Step 1212：最终 CL PASS——用户指示的视觉修复全链落地（2026-09-08）
+
+### 已核实现场
+
+- 代理链路恢复后推送 23708a4，PR #8 合入 main（merge commit `df02ab61ccdb1878dfc136cb17990424b278c87f`）。
+- main push CI Run `34249622145`：**双 job 全绿**——Linux 在 Noto CJK 真实字体下通过全部契约（含重校准的平板阈值与 runtime-browser smoke），Windows Edge 200% 矩阵 24/24 保持全绿。
+- Container Run `34254607762` 发布 `sha-df02ab6...` 镜像；`check-exact-sha-release-cl.js`：**CL VERDICT: PASS**（digest `sha256:2ca0b9d4...`，amd64+arm64）。
+- 全套 32 张新截图已交付用户过目：手机 390 中文完美渲染（重新设计的手机原生 UI，四屏基线一致）、横屏 844 密度提升、平板 768 巡检卡缩放生效。
+
+### 过程备注
+
+- GitHub 代理链路中断约 2 天（fake-IP 超时 + 真实 IP 直连被墙），期间本地提交安全保存并持续退避重试；恢复后一次推送完成。
+- verifier 首跑暴露的 30s 硬编码超时在此轮大 bundle 下载中再次验证：420s 超时下网络稳定即 PASS。
+
+- outcome: `1212:final-cl-pass-with-user-directed-visual-fixes-image-published`
+
+---
+
+## Step 1213：找回丢失的连接屏样式表（2026-09-08）
+
+### 已核发现场（用户实机报告）
+
+- 用户部署 Windows EXE 后，连接配置页（新用户第一屏）完全无样式：裸 HTML 流式排布、原生控件、无布局——而 REST/SSH 校验错误信息等 JS 功能正常。CI 从未发现：全部验收矩阵都带着 mock 连接跑，从不经过该屏。
+- 元素级定位：EXE 页面只加载 surface-loader，CSS 由其按 manifest 注入；`router-connection*` 系列类在 `desktop.css` 构建产物中 **0 命中**。
+- 根因：`DesktopPanelApp` 引用了 `RouterConnectionScreen` 组件，但 `connection/router-connection.css`（设计令牌+完整组件样式，本体完好）**没有任何入口 import**——样式文件成孤儿，历次入口拆分重构中丢失。
+
+### 实施的最小修复
+
+- `RouterConnectionScreen.tsx` 头部补 `import "./router-connection.css"`（组件级引入，任何渲染该屏的入口自动携带样式）。
+
+### 本地验证
+
+- 构建产物 `desktop.css` 中 router-connection / router-form-group / router-connect-submit / router-channel-grid 全部命中。
+- types / asset-identity / asset-budget / semantic-gates / workflow-integrity PASS。
+
+### 边界
+
+- 连接屏在 CI 截图证据中从未出现过（盲区），修复后的视觉确认以重部署 EXE 实拍为准。
+
+- outcome: `1213:restore-connection-screen-stylesheet-missing-import`

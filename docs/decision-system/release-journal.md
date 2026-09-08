@@ -1,9 +1,9 @@
 - status: `current-journal`
 - validForCommit: false; Step1201 bounds the WAN rail and rebinds machine gate notes, repairs the landscape clipping, and re-syncs the report-truth contract; the next candidate is not yet published
 - supersededBy: null
-- currentStep: `1211`
-- currentOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
-- latestStepOutcome: `1211:tablet-threshold-recalibrated-user-scaled-cards-full-matrix-green`
+- currentStep: `1212`
+- currentOutcome: `1212:final-cl-pass-with-user-directed-visual-fixes-image-published`
+- latestStepOutcome: `1212:final-cl-pass-with-user-directed-visual-fixes-image-published`
 - authority: docs/decision-system/current-state.md
 - fullHistory: ../panel-redesign-decision-log.md
 
