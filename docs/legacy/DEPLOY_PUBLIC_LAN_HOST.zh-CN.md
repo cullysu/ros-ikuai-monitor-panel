@@ -1,6 +1,6 @@
 # 历史公开 RouterOS-only 实例说明
 
-[English](./DEPLOY_PUBLIC_192.168.3.50.md) | [简体中文](./DEPLOY_PUBLIC_192.168.3.50.zh-CN.md)
+[English](./DEPLOY_PUBLIC_<面板主机IP>.md) | [简体中文](./DEPLOY_PUBLIC_<面板主机IP>.zh-CN.md)
 
 这个文件只保留为旧版主机固定地址部署的迁移说明，不再作为公开项目的推荐安装路径。
 

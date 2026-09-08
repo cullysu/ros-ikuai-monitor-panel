@@ -279,28 +279,28 @@ def assert_panel_network_config_helpers():
     assert app.resolve_panel_access_host("auto") == app.DEFAULT_PANEL_TARGET
     assert app.READONLY_NIKKI_CONTROLLER == ""
     assert app.nikki_probe()["disabled"] is True
-    assert all(row["address"] != "192.168.3.2" for row in app.READONLY_DNS_SERVERS)
+    assert all(row["address"] != "10.0.0.2" for row in app.READONLY_DNS_SERVERS)
     assert app.normalize_panel_host("127.0.0.1", "bind") == "127.0.0.1"
     assert app.normalize_panel_host("[::1]", "bind") == "::1"
     assert app.normalize_panel_port("28646") == 28646
     assert app.panel_access_url("127.0.0.1", 28646, "127.0.0.1") == "http://127.0.0.1:28646/"
     assert app.panel_access_url("::", 28646, "::1") == "http://[::1]:28646/"
-    assert app.validate_panel_public_contract("192.168.3.5", "192.168.3.5", "private_ops") == ("192.168.3.5", "192.168.3.5")
+    assert app.validate_panel_public_contract("10.0.0.5", "10.0.0.5", "private_ops") == ("10.0.0.5", "10.0.0.5")
     try:
-        app.validate_panel_public_contract("192.168.3.5", "192.168.3.5", "routeros_only")
+        app.validate_panel_public_contract("10.0.0.5", "10.0.0.5", "routeros_only")
     except ValueError:
         pass
     else:
         raise AssertionError("public RouterOS profile accepted LAN bind/target")
     assert app.panel_request_access_url({"Host": "127.0.0.1:28646"}, 28646) == "http://127.0.0.1:28646/"
-    assert app.panel_request_access_url({"Host": "192.168.3.50:28646"}, 28646) is None
+    assert app.panel_request_access_url({"Host": "10.0.0.50:28646"}, 28646) is None
     assert app.panel_host_header_is_allowed({"Host": "127.0.0.1:28646"}) is True
-    assert app.panel_host_header_is_allowed({"Host": "192.168.3.50:28646"}) is False
+    assert app.panel_host_header_is_allowed({"Host": "10.0.0.50:28646"}) is False
     original_public_profile = app.PUBLIC_ROUTEROS_PROFILE
     try:
         app.PUBLIC_ROUTEROS_PROFILE = False
-        assert app.panel_client_address_is_allowed(("192.168.3.20", 52344), {"Host": "192.168.3.5:28646"})
-        assert app.panel_host_header_is_allowed({"Host": "192.168.3.5:28646"})
+        assert app.panel_client_address_is_allowed(("10.0.0.20", 52344), {"Host": "10.0.0.5:28646"})
+        assert app.panel_host_header_is_allowed({"Host": "10.0.0.5:28646"})
     finally:
         app.PUBLIC_ROUTEROS_PROFILE = original_public_profile
     original_trust_proxy = app.PANEL_TRUST_PROXY_HEADERS
@@ -652,8 +652,8 @@ def assert_deploy_defaults_are_project_safe():
     deploy_text = (ROOT / "deploy_linux.sh").read_text(encoding="utf-8")
     install_text = (ROOT / "install.sh").read_text(encoding="utf-8")
     windows_spec = (ROOT / "routeros-triage-panel.spec").read_text(encoding="utf-8")
-    assert "192.168.3.5" not in service_text
-    assert "192.168.3.5" not in template_text
+    assert "10.0.0.5" not in service_text
+    assert "10.0.0.5" not in template_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in service_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in template_text
     assert 'DEFAULT_PANEL_BIND="127.0.0.1"' in deploy_text

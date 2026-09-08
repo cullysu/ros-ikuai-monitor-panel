@@ -1,6 +1,6 @@
 # Historical Public RouterOS-only Instance Notes
 
-[English](./DEPLOY_PUBLIC_192.168.3.50.md) | [简体中文](./DEPLOY_PUBLIC_192.168.3.50.zh-CN.md)
+[English](./DEPLOY_PUBLIC_<面板主机IP>.md) | [简体中文](./DEPLOY_PUBLIC_<面板主机IP>.zh-CN.md)
 
 This file is kept only as a migration note for an older host-specific public
 MVP deployment. It is not the recommended public install path anymore.
