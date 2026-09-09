@@ -746,6 +746,20 @@ def assert_router_login_password_save_is_opt_in():
     assert 'payload.get("rememberPassword", True)' not in app_source
 
 
+def assert_router_login_tries_rest_when_ssh_fails():
+    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    panel_js = (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
+    assert "Skipped because SSH login failed" not in app_source
+    assert 'session.get(f"http://{config[\'host\']}/rest/system/resource"' in app_source
+    assert "if not ssh_ok and not rest_ok:" in app_source
+    assert "window.panelRouterSwitcher = { render: renderSwitcher, reload: loadLogins };" in panel_js
+    assert "'X-CSRF-Token': window.routerLoginCsrfToken || ''" in panel_js
+    assert panel_js.count("'X-CSRF-Token': window.routerLoginCsrfToken || ''") >= 2
+    assert "id = 'routerSetupOverlay'" in panel_js or 'id="routerSetupOverlay"' in panel_js
+    assert "(login && login.restScheme) || 'http'" in panel_js
+    assert "(login && login.restPort) || 80" in panel_js
+
+
 def assert_frontend_handles_partial_snapshots():
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
@@ -888,6 +902,7 @@ def main():
     assert_frontend_charts_skip_missing_values()
     assert_frontend_wan_aggregate_default()
     assert_router_login_password_save_is_opt_in()
+    assert_router_login_tries_rest_when_ssh_fails()
     assert_frontend_handles_partial_snapshots()
     assert_collector_status_messages_are_specific()
     assert_semantic_triage_distinguishes_quality_display_values()
@@ -909,6 +924,7 @@ def main():
                     "frontend chart helpers skip missing values instead of drawing zeros",
                     "frontend WAN selector defaults to an all-line aggregate traffic option",
                     "RouterOS login password saving is opt-in for public deployments",
+                    "RouterOS login still probes REST when SSH banner fails, and first-run POSTs send CSRF",
                     "frontend renderers tolerate partial snapshots and missing history collections",
                     "collector startup/config/error states expose specific status messages instead of unknown-error banners",
                     "semantic triage distinguishes cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",

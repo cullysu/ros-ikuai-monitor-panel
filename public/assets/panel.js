@@ -213,7 +213,12 @@
   function loadLogins() {
     return fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' })
       .then(function(r){ return r.json(); })
-      .then(function(p){ routerLoginState = p.routerLogin || null; window.panelRouterSwitcher.render(p.routerLogin, p.savedLogins); return p; })
+      .then(function(p){
+        routerLoginState = p.routerLogin || null;
+        if (p.csrfToken) window.routerLoginCsrfToken = p.csrfToken;
+        window.panelRouterSwitcher.render(p.routerLogin, p.savedLogins);
+        return p;
+      })
       .catch(function(){ renderSwitcher(null, []); return null; });
   }
   function switchTo(id) {
@@ -223,7 +228,7 @@
     if (text) text.textContent = '正在切换路由器…';
     fetch('/api/router-login', {
       method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.routerLoginCsrfToken || '' },
       body: JSON.stringify({ savedId: id, rememberPassword: false })
     }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(p){ return { ok: r.ok, p: p }; }); })
       .then(function(res){
@@ -243,9 +248,9 @@
   document.addEventListener('change', function(e){
     if (e.target && e.target.id === 'routerSwitcher' && e.target.value) switchTo(e.target.value);
   });
+  window.panelRouterSwitcher = { render: renderSwitcher, reload: loadLogins };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLogins);
   else loadLogins();
-  window.panelRouterSwitcher = { render: renderSwitcher, reload: loadLogins };
 })();
 
 /* ── 首次连接设置界面（needs_config 时图形化配置）────────────── */
@@ -258,8 +263,8 @@
     const overlay = document.createElement('div');
     overlay.className = 'router-setup-overlay';
     overlay.id = 'routerSetupOverlay';
-    const scheme = (login && login.restScheme) || 'https';
-    const restPort = (login && login.restPort) || 443;
+    const scheme = (login && login.restScheme) || 'http';
+    const restPort = (login && login.restPort) || 80;
     const sshPort = (login && login.sshPort) || 22;
     overlay.innerHTML =
       '<div class="router-setup-card" role="dialog" aria-label="建立设备连接">' +
@@ -296,7 +301,11 @@
     const btn = $('suSubmit'); if (btn) btn.disabled = true;
     showMsg('正在验证 REST 与 SSH 通道…');
     try {
-      if (!window.routerLoginCsrfToken) { await fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' }).then(function(r){ return r.json(); }).then(function(p){ window.routerLoginCsrfToken = p.csrfToken || ''; window.panelRouterSwitcher.render(p.routerLogin, p.savedLogins); }); }
+      if (!window.routerLoginCsrfToken) {
+        const boot = await fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' }).then(function(r){ return r.json(); });
+        window.routerLoginCsrfToken = boot.csrfToken || '';
+        if (window.panelRouterSwitcher) window.panelRouterSwitcher.render(boot.routerLogin, boot.savedLogins);
+      }
       const response = await fetch('/api/router-login', {
         method: 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.routerLoginCsrfToken || '' },
@@ -309,16 +318,25 @@
         })
       });
       const payload = await response.json().catch(function(){ return {}; });
-      if (!response.ok || payload.ok === false) throw new Error((payload && (payload.error || (payload.test && ((payload.test.rest && payload.test.rest.error) || (payload.test.ssh && payload.test.ssh.error))))) || '连接失败');
+      if (!response.ok || payload.ok === false) {
+        const restErr = payload && payload.test && payload.test.rest && payload.test.rest.error;
+        const sshErr = payload && payload.test && payload.test.ssh && payload.test.ssh.error;
+        throw new Error((payload && (payload.error || restErr || sshErr)) || ('连接失败 HTTP ' + response.status));
+      }
       const test = payload.test || {};
       setChannel('suRestDot', test.rest && test.rest.ok === true);
       setChannel('suSshDot', test.ssh && test.ssh.ok === true);
       showMsg(payload.warning || '连接成功，正在进入面板…', payload.warning ? 'is-partial' : 'is-ok');
-      if (window.routerLoginState !== undefined) { try { routerLoginState = payload.routerLogin || routerLoginState; } catch (e) {} }
-      window.panelRouterSwitcher.render(payload.routerLogin, payload.savedLogins);
+      if (window.panelRouterSwitcher) window.panelRouterSwitcher.render(payload.routerLogin, payload.savedLogins);
       setTimeout(function(){ const o = $('routerSetupOverlay'); if (o) o.remove(); window.panelRouterSwitcher.reload(); }, 900);
     } catch (error) {
-      showMsg(error.message || '连接失败', 'is-error');
+      const raw = String((error && error.message) || error || '');
+      showMsg(
+        /failed to fetch|networkerror|load failed/i.test(raw)
+          ? '连不上本机面板接口。请打开当前面板地址（默认 http://127.0.0.1:28646/），不要用已经关掉的临时调试端口。'
+          : (raw || '连接失败'),
+        'is-error'
+      );
     } finally {
       setupBusy = false;
       const btn = $('suSubmit'); if (btn) btn.disabled = false;

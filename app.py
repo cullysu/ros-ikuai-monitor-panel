@@ -1564,11 +1564,6 @@ def test_router_credentials(host, user, password, ssh_port=22):
         except Exception:
             pass
 
-    if not test["ssh"]["ok"]:
-        test["rest"]["error"] = "Skipped because SSH login failed"
-        test["elapsedMs"] = round((time.time() - started_at) * 1000)
-        return test
-
     rest_started = time.time()
     session = requests.Session()
     session.auth = (config["user"], config["password"])
@@ -5172,15 +5167,16 @@ class Handler(BaseHTTPRequestHandler):
             return False
         if parsed.path.startswith("/api/"):
             self.send_json_error(
-                "Panel is localhost-only. Open http://127.0.0.1:28646/.",
+                f"Panel is localhost-only. Open {panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)}.",
                 status=403,
                 code="localhost_required",
             )
             return True
+        access_url = panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)
         body = (
             "<!doctype html><meta charset=\"utf-8\">"
             "<title>localhost only</title>"
-            "<body>Panel is localhost-only. Open http://127.0.0.1:28646/.</body>"
+            f"<body>Panel is localhost-only. Open {access_url}.</body>"
         ).encode("utf-8")
         self.send_response(403)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -5338,7 +5334,15 @@ class Handler(BaseHTTPRequestHandler):
                         "routerLogin": router_login,
                         "savedLogins": public_saved_router_logins(),
                         "test": test,
-                        "warning": None if test.get("rest", {}).get("ok") else "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing.",
+                        "warning": (
+                            None
+                            if test.get("ssh", {}).get("ok") and test.get("rest", {}).get("ok")
+                            else (
+                                "REST connected, but RouterOS SSH did not respond. Live charts still work; SSH-only diagnostics may be missing."
+                                if test.get("rest", {}).get("ok")
+                                else "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing."
+                            )
+                        ),
                     }
                 )
             except ValueError as exc:
