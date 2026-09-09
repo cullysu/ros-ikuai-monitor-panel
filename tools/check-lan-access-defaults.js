@@ -55,7 +55,9 @@ function main() {
   assertContains('app.py', 'def validate_panel_public_contract(bind, target, profile="routeros_only"):');
   assertContains('app.py', 'def panel_profile_requires_localhost_contract(profile):');
   assertContains('app.py', 'def panel_host_header_is_allowed(headers):');
-  assertContains('app.py', 'Panel is localhost-only. Open http://127.0.0.1:28646/.');
+  assertContains('app.py', 'DEFAULT_PANEL_PORT = 28646');
+  assertContains('app.py', 'Panel is localhost-only. Open {panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)}.');
+  assertContains('app.py', 'f"Panel is localhost-only. Open {panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)}."');
   assertContains('app.py', 'def panel_request_access_url(headers, fallback_port=None):');
   assertContains('app.py', 'PANEL_TRUST_PROXY_HEADERS');
   assertContains('app.py', 'PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
