@@ -1,8 +1,7 @@
 # Code of Conduct
 
-This project is for practical, read-only RouterOS status visibility. The
-community should stay useful, specific, and safe for people operating real
-networks.
+This project is for practical, read-only RouterOS triage. The community should
+stay useful, specific, and safe for people debugging real networks.
 
 ## Expected Behavior
 

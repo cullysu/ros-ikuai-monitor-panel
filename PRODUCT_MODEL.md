@@ -28,24 +28,17 @@ RouterOS-only behavior even though their packaging differs:
 
 | Delivery mode | Runtime default | Browser access contract | Validation |
 |---------------|-----------------|-------------------------|------------|
-| Docker / Compose | Container binds `0.0.0.0`; host publishes `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Docker host | Compose config plus `tools/check-container-host-ingress-smoke.py` |
+| Docker / Compose | Container binds `0.0.0.0`; host publishes `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Docker host | `docker compose --env-file .env.docker.example config --quiet` |
 | Windows EXE | EXE binds `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Windows host | `tools/build-windows-exe.ps1` packaging check |
 | Linux systemd / VM | Managed service binds `127.0.0.1:28646` as a non-root service user | Open `http://127.0.0.1:28646/` on the systemd host | `bash -n deploy_linux.sh` and unit marker checks |
 | RouterOS Container | Container process binds `0.0.0.0:28646` inside RouterOS container networking and enables localhost Host-forward mode | Open `http://127.0.0.1:28646/` only through a client-local forwarder | `tools/build-routeros-container-archive.sh` archive build |
-
-Docker / Compose enables `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1`; this accepts
-only the container's discovered default gateway peer with a loopback `Host`.
-The image default remains disabled, and sibling-container or non-loopback Host
-requests are still rejected.
 
 In all four modes, public defaults are `routeros_only`,
 `ROS_PANEL_TRUST_PROXY_HEADERS=0`, local IP-alias writes disabled, admin-session
 exposure disabled, no built-in auth/TLS, and no RouterOS configuration writes.
 Panel address writes are deployment-owned: Docker, Linux systemd/VM, and
-RouterOS Container keep `ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0`; Windows EXE uses a
+RouterOS Container keep `ROS_PANEL_NETWORK_WRITE_ENABLED=0`; Windows EXE uses a
 user-writable sidecar env file and may save loopback-only address settings.
-That Windows write capability changes only the panel's local listen address and
-never writes RouterOS configuration.
 
 `127.0.0.1` is always the machine running the browser. A different client device
 cannot use its own `127.0.0.1` to reach a panel running elsewhere unless that
@@ -60,13 +53,13 @@ URLs rejected while allowing a client-local forwarder that preserves
 
 | Mode | Audience | UI behavior |
 |------|----------|-------------|
-| `home` | Small or simple networks | Show device state, WAN state, resource state, DNS/DHCP basics, and top traffic users |
-| `multiwan` | Multi-line, PCDN, or advanced operators | Add WAN binding, route/PCC state, CGNAT/UPnP/readiness facts, and upload saturation |
+| `home` | Small or simple networks | Show risk, router health, WAN status, DNS/DHCP basics, top traffic users |
+| `multiwan` | Multi-line, PCDN, or advanced operators | Add WAN binding, route/PCC evidence, CGNAT/UPnP/inbound-readiness evidence, upload saturation |
 | `scale_adaptive` | Any network whose lists are too large for cards | Use grouped summaries, search, filters, pagination, and sampled-data labels |
-| `private_ops` | Operator's private lab with OpenWrt/Nikki helpers | May show private probes when explicitly enabled |
+| `private_ops` | Operator's private lab with OpenWrt/Nikki helpers | May show private diagnostics when explicitly enabled |
 
 Public/product-style deployments should default to RouterOS-only semantics.
-OpenWrt/Nikki/private helpers are optional advanced probes, not the public
+OpenWrt/Nikki/private helpers are optional advanced diagnostics, not the public
 default product.
 
 ## Scale Contract
@@ -84,18 +77,15 @@ Every high-volume list should expose:
 - `sampleMethod`: how the sample was selected.
 - `bucket`: none, single, small, medium, large, or fleet.
 
-Overview pages should show status, freshness, completeness, WAN state, and
-resource pressure first. Full detail belongs in searchable, grouped, paged, or
-virtualized detail surfaces.
+Overview pages should show risk, action, and aggregate health first. Full detail
+belongs in searchable, grouped, paged, or virtualized detail surfaces.
 
 ## UI Information Architecture
 
-The public UI optimizes for read-only status clarity rather than decorative
-dashboards:
+The public UI optimizes for practical triage rather than decorative dashboards:
 
-- **Usability**: the first screen should answer whether the device is online,
-  WAN lines are normal, traffic or resources are abnormal, and whether the data
-  is fresh enough to trust.
+- **Usability**: the first screen should answer "what is wrong?" and "what do I
+  do next?", then route users into the right detail page.
 - **Visibility**: search, filters, page windows, total counts, and sample status
   must be visible while the user works, not hidden in developer-only metadata.
 - **Consistency**: detail pages should share the same search/filter/paging
@@ -112,8 +102,6 @@ dashboards:
 - The current server is still a single-process snapshot collector. Large-scale
   use should rely on summaries and samples until section APIs and storage are
   split out.
-- Public UI should not imply automatic repair, configuration management, or
-  guided troubleshooting workflows.
 - Built-in auth/TLS/RBAC is not implemented yet. Keep the public deployment on
   `127.0.0.1:28646` unless a future reviewed design adds authenticated remote
   access.

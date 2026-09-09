@@ -1,15 +1,14 @@
-# RouterOS 只读状态面板
+# RouterOS 只读语义排障面板
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-这是一个面向 RouterOS 的只读状态面板，用来快速确认设备是否在线、线路
-是否正常、流量是否异常、资源是否吃紧，以及当前展示的数据是否新鲜、完整、
-可信。
+这是一个面向 RouterOS 的只读运维面板，用来快速查看 WAN、路由、DNS、
+DHCP、防火墙、接口、流量、资源和日志状态，并把原始状态整理成风险摘要、
+证据入口和下一步人工排查建议。
 
-它的定位是“只读状态”：通过 RouterOS API/SSH 读取当前事实，并把状态、字段、
-刷新时间和采集完整度讲清楚。它不做配置管理，也暂时不做排障工具；不是
-WinBox/WebFig、Grafana、Zabbix、LibreNMS、The Dude、备份工具或配置
-diff 工具的替代品。
+它的定位是“语义排障”：告诉用户现在最该看哪里、为什么值得看、下一步应
+该人工核对什么。它不是 WinBox/WebFig、Grafana、Zabbix、LibreNMS、
+The Dude、备份工具或配置 diff 工具的替代品。
 
 ## 当前状态
 
@@ -63,10 +62,6 @@ http://127.0.0.1:28646/
 | Linux systemd / VM | 非 root systemd 服务监听 `127.0.0.1:28646` | 在 systemd 主机打开 `http://127.0.0.1:28646/` |
 | RouterOS Container | 容器进程监听 RouterOS container 网络内部地址 | 客户端通过本机转发器打开 `http://127.0.0.1:28646/` |
 
-Docker / Compose 会显式启用 `ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD=1`：后端只把
-容器默认 bridge gateway 这个精确来源与 loopback `Host` 的组合视为宿主机本地转发；
-同网络其他容器、LAN 来源和非 loopback `Host` 仍会被拒绝。
-
 四种方式都应保持 `routeros_only`、不信任代理头、关闭 IP alias 写入、关闭
 admin session 暴露。`127.0.0.1` 永远是当前浏览器所在设备；跨设备访问必须先在
 该客户端本机建立明确的转发或隧道。
@@ -74,17 +69,13 @@ admin session 暴露。`127.0.0.1` 永远是当前浏览器所在设备；跨设
 面板里的“面板地址”对 Docker、Linux systemd/VM、RouterOS Container 是只读状态
 视图；这些方式要改地址必须改安装 env/部署层后重启。Windows EXE 的 sidecar
 `routeros-panel.env` 在普通可写目录下可以由面板保存，但仍只允许 loopback 地址。
-`ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED` 只控制面板本机 sidecar 的地址设置保存，
-不会向 RouterOS 写入任何路由、防火墙、接口或其他配置。旧变量
-`ROS_PANEL_NETWORK_WRITE_ENABLED` 仅作为已有私有部署的兼容别名，不应再用于新安装。
 
 ## Docker 一条命令
 
-安装脚本默认本地构建，避免公开安装依赖包可见性。CI 也会发布可选的不可变
-GHCR 镜像；请选择已发布的提交 SHA，公开安装不使用可变标签：
+安装脚本默认本地构建，避免公开安装依赖包可见性。CI 也会发布可选 GHCR 镜像：
 
 ```text
-ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
+ghcr.io/cullysu/ros-ikuai-monitor-panel:main
 ```
 
 更稳妥的首次安装方式是先下载、审阅、dry-run，再执行：
@@ -124,13 +115,10 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --build-local
 ```
 
-只有在 GHCR 包已经允许匿名拉取时，才使用已发布的不可变预构建镜像。将占位符
-替换为所选发布版本的完整 40 位提交 SHA；`--prebuilt` 会拒绝缺失标签、`main`
-和 `latest`：
+只有在 GHCR 包已经允许匿名拉取时，才使用预构建镜像：
 
 ```bash
-IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt --image "$IMAGE"
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt
 ```
 
 升级：
@@ -170,10 +158,6 @@ powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 
 从受信任的本地目录运行。项目当前还没有代码签名。
 
-Windows 模板中的 `ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1` 只允许面板保存本机
-`bind / port / target` 三项，并且公开模式仍强制 loopback；它不授予任何 RouterOS
-配置写权限。
-
 更多说明见 [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md)。
 
 ## 手动 Docker / Compose
@@ -189,13 +173,8 @@ docker compose --env-file .env.docker up -d --build
 http://127.0.0.1:28646/
 ```
 
-Compose 将面板限制为 **1.5 GiB 内存**、**1.50 CPU** 和 **256 个 PID**，同时保留
-只读根文件系统和移除 Linux capabilities 的约束。本地使用 `--source-dir` 安装时，
-默认保留目标目录中无关的文件；只有明确附加 `--upgrade` 才会替换陈旧的源码文件。
-
 `.env.docker` 里的 RouterOS 凭据可以保持示例值，然后在网页登录页填写真实
-设备信息。REST 默认使用 HTTPS、443 端口并验证证书；SSH 首次连接会显示
-SHA256 主机密钥指纹，确认前不会发送 SSH 密码。
+SSH 信息。
 
 ## 本地 Python
 
@@ -205,9 +184,6 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-$env:ROS_MONITOR_ROUTER_REST_SCHEME="https"
-$env:ROS_MONITOR_ROUTER_REST_PORT="443"
-$env:ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
 $env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="28646"
 $env:ROS_PANEL_TARGET_IP="127.0.0.1"
@@ -227,9 +203,6 @@ export ROS_PANEL_PROFILE="routeros_only"
 export ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-export ROS_MONITOR_ROUTER_REST_SCHEME="https"
-export ROS_MONITOR_ROUTER_REST_PORT="443"
-export ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
 
 ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
@@ -258,22 +231,17 @@ RouterOS 里使用 `remote-image=`。
 - 不要使用 `admin`。
 - 只授予采集所需的只读权限。
 - 确认 RouterOS SSH 对运行面板的主机可达。
-- 启用 RouterOS `www-ssl`，并为 HTTPS 配置可验证的证书。
-- 首次连接时从 RouterOS 侧核对 SSH SHA256 主机密钥指纹；指纹变化会被阻断。
-- 不要启用 HTTP，除非明确接受 Basic Auth 凭据可被同网段被动读取的风险。
 - 如果 RouterOS SSH 设置了 `allowed-address`，把面板主机地址加入允许范围。
 - 不要把真实密码提交到 Git、截图或 issue。
 
-“记住设备资料”只保存地址、用户名、端口、REST 传输设置和 SSH 固定指纹；
-密码只保留在当前面板进程内，不写入设备资料文件。
+如果选择保存密码，请理解：RouterOS 登录信息会作为本地秘密保存在面板主机
+或容器数据卷里。只在你信任的单机或受控环境中保存。
 
 ## 它会做什么
 
 - 通过只读 API/SSH 路径采集 RouterOS 状态。
 - 展示 WAN、接口、终端、DNS、DHCP、路由、连接和日志等信息。
-- 在首页和采集状态页展示采集状态、最后刷新时间、RouterOS 连接状态、
-  WAN 在线数、最高风险指标和数据完整度。
-- 在规则类页面提供摘要视图，并保留 RouterOS 原始字段展开。
+- 根据当前快照生成语义排障队列。
 - 默认保持公开部署的写入能力关闭。
 - 对不同规模的 RouterOS 环境保留真实数量、可见数量、分页和采样提示。
 
@@ -291,7 +259,7 @@ RouterOS 里使用 `remote-image=`。
 - 不要直接暴露到公网。
 - 跨网段、远程访问或多人使用时，先加 HTTPS 和认证。
 - 面向公开/产品化部署时使用 `routeros_only`。
-- 公开模式下保持私有探测和本地写入能力关闭，除非经过单独评估。
+- 公开模式下保持私有诊断和本地写入能力关闭，除非经过单独评估。
 
 ## 支持和贡献
 
@@ -309,7 +277,7 @@ RouterOS 里使用 `remote-image=`。
 ```bash
 docker compose ps
 curl -fsS http://127.0.0.1:28646/api/health
-curl -fsS http://127.0.0.1:28646/api/snapshot
+curl -fsS http://127.0.0.1:28646/api/semantic-triage
 docker compose logs -f --tail=100 routeros-triage
 ```
 

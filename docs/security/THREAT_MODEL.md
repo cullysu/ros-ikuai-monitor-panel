@@ -28,18 +28,9 @@ rejects non-loopback `Host` headers.
 
 ### Credential Storage
 
-Saved profiles never contain RouterOS passwords. Environment files and
-deployment secret stores that prefill a password remain sensitive and must be
-kept outside Git with restricted access. Use a dedicated read-only RouterOS
-account.
-
-### Router Transport Identity
-
-RouterOS REST uses verified HTTPS by default. Plain HTTP exposes Basic
-credentials in transit, while disabled certificate verification removes server
-identity validation; both require explicit acknowledgement and are never silent
-fallbacks. SSH requires explicit SHA-256 host-key pinning before password
-authentication and blocks a later mismatch.
+If password saving is enabled, RouterOS credentials become local secrets on the
+panel host or container data volume. Use a dedicated read-only RouterOS account
+and keep the panel host trusted.
 
 ### Sensitive Snapshots
 
@@ -51,9 +42,6 @@ and traffic patterns. Redact snapshots and screenshots before sharing them.
 - Dedicated read-only RouterOS user.
 - Panel reachable at `http://127.0.0.1:28646/`.
 - Non-loopback browser URLs fail or return `403`.
-- Saved profile contains no RouterOS password.
-- RouterOS REST uses verified HTTPS unless an insecure mode was explicitly
-  reviewed and acknowledged.
-- RouterOS SSH host-key fingerprint is verified and pinned.
+- Password saving disabled unless the panel host is trusted.
 - Logs and screenshots redacted before sharing.
 - RouterOS backup made before trying RouterOS Container.

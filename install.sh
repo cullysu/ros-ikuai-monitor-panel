@@ -5,6 +5,7 @@ DEFAULT_REPO_URL="https://github.com/cullysu/ros-ikuai-monitor-panel.git"
 DEFAULT_BRANCH="main"
 DEFAULT_PORT="28646"
 DEFAULT_LOCAL_IMAGE="routeros-triage-panel:local"
+DEFAULT_PREBUILT_IMAGE="ghcr.io/cullysu/ros-ikuai-monitor-panel:main"
 
 usage() {
   cat <<'EOF'
@@ -19,15 +20,15 @@ Options:
   --bind <addr>         Host publish address. Only 127.0.0.1/localhost is allowed.
   --port <port>         Host and in-container panel port. Default: 28646.
   --name <name>         Docker container name. Default: routeros-triage-panel.
-  --prebuilt            Pull an explicitly selected immutable GHCR image; no build fallback.
-  --image <image>       Image tag to use. --prebuilt requires ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>.
+  --prebuilt            Pull the prebuilt GHCR image first, then fall back to local build.
+  --image <image>       Image tag to use. Default: routeros-triage-panel:local; with --prebuilt: ghcr.io/cullysu/ros-ikuai-monitor-panel:main.
   --build-local         Build from the checked-out source. This is the default public install mode.
   --target-ip <addr>    URL host printed by the panel. Only 127.0.0.1/localhost is allowed.
   --dir <path>          Install directory. Default: ~/.local/share/routeros-triage-panel, or /opt/routeros-triage-panel as root.
   --repo <url>          Git repository URL. Default: https://github.com/cullysu/ros-ikuai-monitor-panel.git
   --branch <name>       Git branch or tag to install. Default: main.
-  --source-dir <path>   Copy from a local source tree instead of cloning. Preserves unmanaged destination files unless --upgrade is set.
-  --upgrade             Update the install directory before starting; with --source-dir, explicitly replace stale source files.
+  --source-dir <path>   Copy from a local source tree instead of cloning. Useful for development/testing.
+  --upgrade             Update the install directory before starting.
   --uninstall           Stop and remove the Compose service from the install directory.
   --purge               With --uninstall, also remove the Docker volume and install directory.
   --dry-run             Print the resolved plan without changing files.
@@ -54,11 +55,7 @@ die() {
 }
 
 default_install_dir() {
-  local uid="${EUID:-}"
-  if [[ -z "$uid" ]] && command -v id >/dev/null 2>&1; then
-    uid="$(id -u)"
-  fi
-  if [[ "$uid" == "0" ]]; then
+  if [[ "$(id -u)" -eq 0 ]]; then
     printf '/opt/routeros-triage-panel\n'
   else
     printf '%s/routeros-triage-panel\n' "${XDG_DATA_HOME:-${HOME}/.local/share}"
@@ -121,18 +118,13 @@ require_runtime() {
 copy_source_tree() {
   local src="$1"
   local dest="$2"
-  local replace_existing="$3"
   [[ -f "$src/compose.yml" && -f "$src/Dockerfile" ]] || die "--source-dir must point to the repository root"
   mkdir -p "$dest"
   if [[ "$(cd "$src" && pwd)" == "$(cd "$dest" && pwd)" ]]; then
     return 0
   fi
   if command -v rsync >/dev/null 2>&1; then
-    local rsync_args=(-a)
-    if [[ "$replace_existing" == "1" ]]; then
-      rsync_args+=(--delete)
-    fi
-    rsync "${rsync_args[@]}" \
+    rsync -a --delete \
       --exclude '.git' \
       --exclude '.env' \
       --exclude '.env.docker' \
@@ -212,12 +204,6 @@ compose_service_image() {
   [[ ! "$image" =~ [[:space:]] ]] || die "--image must not contain whitespace"
 }
 
-validate_prebuilt_image() {
-  local image="$1"
-  [[ "$image" =~ ^ghcr\.io/cullysu/ros-ikuai-monitor-panel:sha-[0-9a-f]{40}$ ]] || \
-    die "--prebuilt requires --image ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>"
-}
-
 update_existing_repo() {
   local dir="$1"
   local branch="$2"
@@ -259,6 +245,7 @@ configure_env() {
     cp "$dir/.env.docker.example" "$env_file"
     chmod 600 "$env_file" || true
   fi
+  set_env_value "$env_file" "ROS_PANEL_PUBLISHED_ADDR" "$PUBLISHED_ADDR"
   set_env_value "$env_file" "ROS_PANEL_PUBLISHED_PORT" "$PUBLISHED_PORT"
   set_env_value "$env_file" "ROS_PANEL_CONTAINER_NAME" "$CONTAINER_NAME"
   set_env_value "$env_file" "ROS_PANEL_IMAGE" "$PANEL_IMAGE"
@@ -266,13 +253,12 @@ configure_env() {
   set_env_value "$env_file" "ROS_PANEL_PORT" "$PUBLISHED_PORT"
   set_env_value "$env_file" "ROS_PANEL_TARGET_IP" "$TARGET_IP"
   set_env_value "$env_file" "ROS_PANEL_TRUST_PROXY_HEADERS" "0"
-  set_env_value "$env_file" "ROS_PANEL_ALLOW_DOCKER_HOST_FORWARD" "1"
   set_env_value "$env_file" "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD" "0"
   set_env_value "$env_file" "ROS_PANEL_LOCALHOST_FORWARD_TOKEN" ""
   set_env_value "$env_file" "ROS_PANEL_PROFILE" "routeros_only"
   set_env_value "$env_file" "ROS_PANEL_IP_ALIAS_WRITE_ENABLED" "0"
   set_env_value "$env_file" "ROS_PANEL_EXPOSE_ADMIN_SESSIONS" "0"
-  set_env_value "$env_file" "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED" "0"
+  set_env_value "$env_file" "ROS_PANEL_NETWORK_WRITE_ENABLED" "0"
   set_env_value "$env_file" "ROS_PANEL_ACTION_QUEUE_LIMIT" "24"
 }
 
@@ -283,9 +269,12 @@ compose_up() {
     return
   fi
 
-  (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker pull routeros-triage) || \
-    die "Could not pull the requested immutable prebuilt image. Use --build-local to build from source."
-  (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker up -d)
+  if (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker pull routeros-triage); then
+    (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker up -d)
+  else
+    log "Prebuilt image pull failed; falling back to local Docker build."
+    (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker up -d --build)
+  fi
 }
 
 compose_down() {
@@ -330,9 +319,6 @@ PUBLISHED_PORT="$DEFAULT_PORT"
 CONTAINER_NAME="${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
 PANEL_IMAGE="${ROS_PANEL_IMAGE:-$DEFAULT_LOCAL_IMAGE}"
 PANEL_IMAGE_EXPLICIT="0"
-if [[ -n "${ROS_PANEL_IMAGE:-}" ]]; then
-  PANEL_IMAGE_EXPLICIT="1"
-fi
 TARGET_IP="127.0.0.1"
 TARGET_IP_EXPLICIT="0"
 SOURCE_DIR="${ROS_PANEL_INSTALL_SOURCE_DIR:-}"
@@ -439,12 +425,8 @@ done
 validate_port "$PUBLISHED_PORT"
 validate_bind "$PUBLISHED_ADDR"
 validate_container_name "$CONTAINER_NAME"
-if [[ "$PREBUILT_REQUESTED" == "1" ]]; then
-  [[ "$BUILD_LOCAL" == "0" ]] || die "--prebuilt cannot be combined with --build-local"
-  [[ -z "$SOURCE_DIR" ]] || die "--prebuilt cannot be combined with --source-dir"
-  [[ "$PANEL_IMAGE_EXPLICIT" == "1" ]] || \
-    die "--prebuilt requires --image ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>"
-  validate_prebuilt_image "$PANEL_IMAGE"
+if [[ "$PREBUILT_REQUESTED" == "1" && "$PANEL_IMAGE_EXPLICIT" == "0" ]]; then
+  PANEL_IMAGE="$DEFAULT_PREBUILT_IMAGE"
 fi
 compose_service_image "$PANEL_IMAGE"
 INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
@@ -464,7 +446,7 @@ Install plan:
   source-dir: ${SOURCE_DIR:-<clone/download>}
   dir:        $INSTALL_DIR
   image:      $PANEL_IMAGE
-  mode:       $([[ "$BUILD_LOCAL" == "1" || -n "$SOURCE_DIR" ]] && printf 'local-build' || printf 'pull-prebuilt')
+  mode:       $([[ "$BUILD_LOCAL" == "1" || -n "$SOURCE_DIR" ]] && printf 'local-build' || printf 'pull-then-build-fallback')
   bind:       $PUBLISHED_ADDR
   port:       $PUBLISHED_PORT
   name:       $CONTAINER_NAME
@@ -500,7 +482,7 @@ if [[ -d "$INSTALL_DIR" && ! -f "$INSTALL_DIR/compose.yml" ]]; then
 fi
 
 if [[ -n "$SOURCE_DIR" ]]; then
-  copy_source_tree "$SOURCE_DIR" "$INSTALL_DIR" "$UPGRADE"
+  copy_source_tree "$SOURCE_DIR" "$INSTALL_DIR"
 elif [[ ! -d "$INSTALL_DIR" ]]; then
   clone_or_download "$REPO_URL" "$BRANCH" "$INSTALL_DIR"
 elif [[ "$UPGRADE" == "1" ]]; then

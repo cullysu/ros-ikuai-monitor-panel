@@ -12,51 +12,16 @@ $BuildPython = Join-Path $BuildVenv "Scripts\python.exe"
 $DistDir = Join-Path $RepoRoot "dist\routeros-triage-panel"
 $ZipPath = Join-Path $RepoRoot ("dist\{0}.zip" -f $PackageName)
 
-function New-BuildVenv {
-    param([switch]$Force)
-
-    if ($Force -and (Test-Path -LiteralPath $BuildVenv)) {
-        Remove-Item -LiteralPath $BuildVenv -Recurse -Force
-    }
-    & $Python -m venv $BuildVenv
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to create build venv with exit code ${LASTEXITCODE}"
-    }
-}
-
-function Test-BuildPip {
-    & $BuildPython -m pip --version
-    return ($LASTEXITCODE -eq 0)
-}
-
 if (-not (Test-Path -LiteralPath $BuildPython)) {
-    New-BuildVenv
+    & $Python -m venv $BuildVenv
 }
 
-if (-not (Test-BuildPip)) {
-    Write-Warning "Build venv exists but pip is unavailable; recreating $BuildVenv"
-    New-BuildVenv -Force
-}
-
-& $BuildPython -m pip --version
-if ($LASTEXITCODE -ne 0) {
-    throw "pip is unavailable in build venv; exit code ${LASTEXITCODE}"
-}
-& $BuildPython -m pip install --require-hashes -r (Join-Path $RepoRoot "requirements.txt")
-if ($LASTEXITCODE -ne 0) {
-    throw "runtime dependency install failed with exit code ${LASTEXITCODE}"
-}
-& $BuildPython -m pip install -r (Join-Path $RepoRoot "requirements-build.txt")
-if ($LASTEXITCODE -ne 0) {
-    throw "build dependency install failed with exit code ${LASTEXITCODE}"
-}
+& $BuildPython -m pip install --upgrade pip
+& $BuildPython -m pip install -r (Join-Path $RepoRoot "requirements.txt") -r (Join-Path $RepoRoot "requirements-build.txt")
 
 Push-Location $RepoRoot
 try {
     & $BuildPython -m PyInstaller (Join-Path $RepoRoot "routeros-triage-panel.spec") --noconfirm --clean
-    if ($LASTEXITCODE -ne 0) {
-        throw "PyInstaller failed with exit code ${LASTEXITCODE}"
-    }
 }
 finally {
     Pop-Location
@@ -84,14 +49,7 @@ foreach ($Marker in @(
     "ROS_PANEL_PROFILE=routeros_only",
     "ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0",
     "ROS_PANEL_EXPOSE_ADMIN_SESSIONS=0",
-    "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1",
-    "ROS_MONITOR_ROUTER_REST_SCHEME=https",
-    "ROS_MONITOR_ROUTER_REST_PORT=443",
-    "ROS_MONITOR_ROUTER_REST_VERIFY_TLS=1",
-    "ROS_MONITOR_INSECURE_REST_CONFIRMED=0",
-    "ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT=",
-    "ROS_PANEL_SESSION_MAX=128",
-    "ROS_PANEL_LOGIN_ATTEMPT_LIMIT=8"
+    "ROS_PANEL_NETWORK_WRITE_ENABLED=1"
 )) {
     if (-not $EnvText.Contains($Marker)) {
         throw "Windows EXE env default is missing $Marker"

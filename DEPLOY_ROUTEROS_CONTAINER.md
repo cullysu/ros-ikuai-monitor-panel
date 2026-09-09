@@ -77,25 +77,17 @@ and `public/` assets into the image. Do not build from an unpacked `dist/`,
 `_staging_*`, or other static snapshot; recent public UI fixes ship through the
 repository `public/` directory and `COPY public ./public`.
 
-Optional registry image, only after anonymous pulls are confirmed to work. Use
-the exact immutable CI tag for the release you selected; `main`, `latest`, and
-other moving tags are not valid deployment inputs:
+Optional registry image, only after anonymous pulls are confirmed to work:
 
 ```text
-ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>
+ghcr.io/cullysu/ros-ikuai-monitor-panel:main
 ```
 
 Verify before using `remote-image=`:
 
 ```bash
-IMAGE='ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha>'
-docker pull "$IMAGE"
+docker pull ghcr.io/cullysu/ros-ikuai-monitor-panel:main
 ```
-
-Replace `<40-hex-commit-sha>` with the exact 40-character lower-case commit
-SHA published by CI. If that immutable image is unavailable or its pull fails,
-stop the registry path and use the local archive path above; do not substitute
-a moving tag and do not silently fall back to a different image.
 
 Example for your own public registry or fork:
 
@@ -182,10 +174,8 @@ Adapt names and subnets to your router. Do not reuse an existing subnet.
 /interface/bridge/port/add bridge=bridge-containers interface=veth-routeros-triage
 ```
 
-Enable RouterOS REST through the `www-ssl` service and restrict its source
-addresses to the container subnet. If RouterOS SSH or REST is restricted by
-address, the container source IP must be allowed to read RouterOS. Do not
-broaden either service to the whole LAN.
+If your RouterOS API service is restricted by address, the container source IP
+must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 
 ## Environment Template
 
@@ -201,24 +191,11 @@ broaden either service to the whole LAN.
 /container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_HOST value=172.18.0.1
 /container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_USER value=ros-panel-readonly
 /container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_PASSWORD value=CHANGE_ME
-/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_REST_SCHEME value=https
-/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_REST_PORT value=443
-/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_REST_VERIFY_TLS value=1
-/container/envs/add list=routeros-triage-env key=ROS_MONITOR_INSECURE_REST_CONFIRMED value=0
-/container/envs/add list=routeros-triage-env key=ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT value=""
 ```
 
-The password and forward token above are placeholders. An empty SSH fingerprint
-forces the first connection to stop before password authentication and display
-the RouterOS key for explicit verification and pinning. Use a long random token for
-`ROS_PANEL_LOCALHOST_FORWARD_TOKEN`, pass the same value to the local forwarder
-helper, and do not store a privileged RouterOS password here.
-
-Verified REST HTTPS is the default. If the RouterOS certificate is not trusted
-inside the container, install a suitable trust chain when practical. Plain HTTP
-or disabled certificate verification must never be a silent fallback; either
-requires `ROS_MONITOR_INSECURE_REST_CONFIRMED=1` after the operator accepts the
-credential-exposure or server-identity risk.
+The password and forward token above are placeholders. Use a long random token
+for `ROS_PANEL_LOCALHOST_FORWARD_TOKEN`, pass the same value to the local
+forwarder helper, and do not store a privileged RouterOS password here.
 
 ## Persistent Data Mount
 
@@ -252,13 +229,12 @@ before removing it or starting a replacement:
 /container/remove [find where root-dir="disk1/routeros-triage"]
 ```
 
-Optional registry image, only after the exact immutable GHCR package is public
-and an anonymous pull works. Replace `<40-hex-commit-sha>` before pasting this
-command; `main` and `latest` are intentionally unsupported:
+Optional registry image, only after the GHCR package is public and anonymous
+pulls work:
 
 ```routeros
 /container/config/set registry-url=https://ghcr.io tmpdir=disk1/container-tmp
-/container/add remote-image=ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40-hex-commit-sha> interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
+/container/add remote-image=ghcr.io/cullysu/ros-ikuai-monitor-panel:main interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
 /container/start [find where root-dir="disk1/routeros-triage"]
 ```
 

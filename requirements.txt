@@ -1,2 +1,2 @@
---require-hashes
--r requirements.lock
+paramiko>=3.4,<4
+requests>=2.32,<3

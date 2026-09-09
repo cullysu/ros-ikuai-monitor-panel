@@ -5,12 +5,12 @@ runs the panel.
 
 ## Release Status
 
-Official Windows ZIP packages are published from tagged GitHub Releases with a
-SHA-256 checksum asset.
+No official signed binary is published yet. Until a release ZIP exists in
+GitHub Releases with a checksum, treat the Windows EXE as a build-from-source
+path.
 
-The project does not yet provide code signing. If Windows Defender or
-SmartScreen warns, verify the ZIP checksum against the GitHub Release before
-running it.
+If you receive a ZIP from another source, verify that you trust the source. The
+project does not yet provide code signing.
 
 ## Public Delivery Contract
 
@@ -21,8 +21,6 @@ off, and admin-session exposure off.
 
 The EXE listens on the Windows host only. `http://127.0.0.1:28646/` means the
 Windows machine running the browser; it is not a LAN URL for other devices.
-RouterOS REST should be provided by `www-ssl`; the panel does not silently
-downgrade to plain `www`.
 
 ## Build From Source
 
@@ -45,31 +43,21 @@ dependencies there.
 
 1. Extract `RouterOS-Triage-Panel-Windows.zip` to a normal user-writable folder,
    for example `C:\RouterOS-Triage-Panel`.
-2. Double-click `RouterOS Triage Panel.exe`.
-3. The browser should open `http://127.0.0.1:28646/` automatically. Other IP
-   browser entrypoints are not allowed by the public defaults.
-4. Enter the RouterOS address, REST scheme/port, SSH port, read-only user, and
-   password on the connection page. Verified REST HTTPS on port `443` is the
-   default. On first SSH contact, compare the displayed SHA-256 host-key
-   fingerprint with a trusted RouterOS source and explicitly pin it before the
-   password-authenticated connection continues.
-5. Optional: prefill credentials in `routeros-panel.env` before starting the
-   EXE if you prefer file-based configuration:
+2. Open `routeros-panel.env` in Notepad.
+3. Set:
    - `ROS_MONITOR_ROUTER_HOST`
    - `ROS_MONITOR_ROUTER_USER`
    - `ROS_MONITOR_ROUTER_PASSWORD`
-   - `ROS_MONITOR_ROUTER_REST_SCHEME=https`
-   - `ROS_MONITOR_ROUTER_REST_PORT=443`
-   - `ROS_MONITOR_ROUTER_REST_VERIFY_TLS=1`
-   - `ROS_MONITOR_INSECURE_REST_CONFIRMED=0`
-   - `ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT` after out-of-band verification
-6. Keep these defaults for a first local trial:
+4. Keep these defaults for a first local trial:
    - `ROS_PANEL_BIND=127.0.0.1`
    - `ROS_PANEL_PORT=28646`
    - `ROS_PANEL_TARGET_IP=127.0.0.1`
    - `ROS_PANEL_TRUST_PROXY_HEADERS=0`
    - `ROS_PANEL_PROFILE=routeros_only`
    - `ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0`
+5. Double-click `RouterOS Triage Panel.exe`.
+6. The browser should open `http://127.0.0.1:28646/` automatically. Other IP
+   browser entrypoints are not allowed by the public defaults.
 
 The console window is intentional. It shows startup errors such as a wrong
 RouterOS address, bad password, or a port conflict.
@@ -78,12 +66,6 @@ The in-panel address dialog can save loopback-only settings to
 `routeros-panel.env` when the ZIP is extracted to a user-writable folder. Restart
 the EXE after saving. Non-loopback addresses remain blocked by the public
 profile.
-This write capability is limited to the panel's local sidecar environment file;
-it never writes RouterOS configuration. The controlling variable is
-`ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1`, and its writable allowlist is exactly
-`ROS_PANEL_BIND`, `ROS_PANEL_PORT`, and `ROS_PANEL_TARGET_IP`. The legacy
-`ROS_PANEL_NETWORK_WRITE_ENABLED` name is accepted only for compatibility with
-existing private installs.
 
 ## Troubleshooting
 
@@ -93,17 +75,6 @@ existing private installs.
   localhost-only configuration.
 - If port `28646` is already in use, stop the conflicting local service first,
   then restart the EXE so the public entrypoint remains fixed.
-- If login reports that TCP connected but no SSH banner was received, keep the
-  SSH port you entered and verify the RouterOS SSH service allows this Windows
-  host to complete an SSH handshake. The failure happens before password
-  authentication.
-- If the panel asks to confirm an SSH host key, verify the algorithm and
-  SHA-256 fingerprint against RouterOS through a separate trusted channel. Do
-  not confirm an unexpected key. A changed pinned key is blocked.
-- If REST HTTPS fails because RouterOS uses a self-signed certificate, install
-  a certificate trusted by the Windows host when possible. Disabling
-  verification is an explicit risk choice; the panel never silently falls back
-  to HTTP.
 - If Windows Defender or SmartScreen warns, inspect the folder and run from a
   trusted local path. This project does not yet provide code signing.
 - If the EXE starts but data is empty, confirm the RouterOS read-only user can
@@ -117,6 +88,5 @@ existing private installs.
 - The default listener is `127.0.0.1:28646`, and non-loopback browser
   entrypoints are rejected.
 - Do not commit or share your edited `routeros-panel.env` file.
-- Saved RouterOS profiles contain connection metadata and the pinned SSH
-  fingerprint, but never the RouterOS password. Protect any environment file
-  that contains a prefilled password and do not share it.
+- Saved RouterOS logins are local secrets on the Windows host. Do not enable
+  password saving on shared or untrusted machines.

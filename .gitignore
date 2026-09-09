@@ -1,6 +1,5 @@
 .venv/
 .venv-build/
-node_modules/
 __pycache__/
 *.py[cod]
 .env
@@ -16,8 +15,6 @@ dist/
 /_backup/
 /_staging_*/
 /_acceptance/
-/.product-loop/*
-!/.product-loop/state.json
 /test-results/
 /_npm_cache/
 /_pwtemp/
@@ -29,7 +26,6 @@ dist/
 /_local*.log
 /_playwright_*.log
 /_playwright_test.html
-/tools/acceptance/browser-lifecycle-v2/.artifacts/
 /_sample*.json
 /_live_snapshot*.json
 /app.py.bak-*
@@ -47,3 +43,4 @@ dist/
 /*.tar
 /*.tar.gz
 /*.tgz
+routeros-panel.env

@@ -2,20 +2,83 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#153f50">
-  <meta name="description" content="RouterOS 只读运行监控面板">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="RouterOS 监控">
-  <title>RouterOS 只读运行面板</title>
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="icon" href="/assets/icons/router-panel-192.png" type="image/png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script defer src="/assets/framework/panel-surface-loader.b2578a348d38.js" data-overview-framework-asset="surface-loader"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>RouterOS 监控面板</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23165dff'/%3E%3Cpath d='M16 36h32M20 26h24M25 18h14' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='46' r='4' fill='%2316c67a'/%3E%3Ccircle cx='32' cy='46' r='4' fill='%23ffb020'/%3E%3Ccircle cx='44' cy='46' r='4' fill='%23ffffff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/panel.css?v=20260909">
 </head>
-<body data-deploy-channel="public">
-  <div id="app"></div>
+<body>
+  <div class="app ik-shell">
+    <aside class="ik-rail" id="ikRail">
+      <a class="ik-rail-logo is-active" href="#overview" data-section="overview" title="系统首页">首</a>
+      <button class="ik-rail-button ik-rail-search-btn" type="button" title="搜索页面 Ctrl+K" data-quick-search-open aria-label="搜索页面">⌕</button>
+      <div class="ik-rail-group">
+        <a class="ik-rail-button is-active" href="#overview" data-section="overview" title="系统首页"><span class="ik-rail-glyph ik-home"></span></a>
+        <a class="ik-rail-button" href="#interfaces" data-section="interfaces" title="接口总览"><span class="ik-rail-glyph ik-line"></span></a>
+        <a class="ik-rail-button" href="#balance" data-section="balance" title="分流监控"><span class="ik-rail-glyph ik-balance"></span></a>
+        <a class="ik-rail-button" href="#security" data-section="security" title="ACL 规则"><span class="ik-rail-glyph ik-security"></span></a>
+        <a class="ik-rail-button" href="#logs" data-section="logs" title="日志中心"><span class="ik-rail-glyph ik-log"></span></a>
+      </div>
+      <div class="ik-rail-group">
+        <a class="ik-rail-button" href="#dhcp" data-section="dhcp" title="DHCP 服务"><span class="ik-rail-glyph ik-terminal"></span></a>
+        <a class="ik-rail-button" href="#trafficLoad" data-section="trafficLoad" title="流量负载"><span class="ik-rail-glyph ik-load"></span></a>
+        <a class="ik-rail-button" href="#dns" data-section="dns" title="DNS 服务"><span class="ik-rail-glyph ik-dns"></span></a>
+        <a class="ik-rail-button" href="#routes" data-section="routes" title="静态路由"><span class="ik-rail-glyph ik-route"></span></a>
+      </div>
+      <div class="ik-rail-spacer"></div>
+      <div class="ik-rail-group">
+        <button class="ik-rail-button ik-readonly-btn" type="button" title="只读状态" data-readonly-info-open aria-label="只读状态">只</button>
+      </div>
+    </aside>
+    <aside class="sidebar">
+      <div class="ik-brand">
+        <div class="ik-brand-left">
+          <div class="ik-brand-title">监控</div>
+          <div class="ik-brand-chip">免费版</div>
+        </div>
+        <div class="ik-brand-user" aria-hidden="true"></div>
+      </div>
+      <button class="ik-search-pill" type="button" data-quick-search-open>搜索 <strong>Ctrl + K</strong></button>
+      <div class="nav-group ik-menu-stack is-empty" id="ikMenuPanel"></div>
+    </aside>
+    <div class="frame overview-title-only">
+      <header class="topbar">
+        <div class="topbar-header">
+          <div>
+            <div class="page-title" id="pageTitle">宽带总览</div>
+            <div class="page-subtitle is-hidden" id="pageSubtitle"></div>
+          </div>
+          <div class="topbar-actions">
+            <div class="toolbar-line">
+              <div class="ik-wan-switch router-switch-wrap" id="routerSwitchWrap" hidden>
+                <span class="ik-wan-switch-label">切换路由器</span>
+                <select class="ik-wan-line-select" id="routerSwitcher" aria-label="切换路由器">
+                  <option value="">加载中…</option>
+                </select>
+              </div>
+              <div class="deploy-pill">本地运行</div>
+              <div class="update-pill"><span class="dot" id="healthDot"></span><span id="updateText">初始化中</span></div>
+            </div>
+            <div class="refresh-toolbar">
+              <button class="action-btn primary" id="manualRefreshBtn" type="button">立即刷新</button>
+              <div class="refresh-meta">
+                <span id="refreshModeText">实时轮询中</span>
+                <strong id="nextRefreshText">1 秒刷新</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="status-strip" id="topMetrics"></div>
+      </header>
+      <main class="content" id="app"></main>
+    </div>
+  </div>
+  <script src="assets/panel-head.js?v=20260908"></script>
+  <script src="assets/panel.js?v=20260909"></script>
+  <script src="/layout-whitespace-patch.js?v=202605282033"></script>
+  <script src="/readonly-diagnostics.js?v=202605131022"></script>
 </body>
 </html>

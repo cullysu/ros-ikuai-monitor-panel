@@ -61,58 +61,20 @@ function Test-UsageOutput {
   return (-not [string]::IsNullOrWhiteSpace($Text)) -and ($Text -match "(?i)(usage|options|help|install|dry-run)")
 }
 
-function ConvertTo-BashSingleQuoted {
-  param([string]$Text)
-  return "'$($Text -replace "'", "'\''")'"
-}
-
-function Invoke-BashLoginCommand {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$BashPath,
-    [Parameter(Mandatory = $true)]
-    [string]$Command
-  )
-
-  return Invoke-CapturedCommand $BashPath @("-lc", $Command)
-}
-
 function Get-UsableBash {
   $candidates = @(
-    "C:\Program Files\Git\usr\bin\bash.exe",
     "C:\Program Files\Git\bin\bash.exe",
-    "C:\Program Files (x86)\Git\usr\bin\bash.exe",
+    "C:\Program Files\Git\usr\bin\bash.exe",
     "C:\Program Files (x86)\Git\bin\bash.exe"
   )
 
-  $available = @()
   foreach ($candidate in $candidates) {
     if (Test-Path -LiteralPath $candidate) {
-      $available += $candidate
-    }
-  }
-
-  $pathBash = Get-Command bash -ErrorAction SilentlyContinue | Select-Object -First 1
-  if ($pathBash) {
-    $available += $pathBash.Source
-  }
-  $available = @($available | Select-Object -Unique)
-
-  foreach ($candidate in $available) {
-    $probe = Invoke-CapturedCommand $candidate @("-lc", "command -v id >/dev/null 2>&1 && id -u >/dev/null 2>&1")
-    if ($probe.ExitCode -eq 0) {
       return [pscustomobject]@{ Source = $candidate }
     }
   }
 
-  foreach ($candidate in $available) {
-    $probe = Invoke-CapturedCommand $candidate @("-lc", "true")
-    if ($probe.ExitCode -eq 0) {
-      return [pscustomobject]@{ Source = $candidate }
-    }
-  }
-
-  return $null
+  return Get-Command bash -ErrorAction SilentlyContinue | Select-Object -First 1
 }
 
 Push-Location $repoRoot
@@ -123,42 +85,35 @@ try {
   Write-Host ""
 
   $indexPath = Join-Path $repoRoot "public/index.html"
-  $frameworkRoot = Join-Path $repoRoot "public/assets/framework"
-  $frameworkManifestPath = Join-Path $frameworkRoot "manifest.json"
+  $scalePatchPath = Join-Path $repoRoot "public/scale-adaptive-patch.js"
   if (-not (Test-Path -LiteralPath $indexPath)) {
-    Add-Check "FAIL" "frontend framework assets" "public/index.html was not found."
+    Add-Check "FAIL" "frontend axis assets" "public/index.html was not found."
   }
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
-    $reactShell = ($indexText -match '<div\s+id="app"(?:\s|>)')
-    $surfaceLoaderMarker = $indexText -match 'data-overview-framework-asset="surface-loader"'
-    $legacyShellAbsent = $indexText -notmatch 'data-app-shell="ikuai"' -and $indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)'
-    $manifestValid = $false
-    $manifest = $null
-    if (Test-Path -LiteralPath $frameworkManifestPath -PathType Leaf) {
-      try {
-        $manifest = Get-Content -Raw -LiteralPath $frameworkManifestPath | ConvertFrom-Json
-        $manifestValid = $manifest.version -eq 3
-        foreach ($record in @($manifest.assets.loader, $manifest.assets.mobile.script, $manifest.assets.mobile.style, $manifest.assets.desktop.script, $manifest.assets.desktop.style)) {
-          if ($null -eq $record -or [string]::IsNullOrWhiteSpace([string]$record.file) -or [string]$record.file -notmatch '^[^/\\]+$' -or [string]$record.sha256 -notmatch '^[0-9a-f]{64}$' -or -not (Test-Path -LiteralPath (Join-Path $frameworkRoot $record.file) -PathType Leaf)) {
-            $manifestValid = $false
-          }
-        }
-        if ($manifestValid -and $indexText -notmatch [regex]::Escape("/assets/framework/$($manifest.assets.loader.file)")) {
-          $manifestValid = $false
-        }
-      }
-      catch {
-        $manifestValid = $false
-      }
-    }
-    if ($reactShell -and $surfaceLoaderMarker -and $legacyShellAbsent -and $manifestValid) {
-      Add-Check "PASS" "frontend framework assets" "Neutral React root, v3 surface loader, manifest identities, and dual-surface assets are present."
+    $scalePatchText = if (Test-Path -LiteralPath $scalePatchPath) { Get-Content -Raw -LiteralPath $scalePatchPath } else { "" }
+    $frontendAllText = $indexText + (Get-ChildItem -LiteralPath (Join-Path $repoRoot "public/assets") -Include *.css,*.js -Recurse -File | ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName }) -join ""
+    $legacyAxisAssets = (
+      $indexText -match "axis-tick-label" -and
+      $scalePatchText -match "ikuai-wan-chart \.axis-line-chart" -and
+      $scalePatchText -match "ikuai-chart-box \.axis-line-chart" -and
+      $scalePatchText -match "data-ikuai-terminal-summary"
+    )
+    $current35Assets = (
+      $frontendAllText -match "smoothRateNeedleZeros" -and
+      $frontendAllText -match "ik-wan-rate-axis" -and
+      $frontendAllText -match "ops-axis-labels" -and
+      $frontendAllText -match "data-overview-wan-switch" -and
+      $frontendAllText -match "data-overview-rank-grid"
+    )
+    if ($legacyAxisAssets -or $current35Assets) {
+      Add-Check "PASS" "frontend axis assets" "Overview WAN/resource chart axes and terminal/ranking placement markers are present."
     }
     else {
-      Add-Check "FAIL" "frontend framework assets" "The neutral React root, v3 surface loader, framework manifest identities, or dual-surface assets are missing or stale."
+      Add-Check "FAIL" "frontend axis assets" "Overview chart axes or terminal/ranking placement markers are missing from public assets."
     }
   }
+
   $specPath = Join-Path $repoRoot "routeros-triage-panel.spec"
   $dockerfilePath = Join-Path $repoRoot "Dockerfile"
   $composePath = Join-Path $repoRoot "compose.yml"
@@ -279,8 +234,7 @@ try {
       else {
         $installText = Get-Content -Raw -LiteralPath $installPath
 
-        $quotedInstallScript = ConvertTo-BashSingleQuoted $InstallScript
-        $syntaxResult = Invoke-BashLoginCommand $bash.Source "bash -n $quotedInstallScript"
+        $syntaxResult = Invoke-CapturedCommand $bash.Source @("-n", $InstallScript)
         if ($syntaxResult.ExitCode -eq 0) {
           Add-Check "PASS" "bash syntax" "bash -n $InstallScript completed."
         }
@@ -297,7 +251,7 @@ try {
           Add-Check "FAIL" "install help" "$InstallScript does not advertise --help/-h; help command was not executed to avoid side effects."
         }
         else {
-          $helpResult = Invoke-BashLoginCommand $bash.Source "bash $quotedInstallScript --help"
+          $helpResult = Invoke-CapturedCommand $bash.Source @($InstallScript, "--help")
           if (($helpResult.ExitCode -eq 0) -and (Test-UsageOutput $helpResult.Output)) {
             Add-Check "PASS" "install help" "bash $InstallScript --help returned usage-like output."
           }
@@ -316,7 +270,7 @@ try {
           Add-Check $status "install dry-run" "$InstallScript does not advertise --dry-run; command was not executed."
         }
         else {
-          $dryRunResult = Invoke-BashLoginCommand $bash.Source "bash $quotedInstallScript --dry-run"
+          $dryRunResult = Invoke-CapturedCommand $bash.Source @($InstallScript, "--dry-run")
           if ($dryRunResult.ExitCode -eq 0) {
             Add-Check "PASS" "install dry-run" "bash $InstallScript --dry-run completed."
             if ($dryRunResult.Output -match "bind:\s+127\.0\.0\.1" -and
@@ -366,9 +320,9 @@ try {
             Add-Check "FAIL" "public release readiness" "tools/check-public-release-readiness.js was not found."
           }
           else {
-            $releaseResult = Invoke-CapturedCommand $node.Source @("tools/check-public-release-readiness.js", "--static-only")
+            $releaseResult = Invoke-CapturedCommand $node.Source @("tools/check-public-release-readiness.js")
             if ($releaseResult.ExitCode -eq 0) {
-              Add-Check "PASS" "public release readiness" "tools/check-public-release-readiness.js --static-only passed."
+              Add-Check "PASS" "public release readiness" "tools/check-public-release-readiness.js passed."
             }
             else {
               $detail = $releaseResult.Output.Trim()
