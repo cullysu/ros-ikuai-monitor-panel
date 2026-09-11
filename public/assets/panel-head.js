@@ -1074,26 +1074,52 @@ const appEl = document.getElementById('app');
       return { n, minTile, chartH, gap, compact, maxH };
     }
 
+    function lineTrendColumns(count) {
+      const n = Math.max(1, Number(count) || 1);
+      const ideal = Math.min(6, Math.max(1, Math.ceil(Math.sqrt(n))));
+      for (let cols = ideal; cols <= 6; cols += 1) {
+        if (n % cols === 0) return cols;
+      }
+      return ideal;
+    }
+
+    function lineTrendPeak(item) {
+      const values = [...(item?.history?.up || []), ...(item?.history?.down || [])]
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value));
+      return values.length ? Math.max(...values) : 0;
+    }
+
     function renderLineTrendGrid(rows, options = {}) {
       const colors = options.colors || ['#165dff', '#16c67a'];
       const emptyText = options.emptyText || '当前未读取到可展示的线路趋势';
       if (!rows.length) return emptyBlock(emptyText);
-      const density = lineTrendDensity(rows.length);
-      const style = `--line-trend-min:${density.minTile}px;--line-trend-chart-h:${density.chartH}px;--line-trend-gap:${density.gap}px;--line-trend-max-h:${density.maxH}px`;
-      if (density.compact) {
-        return `<div class="line-trend-grid is-compact" style="${style}">${rows.map((item) => `
-          <div class="line-trend-row">
-            <div class="line-trend-row-name">${escapeHtml(item.name)}</div>
-            <div class="line-trend-row-state">${item.running ? '在线' : '离线'}</div>
-            <div class="line-trend-row-rate">${fmtRate(item.upRate)} / ${fmtRate(item.downRate)}</div>
-            <div class="line-trend-row-spark">${lineChart([item.history.up, item.history.down], { colors, width: 160, height: 28 })}</div>
-          </div>`).join('')}</div>`;
+      const online = rows.filter((item) => item.running);
+      const offline = rows.filter((item) => !item.running);
+      const parts = [];
+      if (online.length) {
+        const density = lineTrendDensity(online.length);
+        if (density.compact) {
+          parts.push(`<div class="line-trend-grid is-compact" style="--line-trend-max-h:${density.maxH}px">${online.map((item) => `
+            <div class="line-trend-row">
+              <div class="line-trend-row-name">${escapeHtml(item.name)}</div>
+              <div class="line-trend-row-state">在线</div>
+              <div class="line-trend-row-rate">↑ ${fmtRate(item.upRate)} ↓ ${fmtRate(item.downRate)}</div>
+              <div class="line-trend-row-spark">${lineChart([item.history.up, item.history.down], { colors, width: 160, height: 28 })}</div>
+            </div>`).join('')}</div>`);
+        } else {
+          const cols = lineTrendColumns(online.length);
+          parts.push(`<div class="line-trend-grid" style="--line-trend-cols:${cols};--line-trend-chart-h:${density.chartH}px;--line-trend-gap:${density.gap}px">${online.map((item) => `
+            <div class="chart-box">
+              <div class="chart-label"><span>${escapeHtml(item.name)}</span><span class="line-trend-anchor">↑ ${fmtRate(item.upRate)} ↓ ${fmtRate(item.downRate)} · 峰值 ${fmtRate(lineTrendPeak(item))}</span></div>
+              ${lineChart([item.history.up, item.history.down], { colors, height: density.chartH })}
+            </div>`).join('')}</div>`);
+        }
       }
-      return `<div class="line-trend-grid" style="${style}">${rows.map((item) => `
-        <div class="chart-box">
-          <div class="chart-label"><span>${escapeHtml(item.name)}</span><span>TX / RX</span></div>
-          ${lineChart([item.history.up, item.history.down], { colors, height: density.chartH })}
-        </div>`).join('')}</div>`;
+      if (offline.length) {
+        parts.push(`<div class="line-trend-offline"><span class="line-trend-offline-label">离线 ${fmtNumber(offline.length)} 条</span>${offline.map((item) => `<span class="line-trend-badge">${escapeHtml(item.name)}</span>`).join('')}</div>`);
+      }
+      return parts.length ? parts.join('') : emptyBlock(emptyText);
     }
 
     function recordItem(label, value) {

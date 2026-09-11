@@ -80,8 +80,8 @@
     #overview .ik-home-line-bars .line-share { font-size: 12px; }
     #overview .ik-home-line-bars .progress { height: 6px; }
     .ops-page-stack { display: flex; flex-direction: column; gap: 10px; }
-    .ops-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: stretch; }
-    .ops-double { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: stretch; }
+    .ops-split { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.95fr); gap: 10px; align-items: start; }
+    .ops-double { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
     .ops-side-stack { display: flex; flex-direction: column; gap: 10px; }
     .ops-bar-stack { display: flex; flex-direction: column; gap: 6px; }
     .ops-bar-stack .line-bar { grid-template-columns: 118px 1fr 90px; gap: 10px; }
@@ -124,7 +124,6 @@
     #arp .record-list, #trafficAudit .record-list { gap: 4px; }
     #arp .record-head, #trafficAudit .record-head { padding: 5px 8px; }
     #arp .record-grid, #trafficAudit .record-grid { padding: 5px 8px 7px; gap: 3px 6px; }
-    #trafficLoad .line-trend-grid { grid-template-columns: repeat(auto-fill, minmax(var(--line-trend-min, 168px), 1fr)); }
     .ops-resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .ops-resource-card { min-width: 0; padding: 8px 10px 10px; border: 1px solid #e3edf8; border-radius: 10px; background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); }
     .ops-resource-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
@@ -3092,7 +3091,7 @@
     #dns4 .ops-double,
     #dns6 .ops-double,
     #security .ops-double,
-    #serviceLogs .ops-double { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    #serviceLogs .ops-double { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     #interfaces .ops-stat-grid,
     #dns4 .ops-stat-grid,
     #dns6 .ops-stat-grid,
@@ -3118,7 +3117,6 @@
     #dns6 .chart-box,
     #security .chart-box,
     #serviceLogs .chart-box { padding: 8px; }
-    #interfaces .line-trend-grid { grid-template-columns: repeat(auto-fill, minmax(var(--line-trend-min, 168px), 1fr)); gap: var(--line-trend-gap, 8px); }
   `;
   document.head.appendChild(densityStyleV3);
 
@@ -3422,18 +3420,18 @@
           <div class="ops-workbench-grid interfaces-monitor-grid">
             ${opsCard('线路运行主屏', '把逐线趋势、当前最忙出口和负载分布压进同一块值班主屏', `
               <div class="ops-section-grid interfaces-monitor-main">
-                <div class="interfaces-trend-stack">
-                  <div class="interfaces-inline-panel">
-                    <div class="interfaces-inline-head">
-                      <div class="interfaces-inline-title">线路趋势带宽</div>
-                      <div class="interfaces-inline-subtle">${fmtNumber(lineTrendRows.length)} 条线路同步采样</div>
-                    </div>
-                    ${renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' })}
+                <div class="interfaces-inline-panel">
+                  <div class="interfaces-inline-head">
+                    <div class="interfaces-inline-title">线路趋势带宽</div>
+                    <div class="interfaces-inline-subtle">${fmtNumber(lineTrendRows.length)} 条线路同步采样 · 在线画趋势，离线收进状态条</div>
                   </div>
+                  ${renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' })}
+                </div>
+                <div class="ops-double interfaces-facts-row">
                   <div class="interfaces-inline-panel interfaces-monitor-facts">
                     <div class="interfaces-inline-head">
                       <div class="interfaces-inline-title">线路闭环快照</div>
-                      <div class="interfaces-inline-subtle">把角色、地址族和父接口异常直接压在趋势下面</div>
+                      <div class="interfaces-inline-subtle">把角色、地址族和父接口异常直接压在趋势旁边</div>
                     </div>
                     ${opsStatTiles([
                       { label: '全局出口', value: fmtNumber(globalRoleLines), meta: '具备 main 默认路由' },
@@ -3443,15 +3441,6 @@
                       { label: '高负载线路', value: fmtNumber(hotTrafficLines), meta: '瞬时吞吐 ≥ 1 MB/s' },
                       { label: '父接口丢错', value: fmtNumber(parentIssueLines), meta: '承载接口出现丢错' }
                     ])}
-                  </div>
-                </div>
-                <div class="ops-panel-stack">
-                  <div class="interfaces-inline-panel">
-                    <div class="interfaces-inline-head">
-                      <div class="interfaces-inline-title">重点线路快扫</div>
-                      <div class="interfaces-inline-subtle">把速率、角色和父接口压成短表，避免主屏纵向拉长</div>
-                    </div>
-                    ${opsDenseTable(['线路', '角色 / 父接口', '上 / 下', '合计'], lineFocusRows, '当前未读取到重点线路', 'ops-compact-table')}
                   </div>
                   <div class="interfaces-inline-panel interfaces-monitor-facts">
                     <div class="interfaces-inline-head">
@@ -3466,17 +3455,26 @@
                     ])}
                   </div>
                 </div>
+                <div class="interfaces-inline-panel">
+                  <div class="interfaces-inline-head">
+                    <div class="interfaces-inline-title">重点线路快扫</div>
+                    <div class="interfaces-inline-subtle">把速率、角色和父接口压成短表，避免主屏纵向拉长</div>
+                  </div>
+                  ${opsDenseTable(['线路', '角色 / 父接口', '上 / 下', '合计'], lineFocusRows, '当前未读取到重点线路', 'ops-compact-table')}
+                </div>
               </div>`, 'ops-info-card')}
             <div class="ops-workbench-side interfaces-monitor-side">
-              ${opsCard('接口覆盖摘要', '把在线性、双栈覆盖和错误接口压成固定宽屏摘要', opsStatTiles([
-                { label: '在线 LAN', value: fmtNumber(runningLan), meta: `LAN 总数 ${fmtNumber(interfaces.filter((row) => row.role === 'LAN').length)}` },
-                { label: '虚拟接口', value: fmtNumber(virtualCount), meta: 'VLAN / WG / Loopback / L2TP' },
-                { label: '双栈接口', value: fmtNumber(dualStackInterfaces), meta: '同时具备 IPv4 / IPv6' },
-                { label: 'IPv6 接口', value: fmtNumber(ipv6Interfaces.length), meta: '包含真实 IPv6 地址' },
-                { label: '有丢错接口', value: fmtNumber(interfaceIssueCount), meta: '累计丢包或错包非 0' },
-                { label: '活动路由表', value: fmtNumber(activeRouteTables.length), meta: activeRouteTables.length ? activeRouteTables.slice(0, 3).map(escapeHtml).join(' / ') : '无活动表' }
-              ]), 'ops-info-card')}
-              ${opsCard('线路负载分布', loadDistributionRows.length ? `${fmtNumber(loadDistributionRows.length)} 条线路占比` : '按实时吞吐自动排序', loadDistributionBlock, 'ops-info-card')}
+              <div class="ops-double interfaces-side-row">
+                ${opsCard('接口覆盖摘要', '把在线性、双栈覆盖和错误接口压成固定宽屏摘要', opsStatTiles([
+                  { label: '在线 LAN', value: fmtNumber(runningLan), meta: `LAN 总数 ${fmtNumber(interfaces.filter((row) => row.role === 'LAN').length)}` },
+                  { label: '虚拟接口', value: fmtNumber(virtualCount), meta: 'VLAN / WG / Loopback / L2TP' },
+                  { label: '双栈接口', value: fmtNumber(dualStackInterfaces), meta: '同时具备 IPv4 / IPv6' },
+                  { label: 'IPv6 接口', value: fmtNumber(ipv6Interfaces.length), meta: '包含真实 IPv6 地址' },
+                  { label: '有丢错接口', value: fmtNumber(interfaceIssueCount), meta: '累计丢包或错包非 0' },
+                  { label: '活动路由表', value: fmtNumber(activeRouteTables.length), meta: activeRouteTables.length ? activeRouteTables.slice(0, 3).map(escapeHtml).join(' / ') : '无活动表' }
+                ]), 'ops-info-card')}
+                ${opsCard('线路负载分布', loadDistributionRows.length ? `${fmtNumber(loadDistributionRows.length)} 条线路占比` : '按实时吞吐自动排序', loadDistributionBlock, 'ops-info-card')}
+              </div>
               ${opsDenseTableCard('父接口健康', '把承载接口、线路和丢错压成短表，避免右侧长竖列把首屏撑空', ['父接口', '线路 / 角色', '上 / 下', '丢 / 错', '地址族'], parentHealthRows, '当前未读取到父接口健康信息', 'ops-compact-density', 'ops-compact-table')}
             </div>
           </div>
@@ -3776,7 +3774,7 @@
     #trafficLoad .ops-split,
     #lineStatus .ops-split,
     #trafficAudit .ops-split,
-    #terminals .ops-split { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    #terminals .ops-split { grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.95fr); gap: 8px; }
     #loadAudit .ops-double,
     #routes .ops-double,
     #balance .ops-double,
@@ -3788,7 +3786,7 @@
     #balance .grid-2,
     #lineStatus .grid-2,
     #trafficAudit .grid-2,
-    #terminals .grid-2 { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    #terminals .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     #routes .grid-4,
     #balance .grid-4,
     #trafficLoad .grid-4,
