@@ -772,9 +772,16 @@ def assert_line_trend_density_is_continuous():
     assert ").slice(0, 8);" not in get_rows
     assert "function lineTrendDensity(count)" in panel_head
     assert "Math.log2(n)" in panel_head
-    assert "density.compact" in panel_head
+    assert "function lineTrendColumns(count)" in panel_head
+    assert "function lineTrendPeak(item)" in panel_head
+    grid_body = panel_head[panel_head.find("function renderLineTrendGrid") : panel_head.find("function recordItem")]
+    assert "rows.filter((item) => item.running)" in grid_body
+    assert "line-trend-offline" in grid_body
+    assert "line-trend-anchor" in grid_body
+    assert "--line-trend-cols:${cols}" in grid_body
     assert "8 条线路速率趋势" not in panel_head
-    assert "repeat(auto-fill, minmax(var(--line-trend-min" in panel_css
+    assert "repeat(var(--line-trend-cols, 4), minmax(0, 1fr))" in panel_css
+    assert ".line-trend-badge" in panel_css
     assert "#interfaces .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }" not in layout_patch
     assert "#trafficLoad .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }" not in layout_patch
 
