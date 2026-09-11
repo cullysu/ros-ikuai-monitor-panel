@@ -1060,17 +1060,39 @@ const appEl = document.getElementById('app');
     function getLineTrendRows(pppoe) {
       return sortPppoeNamedRows(
         (pppoe || []).filter((item) => item.history?.up?.length && item.history?.down?.length)
-      ).slice(0, 8);
+      );
+    }
+
+    function lineTrendDensity(count) {
+      const n = Math.max(1, Number(count) || 1);
+      const logN = Math.log2(n);
+      const minTile = Math.round(Math.max(108, 260 - 38 * logN));
+      const chartH = Math.round(Math.max(36, 128 - 22 * logN));
+      const gap = n <= 4 ? 10 : n <= 16 ? 8 : 6;
+      const compact = minTile <= 132 || n > 24;
+      const maxH = compact ? Math.min(420, Math.max(220, 96 + n * 18)) : Math.min(560, Math.max(180, chartH * 2 + 96));
+      return { n, minTile, chartH, gap, compact, maxH };
     }
 
     function renderLineTrendGrid(rows, options = {}) {
       const colors = options.colors || ['#165dff', '#16c67a'];
       const emptyText = options.emptyText || '当前未读取到可展示的线路趋势';
       if (!rows.length) return emptyBlock(emptyText);
-      return `<div class="line-trend-grid">${rows.map((item) => `
+      const density = lineTrendDensity(rows.length);
+      const style = `--line-trend-min:${density.minTile}px;--line-trend-chart-h:${density.chartH}px;--line-trend-gap:${density.gap}px;--line-trend-max-h:${density.maxH}px`;
+      if (density.compact) {
+        return `<div class="line-trend-grid is-compact" style="${style}">${rows.map((item) => `
+          <div class="line-trend-row">
+            <div class="line-trend-row-name">${escapeHtml(item.name)}</div>
+            <div class="line-trend-row-state">${item.running ? '在线' : '离线'}</div>
+            <div class="line-trend-row-rate">${fmtRate(item.upRate)} / ${fmtRate(item.downRate)}</div>
+            <div class="line-trend-row-spark">${lineChart([item.history.up, item.history.down], { colors, width: 160, height: 28 })}</div>
+          </div>`).join('')}</div>`;
+      }
+      return `<div class="line-trend-grid" style="${style}">${rows.map((item) => `
         <div class="chart-box">
           <div class="chart-label"><span>${escapeHtml(item.name)}</span><span>TX / RX</span></div>
-          ${lineChart([item.history.up, item.history.down], {colors})}
+          ${lineChart([item.history.up, item.history.down], { colors, height: density.chartH })}
         </div>`).join('')}</div>`;
     }
 
@@ -2924,7 +2946,7 @@ const appEl = document.getElementById('app');
           <div class="card"><div class="card-head"><div class="card-title">WAN 聚合吞吐趋势</div><div class="subtle">${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${lineChart([overview.history.uplink, overview.history.downlink], {colors:['#165dff','#f53f3f']})}</div></div></div>
           <div class="card"><div class="card-head"><div class="card-title">线路负载占比</div><div class="subtle">${busiestLine ? `${escapeHtml(busiestLine.name)} 当前最繁忙` : '等待采集'}</div></div><div class="card-body"><div class="stack">${lineShareRows || emptyBlock('当前未形成可读的线路占比')}</div></div></div>
         </div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">8 条线路速率趋势</div><div class="subtle">${fmtNumber(getLineTrendRows(pppoe).length)} 条线路同步展示</div></div><div class="card-body">${renderLineTrendGrid(getLineTrendRows(pppoe), {emptyText:'当前未采集到可展示的线路趋势'})}</div></div>
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">线路速率趋势</div><div class="subtle">${fmtNumber(getLineTrendRows(pppoe).length)} 条线路同步展示</div></div><div class="card-body">${renderLineTrendGrid(getLineTrendRows(pppoe), {emptyText:'当前未采集到可展示的线路趋势'})}</div></div>
         <div class="grid-2" style="margin-top:12px">
           <div class="card"><div class="card-head"><div class="card-title">宽带实时负载</div><div class="subtle">按 PPPoE 实时吞吐排序</div></div><div class="card-body">${table(['线路', '状态', '父接口', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], lineRows, '当前未读取到宽带实时负载')}</div></div>
           <div class="card"><div class="card-head"><div class="card-title">接口吞吐排行</div><div class="subtle">按接口实时吞吐排序</div></div><div class="card-body">${table(['接口', '角色', '类型', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], interfaceRows, '当前未读取到接口吞吐排行')}</div></div>
@@ -3089,7 +3111,7 @@ const appEl = document.getElementById('app');
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">故障优先队列</div><div class="subtle">紧凑诊断视图，一行一条线路</div></div><div class="card-body">${compactTable(['#', '状态', '线路 / 父接口', '分', '出口角色', '原因', '动作', '闭环', '丢 / 错', '上 / 下'], diagnosticRows, '当前未读取到线路诊断数据')}</div></div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">线路角色矩阵</div><div class="subtle">看每条 PPPoE 在路由体系里的角色，不重复接口吞吐清单</div></div><div class="card-body">${compactTable(['线路', '出口角色', '活动表', '距离', '父接口', '地址', '丢 / 错'], roleRows, '当前未读取到线路角色数据')}</div></div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">8 条线路速率趋势</div><div class="subtle">${fmtNumber(lineTrendRows.length)} 条线路同步展示，作为诊断辅助信息</div></div><div class="card-body">${renderLineTrendGrid(lineTrendRows, {emptyText:'当前未读取到可展示的线路趋势'})}</div></div>`);
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">线路速率趋势</div><div class="subtle">${fmtNumber(lineTrendRows.length)} 条线路同步展示，作为诊断辅助信息</div></div><div class="card-body">${renderLineTrendGrid(lineTrendRows, {emptyText:'当前未读取到可展示的线路趋势'})}</div></div>`);
     }
 
     function renderArp(snapshot) {

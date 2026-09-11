@@ -758,6 +758,25 @@ def assert_router_login_tries_rest_when_ssh_fails():
     assert "id = 'routerSetupOverlay'" in panel_js or 'id="routerSetupOverlay"' in panel_js
     assert "(login && login.restScheme) || 'http'" in panel_js
     assert "(login && login.restPort) || 80" in panel_js
+    assert 'option value="__add__"' in panel_js
+    assert "window.panelRouterSetup = { open: renderSetupForm };" in panel_js
+    assert "body: JSON.stringify({ savedId: id, rememberPassword: true })" in panel_js
+    assert "wrap.hidden = false;" in panel_js
+
+
+def assert_line_trend_density_is_continuous():
+    panel_head = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+    panel_css = (ROOT / "public" / "assets" / "panel.css").read_text(encoding="utf-8")
+    layout_patch = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
+    get_rows = panel_head[panel_head.find("function getLineTrendRows") : panel_head.find("function lineTrendDensity")]
+    assert ").slice(0, 8);" not in get_rows
+    assert "function lineTrendDensity(count)" in panel_head
+    assert "Math.log2(n)" in panel_head
+    assert "density.compact" in panel_head
+    assert "8 条线路速率趋势" not in panel_head
+    assert "repeat(auto-fill, minmax(var(--line-trend-min" in panel_css
+    assert "#interfaces .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }" not in layout_patch
+    assert "#trafficLoad .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }" not in layout_patch
 
 
 def assert_frontend_handles_partial_snapshots():
@@ -903,6 +922,7 @@ def main():
     assert_frontend_wan_aggregate_default()
     assert_router_login_password_save_is_opt_in()
     assert_router_login_tries_rest_when_ssh_fails()
+    assert_line_trend_density_is_continuous()
     assert_frontend_handles_partial_snapshots()
     assert_collector_status_messages_are_specific()
     assert_semantic_triage_distinguishes_quality_display_values()
@@ -925,6 +945,7 @@ def main():
                     "frontend WAN selector defaults to an all-line aggregate traffic option",
                     "RouterOS login password saving is opt-in for public deployments",
                     "RouterOS login still probes REST when SSH banner fails, and first-run POSTs send CSRF",
+                    "line trend density follows line count instead of a hardcoded 8-cell grid",
                     "frontend renderers tolerate partial snapshots and missing history collections",
                     "collector startup/config/error states expose specific status messages instead of unknown-error banners",
                     "semantic triage distinguishes cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
