@@ -505,6 +505,14 @@
     .line-trend-row-spark { min-width: 0; }
     .line-trend-row-spark .mini-chart { height: 28px; }
     .line-trend-anchor { color: var(--text-dim); font-size: 10.5px; font-weight: 500; white-space: nowrap; }
+    .line-trend-full {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .line-trend-full + .line-trend-full { margin-top: 10px; }
+    .line-trend-full .ik-wan-rate-svg { height: 120px; }
+    .line-trend-full .ik-wan-rate-chart { grid-template-columns: minmax(0, 1fr) 78px; gap: 8px; }
     .line-trend-offline {
       display: flex;
       flex-wrap: wrap;
