@@ -2711,7 +2711,6 @@
   function renderReadonlyFeatureChrome(snapshot, section) {
     return `
       <div class="readonly-feature-sticky">
-        ${renderReadonlyFeatureNav(section)}
         ${renderFeatureDensityHeader(snapshot, STATE.payload, section)}
       </div>`;
   }
@@ -3289,15 +3288,6 @@
     READONLY_FEATURE_PAGES.forEach((page) => compactTopbarSections.add(page.section));
   }
 
-  function renderReadonlyFeatureNav(activeSection) {
-    return `<div class="readonly-feature-nav">
-      ${READONLY_FEATURE_PAGES.map((page) => `
-        <a class="readonly-feature-link ${page.section === activeSection ? "is-active" : ""}" href="#${page.section}" data-section="${page.section}" data-nav-group="${html(getReadonlyNavGroup(page.section))}">
-          <strong>${html(page.label)}</strong>
-          <span>${html(page.desc)}</span>
-        </a>`).join("")}
-      </div>`;
-  }
 
   function renderReadonlyStickySummary(snapshot, section) {
     const metrics = readonlyPinMetrics(snapshot, STATE.payload, section).slice(0, 5);
