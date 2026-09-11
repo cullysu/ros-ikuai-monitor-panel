@@ -2123,7 +2123,6 @@
     const tabs = `
       <div class="ik-subtabs">
         <button class="ik-subtab ${currentInterfaceView === 'monitor' ? 'is-active' : ''}" type="button" data-interface-view="monitor">线路监控</button>
-        <button class="ik-subtab ${currentInterfaceView === 'detect' ? 'is-active' : ''}" type="button" data-interface-view="detect">线路状态检测</button>
         <button class="ik-subtab ${currentInterfaceView === 'ipv6' ? 'is-active' : ''}" type="button" data-interface-view="ipv6">IPv6 线路详情</button>
       </div>`;
     const toolbar = `
@@ -3182,7 +3181,6 @@
     const tabs = `
       <div class="ik-subtabs">
         <button class="ik-subtab ${currentInterfaceView === 'monitor' ? 'is-active' : ''}" type="button" data-interface-view="monitor">线路监控</button>
-        <button class="ik-subtab ${currentInterfaceView === 'detect' ? 'is-active' : ''}" type="button" data-interface-view="detect">线路状态检测</button>
         <button class="ik-subtab ${currentInterfaceView === 'ipv6' ? 'is-active' : ''}" type="button" data-interface-view="ipv6">IPv6 线路详情</button>
       </div>`;
     const toolbar = `
@@ -3350,37 +3348,7 @@
       });
 
     let body = '';
-    if (currentInterfaceView === 'detect') {
-      body = `
-        ${readonlyNotice}
-        ${toolbar}
-        <div class="grid-4" style="margin-top:8px">
-          ${metricCard('可用出口', fmtNumber(usableLines), `总线路 ${fmtNumber(pppoe.length)} 条`, '健康闭环完整')}
-          ${metricCard('待观察', fmtNumber(watchLines), '有累计丢包或轻微异常', '先观察趋势')}
-          ${metricCard('故障优先', fmtNumber(dangerousLines), '离线或无活动默认路由', '需要优先处理')}
-          ${metricCard('路由覆盖', fmtNumber(activeRouteTables.length), activeRouteTables.length ? activeRouteTables.slice(0, 4).map(escapeHtml).join(' / ') : '无活动表', '按活动默认路由统计')}
-        </div>
-        <div class="ops-workbench" style="margin-top:8px">
-          <div class="ops-workbench-grid">
-            ${opsDenseTableCard('故障优先队列', `${fmtNumber(diagnosticQueue.length)} 条线路，按诊断分值与顺位紧凑展示`, ['#', '状态', '线路 / 父接口', '分', '出口角色', '原因', '动作', '闭环', '丢 / 错', '上 / 下'], diagnosticRows, '当前未读取到线路诊断数据', 'ops-compact-density', 'ops-compact-table')}
-            <div class="ops-workbench-side">
-              ${opsCard('线路诊断摘要', '先判断闭环是否完整，再决定要去看拨号、地址、路由还是父接口错误', opsStatTiles([
-                { label: '拨号闭环', value: `${fmtNumber(runningWan)} / ${fmtNumber(pppoe.length)}`, meta: 'PPPoE 当前在线' },
-                { label: '地址闭环', value: `${fmtNumber(linesWithAddress)} / ${fmtNumber(pppoe.length)}`, meta: '已拿到公网或 IPv6 地址' },
-                { label: '路由闭环', value: `${fmtNumber(linesWithActiveRoute)} / ${fmtNumber(pppoe.length)}`, meta: '存在活动默认路由' },
-                { label: '父接口错误', value: fmtNumber(diagnostics.filter((item) => item.errorTotal > 0).length), meta: '错误包非 0 才计入故障' },
-                { label: '策略出口', value: fmtNumber(diagnostics.filter((item) => item.role.label.includes('策略')).length), meta: '非 main 表活动出口' },
-                { label: '采样节奏', value: `${escapeHtml(String(pollSeconds))}s / 点`, meta: `${fmtNumber(lineTrendRows.length)} 条线路趋势同步` }
-              ]), 'ops-info-card')}
-              ${opsDenseTableCard('重点关注线路', '把动作建议、父接口和吞吐压成短表，避免诊断页右侧被长竖列撑高', ['线路', '状态 / 分', '动作 / 父接口', '上 / 下'], riskFocusRows, '当前未读取到重点关注线路', 'ops-compact-density', 'ops-compact-table')}
-            </div>
-          </div>
-          <div class="ops-split">
-            ${opsDenseTableCard('线路角色矩阵', '看每条 PPPoE 在路由体系里扮演什么角色，而不是重复接口吞吐清单', ['线路', '出口角色', '活动表', '距离', '父接口', '地址', '丢 / 错'], roleRows, '当前未读取到线路角色数据', 'ops-compact-density', 'ops-compact-table')}
-            ${opsCard('线路趋势参照', `${fmtNumber(lineTrendRows.length)} 条线路同步展示，作为诊断参照系`, renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' }), 'ops-info-card')}
-          </div>
-        </div>`;
-    } else if (currentInterfaceView === 'ipv6') {
+    if (currentInterfaceView === 'ipv6') {
       body = `
         ${readonlyNotice}
         ${toolbar}
@@ -3455,13 +3423,6 @@
                     ])}
                   </div>
                 </div>
-                <div class="interfaces-inline-panel">
-                  <div class="interfaces-inline-head">
-                    <div class="interfaces-inline-title">重点线路快扫</div>
-                    <div class="interfaces-inline-subtle">把速率、角色和父接口压成短表，避免主屏纵向拉长</div>
-                  </div>
-                  ${opsDenseTable(['线路', '角色 / 父接口', '上 / 下', '合计'], lineFocusRows, '当前未读取到重点线路', 'ops-compact-table')}
-                </div>
               </div>`, 'ops-info-card')}
             <div class="ops-workbench-side interfaces-monitor-side">
               <div class="ops-double interfaces-side-row">
@@ -3479,9 +3440,8 @@
           </div>
           <div class="ops-split">
             ${opsDenseTableCard('宽带实时流量', `${fmtNumber(sortedPppoe.length)} 条宽带，固定顺序展示状态、地址和活动路由`, ['线路', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', '活动路由', '父接口'], lineRows, '当前未读取到宽带线路数据', 'ops-compact-density', 'ops-compact-table')}
-            ${opsDenseTableCard('接口热区', '把吞吐、丢错和地址族压成短表，不再用长竖列把下半屏撑长', ['接口', '角色 / 状态', '上 / 下', '丢 / 错', '地址族'], interfaceHotRows, '当前未读取到接口热区', 'ops-compact-density', 'ops-compact-table')}
+            ${opsDenseTableCard('接口吞吐明细', `${fmtNumber(sortedInterfaces.length)} 个接口，按实时吞吐排序`, ['接口', '角色', '状态', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'IP / 网关', 'MAC / 丢包错误'], ifaceRows, '当前未读取到接口数据', 'ops-compact-density', 'ops-compact-table')}
           </div>
-          ${opsDenseTableCard('接口吞吐明细', `${fmtNumber(sortedInterfaces.length)} 个接口，按实时吞吐排序`, ['接口', '角色', '状态', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'IP / 网关', 'MAC / 丢包错误'], ifaceRows, '当前未读取到接口数据', 'ops-compact-density', 'ops-compact-table')}
         </div>`;
     }
 
@@ -4724,10 +4684,6 @@
             ]), 'ops-info-card')}
             ${opsDenseTableCard('终端热区', '把终端身份、地址、实时吞吐和连接压成短表，避免右侧被长列表拉长', ['终端', '地址 / MAC', '上 / 下', '连接 / 会话'], terminalHotRows, '当前未读取到终端热区', 'ops-compact-density', 'ops-compact-table')}
           </div>
-        </div>
-        <div class="ops-double">
-          ${opsDenseTableCard('终端流量排行', `${fmtNumber(terminals.length)} 台终端，按实时吞吐优先排序`, ['名称', '族', 'IP', 'MAC', '实时上行', '实时下行', '连接', '累计流量'], terminalRows, '当前未读取到终端流量排行', 'ops-compact-density', 'ops-compact-table')}
-          ${opsDenseTableCard('接口吞吐 / 地址族覆盖', `${fmtNumber(interfaces.length)} 个接口，按实时吞吐排序`, ['接口', '角色', '状态', '族', '地址', '实时上行', '实时下行', '丢 / 错', 'MAC'], interfaceRows, '当前未读取到接口吞吐排行', 'ops-compact-density', 'ops-compact-table')}
         </div>
       </div>`);
   };

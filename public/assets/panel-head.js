@@ -544,7 +544,6 @@ const appEl = document.getElementById('app');
     ]);
     const interfaceViews = {
       monitor: { title: '线路监控', tip: '查看线路实时速率、累计流量和接口状态' },
-      detect: { title: '线路状态检测', tip: '基于拨号状态、默认路由和接口异常做实时检测' },
       ipv6: { title: 'IPv6 线路详情', tip: '仅展示当前真实读取到的 IPv6 地址与接口状态' }
     };
     const terminalViews = {
