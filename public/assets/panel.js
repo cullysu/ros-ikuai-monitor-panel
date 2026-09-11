@@ -196,19 +196,28 @@
   function $(id){ return document.getElementById(id); }
   function esc(v){ const d = document.createElement('div'); d.textContent = v == null ? '' : String(v); return d.innerHTML; }
   let routerLoginState = null;
+  function sameLogin(row, login) {
+    if (!row || !login) return false;
+    if (login.savedId && row.id === String(login.savedId)) return true;
+    return String(row.host || '') === String(login.host || '') && String(row.user || '') === String(login.user || '');
+  }
   function renderSwitcher(login, saved) {
     const wrap = $('routerSwitchWrap'), select = $('routerSwitcher');
     if (!wrap || !select) return;
+    routerLoginState = login || routerLoginState;
     const list = Array.isArray(saved) ? saved.filter(function(r){ return r && r.id; }) : [];
-    if (!list.length) { wrap.hidden = true; return; }
     wrap.hidden = false;
-    const cur = routerLoginState ? ((routerLoginState.host || '') + '@' + (routerLoginState.user || '')) : '';
-    const curId = routerLoginState && routerLoginState.savedId ? String(routerLoginState.savedId) : '';
-    select.innerHTML = ['<option value="">' + esc('切换路由器…') + '</option>'].concat(list.map(function(row){
-      const isCur = row.id === curId || ((row.host || '') + '@' + (row.user || '')) === cur;
-      const state = row.lastTest && row.lastTest.rest && row.lastTest.rest.ok === true ? '在线' : (row.lastTest ? '待验证' : '未验证');
-      return '<option value="' + esc(row.id) + '"' + (isCur ? ' selected' : '') + '>' + esc(row.label || row.host || '') + ' · ' + esc(row.user || '') + ' · ' + state + '</option>';
-    })).join('');
+    const currentLabel = routerLoginState && routerLoginState.host
+      ? ((routerLoginState.host || '') + ' · ' + (routerLoginState.user || ''))
+      : '未连接';
+    const options = ['<option value="">' + esc(currentLabel) + '</option>'];
+    list.forEach(function(row){
+      const isCur = sameLogin(row, routerLoginState);
+      const state = row.lastTest && row.lastTest.rest && row.lastTest.rest.ok === true ? '在线' : (row.lastTest && row.lastTest.ssh && row.lastTest.ssh.ok === true ? 'SSH 可用' : (row.lastTest ? '待验证' : '未验证'));
+      options.push('<option value="' + esc(row.id) + '"' + (isCur ? ' selected' : '') + '>' + esc(row.label || row.host || '') + ' · ' + esc(row.user || '') + ' · ' + state + '</option>');
+    });
+    options.push('<option value="__add__">＋ 添加另一台路由器</option>');
+    select.innerHTML = options.join('');
   }
   function loadLogins() {
     return fetch('/api/router-login', { cache: 'no-store', credentials: 'same-origin' })
@@ -223,19 +232,26 @@
   }
   function switchTo(id) {
     if (switchBusy || !id) return;
+    if (id === '__add__') {
+      if (window.panelRouterSetup && window.panelRouterSetup.open) window.panelRouterSetup.open({ host: '', user: 'admin', sshPort: 22, restScheme: 'http', restPort: 80 });
+      loadLogins();
+      return;
+    }
+    const currentId = routerLoginState && routerLoginState.savedId ? String(routerLoginState.savedId) : '';
+    if (id === currentId) return;
     switchBusy = true;
     const text = $('updateText'), prev = text ? text.textContent : '';
     if (text) text.textContent = '正在切换路由器…';
     fetch('/api/router-login', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.routerLoginCsrfToken || '' },
-      body: JSON.stringify({ savedId: id, rememberPassword: false })
+      body: JSON.stringify({ savedId: id, rememberPassword: true })
     }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(p){ return { ok: r.ok, p: p }; }); })
       .then(function(res){
-        if (!res.ok || res.p.ok === false) throw new Error((res.p && (res.p.error || (res.p.test && res.p.test.ssh && res.p.test.ssh.error))) || '切换失败');
+        if (!res.ok || res.p.ok === false) throw new Error((res.p && (res.p.error || (res.p.test && ((res.p.test.rest && res.p.test.rest.error) || (res.p.test.ssh && res.p.test.ssh.error))))) || '切换失败');
         routerLoginState = res.p.routerLogin || routerLoginState;
         if (text) text.textContent = '已切换到 ' + ((routerLoginState && routerLoginState.host) || '');
-        setTimeout(function(){ window.location.reload(); }, 600);
+        setTimeout(function(){ window.location.reload(); }, 400);
       })
       .catch(function(err){
         if (text) text.textContent = '切换失败';
@@ -259,7 +275,8 @@
   function $(id){ return document.getElementById(id); }
   function esc(v){ const d = document.createElement('div'); d.textContent = v == null ? '' : String(v); return d.innerHTML; }
   function renderSetupForm(login) {
-    if ($('routerSetupOverlay')) return;
+    const existing = $('routerSetupOverlay');
+    if (existing) existing.remove();
     const overlay = document.createElement('div');
     overlay.className = 'router-setup-overlay';
     overlay.id = 'routerSetupOverlay';
@@ -282,15 +299,17 @@
                 '<div class="router-setup-field"><label for="suRestNote">REST 通道</label><input id="suRestNote" value="' + esc(scheme.toUpperCase() + ' ' + restPort) + '" disabled title="REST 通道跟随部署配置（routeros-panel.env）"></div>' +
               '</div>' +
             '</div></details>' +
-            '<label class="router-setup-check"><input id="suRemember" type="checkbox" checked> 记住设备资料（保存地址、端口与协议到本机）</label>' +
+            '<label class="router-setup-check"><input id="suRemember" type="checkbox" checked> 记住这台设备，方便顶栏切换路由器</label>' +
             '<div class="router-setup-channel"><span class="dot" id="suRestDot"></span>REST <span class="dot" id="suSshDot"></span>SSH</div>' +
             '<div id="suMsg" class="router-setup-msg" hidden></div>' +
-            '<div class="router-setup-actions"><button class="router-setup-submit" id="suSubmit" type="submit">连接并进入面板</button></div>' +
+            '<div class="router-setup-actions"><button class="router-setup-submit" id="suSubmit" type="submit">连接并进入面板</button><button class="router-setup-cancel" id="suCancel" type="button">取消</button></div>' +
           '</form>' +
         '</div>' +
       '</div>';
     document.body.appendChild(overlay);
     overlay.querySelector('#routerSetupForm').addEventListener('submit', onSubmit);
+    const cancel = overlay.querySelector('#suCancel');
+    if (cancel) cancel.addEventListener('click', function(){ overlay.remove(); if (window.panelRouterSwitcher) window.panelRouterSwitcher.reload(); });
   }
   function setChannel(id, ok) { const el = $(id); if (el) el.className = 'dot' + (ok ? ' ok' : ' bad'); }
   function showMsg(text, kind) { const el = $('suMsg'); if (!el) return; el.hidden = !text; el.textContent = text || ''; el.className = 'router-setup-msg' + (kind ? ' is-' + kind : ''); }
@@ -328,7 +347,7 @@
       setChannel('suSshDot', test.ssh && test.ssh.ok === true);
       showMsg(payload.warning || '连接成功，正在进入面板…', payload.warning ? 'is-partial' : 'is-ok');
       if (window.panelRouterSwitcher) window.panelRouterSwitcher.render(payload.routerLogin, payload.savedLogins);
-      setTimeout(function(){ const o = $('routerSetupOverlay'); if (o) o.remove(); window.panelRouterSwitcher.reload(); }, 900);
+      setTimeout(function(){ window.location.reload(); }, 500);
     } catch (error) {
       const raw = String((error && error.message) || error || '');
       showMsg(
@@ -350,6 +369,7 @@
       })
       .catch(function(){});
   }
+  window.panelRouterSetup = { open: renderSetupForm };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootSetupCheck);
   else bootSetupCheck();
 })();

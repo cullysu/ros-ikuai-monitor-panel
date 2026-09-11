@@ -80,8 +80,8 @@
     #overview .ik-home-line-bars .line-share { font-size: 12px; }
     #overview .ik-home-line-bars .progress { height: 6px; }
     .ops-page-stack { display: flex; flex-direction: column; gap: 10px; }
-    .ops-split { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.95fr); gap: 10px; align-items: start; }
-    .ops-double { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start; }
+    .ops-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: stretch; }
+    .ops-double { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: stretch; }
     .ops-side-stack { display: flex; flex-direction: column; gap: 10px; }
     .ops-bar-stack { display: flex; flex-direction: column; gap: 6px; }
     .ops-bar-stack .line-bar { grid-template-columns: 118px 1fr 90px; gap: 10px; }
@@ -124,7 +124,7 @@
     #arp .record-list, #trafficAudit .record-list { gap: 4px; }
     #arp .record-head, #trafficAudit .record-head { padding: 5px 8px; }
     #arp .record-grid, #trafficAudit .record-grid { padding: 5px 8px 7px; gap: 3px 6px; }
-    #trafficLoad .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    #trafficLoad .line-trend-grid { grid-template-columns: repeat(auto-fill, minmax(var(--line-trend-min, 168px), 1fr)); }
     .ops-resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .ops-resource-card { min-width: 0; padding: 8px 10px 10px; border: 1px solid #e3edf8; border-radius: 10px; background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); }
     .ops-resource-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
@@ -3092,7 +3092,7 @@
     #dns4 .ops-double,
     #dns6 .ops-double,
     #security .ops-double,
-    #serviceLogs .ops-double { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    #serviceLogs .ops-double { grid-template-columns: minmax(0, 1fr); gap: 8px; }
     #interfaces .ops-stat-grid,
     #dns4 .ops-stat-grid,
     #dns6 .ops-stat-grid,
@@ -3118,7 +3118,7 @@
     #dns6 .chart-box,
     #security .chart-box,
     #serviceLogs .chart-box { padding: 8px; }
-    #interfaces .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    #interfaces .line-trend-grid { grid-template-columns: repeat(auto-fill, minmax(var(--line-trend-min, 168px), 1fr)); gap: var(--line-trend-gap, 8px); }
   `;
   document.head.appendChild(densityStyleV3);
 
@@ -3781,7 +3781,7 @@
     #trafficLoad .ops-split,
     #lineStatus .ops-split,
     #trafficAudit .ops-split,
-    #terminals .ops-split { grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.95fr); gap: 8px; }
+    #terminals .ops-split { grid-template-columns: minmax(0, 1fr); gap: 8px; }
     #loadAudit .ops-double,
     #routes .ops-double,
     #balance .ops-double,
@@ -3793,7 +3793,7 @@
     #balance .grid-2,
     #lineStatus .grid-2,
     #trafficAudit .grid-2,
-    #terminals .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    #terminals .grid-2 { grid-template-columns: minmax(0, 1fr); gap: 8px; }
     #routes .grid-4,
     #balance .grid-4,
     #trafficLoad .grid-4,
@@ -4043,8 +4043,8 @@
     #interfaces .ops-stat-grid,
     #trafficLoad .ops-stat-grid,
     #terminals .ops-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    #interfaces .interfaces-monitor-grid { grid-template-columns: minmax(0, 1.42fr) minmax(372px, 0.98fr); align-items: start; }
-    #interfaces .interfaces-monitor-main { grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr); }
+    #interfaces .interfaces-monitor-grid { grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+    #interfaces .interfaces-monitor-main { grid-template-columns: minmax(0, 1fr); align-items: stretch; }
     #interfaces .interfaces-monitor-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
     #interfaces .interfaces-trend-stack { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
     #interfaces .interfaces-inline-panel { padding: 10px; border: 1px solid #e3edf8; border-radius: 12px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); }
@@ -4053,10 +4053,10 @@
     #interfaces .interfaces-inline-subtle { color: var(--text-dim); font-size: 11px; line-height: 1.2; text-align: right; }
     #interfaces .interfaces-monitor-facts .ops-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .ops-workbench { display: flex; flex-direction: column; gap: 8px; }
-    .ops-workbench-grid { display: grid; grid-template-columns: minmax(0, 1.52fr) minmax(360px, 0.88fr); gap: 8px; align-items: start; }
+    .ops-workbench-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-items: stretch; }
     .ops-workbench-side,
     .ops-panel-stack { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-    .ops-section-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.82fr); gap: 8px; align-items: start; }
+    .ops-section-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-items: stretch; }
     .ops-kpi-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .ops-kpi-tile { min-width: 0; padding: 8px 9px; border: 1px solid #e3edf8; border-radius: 10px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); }
     .ops-kpi-label { color: var(--text-dim); font-size: 11px; line-height: 1.2; }
