@@ -117,8 +117,8 @@
     .ops-density-table .record-item { padding-bottom: 3px; }
     .ops-density-table .empty, .ops-info-card .empty { min-height: 0; padding: 14px 12px; border: 1px dashed #e6edf7; border-radius: 8px; background: #fbfcfe; }
     #routes .metric-value, #balance .metric-value, #dns6 .metric-value, #logs .metric-value, #trafficLoad .metric-value, #trafficAudit .metric-value { white-space: normal; word-break: break-word; }
-    #balance .metric-card:first-child .metric-value { font-size: 20px; line-height: 1.2; }
-    #logs .metric-value { font-size: 22px; }
+    #balance .metric-card:first-child .metric-value { font-size: 17px; line-height: 1.2; }
+    #logs .metric-value { font-size: 17px; }
     #logs .ops-empty-card .card-body, #dns6 .ops-empty-card .card-body { padding-top: 10px; }
     #arp .card-body, #trafficAudit .card-body { padding-top: 8px; }
     #arp .record-list, #trafficAudit .record-list { gap: 4px; }
@@ -3065,7 +3065,7 @@
     #dns4 .metric-value,
     #dns6 .metric-value,
     #security .metric-value,
-    #serviceLogs .metric-value { font-size: 20px; line-height: 1.15; }
+    #serviceLogs .metric-value { font-size: 17px; line-height: 1.15; }
     #interfaces .metric-foot,
     #dns4 .metric-foot,
     #dns6 .metric-foot,
@@ -3763,7 +3763,7 @@
     #trafficLoad .metric-value,
     #lineStatus .metric-value,
     #trafficAudit .metric-value,
-    #terminals .metric-value { font-size: 20px; line-height: 1.15; }
+    #terminals .metric-value { font-size: 17px; line-height: 1.15; }
     #routes .metric-foot,
     #balance .metric-foot,
     #trafficLoad .metric-foot,
