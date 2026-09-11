@@ -3425,7 +3425,7 @@
                     <div class="interfaces-inline-title">线路趋势带宽</div>
                     <div class="interfaces-inline-subtle">${fmtNumber(lineTrendRows.length)} 条线路同步采样 · 在线画趋势，离线收进状态条</div>
                   </div>
-                  ${renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' })}
+                  ${renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势', pollText: `${escapeHtml(String(pollSeconds))}s / 点` })}
                 </div>
                 <div class="ops-double interfaces-facts-row">
                   <div class="interfaces-inline-panel interfaces-monitor-facts">

@@ -954,7 +954,7 @@ const appEl = document.getElementById('app');
       return `<div class="ik-wan-rate-card" style="--wan-rate-color:${color}">
         <div class="ik-wan-rate-head">
           <div class="ik-wan-rate-title"><i class="ik-wan-rate-dot"></i>${escapeHtml(label)}</div>
-          <div class="ik-wan-rate-value">${fmtRate(current)}<span>${escapeHtml(pollText)} · ${fmtNumber(chart.count)} 点</span></div>
+          <div class="ik-wan-rate-value">${fmtRate(current)}<span>${pollText ? `${escapeHtml(pollText)} · ` : ''}${fmtNumber(chart.count)} 点</span></div>
         </div>
         <div class="ik-wan-rate-chart">
           ${chart.svg}
@@ -1096,8 +1096,15 @@ const appEl = document.getElementById('app');
       if (!rows.length) return emptyBlock(emptyText);
       const online = rows.filter((item) => item.running);
       const offline = rows.filter((item) => !item.running);
+      const pollText = options.pollText || '';
       const parts = [];
-      if (online.length) {
+      if (online.length && online.length <= 4) {
+        parts.push(online.map((item) => `
+          <div class="line-trend-full">
+            ${wanRateSplitCard(`${item.name} · 实时上行`, item.upRate, item.history.up, '#165dff', pollText)}
+            ${wanRateSplitCard(`${item.name} · 实时下行`, item.downRate, item.history.down, '#16c67a', pollText)}
+          </div>`).join(''));
+      } else if (online.length) {
         const density = lineTrendDensity(online.length);
         if (density.compact) {
           parts.push(`<div class="line-trend-grid is-compact" style="--line-trend-max-h:${density.maxH}px">${online.map((item) => `
