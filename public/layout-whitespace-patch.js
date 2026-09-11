@@ -3473,9 +3473,8 @@
                   { label: '有丢错接口', value: fmtNumber(interfaceIssueCount), meta: '累计丢包或错包非 0' },
                   { label: '活动路由表', value: fmtNumber(activeRouteTables.length), meta: activeRouteTables.length ? activeRouteTables.slice(0, 3).map(escapeHtml).join(' / ') : '无活动表' }
                 ]), 'ops-info-card')}
-                ${opsCard('线路负载分布', loadDistributionRows.length ? `${fmtNumber(loadDistributionRows.length)} 条线路占比` : '按实时吞吐自动排序', loadDistributionBlock, 'ops-info-card')}
+                ${opsDenseTableCard('父接口健康', '把承载接口、线路和丢错压成短表，避免右侧长竖列把首屏撑空', ['父接口', '线路 / 角色', '上 / 下', '丢 / 错', '地址族'], parentHealthRows, '当前未读取到父接口健康信息', 'ops-compact-density', 'ops-compact-table')}
               </div>
-              ${opsDenseTableCard('父接口健康', '把承载接口、线路和丢错压成短表，避免右侧长竖列把首屏撑空', ['父接口', '线路 / 角色', '上 / 下', '丢 / 错', '地址族'], parentHealthRows, '当前未读取到父接口健康信息', 'ops-compact-density', 'ops-compact-table')}
             </div>
           </div>
           <div class="ops-split">
@@ -4729,10 +4728,6 @@
         <div class="ops-double">
           ${opsDenseTableCard('终端流量排行', `${fmtNumber(terminals.length)} 台终端，按实时吞吐优先排序`, ['名称', '族', 'IP', 'MAC', '实时上行', '实时下行', '连接', '累计流量'], terminalRows, '当前未读取到终端流量排行', 'ops-compact-density', 'ops-compact-table')}
           ${opsDenseTableCard('接口吞吐 / 地址族覆盖', `${fmtNumber(interfaces.length)} 个接口，按实时吞吐排序`, ['接口', '角色', '状态', '族', '地址', '实时上行', '实时下行', '丢 / 错', 'MAC'], interfaceRows, '当前未读取到接口吞吐排行', 'ops-compact-density', 'ops-compact-table')}
-        </div>
-        <div class="ops-split">
-          ${opsDenseTableCard('宽带实时负载', '按 PPPoE 名称固定排序，附带地址和活动路由', ['线路', '状态', 'IP 地址', '实时上行', '实时下行', '累计上行', '累计下行', '活动路由', '父接口'], lineRows, '当前未读取到宽带实时负载', 'ops-compact-density', 'ops-compact-table')}
-          ${opsDenseTableCard('线路热点队列', '把父接口、出口角色和实时吞吐压成短表，避免下半屏再出现长竖列留白', ['线路', '父接口 / 角色', '上 / 下', '合计'], lineHotRows, '当前未读取到线路热点队列', 'ops-compact-density', 'ops-compact-table')}
         </div>
       </div>`);
   };
