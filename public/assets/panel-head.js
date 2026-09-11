@@ -1077,10 +1077,17 @@ const appEl = document.getElementById('app');
     function lineTrendColumns(count) {
       const n = Math.max(1, Number(count) || 1);
       const ideal = Math.min(6, Math.max(1, Math.ceil(Math.sqrt(n))));
+      let best = ideal;
+      let bestFill = -1;
       for (let cols = ideal; cols <= 6; cols += 1) {
-        if (n % cols === 0) return cols;
+        const fill = n % cols;
+        if (fill === 0) return cols;
+        if (fill > bestFill) {
+          bestFill = fill;
+          best = cols;
+        }
       }
-      return ideal;
+      return best;
     }
 
     function lineTrendPeak(item) {

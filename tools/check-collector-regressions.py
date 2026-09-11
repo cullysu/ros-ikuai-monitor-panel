@@ -773,6 +773,8 @@ def assert_line_trend_density_is_continuous():
     assert "function lineTrendDensity(count)" in panel_head
     assert "Math.log2(n)" in panel_head
     assert "function lineTrendColumns(count)" in panel_head
+    assert "const fill = n % cols;" in panel_head
+    assert "if (fill === 0) return cols;" in panel_head
     assert "function lineTrendPeak(item)" in panel_head
     grid_body = panel_head[panel_head.find("function renderLineTrendGrid") : panel_head.find("function recordItem")]
     assert "rows.filter((item) => item.running)" in grid_body
