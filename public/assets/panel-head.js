@@ -3141,12 +3141,21 @@ const appEl = document.getElementById('app');
           <td>${fmtNumber(item.dropTotal)} / ${fmtNumber(item.errorTotal)}</td>
         </tr>`).join('');
       const lineTrendRows = getLineTrendRows(pppoe);
+      const closureCards = [
+        { label: '拨号闭环', value: `${fmtNumber(diagnostics.filter((item) => item.row.running).length)} / ${fmtNumber(pppoe.length)}`, foot: 'PPPoE 当前在线' },
+        { label: '地址闭环', value: `${fmtNumber(diagnostics.filter((item) => item.hasAddress).length)} / ${fmtNumber(pppoe.length)}`, foot: '已拿到公网或 IPv6 地址' },
+        { label: '路由闭环', value: `${fmtNumber(diagnostics.filter((item) => item.activeRoutes.length > 0).length)} / ${fmtNumber(pppoe.length)}`, foot: '存在活动默认路由' },
+        { label: '策略出口', value: fmtNumber(diagnostics.filter((item) => String(item.role?.label || '').includes('策略')).length), foot: '非 main 表活动出口' }
+      ];
       return section('线路状态', 'lineStatus', '按健康闭环、出口角色和处理优先级定位线路问题', `
         <div class="grid-4">
           ${metricCard('可用出口', fmtNumber(diagnostics.filter((item) => item.level === 'ok').length), `总线路 ${fmtNumber(pppoe.length)} 条`, '健康闭环完整')}
           ${metricCard('待观察', fmtNumber(diagnostics.filter((item) => item.level === 'warn').length), '有累计丢包或轻微异常', '先观察趋势')}
           ${metricCard('故障优先', fmtNumber(diagnostics.filter((item) => item.level === 'danger').length), '离线或无活动默认路由', '需要优先处理')}
           ${metricCard('路由覆盖', fmtNumber(activeRouteTables.length), activeRouteTables.length ? activeRouteTables.slice(0, 4).map(escapeHtml).join(' / ') : '无活动表', '按活动默认路由统计')}
+        </div>
+        <div class="grid-4" style="margin-top:12px">
+          ${closureCards.map((tile) => metricCard(tile.label, tile.value, tile.foot, '')).join('')}
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">故障优先队列</div><div class="subtle">紧凑诊断视图，一行一条线路</div></div><div class="card-body">${compactTable(['#', '状态', '线路 / 父接口', '分', '出口角色', '原因', '动作', '闭环', '丢 / 错', '上 / 下'], diagnosticRows, '当前未读取到线路诊断数据')}</div></div>`);
     }
