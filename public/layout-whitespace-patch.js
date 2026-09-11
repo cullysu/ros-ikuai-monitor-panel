@@ -3421,12 +3421,7 @@
         <div class="ops-workbench" style="margin-top:8px">
           <div class="ops-workbench-grid interfaces-monitor-grid">
             ${opsCard('线路运行主屏', '把逐线趋势、当前最忙出口和负载分布压进同一块值班主屏', `
-              ${opsKpiStrip([
-                { label: 'WAN 总上行', value: fmtRate(totalWanUp), meta: `${fmtNumber(pppoe.length)} 条线路聚合` },
-                { label: 'WAN 总下行', value: fmtRate(totalWanDown), meta: busiestLine ? `最繁忙 ${escapeHtml(busiestLine.name)}` : '暂无主线路' },
-                { label: '采样节奏', value: `${escapeHtml(String(pollSeconds))}s / 点`, meta: `健康 ${fmtNumber(detectedHealthy)} / 异常 ${fmtNumber(abnormalLines)}` }
-              ])}
-              <div class="ops-section-grid interfaces-monitor-main" style="margin-top:8px">
+              <div class="ops-section-grid interfaces-monitor-main">
                 <div class="interfaces-trend-stack">
                   <div class="interfaces-inline-panel">
                     <div class="interfaces-inline-head">
