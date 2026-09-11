@@ -288,7 +288,7 @@
     }
     #readonlyDiagnostics .readonly-kpi {
       min-width: 0;
-      padding: 10px 11px;
+      padding: 8px 10px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
@@ -300,10 +300,10 @@
       line-height: 1.2;
     }
     #readonlyDiagnostics .readonly-kpi-value {
-      margin-top: 6px;
+      margin-top: 4px;
       color: var(--text);
-      font-size: 19px;
-      font-weight: 800;
+      font-size: 16px;
+      font-weight: 700;
       line-height: 1;
       word-break: break-word;
     }
@@ -605,6 +605,7 @@
     #readonlyDiagnostics .readonly-main,
     .readonly-overview-health .readonly-main {
       color: var(--text);
+      font-size: 12px;
       font-weight: 700;
       line-height: 1.25;
       word-break: break-word;
@@ -1321,8 +1322,8 @@
     #readonlyDiagnostics .readonly-summary-sticky .metric-value,
     .readonly-diagnostics-root .readonly-summary-sticky .metric-value {
       color: var(--rd-text) !important;
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 16px;
+      font-weight: 800;
     }
     #readonlyDiagnostics .readonly-summary-sticky .metric-foot,
     .readonly-diagnostics-root .readonly-summary-sticky .metric-foot {
