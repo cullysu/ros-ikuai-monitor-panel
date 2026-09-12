@@ -4063,4 +4063,35 @@
     `;
     document.head.appendChild(style);
   })();
+
+
+  (() => {
+    const style = document.createElement("style");
+    style.textContent = `
+    @media (max-width: 760px) {
+      html, body { overflow-x: hidden; }
+      .readonly-diagnostics-root .readonly-summary-sticky > .readonly-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .section-summary-sticky > .grid-4, .section-summary-sticky > .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .section-summary-sticky > .grid-4 > .metric-card, .section-summary-sticky > .grid-3 > .metric-card { min-width: 0 !important; }
+      .status-strip { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .status-strip .status-pill, .public-home-status-grid > *, .ik-home-status-grid > * { min-width: 0 !important; }
+      .readonly-diagnostics-root .readonly-summary-sticky > .readonly-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .readonly-diagnostics-root .readonly-kpi-value, .readonly-diagnostics-root .readonly-kpi-label { white-space: normal; word-break: break-all; }
+      .line-trend-grid, .line-trend-full { --line-trend-cols: 1 !important; grid-template-columns: minmax(0, 1fr) !important; }
+      .ik-wan-rate-split, .ik-wan-rate-split.is-main { grid-template-columns: minmax(0, 1fr) !important; }
+      .ops-double, .ops-split { grid-template-columns: minmax(0, 1fr) !important; }
+      .toolbar-line, .topbar-actions, .refresh-toolbar { flex-wrap: wrap !important; max-width: 100% !important; }
+      .ik-wan-line-select, .ik-wan-switch, #routerSwitchWrap, #routerSwitcher { max-width: 100% !important; width: 100% !important; min-width: 0 !important; }
+      .topbar .deploy-pill, .topbar .update-pill { max-width: 100%; }
+      .readonly-diagnostics-root .readonly-band-head { grid-template-columns: minmax(0, 1fr) !important; }
+      #overview .ik-home-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      #overview .ik-home-layout, #overview .ik-wan-hero, #overview .ik-home-layout .card, #overview .ik-wan-info-card { max-width: 100% !important; min-width: 0 !important; }
+      #overview select, #overview input { max-width: 100% !important; }
+      #overview .ik-wan-chipline, #overview .ik-wan-chip { max-width: 100%; }
+      .readonly-diagnostics-root .readonly-brief-metrics { gap: 3px 12px; }
+    }
+
+    `;
+    document.head.appendChild(style);
+  })();
 })();

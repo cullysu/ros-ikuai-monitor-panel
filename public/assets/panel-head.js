@@ -1120,7 +1120,7 @@ const appEl = document.getElementById('app');
               <div class="line-trend-row-spark">${lineChart([item.history.up, item.history.down], { colors, width: 160, height: 28 })}</div>
             </div>`).join('')}</div>`);
         } else {
-          const cols = lineTrendColumns(online.length);
+          const cols = window.matchMedia('(max-width: 760px)').matches ? 1 : lineTrendColumns(online.length);
           parts.push(`<div class="line-trend-grid" style="--line-trend-cols:${cols};--line-trend-chart-h:${density.chartH}px;--line-trend-gap:${density.gap}px">${online.map((item) => `
             <div class="chart-box">
               <div class="chart-label"><span>${escapeHtml(item.name)}</span><span class="line-trend-anchor">↑ ${fmtRate(item.upRate)} ↓ ${fmtRate(item.downRate)} · 峰值 ${fmtRate(lineTrendPeak(item))}</span></div>
