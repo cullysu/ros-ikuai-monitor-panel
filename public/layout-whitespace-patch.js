@@ -3438,7 +3438,7 @@
               </div>
             </div>
           </div>
-          <div class="ops-split">
+          <div class="ops-page-stack">
             ${opsDenseTableCard('宽带实时流量', `${fmtNumber(sortedPppoe.length)} 条宽带，固定顺序展示状态、地址和活动路由`, ['线路', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', '活动路由', '父接口'], lineRows, '当前未读取到宽带线路数据', 'ops-compact-density', 'ops-compact-table')}
             ${opsDenseTableCard('接口吞吐明细', `${fmtNumber(sortedInterfaces.length)} 个接口，按实时吞吐排序`, ['接口', '角色', '状态', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'IP / 网关', 'MAC / 丢包错误'], ifaceRows, '当前未读取到接口数据', 'ops-compact-density', 'ops-compact-table')}
           </div>
