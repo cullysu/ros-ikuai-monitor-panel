@@ -1487,16 +1487,8 @@ const appEl = document.getElementById('app');
             ['DHCP 租约', fmtNumber((dhcp.leases || []).length)]
           ];
         case 'connections':
-          {
-            const hasProtocolTopMetrics = [connections.tcp, connections.udp].every((value) => Number.isFinite(Number(value)));
-            return [
-              ['连接总数', fmtCompact(connections.total)],
-              ['活跃会话', fmtNumber((connections.active || []).length)],
-              ['单 IP 排行', fmtNumber((connections.topIps || []).length)],
-              ['明细刷新', connections.detailUpdatedAt ? escapeHtml(connections.detailUpdatedAt) : '等待采集'],
-              ['协议拆分', hasProtocolTopMetrics ? `${fmtCompact(connections.tcp)} / ${fmtCompact(connections.udp)}` : '当前未采集']
-            ];
-          }
+          // The page body carries the protocol KPI row; avoid repeating it in the topbar.
+          return [];
         case 'trafficLoad':
           {
             const activeTrafficTerminals = (terminals || []).filter((row) => Number(row.upRate || 0) + Number(row.downRate || 0) > 0).length;
@@ -2467,35 +2459,9 @@ const appEl = document.getElementById('app');
 
     function renderConnections(snapshot, config = {}) {
       const o = snapshot.overview || {};
-      const admins = Array.isArray(o.admins) ? o.admins : [];
-      const sectionTitle = config.title || '负载监控中心';
+      const sectionTitle = config.title || '连接监控';
       const sectionId = config.id || 'connections';
-      const sectionTip = config.tip || '系统负载、硬件状态、管理员会话与连接数都归入负载监控中心';
-      const emphasis = config.emphasis || 'traffic';
-      const loadCards = `
-        <div class="grid-4">
-          ${metricCard('CPU 使用率', fmtPercent(o.cpuLoad), `型号 ${escapeHtml(o.cpuModel)}`, `${fmtNumber(o.cpuCount)} 核 / ${fmtNumber(o.cpuFrequency)} MHz`)}
-          ${metricCard('内存占用率', fmtPercent(o.memoryUsage), `已用 ${fmtBytes(o.memoryUsedBytes)}`, `总量 ${fmtBytes(o.memoryTotalBytes)}`)}
-          ${metricCard('磁盘占用率', fmtPercent(o.diskUsage), `已用 ${fmtBytes(o.diskUsedBytes)}`, `总量 ${fmtBytes(o.diskTotalBytes)}`)}
-          ${metricCard('系统状态', tag(o.systemLoadLevel === 'danger' ? '高压' : o.systemLoadLevel === 'warning' ? '预警' : '正常', o.systemLoadLevel), `NTP ${escapeHtml(o.ntpStatus)}`, `运行时长 ${escapeHtml(o.uptime)}`)}
-        </div>`;
-      const infoPanels = `
-        <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">基础硬件信息</div><div class="subtle">${escapeHtml(o.identity)}</div></div><div class="card-body">${infoGrid([
-            {k:'RouterOS 版本', v: escapeHtml(o.version)},
-            {k:'设备型号', v: escapeHtml(o.boardName)},
-            {k:'架构', v: escapeHtml(o.architecture)},
-            {k:'系统时间', v: escapeHtml(o.systemTime)},
-            {k:'运行时长', v: escapeHtml(o.uptime)},
-            {k:'在线管理员会话', v: fmtNumber(admins.length)}
-          ])}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">当前登录管理员</div><div class="subtle">${fmtNumber(admins.length)} 会话</div></div><div class="card-body">${admins.length ? infoGrid(admins.slice(0, 6).map((item) => ({k:`${item.name} / ${item.via}`, v:`${escapeHtml(item.address)} · ${escapeHtml(item.when)}`}))) : emptyBlock('暂无在线管理会话')}</div></div>
-        </div>`;
-      const loadCharts = `
-        <div class="grid-3" style="margin-top:12px">
-          <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(o, `${Math.max(o.history?.cpu?.length || 0, o.history?.memory?.length || 0, o.history?.disk?.length || 0)} 点 · ${escapeHtml(snapshot.meta.pollSeconds)}s / 点`)}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">WAN 聚合速率</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>${lineChart([o.history.uplink, o.history.downlink], {colors:['#165dff','#f53f3f']})}</div></div></div>
-        </div>`;
+      const sectionTip = config.tip || '连接跟踪、协议分布与单 IP 会话排行只读展示';
       const hasProtocolBreakdown = [snapshot.connections.tcp, snapshot.connections.udp, snapshot.connections.icmp].every((value) => Number.isFinite(Number(value)));
       const protocolCards = hasProtocolBreakdown ? `
         <div class="grid-4">
@@ -2535,28 +2501,12 @@ const appEl = document.getElementById('app');
           <td>${escapeHtml(item.address)}</td>
           <td>${escapeHtml(item.when)}</td>
         </tr>`);
-      const auditPanels = `
-        <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">管理会话审计</div><div class="subtle">${fmtNumber((o.admins || []).length)} 会话</div></div><div class="card-body">${table(['用户', '方式', '来源地址', '登录时间'], adminRows, '暂无在线管理会话')}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">负载状态说明</div><div class="subtle">仅展示 RouterOS 可读状态</div></div><div class="card-body">${infoGrid([
-            {k:'系统状态', v: tag(o.systemLoadLevel === 'danger' ? '高压' : o.systemLoadLevel === 'warning' ? '预警' : '正常', o.systemLoadLevel)},
-            {k:'连接总数', v: fmtCompact(snapshot.connections.total)},
-            {k:'明细更新时间', v: snapshot.connections.detailUpdatedAt ? escapeHtml(snapshot.connections.detailUpdatedAt) : '等待采集'},
-            {k:'NTP 状态', v: tag(o.ntpStatus || '-', o.ntpStatus === 'synchronized' ? 'ok' : 'warn')}
-          ])}</div></div>
-        </div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">当前活跃连接列表</div><div class="subtle">负载审计视角下的实时会话</div></div><div class="card-body">${table(['本地 IP', '远端地址', '协议', '实时上行速率', '实时下行速率', '超时', '连接标记'], activeRows, '暂无活跃连接')}</div></div>`;
       const trafficPanels = `
-        <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">单 IP 活跃连接排行</div><div class="subtle">按当前活跃会话聚合</div></div><div class="card-body">${table(['本地 IP', '主机名', '活跃连接', '实时上行速率', '实时下行速率'], topIpRows, '暂无活跃连接排行')}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">当前活跃连接列表</div><div class="subtle">限前 ${fmtNumber(snapshot.connections.active.length)} 条</div></div><div class="card-body">${table(['本地 IP', '远端地址', '协议', '实时上行速率', '实时下行速率', '超时', '连接标记'], activeRows, '暂无活跃连接')}</div></div>
-        </div>`;
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">单 IP 活跃连接排行</div><div class="subtle">按当前活跃会话聚合</div></div><div class="card-body">${compactTable(['本地 IP', '主机名', '活跃连接', '实时上行速率', '实时下行速率'], topIpRows, '暂无活跃连接排行')}</div></div>
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">当前活跃连接列表</div><div class="subtle">限前 ${fmtNumber(snapshot.connections.active.length)} 条</div></div><div class="card-body">${compactTable(['本地 IP', '远端地址', '协议', '实时上行速率', '实时下行速率', '超时', '连接标记'], activeRows, '暂无活跃连接')}</div></div>`;
       return section(sectionTitle, sectionId, sectionTip, `
-        ${loadCards}
-        ${infoPanels}
-        ${loadCharts}
         <div style="margin-top:12px">${protocolCards}</div>
-        ${emphasis === 'audit' ? auditPanels : trafficPanels}`);
+        ${trafficPanels}`);
     }
 
     function renderDns(snapshot) {
@@ -3697,11 +3647,8 @@ const appEl = document.getElementById('app');
             ['DHCP 租约', fmtNumber((dhcp.leases || []).length)]
           ];
         case 'connections':
+          // The page body carries the protocol KPI row; avoid repeating it in the topbar.
           return [
-            ['连接总数', fmtCompact(connections.total)],
-            ['TCP', hasProtocolBreakdown(connections) ? fmtCompact(connections.tcp) : '未采集'],
-            ['UDP', hasProtocolBreakdown(connections) ? fmtCompact(connections.udp) : '未采集'],
-            ['ICMP', hasProtocolBreakdown(connections) ? fmtCompact(connections.icmp) : '未采集'],
             ['协议采样', formatProtocolSampleTime(connections)],
             ['明细刷新', connections.detailUpdatedAt ? escapeHtml(connections.detailUpdatedAt) : '等待采集']
           ];
