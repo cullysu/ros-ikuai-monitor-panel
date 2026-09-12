@@ -3618,8 +3618,8 @@
       <section class="section readonly-diagnostics-section" id="${html(page.section)}">
         <div ${rootAttrs}>
           <div class="readonly-diagnostics-shell">
-            ${renderReadonlyFeatureChrome(snapshot, page.section)}
             ${renderReadonlyStickySummary(snapshot, page.section)}
+            ${renderReadonlyFeatureChrome(snapshot, page.section)}
             <div class="ops-page-stack readonly-workbench-body">
               ${renderReadonlyFeatureBody(snapshot, diag, page.section)}
             </div>
@@ -4016,4 +4016,51 @@
       renderApp(displayedSnapshot || latestSnapshot || {});
     }
   }
+
+  (() => {
+    const style = document.createElement("style");
+    style.textContent = `
+    .readonly-diagnostics-root .readonly-feature-brief {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 16px;
+      margin: 0 0 8px;
+      padding: 7px 12px;
+    }
+    .readonly-diagnostics-root .readonly-brief-copy {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 10px;
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+      min-width: 0;
+    }
+    .readonly-diagnostics-root .readonly-brief-title { margin: 0; font-size: 13px; line-height: 1.2; }
+    .readonly-diagnostics-root .readonly-brief-text { margin: 0; font-size: 11px; }
+    .readonly-diagnostics-root .readonly-pill-row { margin: 0 !important; gap: 5px; }
+    .readonly-diagnostics-root .readonly-brief-metrics { display: flex; flex-wrap: wrap; gap: 3px 16px; }
+    .readonly-diagnostics-root .readonly-kpi { display: flex; align-items: baseline; gap: 5px; padding: 0; border: 0; background: none; box-shadow: none; border-radius: 0; }
+    .readonly-diagnostics-root .readonly-kpi-label { font-size: 11px; font-weight: 600; }
+    .readonly-diagnostics-root .readonly-kpi-value { margin: 0; font-size: 13px; font-weight: 800; white-space: nowrap; }
+    .readonly-diagnostics-root .readonly-kpi-foot { display: none; }
+    .readonly-diagnostics-root .readonly-summary-sticky { padding: 6px 8px; }
+    .readonly-diagnostics-root .readonly-summary-sticky .metric-card { padding: 5px 8px; }
+    .readonly-diagnostics-root .readonly-summary-sticky .metric-card { min-height: 0 !important; }
+    .readonly-diagnostics-root .readonly-summary-sticky > .readonly-summary-grid { gap: 8px !important; margin-top: 4px !important; align-items: start !important; }
+    .readonly-diagnostics-root .readonly-kpi-label, .readonly-diagnostics-root .readonly-kpi-value { white-space: nowrap; }
+    .readonly-diagnostics-root .readonly-summary-sticky .metric-value { font-size: 15px; }
+    .readonly-diagnostics-root .readonly-section-band { padding: 10px 12px; }
+    .readonly-diagnostics-root .readonly-section-band::before { margin-bottom: 8px; }
+    .readonly-diagnostics-root .readonly-band-head { margin-bottom: 8px; }
+    .readonly-diagnostics-root .readonly-band-title { margin-top: 4px; font-size: 15px; }
+    .readonly-diagnostics-root .readonly-readable-flow { gap: 8px; }
+    .readonly-diagnostics-root .readonly-workbench-body { gap: 8px !important; }
+    .readonly-diagnostics-root .readonly-wan-kpi-strip { gap: 6px; }
+    `;
+    document.head.appendChild(style);
+  })();
 })();
