@@ -4003,7 +4003,8 @@
     #interfaces .interfaces-inline-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
     #interfaces .interfaces-inline-title { color: var(--text); font-size: 12px; font-weight: 700; line-height: 1.2; }
     #interfaces .interfaces-inline-subtle { color: var(--text-dim); font-size: 11px; line-height: 1.2; text-align: right; }
-    #interfaces .interfaces-monitor-facts .ops-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    #interfaces .interfaces-monitor-facts .ops-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #interfaces .interfaces-side-row .ops-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .ops-workbench { display: flex; flex-direction: column; gap: 8px; }
     .ops-workbench-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-items: stretch; }
     .ops-workbench-side,
@@ -4592,7 +4593,7 @@
       ? opsBarStack(lineShareRows, { percentMode: true, emptyText: '当前未形成可读的线路占比' })
       : emptyBlock('当前未形成可读的线路占比');
     const aggregateTrendBlock = aggregateHistoryPoints
-      ? `<div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(String(pollSeconds))}s / 点</span></div>${lineChart([history.uplink || [], history.downlink || []], { colors: ['#165dff', '#f53f3f'], axis: 'rate' })}</div>`
+      ? `<div class="ops-double">${wanRateSplitCard('总上行速率', overview.uplinkBps, history.uplink || [], '#165dff', `${escapeHtml(String(pollSeconds))}s / 点`)}${wanRateSplitCard('总下行速率', overview.downlinkBps, history.downlink || [], '#f53f3f', `${escapeHtml(String(pollSeconds))}s / 点`)}</div>`
       : emptyBlock('当前未读取到 WAN 聚合历史');
     const lineRows = pppoe.map((row) => `
       <tr>
