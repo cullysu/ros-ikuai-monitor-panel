@@ -93,7 +93,6 @@ const appEl = document.getElementById('app');
     };
 
     const railGroups = [
-      { id: 'home', label: '首页', icon: 'ik-home', section: 'overview' },
       { id: 'monitor', label: '监控', icon: 'ik-line', section: 'interfaces' },
       { id: 'flow', label: '流量', icon: 'ik-balance', section: 'lineStatus' },
       { id: 'security', label: '安全', icon: 'ik-security', section: 'security' },
