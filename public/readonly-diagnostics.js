@@ -4078,7 +4078,7 @@
       .readonly-diagnostics-root .readonly-summary-sticky > .readonly-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
       .readonly-diagnostics-root .readonly-kpi-value, .readonly-diagnostics-root .readonly-kpi-label { white-space: normal; word-break: break-all; }
       .line-trend-grid, .line-trend-full { --line-trend-cols: 1 !important; grid-template-columns: minmax(0, 1fr) !important; }
-      .ik-wan-rate-split, .ik-wan-rate-split.is-main { grid-template-columns: minmax(0, 1fr) !important; }
+      .ik-wan-rate-split:not(.is-main) { grid-template-columns: minmax(0, 1fr) !important; }
       .ops-double, .ops-split { grid-template-columns: minmax(0, 1fr) !important; }
       .toolbar-line, .topbar-actions, .refresh-toolbar { flex-wrap: wrap !important; max-width: 100% !important; }
       .ik-wan-line-select, .ik-wan-switch, #routerSwitchWrap, #routerSwitcher { max-width: 100% !important; width: 100% !important; min-width: 0 !important; }
