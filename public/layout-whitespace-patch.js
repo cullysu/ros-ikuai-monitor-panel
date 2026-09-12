@@ -4005,6 +4005,14 @@
     #interfaces .interfaces-inline-subtle { color: var(--text-dim); font-size: 11px; line-height: 1.2; text-align: right; }
     #interfaces .interfaces-monitor-facts .ops-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     #interfaces .interfaces-side-row .ops-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #interfaces .interfaces-facts-row > .interfaces-inline-panel { display: flex; flex-direction: column; }
+    #interfaces .interfaces-side-row > .card { display: flex; flex-direction: column; }
+    #interfaces .interfaces-side-row > .card .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    #interfaces .interfaces-facts-row .ops-stat-grid,
+    #interfaces .interfaces-side-row .ops-stat-grid { flex: 1 1 auto; grid-auto-rows: minmax(64px, 1fr); align-content: stretch; }
+    #interfaces .interfaces-facts-row .ops-stat-tile,
+    #interfaces .interfaces-side-row .ops-stat-tile { display: flex; flex-direction: column; justify-content: center; }
+    #interfaces .interfaces-side-row .ops-table-wrap { flex: 1 1 auto; }
     .ops-workbench { display: flex; flex-direction: column; gap: 8px; }
     .ops-workbench-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-items: stretch; }
     .ops-workbench-side,
