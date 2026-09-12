@@ -3125,17 +3125,64 @@ const appEl = document.getElementById('app');
             <td>上 ${fmtRate(item.row.upRate)} / 下 ${fmtRate(item.row.downRate)}</td>
           </tr>`;
       }).join('');
-      const roleRows = diagnostics.map((item) => `
-        <tr>
-          <td>${escapeHtml(item.row.name)}</td>
-          <td>${tag(item.role.label, item.role.level)}</td>
-          <td>${item.activeTables.length ? item.activeTables.map(escapeHtml).join('<br>') : '-'}</td>
-          <td>${item.activeRoutes.length ? item.activeRoutes.map((route) => escapeHtml(route.distance || '-')).join('<br>') : '-'}</td>
-          <td>${escapeHtml(item.row.parent || '-')}</td>
-          <td>${item.hasAddress ? tag('已拿到', 'ok') : tag('未拿到', 'warn')}</td>
-          <td>${fmtNumber(item.dropTotal)} / ${fmtNumber(item.errorTotal)}</td>
-        </tr>`).join('');
-      const lineTrendRows = getLineTrendRows(pppoe);
+      const lineStatusColumns = [
+        { key: 'index', label: '#', sortable: false, render: (item, index) => fmtNumber(index + 1) },
+        { key: 'status', label: '状态', sort: (item) => ({ danger: 0, warn: 1, ok: 2 }[item.level] ?? 3), render: (item) => tag(item.stateLabel, item.level) },        { key: 'line', label: '线路 / 父接口', sort: (item) => String(item.row.name || ''), render: (item) => inlinePair(escapeHtml(item.row.name), escapeHtml(item.row.parent || '-')) },
+        { key: 'score', label: '分', sort: (item) => 100 - Number(item.score || 0), render: (item) => fmtNumber(item.score) },
+        { key: 'role', label: '出口角色', sort: (item) => String(item.role.label || ''), render: (item) => inlinePair(tag(item.role.label, item.role.level), item.activeTables.length ? item.activeTables.map(escapeHtml).join(' / ') : '无活动表') },
+        { key: 'reason', label: '原因', sort: (item) => String(item.blockers.length ? item.blockers.join('/') : ''), render: (item) => escapeHtml(item.blockers.length ? item.blockers.join(' / ') : '关键闭环正常') },
+        { key: 'action', label: '动作', sort: (item) => String(item.action || ''), render: (item) => escapeHtml(item.action) },
+        { key: 'closure', label: '闭环', sort: (item) => (item.row.running ? 1 : 0) + (item.hasAddress ? 2 : 0) + (item.activeRoutes.length ? 4 : 0), render: (item) => inlinePair(`拨号 ${item.row.running ? '是' : '否'} / 地址 ${item.hasAddress ? '是' : '否'}`, `路由 ${item.activeRoutes.length ? '是' : '否'}`) },
+        { key: 'drops', label: '丢 / 错', sort: (item) => Number(item.dropTotal || 0) + Number(item.errorTotal || 0), render: (item) => `${fmtNumber(item.dropTotal)} / ${fmtNumber(item.errorTotal)}` },
+        { key: 'traffic', label: '上 / 下', sort: (item) => Number(item.row.upRate || 0) + Number(item.row.downRate || 0), render: (item) => `上 ${fmtRate(item.row.upRate)} / 下 ${fmtRate(item.row.downRate)}` }
+      ];
+      window.__lineStatusColumns = lineStatusColumns;
+      const queueView = getLineQueueView(lineStatusColumns);
+      const sortedQueue = sortLineQueue(diagnosticQueue, queueView, lineStatusColumns);
+      const visibleColumns = queueView.order
+        .map((key) => lineStatusColumns.find((column) => column.key === key))
+        .filter(Boolean)
+        .filter((column) => !queueView.hidden.includes(column.key));
+      const headerCells = visibleColumns.map((column) => {
+        if (!column.sort) return `<th>${escapeHtml(column.label)}</th>`;
+        const active = queueView.sortKey === column.key;
+        const arrow = active ? (queueView.sortDir === 'asc' ? ' ▲' : ' ▼') : '';
+        return `<th class="ls-sortable${active ? ' is-active' : ''}" data-ls-sort="${escapeHtml(column.key)}" title="点击切换排序">${escapeHtml(column.label)}${arrow}</th>`;
+      }).join('');
+      const bodyRows = sortedQueue.map((item, index) => `<tr>${visibleColumns.map((column) => `<td>${column.render(item, index)}</td>`).join('')}</tr>`).join('');
+      const columnManagerRows = queueView.order.map((key) => {
+        const column = lineStatusColumns.find((entry) => entry.key === key);
+        const visible = !queueView.hidden.includes(key);
+        return `
+          <div class="ls-col-row">
+            <label><input type="checkbox" data-ls-col-vis="${escapeHtml(key)}"${visible ? ' checked' : ''}> ${escapeHtml(column.label)}</label>
+            <span class="ls-col-move">
+              <button type="button" data-ls-col-up="${escapeHtml(key)}" title="上移">↑</button>
+              <button type="button" data-ls-col-down="${escapeHtml(key)}" title="下移">↓</button>
+            </span>
+          </div>`;
+      }).join('');
+      const columnManager = `
+        <div class="ls-col-manager">
+          <button class="ls-col-manager-btn" type="button" data-ls-cols-toggle>列管理</button>
+          ${window.__lineQueueManagerOpen ? `
+          <div class="ls-col-pop">
+            <div class="ls-col-pop-head"><b>列管理</b><button type="button" data-ls-col-reset>恢复默认</button></div>
+            ${columnManagerRows}
+            <div class="ls-col-pop-foot">点击表头可按该列排序；勾选控制显隐，↑↓ 调整顺序。</div>
+          </div>` : ''}
+        </div>`;
+      const lineBoardCards = diagnostics.map((item) => `
+        <div class="ls-line-card is-${item.level}">
+          <div class="ls-line-card-head"><b>${escapeHtml(item.row.name)}</b>${tag(item.stateLabel, item.level)}</div>
+          <div class="ls-line-closure">
+            <span class="ls-chip ${item.row.running ? 'is-ok' : 'is-bad'}">拨号 ${item.row.running ? '✓' : '✗'}</span>
+            <span class="ls-chip ${item.hasAddress ? 'is-ok' : 'is-bad'}">地址 ${item.hasAddress ? '✓' : '✗'}</span>
+            <span class="ls-chip ${item.activeRoutes.length ? 'is-ok' : 'is-bad'}">路由 ${item.activeRoutes.length ? '✓' : '✗'}</span>
+          </div>
+          <div class="ls-line-rates"><span>↑ ${fmtRate(item.row.upRate)}</span><span>↓ ${fmtRate(item.row.downRate)}</span></div>
+          <div class="ls-line-foot">${escapeHtml(item.action)} · ${escapeHtml(item.role.label)} · 丢/错 ${fmtNumber(item.dropTotal)}/${fmtNumber(item.errorTotal)}</div>
+        </div>`).join('');
       return section('线路状态', 'lineStatus', '按健康闭环、出口角色和处理优先级定位线路问题', `
         <div class="grid-4">
           ${metricCard('可用出口', fmtNumber(diagnostics.filter((item) => item.level === 'ok').length), `总线路 ${fmtNumber(pppoe.length)} 条`, '健康闭环完整')}
@@ -3149,7 +3196,130 @@ const appEl = document.getElementById('app');
           ${metricCard('路由闭环', `${fmtNumber(diagnostics.filter((item) => item.activeRoutes.length > 0).length)} / ${fmtNumber(pppoe.length)}`, '有活动默认路由', '')}
           ${metricCard('策略出口', fmtNumber(diagnostics.filter((item) => String(item.role?.label || '').includes('策略')).length), '非 main 表活动出口', '')}
         </div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">故障优先队列</div><div class="subtle">紧凑诊断视图，一行一条线路</div></div><div class="card-body">${compactTable(['#', '状态', '线路 / 父接口', '分', '出口角色', '原因', '动作', '闭环', '丢 / 错', '上 / 下'], diagnosticRows, '当前未读取到线路诊断数据')}</div></div>`);
+        <div class="card" style="margin-top:12px">
+          <div class="card-head">
+            <div class="card-title">故障优先队列</div>
+            <div style="display:flex;align-items:center;gap:10px;min-width:0">${columnManager}<span class="subtle">点击表头按列排序</span></div>
+          </div>
+          <div class="card-body">
+            <div class="ops-table-wrap"><table class="ops-table ops-compact-table"><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="card-head"><div class="card-title">线路状态板</div><div class="subtle">每条线路的闭环核对与实时吞吐</div></div>
+          <div class="card-body"><div class="grid-4">${lineBoardCards}</div></div>
+        </div>`);
+    }
+
+    const LINE_QUEUE_STORE_KEY = 'lineStatusQueueView.v1';
+    const defaultLineQueueRank = (item) => (item.level === 'danger' ? 0 : item.level === 'warn' ? 1 : 2) * 1000 + (100 - item.score);
+
+    function getLineQueueView(columns) {
+      const known = columns.map((column) => column.key);
+      const defaults = { order: known.slice(), hidden: [], sortKey: '__queue__', sortDir: 'desc' };
+      let view = null;
+      try { view = JSON.parse(localStorage.getItem(LINE_QUEUE_STORE_KEY) || 'null'); } catch (error) { view = null; }
+      if (!view || !Array.isArray(view.order)) return defaults;
+      const order = known.filter((key) => view.order.includes(key));
+      known.forEach((key) => { if (!order.includes(key)) order.push(key); });
+      return {
+        order,
+        hidden: Array.isArray(view.hidden) ? view.hidden.filter((key) => known.includes(key) && key !== 'index') : [],
+        sortKey: view.sortKey === '__queue__' || known.includes(view.sortKey) ? view.sortKey : '__queue__',
+        sortDir: view.sortDir === 'asc' ? 'asc' : 'desc'
+      };
+    }
+
+    function saveLineQueueView(view) {
+      try { localStorage.setItem(LINE_QUEUE_STORE_KEY, JSON.stringify(view)); } catch (error) {}
+    }
+
+    function sortLineQueue(queue, view, columns) {
+      if (view.sortKey === '__queue__') {
+        return queue.slice().sort((a, b) => defaultLineQueueRank(a) - defaultLineQueueRank(b));
+      }
+      const column = columns.find((entry) => entry.key === view.sortKey);
+      if (!column || !column.sort) {
+        return queue.slice().sort((a, b) => defaultLineQueueRank(a) - defaultLineQueueRank(b));
+      }
+      const factor = view.sortDir === 'asc' ? 1 : -1;
+      return queue.slice().sort((a, b) => {
+        const valueA = column.sort(a);
+        const valueB = column.sort(b);
+        if (typeof valueA === 'string' || typeof valueB === 'string') {
+          return String(valueA).localeCompare(String(valueB), 'zh-CN') * factor;
+        }
+        return (Number(valueA) - Number(valueB)) * factor;
+      });
+    }
+
+    if (!window.__lineQueueEventsBound) {
+      window.__lineQueueEventsBound = true;
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!target || !target.closest) return;
+        const refresh = () => {
+          if (typeof currentSection !== 'undefined' && currentSection === 'lineStatus'
+            && typeof renderApp === 'function' && typeof latestSnapshot !== 'undefined' && latestSnapshot) {
+            renderApp(latestSnapshot);
+          }
+        };
+        const toggleEl = target.closest('[data-ls-cols-toggle]');
+        if (toggleEl) {
+          window.__lineQueueManagerOpen = !window.__lineQueueManagerOpen;
+          refresh();
+          return;
+        }
+        const insideManager = target.closest('.ls-col-manager');
+        if (insideManager) {
+          const view = window.__lineQueueView || getLineQueueView(window.__lineStatusColumns || []);
+          const visEl = target.closest('[data-ls-col-vis]');
+          const upEl = target.closest('[data-ls-col-up]');
+          const downEl = target.closest('[data-ls-col-down]');
+          const resetEl = target.closest('[data-ls-col-reset]');
+          if (resetEl) {
+            try { localStorage.removeItem(LINE_QUEUE_STORE_KEY); } catch (error) {}
+            window.__lineQueueView = null;
+          } else if (visEl) {
+            const key = visEl.getAttribute('data-ls-col-vis');
+            if (key !== 'index') {
+              view.hidden = view.hidden.includes(key)
+                ? view.hidden.filter((item) => item !== key)
+                : view.hidden.concat(key);
+            }
+          } else if (upEl || downEl) {
+            const key = (upEl || downEl).getAttribute(upEl ? 'data-ls-col-up' : 'data-ls-col-down');
+            const from = view.order.indexOf(key);
+            const to = upEl ? from - 1 : from + 1;
+            if (from >= 0 && to >= 0 && to < view.order.length) {
+              view.order.splice(from, 1);
+              view.order.splice(to, 0, key);
+            }
+          } else {
+            return;
+          }
+          window.__lineQueueView = view;
+          saveLineQueueView(view);
+          refresh();
+          return;
+        }
+        const sortEl = target.closest('[data-ls-sort]');
+        if (sortEl) {
+          const view = window.__lineQueueView || getLineQueueView(window.__lineStatusColumns || []);
+          const key = sortEl.getAttribute('data-ls-sort');
+          if (view.sortKey !== key) { view.sortKey = key; view.sortDir = 'desc'; }
+          else if (view.sortDir === 'desc') view.sortDir = 'asc';
+          else { view.sortKey = '__queue__'; view.sortDir = 'desc'; }
+          window.__lineQueueView = view;
+          saveLineQueueView(view);
+          refresh();
+          return;
+        }
+        if (window.__lineQueueManagerOpen) {
+          window.__lineQueueManagerOpen = false;
+          refresh();
+        }
+      });
     }
 
     function renderArp(snapshot) {

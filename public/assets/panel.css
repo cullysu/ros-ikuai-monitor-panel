@@ -2070,3 +2070,26 @@
 .router-setup-channel .dot.ok{background:#34c759;}
 .router-setup-channel .dot.bad{background:#ff3b30;}
 @media (prefers-reduced-motion: reduce){.router-setup-overlay{transition:none;}}
+
+    .ls-sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+    .ls-sortable.is-active { color: #165dff; }
+    .ls-col-manager { position: relative; display: inline-flex; }
+    .ls-col-manager-btn { min-height: 24px; padding: 0 10px; border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--text-soft); font: inherit; font-size: 11px; font-weight: 650; cursor: pointer; }
+    .ls-col-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; width: 250px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: #fff; box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14); }
+    .ls-col-pop-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: var(--text); font-size: 12px; }
+    .ls-col-pop-head button { border: 0; background: none; color: #165dff; font: inherit; font-size: 11px; cursor: pointer; }
+    .ls-col-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; color: var(--text); font-size: 12px; }
+    .ls-col-row label { display: inline-flex; align-items: center; gap: 6px; min-width: 0; cursor: pointer; }
+    .ls-col-move { display: inline-flex; gap: 4px; }
+    .ls-col-move button { min-width: 22px; min-height: 22px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text-soft); font-size: 11px; cursor: pointer; }
+    .ls-col-pop-foot { margin-top: 6px; color: var(--text-dim); font-size: 10.5px; line-height: 1.4; }
+    .ls-line-card { min-width: 0; padding: 10px 12px; border: 1px solid #e3edf8; border-radius: 12px; background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); }
+    .ls-line-card.is-danger { border-color: #f3c6c4; background: linear-gradient(180deg, #fffafa 0%, #fdf3f2 100%); }
+    .ls-line-card.is-warn { border-color: #f2ddb4; }
+    .ls-line-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--text); font-size: 13px; }
+    .ls-line-closure { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .ls-chip { display: inline-flex; align-items: center; min-height: 20px; padding: 0 8px; border-radius: 999px; font-size: 11px; }
+    .ls-chip.is-ok { background: #eefbf5; color: #087c4a; }
+    .ls-chip.is-bad { background: #fdf0ef; color: #c0392b; }
+    .ls-line-rates { display: flex; gap: 12px; margin-top: 8px; color: var(--text-soft); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .ls-line-foot { margin-top: 7px; color: var(--text-dim); font-size: 11px; line-height: 1.35; }
