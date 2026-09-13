@@ -3,7 +3,7 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "129ef00aa15bad4be6c46d3a044cc2a742d95a13cee7df06f857c4e30100bd1e",
+    "digest": "affa61f06e8f867a70d92919382585a3551be5137d713133fbeefa8b74236cb2",
     "files": 107
   },
   "assets": {
@@ -32,19 +32,19 @@
         "brotliBytes": 106480
       },
       "style": {
-        "file": "desktop.28dc4a1f7c8b.css",
-        "sha256": "28dc4a1f7c8b2350e581399105659fa61b66b567e7a1af564ff23882f7f0db3f",
+        "file": "desktop.03d78130875c.css",
+        "sha256": "03d78130875c7723f78f978429c9fcfc91e3dce496df29897b3bcc135fcb4b30",
         "bytes": 57306,
-        "gzipBytes": 10867,
-        "brotliBytes": 9630
+        "gzipBytes": 10848,
+        "brotliBytes": 9617
       }
     },
     "loader": {
-      "file": "panel-surface-loader.ee9883f118b1.js",
-      "sha256": "ee9883f118b18b8cb1b444f5356d249b0abb14614e9c1754799b59c99cdb73f3",
+      "file": "panel-surface-loader.83f012e24c8a.js",
+      "sha256": "83f012e24c8ac1905863e4f8a2e7f19937c9a1b98452fee42daa30f27ec097d3",
       "bytes": 1682,
       "gzipBytes": 838,
-      "brotliBytes": 691
+      "brotliBytes": 689
     }
   }
 }

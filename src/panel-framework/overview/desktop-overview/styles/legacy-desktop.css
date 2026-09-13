@@ -42,7 +42,7 @@ body,
 
 .legacy-axis-label {
   fill: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -258,7 +258,7 @@ body,
   display: block;
   margin-bottom: 1px;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.07em;
 }
 
@@ -307,9 +307,9 @@ body,
 .legacy-verdict span,
 .legacy-verdict b,
 .legacy-verdict small { display: block; }
-.legacy-verdict span { color: currentColor; font-size: 11px; font-weight: 650; }
+.legacy-verdict span { color: currentColor; font-size: 12px; font-weight: 650; }
 .legacy-verdict b { color: var(--legacy-ink); font-size: 14px; }
-.legacy-verdict small { margin-top: 1px; overflow: hidden; color: var(--legacy-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.legacy-verdict small { margin-top: 1px; overflow: hidden; color: var(--legacy-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 
 .legacy-summary-strip {
   display: grid;
@@ -334,7 +334,7 @@ body,
   display: block;
   overflow: hidden;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -402,7 +402,7 @@ body,
 
 .legacy-section-heading span {
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .legacy-wan-lead {
@@ -436,7 +436,7 @@ body,
   display: block;
   margin-top: 3px;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .legacy-wan-lead > strong {
@@ -454,7 +454,7 @@ body,
   border-radius: 999px;
   color: var(--legacy-blue);
   background: #f2f7ff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
   white-space: nowrap;
 }
@@ -470,7 +470,7 @@ body,
   border-radius: 8px;
   background: #fff;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .legacy-route-chip span {
@@ -539,7 +539,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
 
 .legacy-fact-grid span {
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .legacy-fact-grid b {
@@ -588,7 +588,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   align-items: center;
   gap: 6px;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .legacy-wan-rate-card span i {
@@ -608,7 +608,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   margin-top: 6px;
   overflow: hidden;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -651,7 +651,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   display: flex;
   justify-content: space-between;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .legacy-grid-line {
@@ -730,7 +730,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
 
 .legacy-resource-card small {
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .legacy-object-list {
@@ -755,7 +755,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
 .legacy-object-row small {
   overflow: hidden;
   color: var(--legacy-muted);
-  font-size: 11px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -802,7 +802,7 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   align-items: center;
   gap: 5px;
   color: var(--legacy-green);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
   white-space: nowrap;
 }
@@ -853,8 +853,8 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
 .legacy-empty-chart b,
 .legacy-empty-chart small { display: block; }
 .legacy-empty-chart b { color: var(--legacy-ink); font-size: 13px; }
-.legacy-empty-chart small { margin-top: 3px; color: var(--legacy-muted); font-size: 11px; }
-.legacy-empty-chart button { min-height: 40px; margin-left: auto; padding: 7px 10px; border: 1px solid #c7d9f3; border-radius: 7px; color: var(--legacy-blue); background: #fff; font: inherit; font-size: 11px; cursor: pointer; }
+.legacy-empty-chart small { margin-top: 3px; color: var(--legacy-muted); font-size: 12px; }
+.legacy-empty-chart button { min-height: 40px; margin-left: auto; padding: 7px 10px; border: 1px solid #c7d9f3; border-radius: 7px; color: var(--legacy-blue); background: #fff; font: inherit; font-size: 12px; cursor: pointer; }
 
 .legacy-bandwidth-summary {
   display: grid;

@@ -57,7 +57,7 @@
 .ddrs-query > .ddrs-query-heading > label small,
 .ddrs-query > p {
   color: #58727d;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.35;
 }
 
@@ -162,7 +162,7 @@
 .ddrs-pager > button { padding-inline: 8px; }
 .ddrs-pager > span {
   color: #506b76;
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
@@ -202,7 +202,7 @@
   border-bottom: 1px solid #b8cad2;
   color: #365866;
   background: #dceaf0;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .ddrs-evidencebar > span {
@@ -235,7 +235,7 @@
 .ddrs-result-heading b { font-size: 13px; }
 .ddrs-result-heading span {
   color: #506b76;
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -263,7 +263,7 @@
 .ddrs-connections th {
   color: #496671;
   background: #f2f6f7;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 750;
 }
 
@@ -309,11 +309,11 @@
 .ddrs-findings summary::-webkit-details-marker { display: none; }
 .ddrs-findings summary > span {
   color: #873f42;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 750;
 }
 .ddrs-findings summary > b { min-width: 0; overflow-wrap: anywhere; font-size: 12px; }
-.ddrs-findings summary > small { color: #58727d; font-size: 11px; }
+.ddrs-findings summary > small { color: #58727d; font-size: 12px; }
 .ddrs-findings details > p {
   margin: 0;
   padding: 0 10px 8px;
@@ -328,7 +328,7 @@
   gap: 10px;
   padding: 6px 10px;
   border-top: 1px solid #e1e8eb;
-  font-size: 11px;
+  font-size: 12px;
 }
 .ddrs-findings dl > div:first-child { border-top: 0; }
 .ddrs-findings dt { color: #58727d; }
@@ -383,7 +383,7 @@
 
 .ddrs-connection-detail > header button:focus-visible { outline: 2px solid #397b97; outline-offset: -2px; }
 .ddrs-connection-detail > header > span { display: grid; min-width: 0; gap: 1px; padding: 5px 10px 5px 0; }
-.ddrs-connection-detail > header small { color: #58727d; font-size: 11px; }
+.ddrs-connection-detail > header small { color: #58727d; font-size: 12px; }
 .ddrs-connection-detail > header b { min-width: 0; overflow-wrap: anywhere; color: #173440; font-size: 13px; }
 .ddrs-connection-detail dl {
   display: grid;
@@ -396,7 +396,7 @@
   gap: 2px;
   padding: 7px 10px;
   border-top: 1px solid #d7e1e5;
-  font-size: 11px;
+  font-size: 12px;
 }
 .ddrs-connection-detail dl > div:not(:nth-child(3n + 1)) { border-left: 1px solid #d7e1e5; }
 .ddrs-connection-detail dt { color: #58727d; }
