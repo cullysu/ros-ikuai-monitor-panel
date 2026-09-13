@@ -159,27 +159,38 @@
 .ref-connect > header button { min-width:44px; min-height:44px; padding:0; border:0; color:var(--ref-blue); background:transparent; }
 .ref-connect > header h1 { margin:0; font-size:18px; text-align:center; }
 .ref-connect > header > svg { justify-self:end; color:var(--ref-muted); }
-.ref-connect__note { margin:0; padding:12px 16px; color:var(--ref-muted); font-size:12px; line-height:17px; }
-.ref-connect form > section,.ref-connect__receipts { margin:0 0 12px; border-block:1px solid var(--ref-line); background:#fff; }
-.ref-connect section > h2,.ref-connect__receipts > h2 { margin:0; padding:9px 16px; color:var(--ref-muted); font-size:12px; }
-.ref-connect form > section > label { display:grid; min-height:50px; padding:0 16px; border-top:1px solid var(--ref-line); grid-template-columns:100px minmax(0,1fr); align-items:center; gap:12px; font-size:13px; }
-.ref-connect input:not([type="checkbox"]) { width:100%; min-height:44px; padding:0; border:0; outline:0; background:transparent; font:inherit; text-align:right; }
+.ref-connect__note { margin:0; padding:12px 16px 10px; color:var(--ref-muted); font-size:12px; line-height:17px; }
+.ref-connect form > section { margin:0 12px 12px; border:1px solid rgb(28 28 30 / 8%); border-radius:11px; background:#fff; box-shadow:0 2px 8px rgb(28 28 30 / 4%); overflow:hidden; }
+.ref-connect section > h2 { margin:0; padding:10px 14px 8px; color:var(--ref-muted); font-size:12px; }
+.ref-connect__field { display:grid; min-height:56px; padding:8px 14px 7px; border-top:1px solid var(--ref-line); grid-template-columns:minmax(0,1fr); align-content:center; gap:0; }
+.ref-connect__field > span { color:var(--ref-muted); font-size:12px; }
+.ref-connect input:not([type="checkbox"]) { width:100%; min-height:30px; padding:0; border:0; outline:0; background:transparent; font:inherit; font-size:15px; text-align:left; }
+.ref-connect input:not([type="checkbox"])::placeholder { color:#a9a9b0; }
 .ref-connect__password { display:flex; align-items:center; }
-.ref-connect__password button { flex:0 0 44px; width:44px; height:44px; padding:0; border:0; color:var(--ref-muted); background:transparent; }
-.ref-connect__protocol { display:grid; margin:4px 16px 10px; padding:3px; border-radius:9px; grid-template-columns:1fr 1fr; background:#e9e9ed; }
-.ref-connect__protocol button { min-height:44px; border:0; border-radius:7px; color:var(--ref-muted); background:transparent; }
+.ref-connect__password button { flex:0 0 40px; width:40px; height:40px; margin-right:-8px; padding:0; border:0; color:var(--ref-muted); background:transparent; }
+.ref-connect__protocol { display:grid; margin:10px 14px 12px; padding:3px; border-radius:9px; grid-template-columns:1fr 1fr; background:#e9e9ed; }
+.ref-connect__protocol button { min-height:40px; border:0; border-radius:7px; color:var(--ref-muted); background:transparent; font-size:13px; font-weight:560; }
 .ref-connect__protocol button[aria-pressed="true"] { color:var(--ref-blue); background:#fff; box-shadow:0 1px 3px rgb(28 28 30 / 12%); }
-.ref-connect form > section > label.ref-connect__risk { grid-template-columns:24px minmax(0,1fr); padding-block:10px; color:#8a5a00; }
-.ref-connect form > section.ref-connect__identity { display:grid; padding:14px 16px; grid-template-columns:22px minmax(0,1fr); gap:10px; color:#805400; background:#fff9ed; }
+.ref-connect__ports { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid var(--ref-line); }
+.ref-connect__ports .ref-connect__field + .ref-connect__field { border-left:1px solid var(--ref-line); }
+.ref-connect__toggle { display:flex; min-height:46px; padding:6px 14px; border-top:1px solid var(--ref-line); align-items:center; gap:9px; font-size:13px; }
+.ref-connect__toggle input { width:20px; height:20px; margin:0; accent-color:var(--ref-blue); }
+.ref-connect__toggle span { color:var(--ref-muted); font-size:12px; }
+.ref-connect form > section > label.ref-connect__risk { display:flex; min-height:44px; padding:8px 14px; border-top:1px solid var(--ref-line); align-items:center; gap:9px; color:#8a5a00; font-size:12px; }
+.ref-connect form > section > label.ref-connect__risk input { width:20px; height:20px; margin:0; flex:0 0 auto; accent-color:var(--ref-orange); }
+.ref-connect form > section.ref-connect__identity { display:grid; padding:14px; grid-template-columns:22px minmax(0,1fr); gap:10px; color:#805400; background:#fff9ed; }
 .ref-connect__identity code { display:block; margin:5px 0; overflow-wrap:anywhere; font-size:12px; }
-.ref-connect__receipts > div { display:grid; min-height:56px; padding:8px 16px; border-top:1px solid var(--ref-line); grid-template-columns:22px minmax(0,1fr); gap:9px; align-items:center; }
-.ref-connect__receipts svg { color:var(--ref-green); }
-.ref-connect__receipts b,.ref-connect__receipts small { display:block; font-size:12px; }
-.ref-connect__receipts small { margin-top:2px; color:var(--ref-muted); }
-.ref-connect__error { display:flex; margin:12px 0; padding:12px 16px; gap:8px; color:#a12b25; background:#fff1f0; font-size:13px; }
-.ref-connect footer { position:sticky; bottom:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:var(--ref-bg); }
-.ref-connect footer button,.ref-connect__loading button { display:flex; width:100%; min-height:48px; padding:0 14px; border:0; border-radius:11px; align-items:center; justify-content:center; gap:8px; color:#fff; background:var(--ref-blue); font-size:14px; font-weight:620; }
+.ref-connect__results > div { display:grid; min-height:52px; padding:8px 14px; border-top:1px solid var(--ref-line); grid-template-columns:22px minmax(0,1fr); gap:9px; align-items:center; }
+.ref-connect__results svg { color:var(--ref-green); }
+.ref-connect__results div[data-ok="false"] svg { color:var(--ref-red); }
+.ref-connect__results b { display:block; font-size:13px; }
+.ref-connect__results small { display:block; margin-top:2px; color:var(--ref-muted); font-size:12px; line-height:16px; overflow-wrap:anywhere; }
+.ref-connect__results div[data-ok="false"] small { color:var(--ref-red); }
+.ref-connect__error { display:flex; margin:0 12px 12px; padding:12px 14px; gap:8px; border-radius:11px; color:#a12b25; background:#fff1f0; font-size:13px; line-height:18px; }
+.ref-connect footer { position:sticky; bottom:0; padding:12px 16px calc(10px + env(safe-area-inset-bottom)); background:var(--ref-bg); }
+.ref-connect footer button,.ref-connect__loading button { display:flex; width:100%; min-height:48px; padding:0 14px; border:0; border-radius:12px; align-items:center; justify-content:center; gap:8px; color:#fff; background:var(--ref-blue); font-size:14px; font-weight:620; box-shadow:0 3px 10px rgb(0 122 255 / 24%); }
 .ref-connect footer button svg:last-child { margin-left:auto; }
+.ref-connect footer small { display:block; margin-top:8px; color:var(--ref-muted); font-size:12px; text-align:center; }
 .ref-connect__loading { display:grid; padding:30px; place-content:center; text-align:center; }
 .ref-connect__loading h1 { margin:12px 0 4px; font-size:19px; }
 .ref-connect__loading p { margin:0 0 16px; color:var(--ref-muted); font-size:13px; }
@@ -192,7 +203,6 @@
 .ref-navigation button:focus-visible,.ref-mobile button:focus-visible { outline:2px solid var(--ref-blue); outline-offset:-2px; }
 .ref-mobile input:focus-visible,.ref-mobile select:focus-visible { outline:2px solid var(--ref-blue); outline-offset:2px; border-radius:6px; }
 .ref-mobile button { transition:transform 140ms cubic-bezier(.23,1,.32,1); }
-.ref-mobile button:active { transform:scale(.97); }
 .ref-mobile button:active { transform:scale(.98); }
 @media (max-width:360px) { .ref-content { padding-inline:9px; } .ref-card,.ref-status { margin-bottom:8px; } .ref-rate b { font-size:22px; } .ref-pair { grid-template-columns:1fr 1fr; gap:6px; } .ref-chart svg { height:98px; } .ref-chart__scale { height:71px; } }
 @media (max-width:360px) and (max-height:620px) { .ref-status { min-height:62px; padding-block:8px; } .ref-wan > header { min-height:48px; padding-block:7px; } .ref-rate { padding-block:7px 6px; } .ref-quality span { padding-block:6px; } .ref-chart { margin-top:4px; } .ref-chart svg { height:78px; } .ref-chart__scale { height:55px; } .ref-chart__meta { margin-top:1px; } }

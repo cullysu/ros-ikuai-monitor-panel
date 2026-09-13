@@ -46,3 +46,4 @@ dist/
 /*.tar
 /*.tar.gz
 /*.tgz
+.config/

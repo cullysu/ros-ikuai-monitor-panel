@@ -172,7 +172,7 @@ function sceneFor(evidence: OverviewEvidenceModel, state: OverviewDerivedState, 
   if (state.scenario === "collection-down" || evidence.risk === "collection") return "collection";
   if (state.scenario === "all-offline") return "outage";
   if (evidence.risk === "resource" || state.scenario === "resource-full") return "resource";
-  if (evidence.risk === "interfaces" || state.scenario === "interfaces-down" || (state.scenario === "fleet" && interfaces.some((item) => item.tone === "danger"))) return "interfaces";
+  if (evidence.risk === "interfaces" || state.scenario === "interfaces-down" || (state.scenario === "fleet" && state.facts.interfaces.confirmedRisk > 0)) return "interfaces";
   if (!evidence.routeEvidence.activePath) return "route";
   return "normal";
 }

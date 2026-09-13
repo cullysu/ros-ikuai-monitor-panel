@@ -172,13 +172,13 @@ function healthBody(options = {}) {
 
 function workspaceSelector(viewport, route) {
   return viewport.workspace === 'mobile'
-    ? `[data-panel-route-content="${route}"].mop-route`
+    ? `[data-panel-route-content="${route}"]`
     : `[data-desktop-domain-workspace="${route}"]`;
 }
 
 function baseRowSelector(viewport) {
   return viewport.workspace === 'mobile'
-    ? '.mop-route-group li > button[id^="mop-row-"]'
+    ? 'button[data-panel-object-row]'
     : '[data-desktop-row-id]';
 }
 
@@ -455,13 +455,33 @@ async function runEvidenceStateContract(page, mock, baseUrl, viewport) {
   assert(health.text.length > 0, '空健康发现被渲染成空白区域，而不是有界空结果', { viewport: viewport.name, health });
 }
 
+async function runMobileBoundedWorkspaceContract(page, mock, baseUrl, viewport) {
+  // The rebuilt mobile reference UI retired endpoint-backed supplements: those
+  // routes present bounded snapshot rows only, and the endpoint/evidence
+  // contract is enforced on the desktop viewport. Mobile must keep that
+  // boundary honest: the route renders from the snapshot and never mounts a
+  // data-supplemental surface, so endpoint evidence cannot be faked on phone.
+  for (const route of ['connections', 'dns4', 'security']) {
+    await openRoute(page, baseUrl, viewport, route);
+    await page.locator(`[data-mobile-reference-workspace="${route}"]`).waitFor();
+    assert(await page.locator('[data-supplemental-surface]').count() === 0,
+      '移动端工作区挂载了端点补充面', { viewport: viewport.name, route });
+    const rowCount = await page.locator(`${workspaceSelector(viewport, route)} ${baseRowSelector(viewport)}`).count();
+    const emptyNote = await page.locator(`${workspaceSelector(viewport, route)} .ref-empty`).count();
+    assert(rowCount > 0 || emptyNote > 0, '移动端工作区既没有快照行也没有空态说明', { viewport: viewport.name, route, rowCount, emptyNote });
+    await captureViewport(page, viewport, `${route}-bounded`);
+  }
+}
+
 async function runViewportContracts(page, mock, baseUrl, viewport) {
   const checks = [];
-  for (const [name, task] of [
-    ['connections-explicit-query-and-history', runConnectionContract],
-    ['dns-pagination-and-snapshot-preservation', runDnsContract],
-    ['health-current-historical-unavailable-loading-empty-malformed', runEvidenceStateContract],
-  ]) {
+  for (const [name, task] of viewport.workspace === 'mobile'
+    ? [['mobile-bounded-workspace-presentation', runMobileBoundedWorkspaceContract]]
+    : [
+      ['connections-explicit-query-and-history', runConnectionContract],
+      ['dns-pagination-and-snapshot-preservation', runDnsContract],
+      ['health-current-historical-unavailable-loading-empty-malformed', runEvidenceStateContract],
+    ]) {
     try {
       await task(page, mock, baseUrl, viewport);
       checks.push({ name, pass: true });

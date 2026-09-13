@@ -216,6 +216,12 @@ export function defaultRouteRows(snapshot: OverviewRawSnapshot): OverviewRawRout
   return rows.slice().sort((left, right) => {
     const rank = routeRank(left) - routeRank(right);
     if (rank) return rank;
+    // A default route in a policy routing table (e.g. mark-routed WAN lines)
+    // is not the system egress; the main-table route wins among active
+    // candidates before distance is compared.
+    const leftMain = String(left.table ?? left.routingTable ?? "main") === "main" ? 0 : 1;
+    const rightMain = String(right.table ?? right.routingTable ?? "main") === "main" ? 0 : 1;
+    if (leftMain !== rightMain) return leftMain - rightMain;
     const leftDistance = toFiniteNumber(left.distance);
     const rightDistance = toFiniteNumber(right.distance);
     if (leftDistance !== null || rightDistance !== null) {
@@ -584,6 +590,10 @@ function countsOf(wan: ReturnType<typeof wanState>, interfaces: ReturnType<typeo
     interfacesOnline: interfaces.available ? interfaces.online : null,
     interfacesDown: interfaces.available ? interfaces.down : null,
     interfacesUnknown: interfaces.available ? interfaces.unknown : null,
+    // Administratively disabled interfaces are intentional configuration, not
+    // forwarding-plane failures; only interfaces whose enabled default route
+    // depends on them may raise the interfaces-down scenario.
+    interfacesConfirmedRisk: interfaces.available ? interfaces.confirmedRisk : null,
     failures: failures.count,
     connections: connections.total,
   };
@@ -594,7 +604,7 @@ function scenarioOf(snapshot: OverviewRawSnapshot, counts: OverviewCounts, resou
   if (options.scenarioHint) return options.scenarioHint;
   if (isSnapshotUnavailable(snapshot)) return "no-snapshot";
   if (counts.wanTotal > 0 && counts.wanOnline === 0 && counts.wanUnknown === 0) return "all-offline";
-  if (toNumber(counts.interfacesDown) > 0) return "interfaces-down";
+  if (toNumber(counts.interfacesConfirmedRisk) > 0) return "interfaces-down";
   if (resource.level === "danger") return "resource-full";
   if (collection.channelDegraded) return "collection-down";
   if (counts.wanTotal >= 4 || toNumber(counts.interfacesTotal) >= 8 || toNumber(counts.connections) >= 5000) return "fleet";

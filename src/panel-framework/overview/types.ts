@@ -206,6 +206,7 @@ export interface OverviewCounts {
   interfacesOnline: number | null;
   interfacesDown: number | null;
   interfacesUnknown: number | null;
+  interfacesConfirmedRisk: number | null;
   failures: number;
   connections: number | null;
 }
