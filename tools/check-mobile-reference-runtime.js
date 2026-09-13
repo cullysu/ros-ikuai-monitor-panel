@@ -386,7 +386,7 @@ async function main() {
     const runPass = newCells.length === targets.length
       && (skipInteractions || Object.values(workflows).length > 0 && Object.values(workflows).every(Boolean))
       && sameIdentity(identityStart, identityEnd);
-    const fullCellSet = cells.length === requiredKeys.size && cells.every((cell) => requiredKeys.has(`${cell.scenario}::${cell.viewport?.id}`));
+    const fullCellSet = cells.length === requiredTargets.length && cells.every((cell) => requiredKeys.has(`${cell.scenario}::${cell.viewport?.id}`));
     const workflowNames = ["wanDetailHistory", "wanDetailShortPhoneClearance", "fourRootNavigation", "networkDirectory", "networkWanDetail", "moreDirectory", "connectionAddressValidation", "resourceDetail", "resourceRootSelection", "interfaceDetail", "workspaceSearchFilterSort", "collectionRecoveryAction", "noSnapshotRecoveryAction", "refreshFeedback"];
     const workflowsComplete = workflowNames.every((name) => workflows[name] === true);
     const smokePass = runPass;

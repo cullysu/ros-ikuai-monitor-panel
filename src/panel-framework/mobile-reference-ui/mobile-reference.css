@@ -46,9 +46,9 @@
 .ref-rate + .ref-rate { border-left:1px solid var(--ref-line); }
 .ref-rate { padding:10px 12px 9px; }
 .ref-rate > span { color:var(--ref-muted); font-size:12px; }
-.ref-rate > div { display:flex; margin-top:2px; align-items:baseline; }
+.ref-rate > div { display:flex; flex-wrap:wrap; margin-top:2px; align-items:baseline; }
 .ref-rate b { font-size:25px; font-weight:660; line-height:30px; letter-spacing:-.035em; }
-.ref-rate small { margin-left:5px; color:var(--ref-muted); font-size:12px; }
+.ref-rate small { margin-left:5px; color:var(--ref-muted); font-size:12px; white-space:nowrap; }
 .ref-rate svg { width:19px; height:19px; margin-left:auto; color:var(--ref-blue); align-self:center; }
 .ref-quality { display:grid; padding:0 12px; border-bottom:1px solid var(--ref-line); grid-template-columns:1fr 1fr; }
 .ref-quality span { padding:9px 0; color:var(--ref-muted); font-size:12px; }

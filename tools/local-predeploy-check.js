@@ -2427,7 +2427,7 @@ async function runBrowserChecks(args, report, baseUrl) {
             if (typeof cdp.closeTarget === 'function') {
               const targetLabel = `close browser target ${profile}/${scaleScenario}/${viewport.name}`;
               try {
-                await withTimeout(cdp.closeTarget(), configuredBrowserTimeoutMs(12_000), targetLabel);
+                await withTimeout(cdp.closeTarget(), 12_000, targetLabel);
                 record(report, targetLabel, true, { lifecycle: 'managed-context-and-page-close' });
               } catch (error) {
                 record(report, targetLabel, false, {
@@ -2443,11 +2443,7 @@ async function runBrowserChecks(args, report, baseUrl) {
   }
   } finally {
     try {
-      const lifecycle = await withTimeout(
-        browser.stop(),
-        configuredBrowserTimeoutMs(30_000),
-        'browser stop',
-      );
+      const lifecycle = await withTimeout(browser.stop(), 30_000, 'browser stop');
       const cleanup = Array.isArray(lifecycle?.cleanup) ? lifecycle.cleanup : [];
       const cleanupOk = cleanup.length > 0 && cleanup.every((entry) => entry.status === 'ok');
       record(report, 'browser managed lifecycle closes owned process tree', cleanupOk, {
