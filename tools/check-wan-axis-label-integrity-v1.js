@@ -4,6 +4,8 @@ const http = require("node:http");
 const path = require("node:path");
 const { chromium } = require("playwright-core");
 
+const { resolveBrowserExecutable } = require("./browser-executable");
+
 const root = path.resolve(__dirname, "..");
 const outputDirectory = path.join(root, "_acceptance", "wan-axis-label-integrity-v1");
 const browserCandidates = [
@@ -97,7 +99,7 @@ async function main() {
   let browser;
   let context;
   try {
-    const browserPath = browserCandidates.find((candidate) => fs.existsSync(candidate));
+    const browserPath = resolveBrowserExecutable(browserCandidates);
     if (!browserPath) throw new Error("Edge/Chrome executable not found");
     browser = await chromium.launch({ executablePath: browserPath, headless: true });
     context = await browser.newContext({ viewport: { width: 1366, height: 768 }, deviceScaleFactor: 1 });

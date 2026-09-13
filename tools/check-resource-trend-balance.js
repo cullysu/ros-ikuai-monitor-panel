@@ -5,6 +5,8 @@ const path = require('path');
 const { chromium } = require('playwright-core');
 const { inspectOverviewDesktopLayout } = require('./acceptance/inspect-overview-desktop-layout');
 
+const { resolveBrowserExecutable } = require("./browser-executable");
+
 const lifecycle = {
   browser: null,
   context: null,
@@ -380,9 +382,7 @@ async function main() {
   if (requestedBrowserPath && !(await exists(requestedBrowserPath))) {
     throw new Error(`Requested browser executable not found: ${requestedBrowserPath}`);
   }
-  const browserPath = requestedBrowserPath || (await Promise.all(
-    browserCandidates.map(async (item) => [item, await exists(item)])
-  )).find(([, ok]) => ok)?.[0];
+  const browserPath = requestedBrowserPath || resolveBrowserExecutable(browserCandidates);
   if (!browserPath) throw new Error('Edge/Chrome executable not found');
 
   await fs.mkdir(path.dirname(outJson), { recursive: true });

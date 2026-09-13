@@ -2,6 +2,8 @@ const fs = require('fs/promises');
 const path = require('path');
 const { spawn } = require('child_process');
 
+const { resolveBrowserExecutable } = require("./browser-executable");
+
 function arg(name, fallback = '') {
   const direct = process.argv.find((item) => item.startsWith(`${name}=`));
   if (direct) return direct.slice(name.length + 1);
@@ -63,7 +65,7 @@ async function main() {
     'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
   ];
-  const browserPath = (await Promise.all(browserCandidates.map(async (item) => [item, await exists(item)]))).find(([, ok]) => ok)?.[0];
+  const browserPath = resolveBrowserExecutable(browserCandidates);
   if (!browserPath) throw new Error('Edge/Chrome executable not found');
 
   await fs.mkdir(path.dirname(outJson), { recursive: true });
