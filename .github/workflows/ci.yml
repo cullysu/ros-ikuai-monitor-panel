@@ -33,6 +33,7 @@ jobs:
 
       - name: Python syntax and collector regressions
         run: |
+          mkdir -p _acceptance
           python -m compileall -q app.py panel_backend tools
           python -m py_compile .agents/skills/router-panel-product-loop/scripts/merge_matrix_reports.py .agents/skills/router-panel-product-loop/scripts/release_checkpoint.py .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py
           python tools/check-backend-security.py
@@ -233,6 +234,7 @@ jobs:
     env:
       CODEX_MEMORY_LIMIT_MB: "2048"
       NODE_OPTIONS: --max-old-space-size=2048
+      PY_PYTHON3: "3.12"
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
