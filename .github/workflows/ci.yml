@@ -53,6 +53,11 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Install Chromium for browser contract gates
+        run: |
+          npx -y playwright@1.61.1 install --with-deps chromium
+          echo "CHROME_PATH=$(ls -d "$HOME/.cache/ms-playwright"/chromium-*/chrome-linux/chrome | head -1)" >> "$GITHUB_ENV"
+
       - name: Release blocking contract gates
         run: npm run check:release-gates
 

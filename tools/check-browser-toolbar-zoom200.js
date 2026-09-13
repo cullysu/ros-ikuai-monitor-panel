@@ -440,7 +440,7 @@ function toolbarZoomEvidence({ baseline, zoomed, automation, targetCssViewport }
   const expectedViewport = { width: targetCssViewport.width, height: targetCssViewport.height };
   const observedViewport = { width: zoomed.innerWidth, height: zoomed.innerHeight };
   const steps = Array.isArray(automation?.steps) ? automation.steps : [];
-  const verified = steps.length > 0 && steps.length <= TOOLBAR_INCREMENTS && steps.every((step) =>
+  const verified = steps.length === TOOLBAR_INCREMENTS && steps.every((step) =>
     step?.acceptedAction && step?.attempts?.some((attempt) => attempt.action === step.acceptedAction && attempt.changed === true)
   ) &&
     Math.abs(zoomed.devicePixelRatio - 2) <= RATIO_TOLERANCE &&
@@ -709,7 +709,7 @@ async function inspectSurface(page, { label, mainSelector, primarySelector, scre
   assert(surface.mainCount === 1 && surface.expectedMain, `${label} must expose exactly one expected main landmark`, surface);
   assert(surface.overflowX <= 1, `${label} has horizontal page overflow at actual Edge toolbar zoom`, surface);
   assert(surface.main.horizontalOverflow === 0 && surface.main.maxLeft === 0, `${label} main scroll root has horizontal overflow at actual Edge toolbar zoom`, surface.main);
-  assert(surface.clippedOperationalText.length === 0, `${label} has visible operational text clipped by a non-scroll container at actual Edge toolbar zoom`, surface);
+  assert(surface.clippedOperationalText.length === 0, `${label} has visible operational text clipped by a non-scroll container at actual Edge toolbar zoom: ${JSON.stringify(surface.clippedOperationalText.slice(0, 4))}`, surface);
   assert(surface.unreadableOperationalText.length === 0, `${label} has operational text below the 12px readability floor at actual Edge toolbar zoom`, surface);
   assert(!surface.trafficAxis.present || (surface.trafficAxis.yLabels >= 2 && surface.trafficAxis.xLabels >= 2 && surface.trafficAxis.overlaps.length === 0), `${label} traffic chart legend is incomplete or clipped at actual Edge toolbar zoom`, surface.trafficAxis);
   assert(surface.primary.present && surface.primary.visible && surface.primary.reachable && surface.primary.withinMain && !surface.primary.obscuredByNavigation, `${label} primary task is not reachable inside main or is obscured by navigation at actual Edge toolbar zoom`, surface);
