@@ -754,7 +754,16 @@ async function runCell(viewport, scenario) {
       hasTouch: false,
     });
     assert(path.basename(runtime.executablePath).toLowerCase() === "msedge.exe", "actual Microsoft Edge is required; Chrome is not accepted", { executablePath: runtime.executablePath });
-    await login(runtime.page, runtime.mock.url);
+    // The surface owner must reflect the audited device class, not whichever
+    // monitor happens to host the runner: the loader's one-shot choice keys
+    // off screen.width and pointer coarseness, so a big runner display would
+    // silently audit the desktop shell for a phone or tablet cell. This is
+    // the mobile-reference zoom contract, so every cell pins the mobile
+    // surface explicitly and reuses it for route visits.
+    const pinnedSurfaceUrl = new URL(runtime.mock.url);
+    pinnedSurfaceUrl.searchParams.set("surface", "mobile");
+    const pinnedUrl = pinnedSurfaceUrl.toString();
+    await login(runtime.page, pinnedUrl);
     // Runtime lifecycle diagnostics may rotate their own ignored artifact while
     // the owned Edge process starts.  The evidence identity starts after that
     // bounded infrastructure write, immediately before the real toolbar input.
@@ -786,7 +795,7 @@ async function runCell(viewport, scenario) {
     const owner = browserSurface === "desktop" ? DESKTOP_ORIGIN_OWNER : MOBILE_ORIGIN_OWNER;
 
     runtime.mock.state.scenario = scenarioConfig.fixtureScenario;
-    await visitRoute(runtime.page, runtime.mock.url, scenarioConfig.route, {
+    await visitRoute(runtime.page, pinnedUrl, scenarioConfig.route, {
       requireWorkspace: scenarioConfig.surface !== "overview",
       runtimePhase: scenarioConfig.runtimePhase,
     });
