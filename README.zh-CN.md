@@ -24,6 +24,7 @@ The Dude、备份工具或配置 diff 工具的替代品。
 | --- | --- | --- |
 | Docker 一条命令 | 大多数 Linux/NAS/虚拟机用户 | 默认推荐 |
 | Windows EXE | 不想安装 Python 的 Windows 用户 | 推荐首次试用 |
+| Android APK | 手机用户，安装后直接连 RouterOS，不走电脑网页 | 本机 debug 包 |
 | Docker / Compose | NAS、小主机、Linux、OpenWrt Docker、云主机 | 推荐部署 |
 | 本地 Python | 开发者或调试用户 | 支持 |
 | Linux systemd / VM | 需要 systemd 托管的环境 | 专业部署 |
@@ -159,6 +160,17 @@ powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 从受信任的本地目录运行。项目当前还没有代码签名。
 
 更多说明见 [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md)。
+
+## Android APK
+
+手机 App 直接连 RouterOS REST，不打开电脑上的面板网址。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\build-android-apk.ps1
+```
+
+把 `dist\RouterOS-Monitor-debug.apk` 拷到手机安装。打开后填写路由器 HTTP/HTTPS
+地址和专用只读账号。说明见 [DEPLOY_ANDROID.md](./DEPLOY_ANDROID.md)。
 
 ## 手动 Docker / Compose
 
