@@ -50,9 +50,15 @@ function browserExecutable(configuredPath) {
     configuredPath,
     process.env.BROWSER_EXECUTABLE,
     process.env.EDGE_EXECUTABLE,
+    process.env.CHROME_PATH,
     process.env['PROGRAMFILES(X86)'] && path.join(process.env['PROGRAMFILES(X86)'], 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
     process.env.PROGRAMFILES && path.join(process.env.PROGRAMFILES, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
     process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/microsoft-edge',
   ].filter(Boolean);
   return candidates.find((candidate) => fs.existsSync(candidate)) || '';
 }
