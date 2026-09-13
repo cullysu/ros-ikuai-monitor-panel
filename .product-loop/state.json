@@ -1,0 +1,1030 @@
+{
+  "objective": "继续修复 RouterOS/iKuai 面板的产品、设计、报告真值、路由成熟度和发布门禁；未满足全部证据前禁止发布",
+  "stage": "design",
+  "created_at": "2026-07-29T17:03:48+00:00",
+  "updated_at": "2026-08-23T00:00:00.000Z",
+  "gates": {
+    "product": {
+      "status": "pass",
+      "note": "step1185-current-identity-product-review-pass",
+      "evidence": [
+        "docs/decision-system/independent-reviews/step1185-product.json"
+      ],
+      "updated_at": "2026-08-20T15:40:00.000Z"
+    },
+    "spec": {
+      "status": "pass",
+      "note": "step1185-current-mobile-reference-interactions-and-evidence-green",
+      "evidence": [
+        "tools/check-canonical-route.js",
+        "npm run check:route-maturity"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "design": {
+      "status": "pass",
+      "note": "step1185-phone-art-locked-current-visual-review-pass",
+      "evidence": [
+        "docs/decision-system/independent-reviews/step1185-visual.json"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "architecture": {
+      "status": "pass",
+      "note": "step1185-isolated-mobile-reference-owner-wide-landscape-browser-owner-green",
+      "evidence": [
+        "src/panel-framework/mobile-reference-ui",
+        "tools/check-mobile-reference-architecture.js"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "implementation": {
+      "status": "pass",
+      "note": "step1185-current-identity-mobile-runtime-and-workflows-green",
+      "evidence": [
+        "_acceptance/mobile-reference-runtime/report.json"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "code-review": {
+      "status": "pass",
+      "note": "step1185-current-identity-engineering-review-pass",
+      "evidence": [
+        "docs/decision-system/independent-reviews/step1185-engineering.json"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "visual-qa": {
+      "status": "pass",
+      "note": "step1185-mobile-art-unchanged-current-visual-review-pass",
+      "evidence": [
+        "docs/decision-system/independent-reviews/step1185-visual.json"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "state-matrix": {
+      "status": "pending",
+      "note": "step1185-dirty-worktree-matrices-green-clean-exact-sha-replay-pending",
+      "evidence": [
+        "_acceptance/mobile-reference-runtime/report.json",
+        "_acceptance/release-matrix-working-tree/report.json",
+        "_acceptance/route-matrix-working-tree/report.json",
+        "_acceptance/route-state-matrix-working-tree/report.json",
+        "_acceptance/edge-toolbar-zoom200/report.json"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "security": {
+      "status": "pass",
+      "note": "step1185-security-backend-collector-contracts-green-release-gates-pending",
+      "evidence": [
+        "tools/check-release-blockers.js",
+        "tools/test_backend_public_contract.py"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "accessibility": {
+      "status": "pass",
+      "note": "step1185-accessibility11-text200-and-review-green",
+      "evidence": [
+        "_acceptance/mobile-reference-accessibility/report.json",
+        "docs/decision-system/independent-reviews/step1185-accessibility.json"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "release-hygiene": {
+      "status": "pending",
+      "note": "step1185-no-clean-exact-sha-or-upload-cl-started",
+      "evidence": [
+        "docs/decision-system/current-state.md"
+      ],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "ci-linux": {
+      "status": "pending",
+      "note": "step1185-no-clean-exact-sha-or-upload-cl-started",
+      "evidence": [],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "ci-windows": {
+      "status": "pending",
+      "note": "step1185-no-clean-exact-sha-or-upload-cl-started",
+      "evidence": [],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    },
+    "ci-container": {
+      "status": "pending",
+      "note": "step1185-no-clean-exact-sha-or-upload-cl-started",
+      "evidence": [],
+      "updated_at": "2026-08-20T13:34:18.592Z"
+    }
+  },
+  "schema": 2,
+  "state_version": 958,
+  "phase": "accepted-four-screen-baseline-only",
+  "latest_decision_step": 1185,
+  "latest_decision_outcome": "1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next",
+  "current_surface_step": 1185,
+  "next_action": "sync-decision-mirror-then-create-scoped-clean-exact-sha-candidate-excluding-unrelated-skill-file",
+  "loop_guard": {
+    "blocked": false,
+    "reason": null
+  },
+  "history": [
+    {
+      "step": 843,
+      "status": "e6-exact-rebind-and-local-gates-pass-formal-gates-open",
+      "outcome": "843:e6-exact-rebind-and-local-gates-pass-formal-gates-open"
+    },
+    {
+      "step": 844,
+      "status": "ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open",
+      "outcome": "844:ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open"
+    },
+    {
+      "step": 845,
+      "status": "e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open",
+      "outcome": "845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open"
+    },
+    {
+      "step": 846,
+      "status": "edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity",
+      "outcome": "846:edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity"
+    },
+    {
+      "step": 847,
+      "status": "9bc5ccc-current-sha-matrices-and-scoped-independent-reviews-formal-gates-open",
+      "outcome": "847:9bc5ccc-current-sha-matrices-and-scoped-independent-reviews-formal-gates-open"
+    },
+    {
+      "step": 848,
+      "status": "5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open",
+      "outcome": "848:5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open"
+    },
+    {
+      "step": 849,
+      "status": "route-object-depth-slice-implemented-formal-gates-open",
+      "outcome": "849:route-object-depth-slice-implemented-formal-gates-open"
+    },
+    {
+      "step": 856,
+      "status": "exact-sha-matrices-independent-scoped-reviews-formal-gates-open",
+      "outcome": "856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open"
+    },
+    {
+      "step": 857,
+      "status": "3ea-exact-evidence-rebound-decision-repository-freshness-fixed-formal-gates-open",
+      "outcome": "857:3ea-exact-evidence-rebound-decision-repository-freshness-fixed-formal-gates-open"
+    },
+    {
+      "step": 858,
+      "status": "report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open",
+      "outcome": "858:report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open"
+    },
+    {
+      "step": 859,
+      "status": "final-clean-surface-review-and-current-evidence-rebind-formal-gates-open",
+      "outcome": "859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open"
+    },
+    {
+      "step": 860,
+      "status": "final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open",
+      "outcome": "860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open"
+    },
+    {
+      "step": 861,
+      "status": "current-authority-no-self-invalidating-sha-and-formal-gates-open",
+      "outcome": "861:current-authority-no-self-invalidating-sha-and-formal-gates-open"
+    },
+    {
+      "step": 862,
+      "status": "independent-review-findings-fixed-evidence-families-and-formal-gates-open",
+      "outcome": "862:independent-review-findings-fixed-evidence-families-and-formal-gates-open"
+    },
+    {
+      "step": 862,
+      "status": "exact-sha-rebind-after-evidence-family-and-visual-context-fix",
+      "outcome": "862:exact-sha-rebind-after-evidence-family-and-visual-context-fix"
+    },
+    {
+      "step": 868,
+      "status": "overview-matrix-action-aggregation-fixed-formal-gates-open",
+      "outcome": "868:overview-matrix-action-aggregation-fixed-formal-gates-open"
+    },
+    {
+      "step": 863,
+      "status": "narrow-phone-fixed-nav-visual-context-fixed-formal-gates-open",
+      "outcome": "863:narrow-phone-fixed-nav-visual-context-fixed-formal-gates-open"
+    },
+    {
+      "step": 874,
+      "status": "exact-local-evidence-rebound-after-archive-boundary-fix",
+      "outcome": "874:exact-local-evidence-rebound-after-archive-boundary-fix"
+    },
+    {
+      "step": 877,
+      "status": "packet-default-step-follows-current-authority",
+      "outcome": "877:packet-default-step-follows-current-authority"
+    },
+    {
+      "step": 878,
+      "status": "quarantine-ignores-historical-machine-evidence",
+      "outcome": "878:quarantine-ignores-historical-machine-evidence"
+    },
+    {
+      "step": 879,
+      "status": "current-sha-evidence-rebound",
+      "outcome": "879:current-sha-evidence-rebound"
+    },
+    {
+      "step": 881,
+      "status": "current-evidence-rebind-after-step880-doc-sync",
+      "outcome": "881:current-evidence-rebind-after-step880-doc-sync"
+    },
+    {
+      "step": 882,
+      "status": "desktop-source-disclosure-readability-and-exact-sha-rebind",
+      "outcome": "882:desktop-source-disclosure-readability-and-exact-sha-rebind"
+    },
+    {
+      "step": 884,
+      "status": "framework-css-budget-repair-and-exact-sha-rebind",
+      "outcome": "884:framework-css-budget-repair-and-exact-sha-rebind"
+    },
+    {
+      "step": 885,
+      "status": "normal-verdict-truth-and-430-visual-evidence-red",
+      "outcome": "885:normal-verdict-truth-and-430-visual-evidence-red"
+    },
+    {
+      "step": 887,
+      "status": "current-sha-scoped-review-pass-formal-gates-open",
+      "outcome": "887:current-sha-scoped-review-pass-formal-gates-open"
+    },
+    {
+      "step": 888,
+      "status": "windows-packaging-neutral-mount-contract-repair",
+      "outcome": "888:windows-packaging-contract-aligned-formal-gates-open"
+    },
+    {
+      "step": 889,
+      "status": "exact-sha-scoped-review-pass-local-package-verified-formal-gates-open",
+      "outcome": "889:exact-sha-scoped-review-pass-local-package-verified-formal-gates-open"
+    },
+    {
+      "step": 890,
+      "status": "exact-sha-evidence-rebound-scoped-visual-pass-formal-gates-open",
+      "outcome": "890:exact-sha-evidence-rebound-scoped-visual-pass-formal-gates-open"
+    },
+    {
+      "step": 894,
+      "status": "exact-sha-local-evidence-green-formal-gates-open",
+      "outcome": "894:exact-sha-local-evidence-green-formal-gates-open"
+    },
+    {
+      "step": 896,
+      "status": "visual-p1-corrections-focused-green-formal-gates-open",
+      "outcome": "896:visual-p1-corrections-focused-green-formal-gates-open"
+    },
+    {
+      "step": 896,
+      "status": "visual-p1-corrections-focused-green-formal-gates-open",
+      "outcome": "896:visual-p1-corrections-focused-green-formal-gates-open"
+    },
+    {
+      "step": 897,
+      "status": "adaptive-evidence-ledger-and-phone-task-order-runtime-green-formal-gates-open",
+      "outcome": "897:adaptive-evidence-ledger-and-phone-task-order-runtime-green-formal-gates-open"
+    },
+    {
+      "step": 898,
+      "status": "fleet-handoff-deduplicated-and-steady-ledger-navigation-safe-runtime-green-formal-gates-open",
+      "outcome": "898:fleet-handoff-deduplicated-and-steady-ledger-navigation-safe-runtime-green-formal-gates-open"
+    },
+    {
+      "step": 899,
+      "status": "adaptive-ledger-independent-geometry-gate-aligned-focused-green-formal-gates-open",
+      "outcome": "899:adaptive-ledger-independent-geometry-gate-aligned-focused-green-formal-gates-open"
+    },
+    {
+      "step": 900,
+      "status": "compact-incident-dedup-static-contract-aligned-focused-green-formal-gates-open",
+      "outcome": "900:compact-incident-dedup-static-contract-aligned-focused-green-formal-gates-open"
+    },
+    {
+      "step": 901,
+      "status": "primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open",
+      "outcome": "901:primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open"
+    },
+    {
+      "step": 902,
+      "status": "incident-support-geometry-and-auto-open-contract-aligned-tail-green-formal-gates-open",
+      "outcome": "902:incident-support-geometry-and-auto-open-contract-aligned-tail-green-formal-gates-open"
+    },
+    {
+      "step": 903,
+      "status": "wide-phone-decision-density-and-ledger-navigation-safe-focused-green-formal-gates-open",
+      "outcome": "903:wide-phone-decision-density-and-ledger-navigation-safe-focused-green-formal-gates-open"
+    },
+    {
+      "step": 904,
+      "status": "dead-css-and-duplicate-owner-pruned-asset-budget-green-formal-gates-open",
+      "outcome": "904:dead-css-and-duplicate-owner-pruned-asset-budget-green-formal-gates-open"
+    },
+    {
+      "step": 905,
+      "status": "short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open",
+      "outcome": "905:short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open"
+    },
+    {
+      "step": 909,
+      "status": "short-phone-fixed-navigation-task-boundary-focused-green-release-closed",
+      "outcome": "909:short-phone-fixed-navigation-task-boundary-focused-green-next-repetition"
+    },
+    {
+      "step": 910,
+      "status": "independent-resignoff-pass-release-evidence-remains-closed",
+      "outcome": "910:independent-resignoff-pass-release-evidence-remains-closed"
+    },
+    {
+      "step": 911,
+      "status": "step910-historical-artifact-demoted-current-reverification-required",
+      "outcome": "911:step910-historical-artifact-demoted-current-reverification-required"
+    },
+    {
+      "step": 912,
+      "status": "external-promotion-authority-and-mobile-evidence-ownership-focused-green-current-reverification-open",
+      "outcome": "912:external-promotion-authority-and-mobile-evidence-ownership-focused-green-current-reverification-open"
+    },
+    {
+      "step": 915,
+      "status": "truth-gates-green-local-remediation-active-release-closed",
+      "outcome": "915:truth-gates-green-local-remediation-active-release-closed"
+    },
+    {
+      "step": 916,
+      "status": "runtime-identity-consumers-hardened-final-revalidation-open",
+      "outcome": "916:runtime-identity-consumers-hardened-final-revalidation-open"
+    },
+    {
+      "step": 917,
+      "status": "time-url-toolbar-zoom-contracts-closed-current-runtime-open",
+      "outcome": "917:time-url-toolbar-zoom-contracts-closed-current-runtime-open"
+    },
+    {
+      "step": 918,
+      "status": "edge-zoom-proof-corrected-release-evidence-hardening-green-final-acceptance-open",
+      "outcome": "918:edge-zoom-proof-corrected-release-evidence-hardening-green-final-acceptance-open"
+    },
+    {
+      "step": 919,
+      "status": "edge-toolbar-occlusion-proof-wan-axis-repair-and-clean-candidate-finalization-open",
+      "outcome": "919:edge-toolbar-occlusion-proof-wan-axis-repair-and-clean-candidate-finalization-open"
+    },
+    {
+      "step": 920,
+      "status": "mobile-visual-language-rejected-return-to-design-release-closed",
+      "outcome": "920:mobile-visual-language-rejected-return-to-design-release-closed"
+    },
+    {
+      "step": 921,
+      "status": "linkboard-selected-clean-mobile-overview-ownership-approved",
+      "outcome": "921:linkboard-selected-clean-mobile-overview-ownership-approved"
+    },
+    {
+      "step": 922,
+      "status": "linkboard-implemented-runtime-accessibility-matrix-green-independent-signoff-open-release-closed",
+      "outcome": "922:linkboard-implemented-runtime-accessibility-matrix-green-independent-signoff-open-release-closed"
+    },
+    {
+      "step": 923,
+      "status": "linkboard-v4-independent-product-visual-fail-scene-architecture-remediation-active",
+      "outcome": "923:linkboard-v4-product-visual-fail-scene-architecture-selected-release-closed"
+    },
+    {
+      "step": 924,
+      "status": "linkboard-scenes-v2-engineering-green-human-visual-fail-native-operations-canvas-selected",
+      "outcome": "924:five-scene-truth-green-visual-fail-native-operations-canvas-selected-release-closed"
+    },
+    {
+      "step": 925,
+      "status": "native-operations-canvas-implemented-bounded-originals-green-independent-signoff-open",
+      "outcome": "925:native-operations-canvas-implemented-14of14-bounded-originals-green-independent-signoff-open"
+    },
+    {
+      "step": 926,
+      "status": "native-operations-canvas-independent-signoff-p0p1-zero-overview-current-gate-green-release-closed",
+      "outcome": "926:native-operations-canvas-independent-signoff-and-overview-gate-migration-green-release-closed"
+    },
+    {
+      "step": 927,
+      "status": "public-readiness-retired-patrol-owner-migrated-linkboard-static-green-release-closed",
+      "outcome": "927:public-readiness-current-mobile-owner-and-semantic-contract-green-release-closed"
+    },
+    {
+      "step": 928,
+      "status": "responsive-mobile-workbench-cliff-fixed-current-runtime-boundary-green-release-closed",
+      "outcome": "928:responsive-workbench-899-900-1199-1200-current-runtime-green-release-closed"
+    },
+    {
+      "step": 929,
+      "status": "current-runtime-command-graph-and-accessibility-detail-green-release-closed",
+      "outcome": "929:current-runtime-command-graph-and-accessibility-detail-green-release-closed"
+    },
+    {
+      "step": 930,
+      "status": "owner-visual-veto-native-operations-canvas-rejected-pocket-console-selected",
+      "outcome": "930:owner-visual-veto-pocket-console-selected-rebuild-active-release-closed"
+    },
+    {
+      "step": 931,
+      "status": "pocket-console-implemented-runtime-accessibility-independent-product-visual-p0p1-zero-release-closed",
+      "outcome": "931:pocket-console-implemented-independent-product-visual-p0p1-zero-release-closed"
+    },
+    {
+      "step": 932,
+      "status": "pocket-console-49cell-four-role-p0p1p2-zero-public-overview28-green-release-closed",
+      "outcome": "932:pocket-console-49cell-four-role-p0p1p2-zero-public28-green-release-closed"
+    },
+    {
+      "step": 935,
+      "status": "optical-patrol-production-owner-implemented-independent-veto-remediated-exact-resignoff-pending-release-closed",
+      "outcome": "935:optical-patrol-production-remediated-exact-four-role-resignoff-pending-release-closed"
+    },
+    {
+      "step": 936,
+      "status": "exact-review-veto-remediated-63cell-resignoff-pending-release-closed",
+      "outcome": "936:exact-review-veto-remediated-63cell-resignoff-pending-release-closed"
+    },
+    {
+      "step": 937,
+      "status": "third-exact-veto-remediated-action-order-and-geometry-rereview-pending-release-closed",
+      "outcome": "937:third-exact-veto-remediated-action-order-and-geometry-rereview-pending-release-closed"
+    },
+    {
+      "step": 938,
+      "status": "fourth-exact-review-p0p1-zero-local-signoff-closed-release-closed",
+      "outcome": "938:fourth-exact-review-p0p1-zero-local-signoff-closed-release-closed"
+    },
+    {
+      "step": 939,
+      "status": "post-review-remediation-invalidates-step938-current-signoff-release-closed",
+      "outcome": "939:post-review-remediation-invalidates-step938-current-signoff-release-closed"
+    },
+    {
+      "step": 940,
+      "status": "supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed",
+      "outcome": "940:supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed"
+    },
+    {
+      "step": 941,
+      "status": "backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed",
+      "outcome": "941:backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed"
+    },
+    {
+      "step": 942,
+      "status": "forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed",
+      "outcome": "942:forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed"
+    },
+    {
+      "step": 943,
+      "status": "release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed",
+      "outcome": "943:release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed"
+    },
+    {
+      "step": 944,
+      "status": "exact-visual-veto-edge-capture-stabilized-return-to-design-release-closed",
+      "outcome": "944:exact-visual-veto-edge-capture-stabilized-return-to-design-release-closed"
+    },
+    {
+      "step": 945,
+      "status": "incident-split-lens-selected-clean-mobile-replacement-approved-release-closed",
+      "outcome": "945:incident-split-lens-selected-clean-mobile-replacement-approved-release-closed"
+    },
+    {
+      "step": 946,
+      "status": "incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed",
+      "outcome": "946:incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed"
+    },
+    {
+      "step": 948,
+      "status": "release-trust-contract-separated-and-focused-green-external-authority-open",
+      "outcome": "948:release-trust-contract-separated-and-focused-green-external-authority-open"
+    },
+    {
+      "step": 949,
+      "status": "d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required",
+      "outcome": "949:d13ac20-short-landscape-nav-remediation-passes-focused-gates-exact-rebuild-required"
+    },
+    {
+      "step": 962,
+      "status": "independent-product-visual-P1-zero-focused-runtime-green-exact-candidate-replay-required",
+      "outcome": "962:independent-product-visual-p1-zero-focused-runtime-green-exact-candidate-replay-required"
+    },
+    {
+      "step": 963,
+      "status": "retired-css-owners-deleted-asset-budgets-and-focused-runtime-green-exact-replay-required",
+      "outcome": "963:retired-css-owners-deleted-asset-budgets-and-focused-runtime-green-exact-replay-required"
+    },
+    {
+      "step": 964,
+      "status": "mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required",
+      "outcome": "964:mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required"
+    },
+    {
+      "step": 965,
+      "status": "db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required",
+      "outcome": "965:db5-independent-vetoes-remediated-focused-runtime-green-clean-candidate-replay-required"
+    },
+    {
+      "step": 967,
+      "status": "owner-rejects-desktop-derived-mobile-presentation-full-mobile-rebuild-selected-release-closed",
+      "outcome": "967:owner-rejects-desktop-derived-mobile-presentation-full-mobile-rebuild-selected-release-closed"
+    },
+    {
+      "step": 968,
+      "status": "mobile-attention-queue-selected-old-presentation-deletion-approved-release-closed",
+      "outcome": "968:mobile-attention-queue-selected-old-presentation-deletion-approved-release-closed"
+    },
+    {
+      "step": 969,
+      "status": "mobile-next-tree-live-old-presentation-physically-deleted-focused-build-green-release-closed",
+      "outcome": "969:mobile-next-tree-live-old-presentation-physically-deleted-focused-build-green-release-closed"
+    },
+    {
+      "step": 970,
+      "status": "mobile-next-56cell-route-connection-accessibility-green-independent-signoff-open-release-closed",
+      "outcome": "970:mobile-next-56cell-route-connection-accessibility-green-independent-signoff-open-release-closed"
+    },
+    {
+      "step": 971,
+      "status": "four-role-exact-artifact-vetoes-adjudicated-remediation-active-release-closed",
+      "outcome": "971:four-role-exact-artifact-vetoes-adjudicated-remediation-active-release-closed"
+    },
+    {
+      "step": 972,
+      "status": "mobile-remediation-current-worktree-evidence-green-independent-resignoff-pending-release-closed",
+      "outcome": "972:mobile-remediation-current-worktree-evidence-green-independent-resignoff-pending-release-closed"
+    },
+    {
+      "step": 973,
+      "status": "independent-veto-full-mobile-redesign-direction-generation-active-release-closed",
+      "outcome": "973:independent-veto-full-mobile-redesign-direction-generation-active-release-closed"
+    },
+    {
+      "step": 974,
+      "status": "telemetry-canvas-mobile-direction-selected-new-owner-implementation-active-release-closed",
+      "outcome": "974:telemetry-canvas-mobile-direction-selected-new-owner-implementation-active-release-closed"
+    },
+    {
+      "step": 995,
+      "status": "dual-surface-closures-mobile49-a11y9-desktop-focused-green-fresh-independent-review-pending-release-closed",
+      "outcome": "995:dual-surface-closures-mobile49-a11y9-desktop-focused-green-fresh-independent-review-pending-release-closed"
+    },
+    "Step995-dual-surface-closures-mobile49-a11y9-desktop-focused-green-fresh-independent-review-pending-release-closed",
+    "Step996-step995-vetoes-remediated-mobile49-a11y9-desktop-focused-green-fresh-resignoff-pending-release-closed",
+    "Step1008-mobile-pulse-all-surfaces-live-old-mobile-presentations-deleted-types-build-green-release-closed",
+    "Step1009-owner-vetoes-network-pulse-originos-ios-mobile-design-reset-active-release-closed",
+    "Step1010-three-mobile-directions-object-orbit-selected-production-rebuild-active-release-closed",
+    "Step1012-mobile-atom-production-owner-live-old-mobile-presentation-physically-deleted-24cell-full-surface-green-release-closed",
+    "Step1015-mobile-vivo-three-role-veto-mobile-origin-total-rebuild-active-release-closed",
+    "Step1016-mobile-origin-production-owner-live-mobile-vivo-deleted-24cell-full-surface-green-independent-review-pending-release-closed",
+    {
+      "step": 1017,
+      "status": "mobile-origin-three-role-veto-p0p1-parallel-remediation-active-release-closed",
+      "outcome": "1017:mobile-origin-three-role-veto-p0p1-parallel-remediation-active-release-closed"
+    },
+    {
+      "step": 1018,
+      "status": "first-remediation-40fixture-green-second-independent-veto-active-release-closed",
+      "outcome": "1018:first-remediation-40fixture-green-second-independent-veto-active-release-closed"
+    },
+    {
+      "step": 1019,
+      "status": "engineering-fixtures-green-card-ledger-visual-direction-rejected-origin-workspace-reset-active",
+      "outcome": "1019:engineering-fixtures-green-card-ledger-visual-direction-rejected-origin-workspace-reset-active"
+    },
+    {
+      "step": 1023,
+      "status": "owner-vetoes-desktop-compressed-atomic-signal-mobile-direction-reset-release-closed",
+      "outcome": "1023:owner-vetoes-desktop-compressed-atomic-signal-mobile-direction-reset-release-closed"
+    },
+    {
+      "step": 1024,
+      "status": "origin-network-space-selected-new-isolated-mobile-production-tree-active-release-closed",
+      "outcome": "1024:origin-network-space-selected-new-isolated-mobile-production-tree-active-release-closed"
+    },
+    {
+      "step": 1026,
+      "status": "owner-corrects-direction-to-ikuai4-three-direction-research-adjudicated-clean-mobile-replacement-active-release-closed",
+      "outcome": "1026:owner-corrects-direction-to-ikuai4-three-direction-research-adjudicated-clean-mobile-replacement-active-release-closed"
+    },
+    {
+      "step": 1027,
+      "status": "ikuai4-mobile-production-owner-live-old-presentation-deleted-first-runtime-green-visual-qa-active-release-closed",
+      "outcome": "1027:ikuai4-mobile-production-owner-live-old-presentation-deleted-first-runtime-green-visual-qa-active-release-closed"
+    },
+    {
+      "step": 1028,
+      "status": "ikuai4-deep-study-object-comparison-remediation-smoke-green-full-evidence-and-tablet-signoff-open-release-closed",
+      "outcome": "1028:ikuai4-deep-study-object-comparison-remediation-smoke-green-full-evidence-and-tablet-signoff-open-release-closed"
+    },
+    {
+      "step": 1029,
+      "status": "ikuai4-mobile-exact-60fa-product-visual-p0p1-zero-state-matrix-a11y-green-release-closed",
+      "outcome": "1029:ikuai4-mobile-exact-60fa-product-visual-p0p1-zero-state-matrix-a11y-green-release-closed"
+    },
+    {
+      "step": 1031,
+      "status": "mobile-owner-veto-rescinds-1029-signoff-clean-presentation-rebuild-selected-release-closed",
+      "outcome": "1031:mobile-owner-veto-rescinds-1029-signoff-clean-presentation-rebuild-selected-release-closed"
+    },
+    {
+      "step": 1033,
+      "status": "mobile-patrol-56cell-product-visual-p0p1-zero-old-owner-deleted-release-readiness-replay-open",
+      "outcome": "1033:mobile-patrol-56cell-product-visual-p0p1-zero-old-owner-deleted-release-readiness-replay-open"
+    },
+    {
+      "step": 1034,
+      "status": "owner-vetoes-mobile-patrol-native-network-briefing-clean-rebuild-active-release-closed",
+      "outcome": "1034:owner-vetoes-mobile-patrol-native-network-briefing-clean-rebuild-active-release-closed"
+    },
+    {
+      "step": 1035,
+      "status": "mobile-native-owner-mounted-mobile-patrol-physically-deleted-focused-engineering-green-visual-proof-open-release-closed",
+      "outcome": "1035:mobile-native-owner-mounted-mobile-patrol-physically-deleted-focused-engineering-green-visual-proof-open-release-closed"
+    },
+    {
+      "step": 1036,
+      "status": "mobile-native-phone-task-architecture-focused-runtime-accessibility-green-visual-resignoff-open-release-closed",
+      "outcome": "1036:mobile-native-phone-task-architecture-focused-runtime-accessibility-green-visual-resignoff-open-release-closed"
+    },
+    {
+      "step": 1037,
+      "status": "mobile-native-exact56-a11y10-product-visual-p0p1p2-zero-mobile-signoff-closed-release-still-closed",
+      "outcome": "1037:mobile-native-exact56-a11y10-product-visual-p0p1p2-zero-mobile-signoff-closed-release-still-closed"
+    },
+    {
+      "step": 1038,
+      "status": "three-mobile-directions-adjudicated-line-first-operational-pulse-prototype-product-visual-p0p1-zero",
+      "outcome": "1038:three-mobile-directions-adjudicated-line-first-operational-pulse-prototype-product-visual-p0p1-zero"
+    },
+    {
+      "step": 1039,
+      "status": "mobile-pulse-production-owner-mounted-rejected-mobile-native-physically-deleted-types-green",
+      "outcome": "1039:mobile-pulse-production-owner-mounted-rejected-mobile-native-physically-deleted-types-green"
+    },
+    {
+      "step": 1040,
+      "status": "production-screenshots-expose-eight-real-p1s-touch-targets-fixed-build-green-a11y-red",
+      "outcome": "1040:production-screenshots-expose-eight-real-p1s-touch-targets-fixed-build-green-a11y-red"
+    },
+    {
+      "step": 1041,
+      "status": "mobile-pulse-production-visual-root-fixes-and-truth-context-model-gates-green",
+      "outcome": "1041:mobile-pulse-production-visual-root-fixes-and-truth-context-model-gates-green"
+    },
+    {
+      "step": 1042,
+      "status": "mobile-pulse-exact56-and-accessibility10-green-production-independent-visual-signoff-open-release-closed",
+      "outcome": "1042:mobile-pulse-exact56-and-accessibility10-green-production-independent-visual-signoff-open-release-closed"
+    },
+    {
+      "step": 1043,
+      "status": "mobile-pulse-exact-production-product-visual-double-veto-design-remediation-active-release-closed",
+      "outcome": "1043:mobile-pulse-exact-production-product-visual-double-veto-design-remediation-active-release-closed"
+    },
+    {
+      "step": 1044,
+      "status": "phone-native-task-flow-scene-tablet-landscape-and-detail-architecture-rebuilt-focused-types-green",
+      "outcome": "1044:phone-native-task-flow-scene-tablet-landscape-and-detail-architecture-rebuilt-focused-types-green"
+    },
+    {
+      "step": 1045,
+      "status": "phone-native-mobile-pulse-56cell-a11y10-green-independent-product-visual-review-open-release-closed",
+      "outcome": "1045:phone-native-mobile-pulse-56cell-a11y10-green-independent-product-visual-review-open-release-closed"
+    },
+    {
+      "step": 1046,
+      "status": "mobile-ops-clean-overview-navigation-mounted-focused-runtime-green-old-workspace-connection-replacement-active-release-closed",
+      "outcome": "1046:mobile-ops-clean-overview-navigation-mounted-focused-runtime-green-old-workspace-connection-replacement-active-release-closed"
+    },
+    {
+      "step": 1056,
+      "status": "mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open",
+      "outcome": "1056:mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open"
+    },
+    {
+      "step": 1068,
+      "status": "mobile-inspection-brief-supplied-reference-redraw-engineering-green-product-visual-pending",
+      "outcome": "1068:mobile-inspection-brief-supplied-reference-redraw-engineering-green-product-visual-pending"
+    },
+    {
+      "step": 1077,
+      "status": "final-desktop-ipad-matrix-14of14-current-artifact-green-release-closed",
+      "outcome": "1077:final-desktop-ipad-matrix-14of14-current-artifact-green-release-closed"
+    },
+    {
+      "step": 1080,
+      "status": "desktop-ipad-art-refinement-final14-static-readiness-green-release-closed",
+      "outcome": "1080:desktop-ipad-art-refinement-final14-static-readiness-green-release-closed"
+    },
+    {
+      "step": 1094,
+      "status": "mobile-reference-validator-migration-and-full-matrix-green-release-closed",
+      "outcome": "1094:mobile-reference-validator-migration-and-full-matrix-green-release-closed"
+    },
+    {
+      "step": 1095,
+      "status": "accepted-four-screen-owner-route-and-scenario-regression-green-release-closed",
+      "outcome": "1095:accepted-four-screen-owner-route-and-scenario-regression-green-release-closed"
+    },
+    {
+      "step": 1096,
+      "status": "accepted-four-screen-detail-truth-and-current-matrix-evidence-green-release-closed",
+      "outcome": "1096:accepted-four-screen-detail-truth-and-current-matrix-evidence-green-release-closed"
+    },
+    {
+      "step": 1097,
+      "status": "accepted-four-screen-mobile-p1-remediation-runtime-and-route-state-green-independent-receipt-pending-release-closed",
+      "outcome": "1097:accepted-four-screen-mobile-p1-remediation-runtime-and-route-state-green-independent-receipt-pending-release-closed"
+    },
+    {
+      "step": 1098,
+      "status": "accepted-four-screen-independent-product-visual-pass-release-closed",
+      "outcome": "1098:accepted-four-screen-independent-product-visual-pass-release-closed"
+    },
+    {
+      "step": 1116,
+      "status": "current-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed",
+      "outcome": "1116:current-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed"
+    }
+  ],
+  "completed_steps": [
+    "Step844-ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open",
+    "Step845-e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open",
+    "Step846-edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity",
+    "Step847-9bc5ccc-current-sha-matrices-and-scoped-independent-reviews-formal-gates-open",
+    "Step848-5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open",
+    "Step849-route-object-depth-slice-implemented-formal-gates-open",
+    "Step856-exact-sha-matrices-independent-scoped-reviews-formal-gates-open",
+    "Step857-3ea-exact-evidence-rebound-decision-repository-freshness-fixed-formal-gates-open",
+    "Step858-report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open",
+    "Step859-final-clean-surface-review-and-current-evidence-rebind-formal-gates-open",
+    "Step860-final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open",
+    "Step861-current-authority-no-self-invalidating-sha-and-formal-gates-open",
+    "Step862-independent-review-findings-fixed-evidence-families-and-formal-gates-open",
+    "Step862-exact-sha-rebind-after-evidence-family-and-visual-context-fix",
+    "Step863-narrow-phone-fixed-nav-visual-context-fixed-formal-gates-open",
+    "Step868-overview-matrix-action-aggregation-fixed-formal-gates-open",
+    "Step870-tablet-action-notes-unellipsized-formal-gates-open",
+    "Step873-49df42f-exact-full-route-matrix-and-scoped-independent-reviews-formal-gates-open",
+    "Step874-exact-local-evidence-scoped-reviews-formal-gates-open",
+    "Step875-normal-phone-primary-next-step-order-formal-gates-open",
+    "Step876-normal-phone-action-aligned-after-wan-signal",
+    "Step877-packet-default-step-follows-current-authority",
+    "Step877-exact-sha-evidence-rebound",
+    "Step881-current-evidence-rebind-after-step880-doc-sync",
+    "Step881-doc-sync-committed-new-clean-sha-8b6493e2",
+    "Step882-desktop-source-disclosure-readability-and-exact-sha-rebind",
+    "Step884-framework-css-budget-repair-and-exact-sha-rebind",
+    "Step885-normal-verdict-truth-and-430-visual-evidence-red",
+    "Step887-current-sha-scoped-review-pass-formal-gates-open",
+    "Step888-windows-packaging-neutral-mount-contract-repair",
+    "Step889-exact-sha-scoped-review-pass-local-package-verified-formal-gates-open",
+    "step891-final-exact-sha-rebind-local-evidence-green-formal-gates-open",
+    "Step897-adaptive-evidence-ledger-and-phone-task-order-runtime-green-formal-gates-open",
+    "Step898-fleet-handoff-deduplicated-and-steady-ledger-navigation-safe-runtime-green-formal-gates-open",
+    "Step899-adaptive-ledger-independent-geometry-gate-aligned-focused-green-formal-gates-open",
+    "Step900-compact-incident-dedup-static-contract-aligned-focused-green-formal-gates-open",
+    "Step901-primary-task-proximity-dedup-contract-aligned-focused-green-formal-gates-open",
+    "Step902-incident-support-geometry-and-auto-open-contract-aligned-tail-green-formal-gates-open",
+    "Step903-wide-phone-decision-density-and-ledger-navigation-safe-focused-green-formal-gates-open",
+    "Step904-dead-css-and-duplicate-owner-pruned-asset-budget-green-formal-gates-open",
+    "Step905-short-landscape-list-owner-fill-and-runtime-contract-green-formal-gates-open",
+    "Step908-connection-detail-coverage-truth-focused-green-release-closed",
+    "Step909-short-phone-fixed-navigation-task-boundary-focused-green-release-closed",
+    "Step910-independent-resignoff-pass-release-evidence-remains-closed",
+    "Step911-step910-historical-artifact-demoted-current-reverification-required",
+    "Step916-runtime-identity-consumers-hardened-final-revalidation-open",
+    "Step917-time-url-toolbar-zoom-contracts-closed-current-runtime-open",
+    "Step918-edge-zoom-proof-corrected-release-evidence-hardening-green-final-acceptance-open",
+    "Step919-edge-toolbar-occlusion-proof-wan-axis-repair-and-clean-candidate-finalization-open",
+    "Step920-mobile-visual-language-rejected-return-to-design-release-closed",
+    "Step921-linkboard-selected-clean-mobile-overview-ownership-approved",
+    "Step922-linkboard-implemented-runtime-accessibility-matrix-green-independent-signoff-open-release-closed",
+    "Step923-linkboard-v4-independent-product-visual-fail-scene-architecture-remediation-active",
+    "Step924-five-scene-truth-green-visual-fail-native-operations-canvas-selected",
+    "Step925-native-operations-canvas-implemented-14of14-bounded-originals-green",
+    "Step926-independent-product-visual-accessibility-p0p1-zero-overview20-green-release-closed",
+    "Step927-public-readiness-current-mobile-owner-static-green-release-closed",
+    "Step928-responsive-workbench-899-900-1199-1200-current-runtime-green-release-closed",
+    "Step929-current-runtime-command-graph-and-accessibility-detail-green-release-closed",
+    "Step930-owner-visual-veto-pocket-console-selected-rebuild-active-release-closed",
+    "Step931-pocket-console-implemented-independent-product-visual-p0p1-zero-release-closed",
+    "Step932-pocket-console-49cell-four-role-p0p1p2-zero-public28-green-release-closed",
+    "Step935-optical-patrol-production-remediated-exact-four-role-resignoff-pending-release-closed",
+    "Step936-exact-review-veto-remediated-63cell-resignoff-pending-release-closed",
+    "Step937-third-exact-veto-remediated-action-order-and-geometry-rereview-pending-release-closed",
+    "Step938-fourth-exact-review-scroll-evidence-remediated-rereview-pending-release-closed",
+    "Step938-fourth-exact-review-p0p1-zero-local-signoff-closed-release-closed",
+    "Step939-post-review-remediation-invalidates-step938-current-signoff-release-closed",
+    "Step940-supplemental-route-evidence-visual-and-interaction-signoff-closed-release-still-closed",
+    "Step941-backend-health-findings-extracted-app-architecture-gate-closed-release-still-closed",
+    "Step942-forced-colors-route-inventory-stabilized-dns-ownership-covered-release-still-closed",
+    "Step943-release-blocker-and-large-text-p1s-remediated-independent-accessibility-resignoff-pending-release-closed",
+    "Step944-exact-visual-veto-edge-capture-stabilized-return-to-design-release-closed",
+    "Step945-incident-split-lens-selected-clean-mobile-replacement-approved-release-closed",
+    "Step946-incident-split-lens-local-four-role-signoff-and-63cell-evidence-green-release-closed",
+    "Step948-release-trust-contract-separated-and-focused-green-external-authority-open",
+    "Step962-independent-product-visual-P1-zero-focused-runtime-green-exact-candidate-replay-required",
+    "Step963-retired-css-owners-deleted-asset-budgets-and-focused-runtime-green-exact-replay-required",
+    "Step964-mobile-small-text-floor-restored-two-cell-smoke-green-exact-replay-required",
+    "Step970-mobile-next-56cell-route-connection-accessibility-green-independent-signoff-open-release-closed",
+    "Step971-four-role-exact-artifact-vetoes-adjudicated-remediation-active-release-closed",
+    "Step972-mobile-remediation-current-worktree-evidence-green-independent-resignoff-pending-release-closed",
+    "Step973-independent-veto-full-mobile-redesign-direction-generation-active-release-closed",
+    "Step974-telemetry-canvas-mobile-direction-selected-new-owner-implementation-active-release-closed",
+    "Step995-dual-surface-closures-mobile49-a11y9-desktop-focused-green-fresh-independent-review-pending-release-closed",
+    "Step996-step995-vetoes-remediated-mobile49-a11y9-desktop-focused-green-fresh-resignoff-pending-release-closed",
+    "Step997-supplement-runtime-current-owner-and-one-shot-loader-contract-green-exact-evidence-rebound-fresh-reviews-pending-release-closed",
+    "Step998-owner-vetoes-telemetry-canvas-mobile-zero-baseline-rebuild-selected-release-closed",
+    "Step999-mobile-patrol-list-owner-live-old-telemetry-presentation-deleted-focused-runtime-green-release-closed",
+    "Step1000-owner-veto-invalidates-mobile-ops-three-phone-native-directions-active-release-closed",
+    "Step1001-all-three-dark-dashboard-directions-rejected-origin-control-prototype-active-release-closed",
+    "Step1002-origin-control-original-p0p1-zero-selected-clean-mobile-origin-replacement-active-release-closed",
+    "Step1003-mobile-origin-all-surfaces-live-mobile-ops-physically-deleted-types-build-green-release-closed",
+    "Step1004-origin-runtime49of49-text200-rendered-and-native-pass-critical-evidence-untruncated-release-closed",
+    "Step1005-owner-vetoes-origin-control-desktop-ledger-mobile-full-rebuild-selected-release-closed",
+    "Step1006-object-cockpit-selected-clean-mobile-object-owner-implementation-active-release-closed",
+    "Step1007-owner-vetoes-object-cockpit-full-phone-ui-zero-baseline-rebuild-active-release-closed",
+    "Step1008-mobile-pulse-all-surfaces-live-old-mobile-presentations-deleted-types-build-green-release-closed",
+    "Step1009-owner-vetoes-network-pulse-originos-ios-mobile-design-reset-active-release-closed",
+    "Step1011-owner-vetoes-object-orbit-full-mobile-presentation-reset-active-release-closed",
+    "Step1012-mobile-atom-production-owner-live-old-mobile-presentation-physically-deleted-24cell-full-surface-green-release-closed",
+    "Step1015-mobile-vivo-three-role-veto-mobile-origin-total-rebuild-active-release-closed",
+    "Step1016-mobile-origin-production-owner-live-mobile-vivo-deleted-24cell-full-surface-green-independent-review-pending-release-closed",
+    "Step1025-origin-space-production-owner-live-old-mobile-presentation-deleted-focused-runtime-green-visual-qa-active-release-closed",
+    "Step1026-owner-corrects-direction-to-ikuai4-three-direction-research-adjudicated-clean-mobile-replacement-active-release-closed",
+    "Step1027-ikuai4-mobile-production-owner-live-old-presentation-deleted-first-runtime-green-visual-qa-active-release-closed",
+    "Step1028-ikuai4-deep-study-object-comparison-remediation-smoke-green-full-evidence-and-tablet-signoff-open-release-closed",
+    "Step1029-ikuai4-mobile-exact-60fa-product-visual-p0p1-zero-state-matrix-a11y-green-release-closed",
+    "Step1031-mobile-owner-veto-rescinds-1029-signoff-clean-presentation-rebuild-selected-release-closed",
+    "Step1033-mobile-patrol-56cell-product-visual-p0p1-zero-old-owner-deleted-release-readiness-replay-open",
+    "Step1034-owner-vetoes-mobile-patrol-native-network-briefing-clean-rebuild-active-release-closed",
+    "Step1035-mobile-native-owner-mounted-mobile-patrol-physically-deleted-focused-engineering-green-visual-proof-open-release-closed",
+    "Step1036-mobile-native-phone-task-architecture-focused-runtime-accessibility-green-visual-resignoff-open-release-closed",
+    "Step1037-mobile-native-exact56-a11y10-product-visual-p0p1p2-zero-mobile-signoff-closed-release-still-closed",
+    "Step1038-three-mobile-directions-adjudicated-line-first-operational-pulse-prototype-product-visual-p0p1-zero",
+    "Step1039-mobile-pulse-production-owner-mounted-rejected-mobile-native-physically-deleted-types-green",
+    "Step1040-production-screenshots-expose-eight-real-p1s-touch-targets-fixed-build-green-a11y-red",
+    "Step1041-mobile-pulse-production-visual-root-fixes-and-truth-context-model-gates-green",
+    "Step1042-mobile-pulse-exact56-and-accessibility10-green-production-independent-visual-signoff-open-release-closed",
+    "Step1043-mobile-pulse-exact-production-product-visual-double-veto-design-remediation-active-release-closed",
+    "Step1044-phone-native-task-flow-scene-tablet-landscape-and-detail-architecture-rebuilt-focused-types-green",
+    "Step1045-phone-native-mobile-pulse-56cell-a11y10-green-independent-product-visual-review-open-release-closed",
+    "Step1046-mobile-ops-clean-overview-navigation-mounted-focused-runtime-green-old-workspace-connection-replacement-active-release-closed",
+    "Step1047-mobile-ops-full-owner-a11y10-green-visual-p1-remediation-active-release-closed",
+    "Step1048-mobile-native-full-owner-old-owner-deleted-runtime56-green-independent-resignoff-open-release-closed",
+    "Step1049-owner-vetoes-mobile-native-card-console-mobile-flow-clean-rebuild-selected-release-closed",
+    "Step1056-mobile-flow-exact56-a11y10-visual-zero-product-experience-zero-clean-candidate-release-evidence-open",
+    "Step1057-clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active",
+    "Step1058-lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next",
+    "Step1059-mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next",
+    "Step1071-later-desktop-presentation-owners-physically-removed-legacy-owner-mounted",
+    "Step1072-legacy-desktop-ipad-art-direction-restored-with-truth-bound-evidence",
+    "Step1073-desktop-readable-density-and-resource-priority-gates-green",
+    "Step1074-desktop-ipad-legacy-matrix-14of14-focused-runtimes-green",
+    "Step1075-route-maturity-current-owner-references-zero-violations",
+    "Step1076-legacy-desktop-static-engineering-readiness-green",
+    "Step1077-final-desktop-ipad-matrix-14of14-current-artifact-green-release-closed",
+    "Stepcurrent-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed"
+  ],
+  "evidence": [
+    "docs/decision-system/route-maturity.md",
+    "docs/decision-system/external-acceptance/README.md",
+    "tools/check-release-candidate-evidence.js",
+    "tools/check-route-maturity-contract.js",
+    "tools/test-release-candidate-evidence.js"
+  ],
+  "worktree_dirty_at_init": [],
+  "completed_blobs": [],
+  "remote": {
+    "tree": null,
+    "commit": null,
+    "ref": null
+  },
+  "cl": {
+    "linux": {
+      "status": "pending",
+      "evidence": null
+    },
+    "windows": {
+      "status": "pending",
+      "evidence": null
+    },
+    "container": {
+      "status": "pending",
+      "evidence": null
+    }
+  },
+  "events": [],
+  "blockers": [],
+  "blocked": false,
+  "current_evidence_sha": null,
+  "decision_history": [
+    {
+      "step": 1057,
+      "status": "clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active",
+      "outcome": "1057:clean-commit-62a8358-static-release-contracts-green-exact-sha-replay-active"
+    },
+    {
+      "step": 1058,
+      "status": "lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next",
+      "outcome": "1058:lf-normalized-candidate-6aae922-deterministic-assets-green-full-release-matrices-next"
+    },
+    {
+      "step": 1059,
+      "status": "mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next",
+      "outcome": "1059:mobile-flow-public-gates-bound-touch-target-fixed-final-exact-replay-next"
+    },
+    {
+      "step": 1094,
+      "status": "mobile-reference-validator-migration-and-full-matrix-green-release-closed",
+      "outcome": "1094:mobile-reference-validator-migration-and-full-matrix-green-release-closed"
+    },
+    {
+      "step": 1096,
+      "status": "accepted-four-screen-detail-truth-and-current-matrix-evidence-green-release-closed",
+      "outcome": "1096:accepted-four-screen-detail-truth-and-current-matrix-evidence-green-release-closed"
+    },
+    {
+      "step": 1097,
+      "status": "accepted-four-screen-mobile-p1-remediation-runtime-and-route-state-green-independent-receipt-pending-release-closed",
+      "outcome": "1097:accepted-four-screen-mobile-p1-remediation-runtime-and-route-state-green-independent-receipt-pending-release-closed"
+    },
+    {
+      "step": 1108,
+      "status": "accepted-four-screen-p2-evidence-and-current-runtime-green-release-closed",
+      "outcome": "1108:accepted-four-screen-p2-evidence-and-current-runtime-green-release-closed"
+    },
+    {
+      "step": 1109,
+      "status": "current-identity-runtime-and-edge-evidence-green-release-closed",
+      "outcome": "1109:current-identity-runtime-and-edge-evidence-green-release-closed"
+    },
+    {
+      "step": 1110,
+      "status": "reference-mobile-visual-remediation-and-stale-gates-green-release-closed",
+      "outcome": "1110:reference-mobile-visual-remediation-and-stale-gates-green-release-closed"
+    },
+    {
+      "step": 1111,
+      "status": "current-identity-matrix-and-edge-evidence-closed-release-remains-closed",
+      "outcome": "1111:current-identity-matrix-and-edge-evidence-closed-release-remains-closed"
+    },
+    {
+      "step": 1112,
+      "status": "mobile-chart-semantics-and-uniform-scaling-green-release-closed",
+      "outcome": "1112:mobile-chart-semantics-and-uniform-scaling-green-release-closed"
+    },
+    {
+      "step": 1116,
+      "status": "current-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed",
+      "outcome": "1116:current-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed"
+    },
+    {
+      "step": 1118,
+      "status": "mobile-reference-evidence-depth-and-workspace-tools-green-edge-200-refresh-timeout-release-closed",
+      "outcome": "1118:mobile-reference-evidence-depth-and-workspace-tools-green-edge-200-refresh-timeout-release-closed"
+    },
+    {
+      "step": 1119,
+      "status": "edge-uia-action-timeout-budget-static-green-release-closed",
+      "outcome": "1124:mobile-feedback-and-correction-audit-green-release-closed"
+    }
+  ],
+  "completed": [
+    "Step1078-decision-authority-and-D-mirror-current-step-1077-green",
+    "Step1079-legacy-desktop-p1-review-fixes-and-stale-gate-retirement-green",
+    "Step1080-desktop-ipad-art-refinement-final14-static-readiness-green-release-closed",
+    "Step1094-mobile-reference-validator-migration-and-full-matrix-green-release-closed",
+    "Step1096-accepted-four-screen-detail-truth-and-current-matrix-evidence-green-release-closed",
+    "Step1097-accepted-four-screen-mobile-p1-remediation-runtime-and-route-state-green-independent-receipt-pending-release-closed",
+    "Step1098-accepted-four-screen-independent-product-visual-pass-release-closed",
+    "Step1108-accepted-four-screen-p2-evidence-and-current-runtime-green-release-closed",
+    "Step1109-current-identity-runtime-and-edge-evidence-green-release-closed",
+    "Step1110-reference-mobile-visual-remediation-and-stale-gates-green-release-closed",
+    "Step1111-current-identity-matrix-and-edge-evidence-closed-release-remains-closed",
+    "Step1112-mobile-chart-semantics-and-uniform-scaling-green-release-closed",
+    "current-edge-toolbar-uia-scope-fix-and-final-engineering-evidence-green-release-closed",
+    "Step1185-current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next"
+  ],
+  "current_step": 1185,
+  "current_outcome": "1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next",
+  "current_surface_outcome": "1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next",
+  "currentStep": 1185,
+  "latestStep": 1185,
+  "currentOutcome": "1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next",
+  "latestOutcome": "1185:current-identity-matrices-and-four-role-signoff-green-clean-exact-sha-next"
+}

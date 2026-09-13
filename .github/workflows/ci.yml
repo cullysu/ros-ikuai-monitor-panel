@@ -253,7 +253,7 @@ jobs:
         run: npm ci
 
       - name: Install Windows Edge toolbar automation dependencies
-        run: python -m pip install pywinauto==0.6.9 Pillow==10.4.0
+        run: py -3 -m pip install pywinauto==0.6.9 Pillow==10.4.0
 
       - name: Real Edge toolbar 200 percent matrix
         run: npm run check:browser-toolbar-zoom200
