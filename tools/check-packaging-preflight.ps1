@@ -130,14 +130,18 @@ try {
   }
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
+    # The surface loader is the only framework entry the committed index may
+    # reference; the per-surface style/script tags are injected at runtime and
+    # the retired static style/script markers must stay absent.
     $reactShell = (
       $indexText -match '<div\s+id="app"(?:\s|>)' -and
       $indexText -notmatch 'data-app-shell="ikuai"' -and
       $indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)' -and
-      $indexText -match 'data-overview-framework-asset="style"' -and
-      $indexText -match 'data-overview-framework-asset="script"'
+      $indexText -match 'data-overview-framework-asset="surface-loader"' -and
+      $indexText -notmatch 'data-overview-framework-asset="style"' -and
+      $indexText -notmatch 'data-overview-framework-asset="script"'
     )
-    $frameworkAssetsPresent = (Test-Path -LiteralPath $frameworkStylePath) -and (Test-Path -LiteralPath $frameworkScriptPath)
+    $frameworkAssetsPresent = (Test-Path -LiteralPath $frameworkStylePath) -and (Test-Path -LiteralPath $frameworkScriptPath) -and ((Get-ChildItem -LiteralPath (Join-Path $repoRoot "public/assets/framework") -Filter "panel-surface-loader.*.js" | Measure-Object).Count -ge 1)
     if ($reactShell -and $frameworkAssetsPresent) {
       Add-Check "PASS" "frontend framework assets" "The React application root and framework asset files are present without legacy shell markers."
     }
