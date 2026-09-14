@@ -61,6 +61,9 @@ jobs:
       - name: Release blocking contract gates
         run: npm run check:release-gates
 
+      - name: Current mobile reference runtime evidence
+        run: node --max-old-space-size=2048 tools/check-mobile-reference-runtime.js
+
       - name: Current decision truth authority
         run: npm run check:decision-system
 

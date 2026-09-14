@@ -14,21 +14,18 @@
   "p2": 0,
   "evidence": [
     "_acceptance/mobile-reference-runtime/report.json",
-    "_acceptance/release-matrix-64ff7f6e49408931e3fd293ce8f9c85ac845ec1e/report.json",
-    "_acceptance/route-matrix-64ff7f6e49408931e3fd293ce8f9c85ac845ec1e/report.json",
-    "_acceptance/route-state-matrix-64ff7f6e49408931e3fd293ce8f9c85ac845ec1e/report.json",
-    "_acceptance/edge-toolbar-zoom200/report.json",
     "src/panel-framework/mobile-reference-ui",
-    "src/panel-framework/overview/desktop-overview/LegacyDesktopOverview.tsx",
+    "src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx",
+    "src/panel-framework/sections/sectionModels.ts",
     "tools/check-public-release-readiness.js",
     "tools/check-mobile-reference-runtime.js"
   ],
   "reviewedArtifact": {
-    "artifactKey": "worktree-64ff7f6e4940-4e16f7b30e79",
-    "worktreeFingerprint": "4e16f7b30e79233b0a781843142f5ed7149435f0fad2e4f9bc729b839bfc3777",
-    "reviewContentFingerprint": "647d23a00adea716a07b1ad531db3e61f18a4ec066b8d711d94c476e6fdfb970",
-    "generatedAt": "2026-08-22T23:10:49.139Z",
-    "commit": "64ff7f6e49408931e3fd293ce8f9c85ac845ec1e",
+    "artifactKey": "f68b32c73df310875ca177cad06bb8d894e2493f",
+    "worktreeFingerprint": "62a855e706467084588823792a3245666016da59cb8afb394eb2fbff7f8703d5",
+    "reviewContentFingerprint": "71f2290da1b20be403260f21dc6168c0da601c99c3dd70a0fa9e6209c18fd10d",
+    "generatedAt": "2026-09-14T15:47:52.231Z",
+    "commit": "f68b32c73df310875ca177cad06bb8d894e2493f",
     "pass": true
   },
   "findings": [
