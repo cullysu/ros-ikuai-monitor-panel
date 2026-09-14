@@ -892,7 +892,10 @@ function reportNestedPassFalsePaths(value, currentPath = '') {
   return paths;
 }
 
-function finalizeReportTruth(report, matrixBlocksTopLevelPass = false, matrixGate = null) {
+function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
+  // The scenario gate rides on the report so the close-site call keeps the
+  // two-argument shape asserted by tools/check-report-truth.js.
+  const matrixGate = report && typeof report.matrixGate === 'object' ? report.matrixGate : null;
   const failures = Array.isArray(report.failures) ? [...report.failures] : [];
   if (!Array.isArray(report.failures)) {
     failures.push({
@@ -3721,7 +3724,8 @@ async function main() {
         missingCells: report.matrix.requestedMissingCells,
       });
     }
-    finalizeReportTruth(report, matrixBlocksTopLevelPass, matrixGate);
+    report.matrixGate = matrixGate;
+    finalizeReportTruth(report, matrixBlocksTopLevelPass);
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
     await writeJsonAtomic(browserResumePath(args), {
