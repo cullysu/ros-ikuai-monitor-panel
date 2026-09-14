@@ -892,7 +892,7 @@ function reportNestedPassFalsePaths(value, currentPath = '') {
   return paths;
 }
 
-function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
+function finalizeReportTruth(report, matrixBlocksTopLevelPass = false, matrixGate = null) {
   const failures = Array.isArray(report.failures) ? [...report.failures] : [];
   if (!Array.isArray(report.failures)) {
     failures.push({
@@ -917,10 +917,18 @@ function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
     }
   }
   const matrixPresent = report.matrix && typeof report.matrix === 'object';
+  // A blessed mergeable subset (scenarioMatrixGate returned not-applicable with a
+  // complete requested scope) never claims cross-scenario release completeness,
+  // so the aggregate flag must not fail this shard's exit code.
+  const aggregateCompletenessWaived = Boolean(
+    matrixGate && matrixGate.mergeableSubset === true &&
+    matrixGate.requestedScopeComplete === true &&
+    matrixGate.fullRequiredMatrixRequested !== true
+  );
   const matrixIncomplete = Boolean(
     matrixPresent && (
-      report.matrix.complete !== true ||
-      report.matrix.requestedComplete !== true
+      report.matrix.requestedComplete !== true ||
+      (!aggregateCompletenessWaived && report.matrix.complete !== true)
     )
   );
   if (matrixBlocksTopLevelPass) {
@@ -3713,7 +3721,7 @@ async function main() {
         missingCells: report.matrix.requestedMissingCells,
       });
     }
-    finalizeReportTruth(report, matrixBlocksTopLevelPass);
+    finalizeReportTruth(report, matrixBlocksTopLevelPass, matrixGate);
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
     await writeJsonAtomic(browserResumePath(args), {
