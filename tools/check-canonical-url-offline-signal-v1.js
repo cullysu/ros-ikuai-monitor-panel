@@ -68,6 +68,8 @@ function mountRouteHook(browser) {
   const previousWindow = global.window;
   const previousDocument = global.document;
   const previousMutationObserver = global.MutationObserver;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const previousCancelAnimationFrame = global.cancelAnimationFrame;
   const react = {
     useState(initial) { return [typeof initial === "function" ? initial() : initial, () => {}]; },
     useRef(current) { return { current }; },
@@ -82,8 +84,12 @@ function mountRouteHook(browser) {
     title: "",
     getElementById() { return null; },
     querySelector() { return null; },
+    addEventListener() {},
+    removeEventListener() {},
   };
   global.MutationObserver = class { observe() {} disconnect() {} };
+  global.requestAnimationFrame = (callback) => { callback(); return 1; };
+  global.cancelAnimationFrame = () => {};
   delete require.cache[require.resolve(routeHookPath)];
   Module._load = function load(request, parent, isMain) {
     if (request === "react") return react;
@@ -96,6 +102,8 @@ function mountRouteHook(browser) {
         global.window = previousWindow;
         global.document = previousDocument;
         global.MutationObserver = previousMutationObserver;
+        global.requestAnimationFrame = previousRequestAnimationFrame;
+        global.cancelAnimationFrame = previousCancelAnimationFrame;
       },
     };
   } finally {
@@ -196,8 +204,13 @@ assert.match(
 );
 assert.match(
   runtime,
-  /const onOffline = \(\) => \{[\s\S]{0,300}setBrowserOnlineHint\(false\)[\s\S]{0,300}void refresh\([\"']recovery[\"']\)/,
-  "browser offline events must update the hint and still schedule a bounded recovery request",
+  /const onOffline = \(\) => \{[\s\S]{0,700}setBrowserOnlineHint\(nextBrowserOnlineHint\(["']offline["']\)\)[\s\S]{0,700}\}/,
+  "browser offline events must update the transport hint",
+);
+assert.match(
+  runtime,
+  /const onOffline = \(\) => \{[\s\S]{0,900}void refresh\(["']recovery["']\)/,
+  "browser offline events must schedule a bounded recovery request",
 );
 
 async function verifyBrowserOfflineRemainsATransportHint() {
