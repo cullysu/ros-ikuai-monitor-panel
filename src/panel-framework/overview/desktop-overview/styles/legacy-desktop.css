@@ -309,7 +309,7 @@ body,
 .legacy-verdict small { display: block; }
 .legacy-verdict span { color: currentColor; font-size: 12px; font-weight: 650; }
 .legacy-verdict b { color: var(--legacy-ink); font-size: 14px; }
-.legacy-verdict small { margin-top: 1px; overflow: hidden; color: var(--legacy-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.legacy-verdict small { margin-top: 1px; color: var(--legacy-muted); font-size: 12px; line-height: 1.4; }
 
 .legacy-summary-strip {
   display: grid;
@@ -756,8 +756,11 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   overflow: hidden;
   color: var(--legacy-muted);
   font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.legacy-object-row small {
+  overflow-wrap: anywhere;
+  line-height: 1.4;
 }
 
 .legacy-object-row button {

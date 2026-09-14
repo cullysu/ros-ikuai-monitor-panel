@@ -23,11 +23,11 @@
     "src/panel-framework/mobile-reference-ui/mobile-reference.css"
   ],
   "reviewedArtifact": {
-    "artifactKey": "447667456e42e0f8350f0f9cd134a0953e695463",
-    "worktreeFingerprint": "734b0bf73670c6e6e064c4c73fb0e4220aaf302b1ce89a0b2bfbbb5740b6feae",
-    "reviewContentFingerprint": "243c9b04618c01e668bbaed09db581be1d2cbe07064876f1c47ed4256962aeb9",
-    "generatedAt": "2026-09-14T17:17:36.393Z",
-    "commit": "447667456e42e0f8350f0f9cd134a0953e695463",
+    "artifactKey": "d7853ec2865fe0f4dfea913e88a123c25244ab1d",
+    "worktreeFingerprint": "d9a29faf04a0aec1203ce050d694a5ce9416be0c565ebbdee60f9c8f410d5597",
+    "reviewContentFingerprint": "7898c901277e5e4af3d49d31360978da08bc3744622a4fff95c3d6e874450d4a",
+    "generatedAt": "2026-09-14T18:55:17.761Z",
+    "commit": "d7853ec2865fe0f4dfea913e88a123c25244ab1d",
     "pass": true
   },
   "findings": [
