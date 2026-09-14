@@ -412,13 +412,24 @@ async function main() {
       cleanupTimeoutMs,
     }), launchTimeoutMs)).value;
 
-    for (const required of requiredCells) {
-      try {
-        cells.push(await inspectCell(managedBrowser, server.url, required.route, required.state, required.viewport, outDir));
-      } catch (error) {
-        cells.push({ ...required, pass: false, error: errorDetail(error), cleanupFailure: true });
+    const workerCount = Math.min(3, requiredCells.length);
+    const results = Array.from({ length: requiredCells.length });
+    let nextIndex = 0;
+    async function worker() {
+      while (true) {
+        const index = nextIndex;
+        nextIndex += 1;
+        if (index >= requiredCells.length) return;
+        const required = requiredCells[index];
+        try {
+          results[index] = await inspectCell(managedBrowser, server.url, required.route, required.state, required.viewport, outDir);
+        } catch (error) {
+          results[index] = { ...required, pass: false, error: errorDetail(error), cleanupFailure: true };
+        }
       }
     }
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+    cells.push(...results);
   } catch (error) {
     fatal = errorDetail(error);
   } finally {
