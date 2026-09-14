@@ -124,6 +124,9 @@ function gitWorktreeIdentity(rootDir) {
   const worktreeClean = !identityError && fullDiff.stdout.length === 0 && allUntracked.length === 0;
   const worktreeFingerprint = hash.digest('hex');
   const reviewContent = reviewContentFingerprint(rootDir, runtimeUntracked);
+  const changedPaths = fullDiff.status === 0
+    ? String(fullDiff.stdout || '').split(/^diff --git /m).slice(1).map((entry) => entry.split(/\r?\n/, 1)[0]).filter(Boolean)
+    : [];
   return {
     commit,
     worktreeClean,
@@ -134,6 +137,8 @@ function gitWorktreeIdentity(rootDir) {
     untrackedFiles: allUntracked.length,
     runtimeUntrackedFiles: runtimeUntracked.length,
     identityError,
+    fullDiffBytes: fullDiff.stdout.length,
+    changedPaths,
   };
 }
 
