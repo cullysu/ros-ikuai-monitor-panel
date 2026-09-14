@@ -134,13 +134,16 @@ function partialSnapshot(route) {
   // They keep a real current snapshot and the route's other evidence intact,
   // while exercising the renderer's existing partial-evidence contract.
   switch (route) {
-    case "interfaces": delete snapshot.interfaces; break;
-    case "lineStatus": delete snapshot.wan; delete snapshot.pppoe; break;
-    case "balance": delete snapshot.loadBalance?.distribution; break;
-    case "routes": delete snapshot.routes; break;
-    case "terminals": delete snapshot.terminals; break;
-    case "dhcp": delete snapshot.dhcp?.clients; break;
-    case "arp": delete snapshot.arp?.alerts; break;
+    case "interfaces":
+      snapshot.interfaces = [];
+      snapshot.meta = { ...(snapshot.meta || {}), detailEndpointFailures: [{ name: "interfaces", endpoint: "/rest/interface", message: "fixture missing interface evidence" }] };
+      break;
+    case "lineStatus": snapshot.wan = []; snapshot.pppoe = []; break;
+    case "balance": snapshot.loadBalance = { ...(snapshot.loadBalance || {}), distribution: [] }; break;
+    case "routes": snapshot.routes = { ...(snapshot.routes || {}), items: [] }; break;
+    case "terminals": snapshot.terminals = []; break;
+    case "dhcp": snapshot.dhcp = { ...(snapshot.dhcp || {}), clients: [] }; break;
+    case "arp": snapshot.arp = { ...(snapshot.arp || {}), alerts: [] }; break;
     case "trafficLoad":
     case "loadAudit": snapshot.overview.cpuLoad = null; break;
     case "trafficAudit": delete snapshot.connections?.protocolTop; break;
@@ -149,17 +152,10 @@ function partialSnapshot(route) {
     case "dns6": delete snapshot.dns?.ipv6Nd; break;
     case "security": delete snapshot.security?.alerts; break;
     case "logs":
-      delete snapshot.logs?.all;
-      delete snapshot.logs?.system;
-      delete snapshot.logs?.firewall;
-      delete snapshot.logs?.dhcp;
-      delete snapshot.logs?.dns;
+      snapshot.logs = { ...(snapshot.logs || {}), all: [], system: [], firewall: [], dhcp: [], dns: [] };
       break;
     case "serviceLogs":
-      delete snapshot.logs?.system;
-      delete snapshot.logs?.firewall;
-      delete snapshot.logs?.dhcp;
-      delete snapshot.logs?.dns;
+      snapshot.logs = { ...(snapshot.logs || {}), system: [], firewall: [], dhcp: [], dns: [] };
       break;
     case "readonlyDiagnostics":
       delete snapshot.meta.detailEndpointFailures;

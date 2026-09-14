@@ -544,6 +544,8 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
 
 function interfaceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const available = Array.isArray(snapshot.interfaces);
+  const interfaceDetailFailed = (snapshot.meta?.detailEndpointFailures || []).some((failure) => /interface/i.test(String(failure.name || failure.endpoint || "")));
+  const observed = available && !interfaceDetailFailed;
   const items = rows(snapshot.interfaces);
   const down = items.filter((item) => item.running === false).length;
   const disabled = items.filter((item) => item.disabled === true).length;
@@ -553,18 +555,18 @@ function interfaceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sec
   return {
     ...base(route, snapshot),
     metrics: [
-      { label: "接口总数", value: available ? String(items.length) : "未取得", tone: !available ? "missing" : items.length ? "trust" : "warn" },
+      { label: "接口总数", value: observed ? String(items.length) : "未取得", tone: !observed ? "missing" : items.length ? "trust" : "warn" },
       {
         label: "未运行",
-        value: available ? String(down) : "未取得",
-        tone: !available ? "missing" : confirmedRisk ? "danger" : down ? "warn" : "trust",
+        value: observed ? String(down) : "未取得",
+        tone: !observed ? "missing" : confirmedRisk ? "danger" : down ? "warn" : "trust",
         note: confirmedRisk
           ? `${confirmedRisk} 项有已启用默认路由依赖`
           : impactUnverified
             ? `${impactUnverified} 项影响未判定`
             : undefined,
       },
-      { label: "已停用", value: available ? String(disabled) : "未取得", tone: !available ? "missing" : disabled ? "warn" : "trust" },
+      { label: "已停用", value: observed ? String(disabled) : "未取得", tone: !observed ? "missing" : disabled ? "warn" : "trust" },
     ],
     tables: [table(route, "接口对象", [
       { key: "name", label: "接口" }, { key: "kind", label: "类型 / 角色" }, { key: "status", label: "状态" }, { key: "parent", label: "上级" }, { key: "traffic", label: "接收 / 发送" },
@@ -574,7 +576,7 @@ function interfaceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sec
       status: state(item.running, item.disabled),
       parent: text(item.parent || item.master || item.bridge),
       traffic: `${rate(item.rxRate ?? item.downRate)} / ${rate(item.txRate ?? item.upRate)}`,
-    }), "当前快照没有接口对象", undefined, { routes: snapshot.routes })],
+    }), observed ? "当前快照没有接口对象" : "未取得接口对象", undefined, { routes: snapshot.routes })],
   };
 }
 
