@@ -16,7 +16,12 @@ const ROOT = path.resolve(__dirname, "..");
 const statePath = path.join(ROOT, ".product-loop", "state.json");
 const currentStatePath = path.join(ROOT, "docs", "decision-system", "current-state.md");
 const templatePath = path.join(ROOT, "docs", "decision-system", "mirror-root-readme.md");
-const mirrorPath = path.join("D:\\想法\\面板", "README.md");
+const mirrorDir = "D:\\想法\\面板";
+const mirrorPath = path.join(mirrorDir, "README.md");
+// D:\想法\面板 is the product owner's local authoring mirror (see
+// tools/check-decision-ledger-sync.py). Its freshness is only verifiable on the
+// machine that owns that volume; CI checks the repository-side template facts.
+const mirrorVolumePresent = fs.existsSync(mirrorDir);
 
 const state = JSON.parse(fs.readFileSync(statePath, "utf8"));
 const currentState = fs.readFileSync(currentStatePath, "utf8");
@@ -37,8 +42,8 @@ const checks = [
   },
   {
     name: "root README is mirrored byte-for-byte",
-    pass: Boolean(mirror) && sha256(template) === sha256(mirror),
-    detail: "D:\\想法\\面板\\README.md must be generated from mirror-root-readme.md",
+    pass: !mirrorVolumePresent || (Boolean(mirror) && sha256(template) === sha256(mirror)),
+    detail: "D:\\想法\\面板\\README.md must be generated from mirror-root-readme.md when the local mirror volume is present",
   },
   {
     name: "root README carries current step",
