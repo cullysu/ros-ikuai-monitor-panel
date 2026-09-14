@@ -23,9 +23,9 @@ const checks = [
   ['runtime closes managed browser lifecycles with bounded cleanup', source.includes("boundedCleanup('browser.lifecycle.close'") && source.includes("boundedCleanup('isolated-browser.lifecycle.close'") && source.includes("boundedCleanup('mock.stop'")],
   ['runtime records managed browser cleanup diagnostics', source.includes('browserLifecycle') && source.includes('browserRuntime.diagnostics')],
   ['runtime writes lifecycle and mock cleanup diagnostics', source.includes("'lifecycle-diagnostic.write'") && source.includes("'panel-runtime-browser-lifecycle-v2'") && source.includes("'mock.stop'")],
-  ['mock server binds its real listener without a released-port handoff', /async function startMock\([^)]*\)[\s\S]*?await listenMockServer\(server\)[\s\S]*?const address = server\.address\(\)/.test(source)],
+  ['mock server binds its real listener without a released-port handoff', /async function startMock\([^)]*\)[\s\S]*?await listenMockServer\(server[\s\S]*?const address = server\.address\(\)/.test(source)],
   ['Windows mock ports stay outside the default dynamic client range with bounded retries', source.includes('const WINDOWS_MOCK_PORT_START = 18000;') && source.includes('const WINDOWS_MOCK_PORT_SPAN = 1000;') && source.includes('const WINDOWS_MOCK_PORT_ATTEMPTS = 64;')],
-  ['Windows mock server prefers IPv6 loopback with an IPv4 compatibility fallback', source.includes("for (const host of ['::1', '127.0.0.1'])") && source.includes("return host;")],
+  ['Windows mock server prefers IPv6 loopback with an IPv4 compatibility fallback', source.includes("const hosts = preferIpv4 ? ['127.0.0.1', '::1'] : ['::1', '127.0.0.1'];") && source.includes("return host;")],
   ['Windows mock supports an in-process named-pipe route when the host TCP pool is exhausted', source.includes("transport === 'pipe'") && source.includes('listenPipeServer(server, pipe.path)') && source.includes('requestPipeResponse(pipe.path, route.request())')],
   ['mock server has no probe-then-rebind port allocator', !source.includes('async function freePort()') && !source.includes('const port = await freePort()')],
 ];

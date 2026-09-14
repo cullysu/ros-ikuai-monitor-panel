@@ -134,6 +134,52 @@ async function terminateOwnedProcessTree(pid, timeoutMs) {
   if (!Number.isInteger(pid) || pid <= 0) return { attempted: false, reason: 'owned browser PID unavailable' };
   const startedAt = Date.now();
   const verifyDeadlineAt = startedAt + Math.max(1, timeoutMs);
+
+  // Playwright's browser server is the owned process boundary. Windows needs
+  // taskkill to cover the child tree; POSIX runners can terminate that owned
+  // process directly and verify it has exited without relying on a Windows
+  // executable that does not exist on Linux.
+  if (process.platform !== 'win32') {
+    let signal = null;
+    let signalError = null;
+    const sendSignal = (name) => {
+      try {
+        process.kill(pid, name);
+        signal = name;
+        return true;
+      } catch (error) {
+        if (error?.code === 'ESRCH') return true;
+        signalError = error;
+        return false;
+      }
+    };
+
+    const termSent = sendSignal('SIGTERM');
+    while (Date.now() < verifyDeadlineAt && processExists(pid)) {
+      await delay(Math.min(50, Math.max(1, verifyDeadlineAt - Date.now())));
+    }
+    let forced = false;
+    if (processExists(pid)) {
+      forced = true;
+      sendSignal('SIGKILL');
+      while (Date.now() < verifyDeadlineAt && processExists(pid)) {
+        await delay(Math.min(50, Math.max(1, verifyDeadlineAt - Date.now())));
+      }
+    }
+    const residual = processExists(pid);
+    return {
+      attempted: true,
+      pid,
+      signal,
+      forced,
+      termSent,
+      error: signalError ? String(signalError.message || signalError) : null,
+      residual,
+      verifiedStopped: !residual,
+      outcome: !residual ? 'terminated' : 'residual',
+    };
+  }
+
   let taskkill = null;
   let status = null;
   let signal = null;
