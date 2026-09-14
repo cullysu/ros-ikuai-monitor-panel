@@ -44,7 +44,11 @@ try {
     return gitWorktreeIdentity(candidateRoot);
   });
   assert.equal(candidateRuntimeIdentity.commit, candidate, 'clean candidate identity must bind the candidate commit');
-  assert.equal(candidateRuntimeIdentity.worktreeClean, true, 'candidate identity must come from a clean isolated worktree');
+  assert.equal(
+    candidateRuntimeIdentity.worktreeClean,
+    true,
+    `candidate identity must come from a clean isolated worktree: ${JSON.stringify(candidateRuntimeIdentity)}`,
+  );
   assert.equal(candidateRuntimeIdentity.releaseEvidenceEligible, true, 'clean candidate identity must be release-evidence eligible');
   fs.writeFileSync(path.join(reviews, 'route-manifest.json'), manifest.bytes);
   const roles = ['product-information-architecture', 'visual-interaction', 'accessibility-interaction', 'engineering-code-review', 'route-owner'];
