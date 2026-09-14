@@ -474,7 +474,13 @@ async function main() {
   };
   await fsp.mkdir(outDir, { recursive: true });
   writeDiagnostic(reportPath, report);
-  const summary = `${JSON.stringify({ pass: report.pass, report: path.relative(root, reportPath).replace(/\\/g, "/"), captured: report.capturedCellCount, required: report.requiredCellCount }, null, 2)}\n`;
+  const summary = `${JSON.stringify({
+    pass: report.pass,
+    report: path.relative(root, reportPath).replace(/\\/g, "/"),
+    captured: report.capturedCellCount,
+    required: report.requiredCellCount,
+    failedCells: cells.filter((cell) => !cell.pass).slice(0, 3).map((cell) => ({ id: cell.id, error: cell.error, detail: cell.detail })),
+  }, null, 2)}\n`;
   process.stdout.write(summary, () => process.exit(report.pass ? 0 : 1));
 }
 
