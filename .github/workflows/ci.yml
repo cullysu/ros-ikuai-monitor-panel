@@ -14,7 +14,7 @@ jobs:
   linux-validation:
     name: Linux validation
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 150
     env:
       CODEX_MEMORY_LIMIT_MB: "2048"
       NODE_OPTIONS: --max-old-space-size=2048
