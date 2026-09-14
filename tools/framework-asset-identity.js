@@ -61,7 +61,11 @@ function computeFrameworkInputIdentity(projectRoot) {
   hash.update(FRAMEWORK_INPUT_SCHEMA, 'utf8');
   hash.update('\0', 'utf8');
   for (const relative of files) {
-    const body = fs.readFileSync(path.join(resolvedRoot, ...relative.split('/')));
+    // Identity must describe source content, not checkout line endings: a
+    // text file hashes through its LF-normalized form so Windows, Linux, and
+    // macOS checkouts of one commit produce the same digest.
+    const raw = fs.readFileSync(path.join(resolvedRoot, ...relative.split('/')));
+    const body = raw.includes(0) ? raw : Buffer.from(raw.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
     hash.update(relative, 'utf8');
     hash.update('\0', 'utf8');
     hash.update(String(body.length), 'utf8');
