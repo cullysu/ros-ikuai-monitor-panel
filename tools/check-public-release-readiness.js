@@ -846,7 +846,16 @@ function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
     ROUTE_STATE_MATRIX_CELLS,
     { requiredWorktreeIdentity: currentIdentity, allowBoundedScope: true }
   ));
-  collect('toolbarZoom200', () => assertToolbarZoom200Report(rootDir, currentIdentity));
+  collect('toolbarZoom200', () => {
+    if (process.platform !== 'win32') {
+      // The real Edge toolbar automation (pywinauto + Edge) is owned by the
+      // windows-packaging job: it asserts this exact report on win32 and ships
+      // it as SHA-bound release evidence. Other platforms only run the offline
+      // toolbar contract inside the release gates.
+      return { ownerPlatform: 'win32', applicable: false };
+    }
+    return assertToolbarZoom200Report(rootDir, currentIdentity);
+  });
   if (failures.length) throw new Error(`Required current-HEAD release evidence is incomplete: ${failures.join(' | ')}`);
   evidence.matrixIdentity = assertMatrixEvidenceIdentity(evidence, currentIdentity);
   assertEvidenceModeEligibility(evidence.matrixIdentity, options);
