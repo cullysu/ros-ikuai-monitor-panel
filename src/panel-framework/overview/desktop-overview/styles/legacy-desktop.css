@@ -797,6 +797,27 @@ main[data-desktop-evidence-mode="unavailable"] .legacy-summary-tile small {
   transform: scale(0.97);
 }
 
+.legacy-trend-accumulating {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  border: 1px solid #c7d9f3;
+  border-radius: 9px;
+  background: #fbfdff;
+}
+
+.legacy-trend-accumulating b {
+  color: var(--legacy-ink);
+  font-size: 13px;
+}
+
+.legacy-trend-accumulating small {
+  color: var(--legacy-muted);
+  font-size: 12px;
+}
+
 .legacy-object-state {
   display: inline-flex;
   align-items: center;
