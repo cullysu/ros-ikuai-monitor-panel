@@ -42,9 +42,16 @@ if (-not (Test-BuildPip)) {
 if ($LASTEXITCODE -ne 0) {
     throw "pip is unavailable in build venv; exit code ${LASTEXITCODE}"
 }
-& $BuildPython -m pip install -r (Join-Path $RepoRoot "requirements.txt") -r (Join-Path $RepoRoot "requirements-build.txt")
+# Runtime dependencies are hash-locked; the hashless option line inside
+# requirements.txt would leak into the same pip invocation and reject the
+# unpinned build tooling, so the two installs must stay separate.
+& $BuildPython -m pip install -r (Join-Path $RepoRoot "requirements.txt")
 if ($LASTEXITCODE -ne 0) {
     throw "dependency install failed with exit code ${LASTEXITCODE}"
+}
+& $BuildPython -m pip install -r (Join-Path $RepoRoot "requirements-build.txt")
+if ($LASTEXITCODE -ne 0) {
+    throw "build dependency install failed with exit code ${LASTEXITCODE}"
 }
 
 Push-Location $RepoRoot
