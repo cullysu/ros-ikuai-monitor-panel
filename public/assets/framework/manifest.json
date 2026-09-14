@@ -3,7 +3,7 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "1dc486b6a508762aa02d670d334fb51255d4a21284d5574ad70f0b0ae0511005",
+    "digest": "10600669a826e7b93b9a995478d688ac346a846dea09e73f3f835aa905ec98ab",
     "files": 107
   },
   "assets": {
