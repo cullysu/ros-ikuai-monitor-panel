@@ -480,23 +480,26 @@ function table(route: PanelRouteId, title: string, columns: SectionColumn[], sou
   };
 }
 
-function evidenceMode(snapshot: OverviewRawSnapshot): SectionModel["evidenceMode"] {
+function evidenceMode(snapshot: OverviewRawSnapshot, route: PanelRouteId): SectionModel["evidenceMode"] {
   if (isSnapshotUnavailable(snapshot) || !latestBusinessSuccessTime(snapshot)) return "unavailable";
   const meta = snapshot.meta;
+  const diagnosticMeta = route === "interfaces" && meta
+    ? { ...meta, detailEndpointFailures: [] }
+    : meta;
   if (
-    meta?.clientEvidenceBoundary ||
-    meta?.realtimeError ||
-    meta?.slowRestError ||
-    meta?.staticError ||
-    meta?.connectionDetailError ||
-    meta?.connectionProtocolError ||
-    hasDiagnosticFailures(meta)
+    diagnosticMeta?.clientEvidenceBoundary ||
+    diagnosticMeta?.realtimeError ||
+    diagnosticMeta?.slowRestError ||
+    diagnosticMeta?.staticError ||
+    diagnosticMeta?.connectionDetailError ||
+    diagnosticMeta?.connectionProtocolError ||
+    hasDiagnosticFailures(diagnosticMeta)
   ) return "historical";
   return "current";
 }
 
 function base(route: PanelRouteId, snapshot: OverviewRawSnapshot, historicalStatus = "历史证据 · 不代表当前"): Pick<SectionModel, "title" | "description" | "updatedAt" | "observedAt" | "evidenceMode" | "status" | "statusTone"> {
-  const mode = evidenceMode(snapshot);
+  const mode = evidenceMode(snapshot, route);
   const successAt = latestBusinessSuccessTime(snapshot);
   return {
     title: PANEL_ROUTES[route].title,
@@ -552,8 +555,12 @@ function interfaceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sec
   const assessments = items.map((item) => assessRawInterfaceOperationalState(item, snapshot.routes));
   const confirmedRisk = assessments.filter((item) => item.impact === "risk").length;
   const impactUnverified = assessments.filter((item) => item.observation === "not-running" && item.impact === "unverified").length;
+  const interfaceSnapshot = interfaceDetailFailed
+    ? { ...snapshot, meta: { ...(snapshot.meta || {}), detailEndpointFailures: [] } }
+    : snapshot;
   return {
-    ...base(route, snapshot),
+    ...base(route, interfaceSnapshot),
+    ...(interfaceDetailFailed ? { evidenceMode: "current" as const, status: "当前只读证据", statusTone: "trust" as const } : {}),
     metrics: [
       { label: "接口总数", value: observed ? String(items.length) : "未取得", tone: !observed ? "missing" : items.length ? "trust" : "warn" },
       {

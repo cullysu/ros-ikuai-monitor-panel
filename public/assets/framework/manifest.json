@@ -3,33 +3,33 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "239e31774f9e1628c6b32d6913b78c6c9781176bc7d9a6c9d9e10cb8261ca98f",
+    "digest": "1dc486b6a508762aa02d670d334fb51255d4a21284d5574ad70f0b0ae0511005",
     "files": 107
   },
   "assets": {
     "mobile": {
       "script": {
-        "file": "panel-mobile.f81e64822d7f.js",
-        "sha256": "f81e64822d7fa0583740e62370855c0c917edd09a2e7576cd061479356a50e3e",
-        "bytes": 349971,
-        "gzipBytes": 106585,
-        "brotliBytes": 89627
+        "file": "panel-mobile.58e7cad358eb.js",
+        "sha256": "58e7cad358eb96fdf455cc0dd8f9e7e298c908bbe36590b5e285702c1b2f9a80",
+        "bytes": 370668,
+        "gzipBytes": 111384,
+        "brotliBytes": 93404
       },
       "style": {
-        "file": "mobile.6e1b4cf9a283.css",
-        "sha256": "6e1b4cf9a283c10527137fffdf94cb0f1b2b51e33625c34b5e2d64193257de8e",
-        "bytes": 29672,
-        "gzipBytes": 5841,
-        "brotliBytes": 5176
+        "file": "mobile.34b484ea3faf.css",
+        "sha256": "34b484ea3faf355746f5914fbf9580347d2d136c5850f6201c1c66997b90b07b",
+        "bytes": 32217,
+        "gzipBytes": 6221,
+        "brotliBytes": 5501
       }
     },
     "desktop": {
       "script": {
-        "file": "panel-desktop.fe2f387406fe.js",
-        "sha256": "fe2f387406feed984257835a66cba4fd8bfe2ba13f5490ef3e47c84d76d6b1c0",
-        "bytes": 428558,
-        "gzipBytes": 128675,
-        "brotliBytes": 106480
+        "file": "panel-desktop.d7d4d7c42dda.js",
+        "sha256": "d7d4d7c42dda09410dd48b5d1e8b2214cfac93d1addf50b4b215c653d003a8d6",
+        "bytes": 428913,
+        "gzipBytes": 128803,
+        "brotliBytes": 106571
       },
       "style": {
         "file": "desktop.03d78130875c.css",
@@ -40,11 +40,11 @@
       }
     },
     "loader": {
-      "file": "panel-surface-loader.04b27d24be65.js",
-      "sha256": "04b27d24be65bb53d6da1eaddaabaf98f56e1623c5acd5b50acc13f4889f8ae8",
+      "file": "panel-surface-loader.32958b954d0e.js",
+      "sha256": "32958b954d0e4dbfa780395d225774600c0be07b64ac6e84dc501135140b50c7",
       "bytes": 1682,
-      "gzipBytes": 838,
-      "brotliBytes": 691
+      "gzipBytes": 841,
+      "brotliBytes": 688
     }
   }
 }
