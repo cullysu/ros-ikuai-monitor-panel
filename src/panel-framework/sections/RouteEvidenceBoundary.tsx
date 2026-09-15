@@ -50,7 +50,7 @@ export function RouteEvidenceBoundary({
       data-route-recovery-state={state}
       data-mobile-interface-recovery-state={state}
       aria-labelledby={titleId}
-      style={surface === "desktop" ? DESKTOP_RECOVERY_TOKENS : undefined}
+      style={DESKTOP_RECOVERY_TOKENS}
     >
       <header className="mdw-interface-recovery-heading">
         <span><StateIcon aria-hidden="true" size={16} /><b id={titleId}>{state === "historical" ? copy.title : policy.heading}</b></span>
