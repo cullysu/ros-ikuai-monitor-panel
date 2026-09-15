@@ -19,7 +19,7 @@ $dist = Join-Path $root 'dist'
 $apk = Join-Path $dist 'RouterOS-Monitor-debug.apk'
 $androidJar = Join-Path $SdkRoot 'platforms\android-35\android.jar'
 $aapt2 = Join-Path $SdkRoot 'build-tools\34.0.0\aapt2.exe'
-$d8 = Join-Path $SdkRoot 'build-tools\34.0.0\d8.bat'
+$d8 = Join-Path $SdkRoot 'r8\r8-8.5.35.jar'
 $zipalign = Join-Path $SdkRoot 'build-tools\34.0.0\zipalign.exe'
 $apksigner = Join-Path $SdkRoot 'build-tools\34.0.0\apksigner.bat'
 $javac = Join-Path $JavaHome 'bin\javac.exe'
@@ -49,7 +49,7 @@ if ($LASTEXITCODE -ne 0) { throw 'javac failed' }
 $dexDir = Join-Path $buildRoot 'dex'
 New-Item $dexDir -ItemType Directory -Force | Out-Null
 $classFiles = Get-ChildItem $classes -Recurse -Filter *.class | ForEach-Object { $_.FullName }
-& $d8 --lib $androidJar --output $dexDir @classFiles
+& (Join-Path $JavaHome 'bin\java.exe') -cp $d8 com.android.tools.r8.D8 --release --lib $androidJar --output $dexDir @classFiles
 if ($LASTEXITCODE -ne 0) { throw 'd8 failed' }
 
 $classesDex = Join-Path $dexDir 'classes.dex'
