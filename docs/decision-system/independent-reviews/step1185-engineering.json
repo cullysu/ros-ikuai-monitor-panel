@@ -21,11 +21,11 @@
     "tools/check-mobile-reference-runtime.js"
   ],
   "reviewedArtifact": {
-    "artifactKey": "d7853ec2865fe0f4dfea913e88a123c25244ab1d",
-    "worktreeFingerprint": "d9a29faf04a0aec1203ce050d694a5ce9416be0c565ebbdee60f9c8f410d5597",
-    "reviewContentFingerprint": "7898c901277e5e4af3d49d31360978da08bc3744622a4fff95c3d6e874450d4a",
-    "generatedAt": "2026-09-14T18:55:17.761Z",
-    "commit": "d7853ec2865fe0f4dfea913e88a123c25244ab1d",
+    "artifactKey": "86bd3dc9fcce45a49261139993e41fb82c24fe4a",
+    "worktreeFingerprint": "0db9f5374cfcff73026f54006f55599e3c7afa49f4abaa53ee09565669aab7d9",
+    "reviewContentFingerprint": "57e2efac2c15472d743115f41908c351d244de43cb3d17c4158a8e40dbeb8f8b",
+    "generatedAt": "2026-09-15T16:17:06.193Z",
+    "commit": "86bd3dc9fcce45a49261139993e41fb82c24fe4a",
     "pass": true
   },
   "findings": [
