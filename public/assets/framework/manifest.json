@@ -3,24 +3,24 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "20b2ff944730887544a6276eaf72bcc43287ddceb97b65389f36909a36a82551",
+    "digest": "8d1e3d8ee28fdfe7b4b0237546bb26bd440082cd866d352602bdbb0cc4f85b88",
     "files": 107
   },
   "assets": {
     "mobile": {
       "script": {
-        "file": "panel-mobile.4fa0ee21a858.js",
-        "sha256": "4fa0ee21a858d81c21f8eead9e3c0ee1e49400604da6edcc144d98166b5de453",
-        "bytes": 371122,
-        "gzipBytes": 111513,
-        "brotliBytes": 93466
+        "file": "panel-mobile.63e89fd90148.js",
+        "sha256": "63e89fd90148e0fa875f0ad00a3b610e46314543ef1d31e6073807510d0eeded",
+        "bytes": 371258,
+        "gzipBytes": 111558,
+        "brotliBytes": 93581
       },
       "style": {
-        "file": "mobile.bdafaa2fd806.css",
-        "sha256": "bdafaa2fd806ce42e46f5359863cc27d5da0ef32e3de2a0861580121e1b572ea",
-        "bytes": 33716,
-        "gzipBytes": 6438,
-        "brotliBytes": 5696
+        "file": "mobile.6381f631500f.css",
+        "sha256": "6381f631500f80eeac35bf5815234a0b626383beaf70dd77a0165b68b667485c",
+        "bytes": 34648,
+        "gzipBytes": 6588,
+        "brotliBytes": 5837
       }
     },
     "desktop": {
@@ -40,11 +40,11 @@
       }
     },
     "loader": {
-      "file": "panel-surface-loader.437540ccb084.js",
-      "sha256": "437540ccb08426b8bc36bf2b22252d31ea0beee081874a542322c2efe1195e77",
+      "file": "panel-surface-loader.07ad48f247fd.js",
+      "sha256": "07ad48f247fd638ed557f25211f9e0608a1b650217aeaf3433b9d34b16aa335d",
       "bytes": 1682,
-      "gzipBytes": 834,
-      "brotliBytes": 693
+      "gzipBytes": 833,
+      "brotliBytes": 688
     }
   }
 }
