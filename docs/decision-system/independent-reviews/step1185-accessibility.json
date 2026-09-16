@@ -20,11 +20,11 @@
     "src/panel-framework/routes/usePanelRoute.ts"
   ],
   "reviewedArtifact": {
-    "artifactKey": "fd8391cde197f7f8f01dad522554a16f6632bfea",
-    "worktreeFingerprint": "38c61a60d45a34ba3b2998b01c1493d84131ae4d96f8148cbdacc057e98fb4ee",
-    "reviewContentFingerprint": "14bfe23d20a993a519241711ff0f39c22f3457e1ecd795ceb4752c1ff3524fa6",
-    "generatedAt": "2026-09-16T16:41:48.868Z",
-    "commit": "fd8391cde197f7f8f01dad522554a16f6632bfea",
+    "artifactKey": "83bf84721a56c93f529633ee012712df95479fdf",
+    "worktreeFingerprint": "73876bc5e4fa8b5b4e879999cb1d5be3bc28103b066163ba76e173878475e8cd",
+    "reviewContentFingerprint": "4b3a11e8b667dd6ca2a373cacde21c5107ac449c7a7204b0f096f8afe5fc2981",
+    "generatedAt": "2026-09-16T18:26:47.472Z",
+    "commit": "83bf84721a56c93f529633ee012712df95479fdf",
     "pass": true
   },
   "findings": [
