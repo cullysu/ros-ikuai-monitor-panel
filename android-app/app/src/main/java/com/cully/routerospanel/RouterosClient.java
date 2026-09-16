@@ -44,6 +44,10 @@ final class RouterosClient {
         LoginException(String message, JSONObject test) { super(message); this.test = test; }
     }
 
+    // Remembered device endpoint (never the password) so reopening the app
+    // prefills the connection form; the password itself stays memory-only.
+    private java.io.File rememberedDeviceFile = null;
+
     private String host = "";
     private String user = "";
     private String password = "";
@@ -82,6 +86,37 @@ final class RouterosClient {
         historyCpu.clear();
         historyMemory.clear();
         historyDisk.clear();
+        if (rememberedDeviceFile != null) rememberedDeviceFile.delete();
+    }
+
+    synchronized void attachRememberedDeviceFile(java.io.File file) {
+        rememberedDeviceFile = file;
+        try {
+            if (!file.exists()) return;
+            JSONObject saved = new JSONObject(new String(java.nio.file.Files.readAllBytes(file.toPath()), java.nio.charset.StandardCharsets.UTF_8));
+            host = saved.optString("host", "");
+            user = saved.optString("user", "");
+            restScheme = "https".equals(saved.optString("restScheme")) ? "https" : "http";
+            restPort = saved.optInt("restPort", restScheme.equals("https") ? 443 : 80);
+            sshPort = saved.optInt("sshPort", 22);
+            restVerifyTls = saved.optBoolean("restVerifyTls", restScheme.equals("https"));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private synchronized void rememberDevice() {
+        if (rememberedDeviceFile == null) return;
+        try {
+            JSONObject saved = new JSONObject();
+            saved.put("host", host);
+            saved.put("user", user);
+            saved.put("restScheme", restScheme);
+            saved.put("restPort", restPort);
+            saved.put("sshPort", sshPort);
+            saved.put("restVerifyTls", restVerifyTls);
+            java.nio.file.Files.write(rememberedDeviceFile.toPath(), saved.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+        }
     }
 
     synchronized boolean isConfigured() {
@@ -141,6 +176,7 @@ final class RouterosClient {
         sshPort = nextSshPort;
         restVerifyTls = verifyTls;
         configured = restOk;
+        if (configured) rememberDevice();
         lastTest = test;
         identity = rest.optString("identity", "");
         lastCounters.clear();

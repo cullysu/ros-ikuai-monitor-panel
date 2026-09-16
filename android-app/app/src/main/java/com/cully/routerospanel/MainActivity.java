@@ -42,7 +42,9 @@ public final class MainActivity extends Activity {
         });
         webView.setWebViewClient(new WebViewClient());
         try {
-            server = new LocalPanelServer(getAssets(), new RouterosClient());
+            RouterosClient client = new RouterosClient();
+            client.attachRememberedDeviceFile(new java.io.File(getFilesDir(), "remembered-device.json"));
+            server = new LocalPanelServer(getAssets(), client);
             int port = server.start();
             webView.loadUrl("http://127.0.0.1:" + port + "/");
         } catch (Exception exception) {
