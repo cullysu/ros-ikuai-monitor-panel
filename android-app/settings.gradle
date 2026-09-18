@@ -1,0 +1,4 @@
+pluginManagement { }
+dependencyResolutionManagement { }
+rootProject.name = 'routeros-monitor'
+include ':app'
