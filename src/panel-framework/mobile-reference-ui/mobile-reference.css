@@ -335,3 +335,15 @@
   .ref-search-clear { background:rgb(255 255 255 / 12%); }
   .ref-wanlist > button:active,.ref-object-list > button:active,.ref-interfaces > button:active,.ref-network-actions button:active { background:rgb(255 255 255 / 8%); }
 }
+
+/* --- section model metrics grid + secondary tables --- */
+.ref-metric-grid { display:grid; grid-template-columns:1fr 1fr; }
+.ref-metric { display:flex; min-height:52px; padding:7px 14px 6px; border-top:1px solid var(--ref-line); flex-direction:column; align-items:flex-start; justify-content:center; gap:2px; }
+.ref-metric:nth-child(even) { border-left:1px solid var(--ref-line); }
+.ref-metric:nth-child(-n+2) { border-top:0; }
+.ref-metric small { color:var(--ref-muted); font-size:var(--t-12); line-height:15px; }
+.ref-metric b { font-size:var(--t-15); font-weight:650; line-height:19px; }
+.ref-secondary-table { margin:0 16px 14px; }
+.ref-secondary-table > h2 { margin:0; padding:12px 16px 10px; border-bottom:1px solid var(--ref-line); color:var(--ref-muted); font-size:var(--t-13); font-weight:650; }
+.ref-secondary-rows { padding:0 0 4px; }
+.ref-secondary-rows + .ref-secondary-rows { border-top:1px solid var(--ref-line); }
