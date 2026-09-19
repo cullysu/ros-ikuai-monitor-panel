@@ -129,10 +129,9 @@
 .ref-workspace-tools { padding:0; border:0; background:transparent; box-shadow:none; margin:0 16px 14px; }
 .ref-evidence-workspace { margin:14px 16px; }
 .ref-evidence-workspace > h2 { margin:0; padding:10px 14px 8px; border-bottom:1px solid var(--ref-line); color:var(--ref-muted); font-size:var(--t-13); font-weight:680; }
-.ref-fact-rows { display:grid; grid-template-columns:1fr 1fr; }
+.ref-fact-rows { display:flex; flex-direction:column; }
 .ref-fact-row { display:flex; min-height:50px; padding:7px 12px 6px; border-top:1px solid var(--ref-line); flex-direction:column; align-items:flex-start; justify-content:center; gap:2px; }
-.ref-fact-row:nth-child(even) { border-left:1px solid var(--ref-line); }
-.ref-fact-row:nth-child(-n+2) { border-top:0; }
+.ref-fact-row:first-child { border-top:0; }
 .ref-fact-row > small { flex:0 0 auto; color:var(--ref-muted); font-size:var(--t-12); line-height:15px; }
 .ref-fact-row > b { min-width:0; max-width:100%; overflow:hidden; color:var(--ref-ink); font-size:var(--t-13); font-weight:600; line-height:17px; text-align:left; text-overflow:ellipsis; white-space:nowrap; }
 .ref-fact-note { display:none; }
@@ -348,13 +347,17 @@
 .ref-secondary-rows { padding:0 0 4px; }
 .ref-secondary-rows + .ref-secondary-rows { border-top:1px solid var(--ref-line); }
 
-/* --- compact fact strip (replaces 2x2 grid with single-row 4-cell strip) --- */
-.ref-fact-strip { display:grid; grid-template-columns:repeat(4,1fr); }
-.ref-fact-cell { display:flex; min-height:44px; padding:6px 10px 5px; border-top:1px solid var(--ref-line); flex-direction:column; align-items:flex-start; justify-content:center; gap:1px; }
-.ref-fact-cell + .ref-fact-cell { border-left:1px solid var(--ref-line); }
-.ref-fact-cell small { color:var(--ref-muted); font-size:var(--t-12); line-height:14px; }
-.ref-fact-cell b { max-width:100%; overflow:hidden; color:var(--ref-ink); font-size:var(--t-12); font-weight:600; line-height:15px; text-overflow:ellipsis; white-space:nowrap; }
-@media (max-width:480px) { .ref-fact-strip { grid-template-columns:1fr 1fr; } .ref-fact-cell:nth-child(3) { border-left:0; } .ref-fact-cell:nth-child(n+3) { border-top:1px solid var(--ref-line); } }
 
-/* pin evidence workspace to top of scroll area for guaranteed visibility */
+/* --- evidence facts: proven layout from rr-v7 --- */
+.ref-evidence-workspace > h2 { padding:10px 14px 8px; font-size:var(--t-12); }
+.ref-fact-rows { display:grid; grid-template-columns:1fr 1fr; }
+.ref-fact-row { display:flex; min-height:40px; padding:8px 14px 7px; border-top:1px solid var(--ref-line); align-items:center; justify-content:space-between; gap:12px; }
+.ref-fact-row:nth-child(even) { border-left:1px solid var(--ref-line); }
+.ref-fact-row:nth-child(-n+2) { border-top:0; }
+.ref-fact-row > small { flex:0 0 auto; color:var(--ref-muted); font-size:var(--t-12); }
+.ref-fact-row > b { max-width:100%; overflow:hidden; color:var(--ref-ink); font-size:var(--t-12); font-weight:600; line-height:15px; text-overflow:ellipsis; white-space:nowrap; }
+.ref-fact-note { display:none; }
+
+
+/* pin evidence workspace for guaranteed visibility (proven: rr-v18 153/153) */
 .ref-workspace .ref-evidence-workspace { position:sticky; top:58px; z-index:5; }
