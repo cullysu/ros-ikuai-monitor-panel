@@ -26,6 +26,7 @@ are documented separately in [PRODUCT_MODEL.md](./PRODUCT_MODEL.md).
 |------|----------|--------|
 | Docker one-command | Most Linux/NAS/VM users who want the fastest install | Recommended default |
 | Windows EXE | Non-Python Windows users who want unzip, edit config, double-click | Recommended first trial |
+| Android APK | Phone users who want install-and-open, not a LAN browser URL | Local debug build |
 | Docker / Compose | NAS, mini PC, Linux host, OpenWrt Docker, cloud VM | Recommended deployment |
 | Local Python | Developers or users comfortable with Python | Supported |
 | Linux systemd / VM | Operators who want a managed production service | Professional |
@@ -178,6 +179,19 @@ Run from a trusted local folder. The project does not yet provide code signing.
 
 Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for EXE usage, build, and
 troubleshooting details.
+
+## Quick Start: Android APK
+
+The phone app talks to RouterOS REST directly. It does not open the Windows
+panel URL.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\build-android-apk.ps1
+```
+
+Install `dist\RouterOS-Monitor-debug.apk` on the phone, then enter the RouterOS
+HTTP/HTTPS address and a dedicated read-only user. Read
+[DEPLOY_ANDROID.md](./DEPLOY_ANDROID.md).
 
 ## Quick Start: Local Python
 

@@ -9,6 +9,9 @@ routeros-panel.env
 docker.env
 build/
 dist/
+android-app/build-manual/
+android-app/app/build/
+android-app/.gradle/
 *.log
 *.out.log
 *.err.log
@@ -44,3 +47,7 @@ dist/
 /*.tar.gz
 /*.tgz
 routeros-panel.env
+
+# Android debug keystore and mock TLS keys
+android-app/debug.keystore
+tools/mock-routeros-key.pem
