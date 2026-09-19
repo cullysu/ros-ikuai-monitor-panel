@@ -22,11 +22,11 @@
     "_acceptance/mobile-reference-runtime/interfaces-down-phone390-overview.png"
   ],
   "reviewedArtifact": {
-    "artifactKey": "aac797108892787d24b7de1744d02c8bde8a3ca8",
-    "worktreeFingerprint": "19ccdd94c445c08abc18f0a233bc69e2eb170cd3c01979db64970b5eb967e7cf",
-    "reviewContentFingerprint": "37dd532e3620b6696c5756c2f09499a9eaa45479631f717c23eb61cb27e9d766",
-    "generatedAt": "2026-09-18T19:47:15.140Z",
-    "commit": "aac797108892787d24b7de1744d02c8bde8a3ca8",
+    "artifactKey": "worktree-3670cbe74264-ef3b565b5423",
+    "worktreeFingerprint": "ef3b565b54230a3f3df291927f18b719fa814e9023c89c6d2b4ed1edf9b5e700",
+    "reviewContentFingerprint": "8556328b98ecda4f7f43074a3a15da2776290e1fd078c3049f3af8904bec1410",
+    "generatedAt": "2026-09-19T20:21:51.459Z",
+    "commit": "3670cbe7426463d5879b9b75378549f587887358",
     "pass": true
   },
   "findings": [
