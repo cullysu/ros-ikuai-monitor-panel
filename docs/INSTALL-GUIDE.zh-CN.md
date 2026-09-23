@@ -81,17 +81,17 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 脚本会自动克隆源码、构建镜像、启动容器并设好开机自启。完成后打开
 `http://127.0.0.1:28646/`（在这台机器的浏览器里）。
 
-**方式 B：使用预构建镜像（不在这台机器上编译，更快）**
+**方式 B：使用预构建镜像（更快，但镜像仓目前是私有的）**
 
-到本项目的 GitHub Releases 页面，找到 v0.3.0 的说明里
-"预构建镜像"一节，整条复制执行，形如：
+项目同时在 GHCR 发布镜像（`main` 标签跟随最新 main 分支，`sha-<提交号>`
+标签锁定每次合入）。镜像仓库当前为私有，公开前此方式需要先
+`docker login ghcr.io`；不需要登录的通用路径是上面的方式 A。
+（仓库 owner 可在 GitHub → Packages → 该包 → Package settings 里一键
+改为 public，改完方式 B 即对所有人免登录可用：）
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt --image ghcr.io/cullysu/ros-ikuai-monitor-panel:sha-<40位提交号>
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt
 ```
-
-（`sha-<提交号>` 是与发布提交一一对应的不可变镜像标签，Release 页会
-给出写好的完整命令。）
 
 **管理命令**：
 
