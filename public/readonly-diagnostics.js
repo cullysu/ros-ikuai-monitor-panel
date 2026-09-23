@@ -4072,13 +4072,15 @@
       .status-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
     @media (max-width: 1180px) {
-      #overview .ik-home-status-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .status-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      /* 8 status tiles never split into 3 columns without an orphan hole;
+         stay at 4 columns so the grid stays 4x2 at this width. */
+      #overview .ik-home-status-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .status-strip { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
       .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 1023px) {
       #overview .ik-home-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .status-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .status-strip { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
       .readonly-diagnostics-root .readonly-summary-sticky > .readonly-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
     }
     @media (max-width: 479px) {
