@@ -1,7 +1,8 @@
 param(
     [string]$Python = "python",
     [string]$PackageName = "RouterOS-Triage-Panel-Windows",
-    [switch]$NoZip
+    [switch]$NoZip,
+    [switch]$OneFile
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +12,11 @@ $BuildVenv = Join-Path $RepoRoot ".venv-build"
 $BuildPython = Join-Path $BuildVenv "Scripts\python.exe"
 $DistDir = Join-Path $RepoRoot "dist\routeros-triage-panel"
 $ZipPath = Join-Path $RepoRoot ("dist\{0}.zip" -f $PackageName)
+$SpecPath = Join-Path $RepoRoot "routeros-triage-panel.spec"
+$OneFileExe = Join-Path $RepoRoot "dist\RouterOS Triage Panel.exe"
+if ($OneFile) {
+    $SpecPath = Join-Path $RepoRoot "routeros-triage-panel-onefile.spec"
+}
 
 if (-not (Test-Path -LiteralPath $BuildPython)) {
     & $Python -m venv $BuildVenv
@@ -21,10 +27,18 @@ if (-not (Test-Path -LiteralPath $BuildPython)) {
 
 Push-Location $RepoRoot
 try {
-    & $BuildPython -m PyInstaller (Join-Path $RepoRoot "routeros-triage-panel.spec") --noconfirm --clean
+    & $BuildPython -m PyInstaller $SpecPath --noconfirm --clean
 }
 finally {
     Pop-Location
+}
+
+if ($OneFile) {
+    if (-not (Test-Path -LiteralPath $OneFileExe)) {
+        throw "One-file build output not found: $OneFileExe"
+    }
+    Write-Host "Single-file EXE: $OneFileExe"
+    return
 }
 
 if (-not (Test-Path -LiteralPath $DistDir)) {

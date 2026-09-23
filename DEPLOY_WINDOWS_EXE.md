@@ -5,9 +5,16 @@ runs the panel.
 
 ## Release Status
 
-No official signed binary is published yet. Until a release ZIP exists in
-GitHub Releases with a checksum, treat the Windows EXE as a build-from-source
-path.
+Official Windows packages are published from tagged GitHub Releases:
+
+- `RouterOS-Triage-Panel-Windows-<version>.exe` - single-file EXE, double-click
+  to run (recommended first trial).
+- `RouterOS-Triage-Panel-Windows-<version>.zip` - extracted-folder bundle with
+  the localhost-alias tools.
+- Every asset ships with a `.sha256` checksum sidecar.
+
+The project does not provide code signing yet; verify the checksum against the
+GitHub Release before running a downloaded binary.
 
 If you receive a ZIP from another source, verify that you trust the source. The
 project does not yet provide code signing.
