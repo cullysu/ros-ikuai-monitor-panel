@@ -20,6 +20,10 @@ The Dude、备份工具或配置 diff 工具的替代品。
 安装路径只是部署方式，不是产品版本。能力模式见
 [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)。
 
+**第一次使用，直接看逐步安装指南：[docs/INSTALL-GUIDE.zh-CN.md](./docs/INSTALL-GUIDE.zh-CN.md)**
+（Windows 双击直装 / Docker 一条命令 / Linux systemd / RouterOS Container，
+四条路径都从 GitHub Releases 页面拿文件，每一步都有具体操作。）
+
 | 路径 | 适合谁 | 状态 |
 | --- | --- | --- |
 | Docker 一条命令 | 大多数 Linux/NAS/虚拟机用户 | 默认推荐 |

@@ -22,6 +22,12 @@ internet.
 Install paths are deployment choices, not product versions. Capability modes
 are documented separately in [PRODUCT_MODEL.md](./PRODUCT_MODEL.md).
 
+**First time here? Follow the step-by-step install guide:
+[docs/INSTALL-GUIDE.zh-CN.md](./docs/INSTALL-GUIDE.zh-CN.md)** (Chinese,
+with copy-paste commands for Windows EXE, Docker one-command, Linux
+systemd, and RouterOS Container; all files come from the GitHub Releases
+page).
+
 | Path | Best for | Status |
 |------|----------|--------|
 | Docker one-command | Most Linux/NAS/VM users who want the fastest install | Recommended default |
