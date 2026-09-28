@@ -22,6 +22,7 @@ os.environ.setdefault(
 )
 
 import app  # noqa: E402
+from ros_panel import panel_access  # noqa: E402  (后端拆分批次 6：守卫 flag 的 patch 靶)
 
 
 def make_rate_rest(
@@ -296,22 +297,23 @@ def assert_panel_network_config_helpers():
     assert app.panel_request_access_url({"Host": "10.0.0.50:28646"}, 28646) is None
     assert app.panel_host_header_is_allowed({"Host": "127.0.0.1:28646"}) is True
     assert app.panel_host_header_is_allowed({"Host": "10.0.0.50:28646"}) is False
-    original_public_profile = app.PUBLIC_ROUTEROS_PROFILE
+    # 守卫函数已迁至 ros_panel/panel_access.py，按其模块全局在调用时读取 flag，patch 靶随之改为 panel_access。
+    original_public_profile = panel_access.PUBLIC_ROUTEROS_PROFILE
     try:
-        app.PUBLIC_ROUTEROS_PROFILE = False
+        panel_access.PUBLIC_ROUTEROS_PROFILE = False
         assert app.panel_client_address_is_allowed(("10.0.0.20", 52344), {"Host": "10.0.0.5:28646"})
         assert app.panel_host_header_is_allowed({"Host": "10.0.0.5:28646"})
     finally:
-        app.PUBLIC_ROUTEROS_PROFILE = original_public_profile
-    original_trust_proxy = app.PANEL_TRUST_PROXY_HEADERS
+        panel_access.PUBLIC_ROUTEROS_PROFILE = original_public_profile
+    original_trust_proxy = panel_access.PANEL_TRUST_PROXY_HEADERS
     try:
-        app.PANEL_TRUST_PROXY_HEADERS = True
+        panel_access.PANEL_TRUST_PROXY_HEADERS = True
         assert app.panel_request_access_url(
             {"X-Forwarded-Host": "panel.lan", "X-Forwarded-Proto": "https", "X-Forwarded-Port": "443"},
             28646,
         ) is None
     finally:
-        app.PANEL_TRUST_PROXY_HEADERS = original_trust_proxy
+        panel_access.PANEL_TRUST_PROXY_HEADERS = original_trust_proxy
     assert app.panel_request_access_url({"Host": "http://bad.example"}, 28646) is None
     request_payload = app.panel_network_payload(request_url="http://127.0.0.1:28646/")
     assert request_payload["currentUrl"] == "http://127.0.0.1:28646/"
@@ -913,17 +915,18 @@ def assert_localhost_host_forward_guard_supports_routeros_container():
     assert not app.panel_host_header_is_allowed(direct_ip_headers)
     assert app.panel_client_address_is_allowed(("127.0.0.1", 52344), direct_ip_headers)
     assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
-    original = app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD
-    original_token = app.PANEL_LOCALHOST_FORWARD_TOKEN
+    # patch 靶同上：flag 已随守卫函数迁入 ros_panel/panel_access.py。
+    original = panel_access.PANEL_ALLOW_LOCALHOST_HOST_FORWARD
+    original_token = panel_access.PANEL_LOCALHOST_FORWARD_TOKEN
     try:
-        app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = True
-        app.PANEL_LOCALHOST_FORWARD_TOKEN = "fixture-forward-token"
+        panel_access.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = True
+        panel_access.PANEL_LOCALHOST_FORWARD_TOKEN = "fixture-forward-token"
         assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
         assert app.panel_client_address_is_allowed(remote_peer, token_headers)
         assert not app.panel_client_address_is_allowed(remote_peer, direct_ip_headers)
     finally:
-        app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = original
-        app.PANEL_LOCALHOST_FORWARD_TOKEN = original_token
+        panel_access.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = original
+        panel_access.PANEL_LOCALHOST_FORWARD_TOKEN = original_token
 
 
 def main():
