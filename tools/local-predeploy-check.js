@@ -395,14 +395,26 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
   }
 
   const index = await fetchText(baseUrl, { timeoutMs: 5000 });
-  record(report, 'GET / serves panel shell', index.response.ok && index.text.includes('id="app"') && index.text.includes('/layout-whitespace-patch.js'), {
+  record(report, 'GET / serves panel shell', index.response.ok && index.text.includes('id="app"') && index.text.includes('assets/panel-head.js'), {
     statusCode: index.response.status,
     bytes: index.text.length,
   });
 
+  const scriptSrcs = (index.text.match(/<script\b[^>]*>/gi) || [])
+    .map((tag) => (tag.match(/\bsrc=["']([^"']+)["']/i) || [])[1])
+    .filter(Boolean);
+  const foldedLayers = ['panel.js', 'layout-whitespace-patch.js', 'readonly-diagnostics.js', 'panel-professional-redesign'];
+  record(report, 'GET / loads exactly the bundled panel-head.js (layers folded)', index.response.ok
+    && scriptSrcs.length === 1
+    && scriptSrcs[0].includes('assets/panel-head.js')
+    && foldedLayers.every((legacy) => !scriptSrcs.some((src) => src.includes(legacy))), {
+    statusCode: index.response.status,
+    scriptSrcs,
+  });
+
   const assets = [
-    'layout-whitespace-patch.js',
-    'readonly-diagnostics.js',
+    'assets/panel-head.js',
+    'assets/panel.css',
   ];
   for (const asset of assets) {
     const result = await fetchText(`${baseUrl}${asset}`, { timeoutMs: 5000 });

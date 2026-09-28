@@ -1,5 +1,7 @@
 import ipaddress
+import os
 import re
+from pathlib import Path
 
 COUNTER_WRAP_MODULUS = 1 << 64
 _ROUTER_OS_MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
@@ -130,3 +132,18 @@ def format_routeros_clock(value):
         return text
     month = _ROUTER_OS_MONTHS.get(match.group(1).lower())
     return f"{match.group(3)}-{month:02d}-{int(match.group(2)):02d}" if month else text
+
+
+def env_value(name, default=None):
+    value = os.environ.get(name)
+    if os.name == "posix":
+        try:
+            environ = Path("/proc/self/environ").read_bytes()
+        except OSError:
+            environ = b""
+        if environ:
+            prefix = f"{name}=".encode()
+            matches = [entry[len(prefix):] for entry in environ.split(b"\0") if entry.startswith(prefix)]
+            if matches:
+                value = matches[-1].decode(errors="replace")
+    return default if value is None else value

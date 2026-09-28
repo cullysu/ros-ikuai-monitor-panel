@@ -33,6 +33,7 @@ from ros_panel.util import (
     _ROUTER_OS_MONTHS,
     compact_exception_text,
     counter_delta,
+    env_value,
     format_routeros_clock,
     format_routeros_uptime,
     split_connection_endpoint,
@@ -75,6 +76,77 @@ from ros_panel.endpoints import (
     endpoint,
 )
 from ros_panel.triage import ACTION_QUEUE_LIMIT, build_semantic_triage
+from ros_panel.diagnostics import (
+    CUSTOM_NAME_MAX_LENGTH,
+    READONLY_DIAGNOSTIC_CACHE_TTL,
+    READONLY_DIAGNOSTIC_DNS_TIMEOUT,
+    READONLY_DIAGNOSTIC_HTTP_TIMEOUT,
+    READONLY_DIAGNOSTIC_WORKERS,
+    READONLY_DIAGNOSTIC_TOTAL_TIMEOUT,
+    READONLY_DNS_DOMAINS,
+    READONLY_DNS_SERVERS,
+    READONLY_EXIT_TARGETS,
+    READONLY_HTTP_TARGETS,
+    READONLY_NIKKI_CONTROLLER,
+    address_is_globalish,
+    build_distribution_from_lines,
+    compact_config_rows,
+    count_pool_addresses,
+    dns_encode_name,
+    dns_read_name,
+    dns_query,
+    env_config_rows,
+    exit_probe,
+    file_mtime_summary,
+    http_probe,
+    infer_wan_interface_names,
+    is_fake_ip,
+    nikki_probe,
+    normalize_custom_name,
+    normalize_ip_key,
+    system_dns_query,
+    tcp_probe,
+)
+from ros_panel.router_config import (
+    DEFAULT_ROUTER_HOST,
+    REST_TIMEOUT,
+    ROUTER_CONFIG,
+    ROUTER_CONFIG_LOCK,
+    ROUTER_HOST,
+    ROUTER_LOGIN_HISTORY_LIMIT,
+    ROUTER_LOGIN_STORE_FILE,
+    ROUTER_LOGIN_STORE_LOCK,
+    ROUTER_PASSWORD,
+    ROUTER_PASSWORD_PLACEHOLDERS,
+    ROUTER_REST_PORT,
+    ROUTER_SSH_PORT,
+    ROUTER_USER,
+    SSH_BANNER_PROBE_TIMEOUT,
+    SSH_TIMEOUT,
+    _ROUTER_REST_PORT_SUFFIX,
+    clear_router_config,
+    describe_ssh_endpoint_probe,
+    find_saved_router_login,
+    format_ssh_connect_error,
+    forget_router_login,
+    get_ready_router_config,
+    get_router_config,
+    load_router_login_store_unlocked,
+    normalize_router_host,
+    normalize_router_ssh_port,
+    normalize_saved_router_entry,
+    persist_router_login_store_unlocked,
+    public_router_config,
+    public_saved_router_entry,
+    public_saved_router_logins,
+    remember_router_login,
+    restore_last_saved_router_login,
+    router_config_is_ready,
+    router_login_entry_id,
+    safe_ascii_preview,
+    set_router_config,
+    test_router_credentials,
+)
 
 
 def is_frozen_app():
@@ -126,21 +198,6 @@ def load_env_file(path):
     return True
 
 
-def env_value(name, default=None):
-    value = os.environ.get(name)
-    if os.name == "posix":
-        try:
-            environ = Path("/proc/self/environ").read_bytes()
-        except OSError:
-            environ = b""
-        if environ:
-            prefix = f"{name}=".encode()
-            matches = [entry[len(prefix):] for entry in environ.split(b"\0") if entry.startswith(prefix)]
-            if matches:
-                value = matches[-1].decode(errors="replace")
-    return default if value is None else value
-
-
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
     request_queue_size = 128
@@ -150,46 +207,6 @@ def load_panel_env():
     configured = os.getenv("ROS_PANEL_ENV_FILE")
     env_path = resolve_runtime_path(configured) if configured else BASE_DIR / "routeros-panel.env"
     return env_path if load_env_file(env_path) else None
-
-
-def env_config_rows(name):
-    raw = str(os.getenv(name, "") or "").strip()
-    if not raw:
-        return []
-    try:
-        parsed = json.loads(raw)
-    except Exception:
-        parsed = None
-    if isinstance(parsed, dict):
-        parsed = [parsed]
-    if isinstance(parsed, list):
-        return [item for item in parsed if isinstance(item, dict)]
-
-    rows = []
-    for index, part in enumerate(raw.split(","), start=1):
-        item = part.strip()
-        if not item:
-            continue
-        if "=" in item:
-            label, address = item.split("=", 1)
-        else:
-            label, address = f"DNS {index}", item
-        rows.append({"name": label.strip(), "address": address.strip()})
-    return rows
-
-
-def compact_config_rows(rows, *, address_key="address"):
-    compacted = []
-    seen = set()
-    for raw in rows:
-        row = raw if isinstance(raw, dict) else {}
-        address = str(row.get(address_key) or row.get("url") or "").strip()
-        if not address or address in seen:
-            continue
-        seen.add(address)
-        name = str(row.get("name") or row.get("label") or address).strip() or address
-        compacted.append({"name": name[:80], address_key: address})
-    return compacted
 
 
 def detect_panel_lan_ip():
@@ -679,13 +696,6 @@ def write_panel_network_env(bind, port, target, env_path=None):
 
 PANEL_ENV_FILE = load_panel_env()
 PUBLIC_DIR = resolve_runtime_path(os.getenv("ROS_PANEL_PUBLIC_DIR", str(BUNDLE_DIR / "public")))
-ROUTER_REST_PORT = max(1, min(65535, int(os.getenv("ROS_MONITOR_ROUTER_REST_PORT", "80") or 80)))
-_ROUTER_REST_PORT_SUFFIX = "" if ROUTER_REST_PORT == 80 else f":{ROUTER_REST_PORT}"
-DEFAULT_ROUTER_HOST = "192.168.88.1"
-ROUTER_HOST = env_value("ROS_MONITOR_ROUTER_HOST", DEFAULT_ROUTER_HOST)
-ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "ros-panel-readonly")
-ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "CHANGE_ME")
-ROUTER_SSH_PORT = int(os.getenv("ROS_MONITOR_ROUTER_SSH_PORT", "22"))
 PANEL_PROFILE_RAW = env_value("ROS_PANEL_PROFILE", "routeros_only")
 PANEL_BIND = normalize_panel_host(env_value("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
 PANEL_PORT = normalize_panel_port(env_value("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
@@ -695,8 +705,6 @@ POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 RATE_ZERO_CONFIRM_SAMPLES = max(1, int(os.getenv("ROS_MONITOR_RATE_ZERO_CONFIRM_SAMPLES", "2")))
 ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))
-REST_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_REST_TIMEOUT", "12")))
-SSH_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_SSH_TIMEOUT", "12")))
 STATIC_POLL_SECONDS = max(300, int(os.getenv("ROS_MONITOR_STATIC_POLL_SECONDS", "300")))
 STATIC_REST_WORKERS = max(1, min(3, int(os.getenv("ROS_MONITOR_STATIC_REST_WORKERS", "1"))))
 SLOW_REST_POLL_SECONDS = max(60, int(os.getenv("ROS_MONITOR_SLOW_REST_POLL_SECONDS", "60")))
@@ -737,66 +745,11 @@ DNS_STATIC_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT", "100"
 DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT", "300"))
 DNS_STATIC_CACHE_TTL = int(os.getenv("ROS_MONITOR_DNS_STATIC_CACHE_TTL", "60"))
 DNS_STATIC_FULL_REST_TIMEOUT = int(os.getenv("ROS_MONITOR_DNS_STATIC_FULL_REST_TIMEOUT", "35"))
-SSH_BANNER_PROBE_TIMEOUT = max(0.5, min(3.0, float(os.getenv("ROS_MONITOR_SSH_BANNER_PROBE_TIMEOUT", "1.5"))))
 IP_ALIAS_FILE = Path(os.getenv("ROS_PANEL_IP_ALIAS_FILE", str(BASE_DIR / "data" / "ip_aliases.json"))).expanduser()
-ROUTER_LOGIN_STORE_FILE = Path(os.getenv("ROS_PANEL_ROUTER_LOGIN_STORE_FILE", str(BASE_DIR / "data" / "router_logins.json"))).expanduser()
-ROUTER_LOGIN_HISTORY_LIMIT = max(1, int(os.getenv("ROS_PANEL_ROUTER_LOGIN_HISTORY_LIMIT", "32")))
-CUSTOM_NAME_MAX_LENGTH = int(os.getenv("ROS_PANEL_CUSTOM_NAME_MAX_LENGTH", "48"))
-READONLY_DIAGNOSTIC_CACHE_TTL = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_CACHE_TTL", "45"))
-READONLY_DIAGNOSTIC_DNS_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_DNS_TIMEOUT", "1.2"))
-READONLY_DIAGNOSTIC_HTTP_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_HTTP_TIMEOUT", "2.5"))
-READONLY_DIAGNOSTIC_WORKERS = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_WORKERS", "24"))
-READONLY_DIAGNOSTIC_TOTAL_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_TOTAL_TIMEOUT", "8"))
 WAN_LATENCY_TARGET = os.getenv("ROS_PANEL_WAN_LATENCY_TARGET", "www.baidu.com").strip() or "www.baidu.com"
 WAN_LATENCY_POLL_SECONDS = max(1, int(os.getenv("ROS_PANEL_WAN_LATENCY_POLL_SECONDS", "10")))
 WAN_LATENCY_TIMEOUT_MS = max(200, int(os.getenv("ROS_PANEL_WAN_LATENCY_TIMEOUT_MS", "1200")))
 
-READONLY_DNS_SERVERS = compact_config_rows(
-    env_config_rows("ROS_PANEL_READONLY_DNS_SERVERS")
-    or [
-        {
-            "name": os.getenv("ROS_PANEL_READONLY_ROUTER_DNS_NAME", "RouterOS DNS"),
-            "address": os.getenv("ROS_PANEL_READONLY_ROUTER_DNS", ROUTER_HOST),
-        },
-        {
-            "name": os.getenv("ROS_PANEL_READONLY_OPENWRT_DNS_NAME", "OpenWrt DNS"),
-            "address": os.getenv("ROS_PANEL_READONLY_OPENWRT_DNS", ""),
-        },
-    ]
-)
-
-READONLY_DNS_DOMAINS = [
-    {"name": "GitHub", "domain": "github.com", "expected": "proxy"},
-    {"name": "YouTube", "domain": "youtube.com", "expected": "proxy"},
-    {"name": "Google", "domain": "google.com", "expected": "proxy"},
-    {"name": "Apple", "domain": "apple.com", "expected": "direct"},
-    {"name": "Douyin", "domain": "douyin.com", "expected": "direct"},
-    {"name": "Bilibili", "domain": "bilibili.com", "expected": "direct"},
-    {"name": "Steam", "domain": "steampowered.com", "expected": "mixed"},
-    {"name": "PayPal", "domain": "paypal.com", "expected": "direct"},
-    {"name": "Cloudflare", "domain": "cloudflare.com", "expected": "proxy"},
-    {"name": "OpenAI", "domain": "openai.com", "expected": "proxy"},
-]
-
-READONLY_HTTP_TARGETS = [
-    {"name": "GitHub", "url": "https://github.com/", "expected": "proxy"},
-    {"name": "YouTube", "url": "https://www.youtube.com/generate_204", "expected": "proxy"},
-    {"name": "Google", "url": "https://www.google.com/generate_204", "expected": "proxy"},
-    {"name": "Apple Store", "url": "https://apps.apple.com/", "expected": "direct"},
-    {"name": "Douyin", "url": "https://www.douyin.com/", "expected": "direct"},
-    {"name": "Bilibili", "url": "https://www.bilibili.com/", "expected": "direct"},
-    {"name": "Steam", "url": "https://store.steampowered.com/", "expected": "mixed"},
-    {"name": "PayPal", "url": "https://www.paypal.com/", "expected": "direct"},
-    {"name": "Cloudflare", "url": "https://www.cloudflare.com/cdn-cgi/trace", "expected": "proxy"},
-    {"name": "OpenAI API", "url": "https://api.openai.com/", "expected": "proxy"},
-]
-
-READONLY_EXIT_TARGETS = [
-    {"name": "ipify", "url": "https://api.ipify.org?format=json", "type": "json_ip"},
-    {"name": "ifconfig.me", "url": "https://ifconfig.me/ip", "type": "text_ip"},
-    {"name": "Cloudflare Trace", "url": "https://www.cloudflare.com/cdn-cgi/trace", "type": "cloudflare_trace"},
-]
-READONLY_NIKKI_CONTROLLER = os.getenv("ROS_PANEL_READONLY_NIKKI_CONTROLLER", "").strip()
 
 def env_bool(name, default=False):
     raw = os.getenv(name)
@@ -901,442 +854,12 @@ def ping_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOU
         }
 
 
-ROUTER_PASSWORD_PLACEHOLDERS = {"", "CHANGE_ME", "changeme", "password"}
-ROUTER_CONFIG_LOCK = threading.RLock()
-ROUTER_CONFIG = {
-    "host": str(ROUTER_HOST or "").strip(),
-    "user": str(ROUTER_USER or "").strip(),
-    "password": str(ROUTER_PASSWORD or ""),
-    "sshPort": max(1, min(65535, to_int(ROUTER_SSH_PORT, 22))),
-    "source": "env",
-    "savedId": None,
-    "updatedAt": None,
-    "lastTest": None,
-}
-ROUTER_LOGIN_STORE_LOCK = threading.RLock()
-
-
-def normalize_router_host(value):
-    text = str(value or "").strip()
-    if not text:
-        raise ValueError("RouterOS address is required")
-    if "://" in text:
-        parsed = urlparse(text)
-        text = parsed.hostname or ""
-    text = text.strip().strip("[]")
-    if not text or "/" in text or "\\" in text or any(char.isspace() for char in text):
-        raise ValueError("RouterOS address must be an IP address or hostname")
-    if len(text) > 253:
-        raise ValueError("RouterOS address is too long")
-    return text
-
-
-def normalize_router_ssh_port(value):
-    port = to_int(value, 22)
-    if port < 1 or port > 65535:
-        raise ValueError("SSH port must be between 1 and 65535")
-    return port
-
-
-def router_config_is_ready(config):
-    password = str(config.get("password") or "").strip()
-    return bool(
-        str(config.get("host") or "").strip()
-        and str(config.get("user") or "").strip()
-        and password.strip()
-        and password not in ROUTER_PASSWORD_PLACEHOLDERS
-    )
-
-
-def get_router_config():
-    with ROUTER_CONFIG_LOCK:
-        return copy.deepcopy(ROUTER_CONFIG)
-
-
-def get_ready_router_config():
-    config = get_router_config()
-    if not router_config_is_ready(config):
-        raise RuntimeError("RouterOS SSH connection is not configured")
-    return config
-
-
-def public_router_config(config=None):
-    source = config or get_router_config()
-    password = str(source.get("password") or "").strip()
-    return {
-        "configured": router_config_is_ready(source),
-        "host": source.get("host") or "",
-        "user": source.get("user") or "",
-        "sshPort": to_int(source.get("sshPort"), 22),
-        # This generation's REST client is plain HTTP on port 80 by design.
-        "restScheme": "http",
-        "restPort": 80,
-        "source": source.get("source") or "memory",
-        "savedId": source.get("savedId"),
-        "updatedAt": source.get("updatedAt"),
-        "passwordSet": bool(password.strip()) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
-        "lastTest": copy.deepcopy(source.get("lastTest")),
-    }
-
-
 def dns_static_total_count_from_meta(dns_static_meta, fallback=DNS_STATIC_PREVIEW_LIMIT):
     meta = dns_static_meta if isinstance(dns_static_meta, dict) else {}
     for key in ("total_count", "totalCount", "count"):
         if key in meta:
             return to_int(meta.get(key), fallback)
     return to_int(fallback, DNS_STATIC_PREVIEW_LIMIT)
-
-
-def safe_ascii_preview(raw_bytes, limit=48):
-    preview = bytes(raw_bytes or b"")[:limit]
-    return "".join(chr(byte) if 32 <= byte < 127 else "." for byte in preview)
-
-
-def describe_ssh_endpoint_probe(host, port, timeout=SSH_BANNER_PROBE_TIMEOUT):
-    safe_host = str(host or "").strip() or "<empty-host>"
-    safe_port = to_int(port, 22)
-    safe_timeout = max(0.5, min(float(timeout or SSH_BANNER_PROBE_TIMEOUT), 3.0))
-    try:
-        with socket.create_connection((safe_host, safe_port), timeout=safe_timeout) as sock:
-            sock.settimeout(safe_timeout)
-            try:
-                banner = sock.recv(64)
-            except socket.timeout:
-                banner = b""
-    except socket.timeout:
-        return f"TCP connect to {safe_host}:{safe_port} timed out before SSH banner check"
-    except OSError as exc:
-        return f"TCP connect to {safe_host}:{safe_port} failed before SSH banner check: {exc}"
-
-    if banner.startswith(b"SSH-"):
-        return f"TCP connected to {safe_host}:{safe_port} and an SSH banner was visible"
-    if not banner:
-        return f"TCP connected to {safe_host}:{safe_port}, but no SSH banner arrived within {safe_timeout:.1f}s"
-
-    lowered = banner.lower()
-    if banner.startswith(b"HTTP/") or b"<html" in lowered:
-        detected = "HTTP"
-    elif banner.startswith(b"\x16\x03"):
-        detected = "TLS/HTTPS"
-    else:
-        detected = "non-SSH"
-    return (
-        f"TCP connected to {safe_host}:{safe_port}, but the endpoint did not speak SSH "
-        f"(detected {detected} banner: {safe_ascii_preview(banner)!r})"
-    )
-
-
-def format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT):
-    host = str((config or {}).get("host") or "").strip() or "<empty-host>"
-    port = to_int((config or {}).get("sshPort"), 22)
-    message = str(exc)
-    banner_error = "Error reading SSH protocol banner" in message
-    session_error = "No existing session" in message
-    if banner_error or session_error:
-        probe = describe_ssh_endpoint_probe(host, port, timeout=min(float(timeout or SSH_TIMEOUT), SSH_BANNER_PROBE_TIMEOUT))
-        return f"RouterOS SSH connect failed for {host}:{port}: {probe}. Original error: {message}"
-    return f"RouterOS SSH connect failed for {host}:{port}: {message}"
-
-
-def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None, saved_id=None):
-    normalized = {
-        "host": normalize_router_host(host),
-        "user": str(user or "").strip(),
-        "password": str(password or ""),
-        "sshPort": normalize_router_ssh_port(ssh_port),
-        "source": source,
-        "savedId": saved_id,
-        "updatedAt": format_iso_now(),
-        "lastTest": copy.deepcopy(last_test),
-    }
-    if not normalized["user"]:
-        raise ValueError("RouterOS username is required")
-    if not normalized["password"].strip():
-        raise ValueError("RouterOS password is required")
-    with ROUTER_CONFIG_LOCK:
-        ROUTER_CONFIG.update(normalized)
-    return public_router_config(normalized)
-
-
-def clear_router_config():
-    with ROUTER_CONFIG_LOCK:
-        ROUTER_CONFIG.update(
-            {
-                "password": "",
-                "source": "ui",
-                "savedId": None,
-                "updatedAt": format_iso_now(),
-                "lastTest": None,
-            }
-        )
-    return public_router_config()
-
-
-def router_login_entry_id(host, user, ssh_port):
-    raw = f"{normalize_router_host(host).lower()}|{str(user or '').strip()}|{normalize_router_ssh_port(ssh_port)}"
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
-
-
-def normalize_saved_router_entry(raw):
-    if not isinstance(raw, dict):
-        return None
-    try:
-        host = normalize_router_host(raw.get("host"))
-        user = str(raw.get("user") or "").strip()
-        ssh_port = normalize_router_ssh_port(raw.get("sshPort") or raw.get("port") or 22)
-    except Exception:
-        return None
-    if not user:
-        return None
-    entry_id = str(raw.get("id") or router_login_entry_id(host, user, ssh_port)).strip()
-    password = str(raw.get("password") or "")
-    return {
-        "id": entry_id,
-        "host": host,
-        "user": user,
-        "password": password,
-        "sshPort": ssh_port,
-        "label": str(raw.get("label") or host).strip()[:80],
-        "source": str(raw.get("source") or "saved").strip() or "saved",
-        "createdAt": raw.get("createdAt") or raw.get("updatedAt") or format_iso_now(),
-        "updatedAt": raw.get("updatedAt") or format_iso_now(),
-        "lastUsedAt": raw.get("lastUsedAt") or raw.get("updatedAt") or format_iso_now(),
-        "lastTest": copy.deepcopy(raw.get("lastTest")),
-    }
-
-
-def load_router_login_store_unlocked():
-    try:
-        if not ROUTER_LOGIN_STORE_FILE.exists():
-            return []
-        payload = json.loads(ROUTER_LOGIN_STORE_FILE.read_text(encoding="utf-8-sig"))
-        source = payload.get("entries", []) if isinstance(payload, dict) else []
-        entries = []
-        seen = set()
-        for raw in source:
-            entry = normalize_saved_router_entry(raw)
-            if not entry or entry["id"] in seen:
-                continue
-            if entry.get("password"):
-                entry["password"] = dpapi_unprotect_secret(entry.get("password")) or ""
-            seen.add(entry["id"])
-            entries.append(entry)
-        entries.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
-        return entries[:ROUTER_LOGIN_HISTORY_LIMIT]
-    except Exception:
-        return []
-
-
-def persist_router_login_store_unlocked(entries):
-    ROUTER_LOGIN_STORE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    normalized = []
-    seen = set()
-    for raw in entries:
-        entry = normalize_saved_router_entry(raw)
-        if not entry or entry["id"] in seen:
-            continue
-        seen.add(entry["id"])
-        password = str(entry.get("password") or "")
-        if password and password not in ROUTER_PASSWORD_PLACEHOLDERS:
-            entry = {**entry, "password": dpapi_protect_secret(password)}
-        normalized.append(entry)
-    normalized.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
-    payload = {
-        "version": 1,
-        "updatedAt": format_iso_now(),
-        "passwordProtection": "dpapi" if os.name == "nt" else "plain",
-        "warning": (
-            "Passwords are DPAPI-protected per Windows user."
-            if os.name == "nt"
-            else "This local file stores RouterOS SSH passwords in clear text for this panel instance. Keep it private."
-        ),
-        "entries": normalized[:ROUTER_LOGIN_HISTORY_LIMIT],
-    }
-    tmp_path = ROUTER_LOGIN_STORE_FILE.with_suffix(".json.tmp")
-    tmp_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    try:
-        os.chmod(tmp_path, 0o600)
-    except Exception:
-        pass
-    tmp_path.replace(ROUTER_LOGIN_STORE_FILE)
-    try:
-        os.chmod(ROUTER_LOGIN_STORE_FILE, 0o600)
-    except Exception:
-        pass
-
-
-def public_saved_router_entry(entry):
-    password = str(entry.get("password") or "").strip()
-    return {
-        "id": entry.get("id"),
-        "host": entry.get("host") or "",
-        "user": entry.get("user") or "",
-        "sshPort": to_int(entry.get("sshPort"), 22),
-        "label": entry.get("label") or entry.get("host") or "",
-        "source": entry.get("source") or "saved",
-        "createdAt": entry.get("createdAt"),
-        "updatedAt": entry.get("updatedAt"),
-        "lastUsedAt": entry.get("lastUsedAt"),
-        "passwordSaved": bool(password) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
-        "lastTest": copy.deepcopy(entry.get("lastTest")),
-    }
-
-
-def public_saved_router_logins():
-    with ROUTER_LOGIN_STORE_LOCK:
-        return [public_saved_router_entry(entry) for entry in load_router_login_store_unlocked()]
-
-
-def find_saved_router_login(saved_id):
-    saved_id = str(saved_id or "").strip()
-    if not saved_id:
-        return None
-    with ROUTER_LOGIN_STORE_LOCK:
-        for entry in load_router_login_store_unlocked():
-            if entry.get("id") == saved_id:
-                return copy.deepcopy(entry)
-    return None
-
-
-def remember_router_login(host, user, password, ssh_port=22, last_test=None, source="ui"):
-    now = format_iso_now()
-    entry = normalize_saved_router_entry(
-        {
-            "id": router_login_entry_id(host, user, ssh_port),
-            "host": host,
-            "user": user,
-            "password": password,
-            "sshPort": ssh_port,
-            "label": host,
-            "source": source,
-            "updatedAt": now,
-            "lastUsedAt": now,
-            "lastTest": copy.deepcopy(last_test),
-        }
-    )
-    if not entry:
-        raise ValueError("Saved RouterOS login is invalid")
-    with ROUTER_LOGIN_STORE_LOCK:
-        stored_entries = load_router_login_store_unlocked()
-        existing = next((row for row in stored_entries if row.get("id") == entry["id"]), None)
-        if existing:
-            entry["createdAt"] = existing.get("createdAt") or entry["createdAt"]
-        entries = [row for row in stored_entries if row.get("id") != entry["id"]]
-        entries.insert(0, entry)
-        persist_router_login_store_unlocked(entries)
-    return copy.deepcopy(entry)
-
-
-def forget_router_login(saved_id):
-    saved_id = str(saved_id or "").strip()
-    removed = False
-    with ROUTER_LOGIN_STORE_LOCK:
-        entries = []
-        for entry in load_router_login_store_unlocked():
-            if entry.get("id") == saved_id:
-                removed = True
-                continue
-            entries.append(entry)
-        persist_router_login_store_unlocked(entries)
-    with ROUTER_CONFIG_LOCK:
-        if ROUTER_CONFIG.get("savedId") == saved_id:
-            ROUTER_CONFIG["savedId"] = None
-            ROUTER_CONFIG["source"] = "ui"
-    return removed
-
-
-def restore_last_saved_router_login():
-    current = get_router_config()
-    if router_config_is_ready(current):
-        return public_router_config(current)
-    with ROUTER_LOGIN_STORE_LOCK:
-        entries = load_router_login_store_unlocked()
-    for entry in entries:
-        if router_config_is_ready(entry):
-            with ROUTER_CONFIG_LOCK:
-                ROUTER_CONFIG.update(
-                    {
-                        "host": entry["host"],
-                        "user": entry["user"],
-                        "password": entry["password"],
-                        "sshPort": entry["sshPort"],
-                        "source": "saved",
-                        "savedId": entry["id"],
-                        "updatedAt": entry.get("lastUsedAt") or entry.get("updatedAt"),
-                        "lastTest": copy.deepcopy(entry.get("lastTest")),
-                    }
-                )
-            return public_router_config()
-    return public_router_config(current)
-
-
-def test_router_credentials(host, user, password, ssh_port=22):
-    config = {
-        "host": normalize_router_host(host),
-        "user": str(user or "").strip(),
-        "password": str(password or ""),
-        "sshPort": normalize_router_ssh_port(ssh_port),
-    }
-    if not config["user"]:
-        raise ValueError("RouterOS username is required")
-    if not config["password"].strip():
-        raise ValueError("RouterOS password is required")
-
-    started_at = time.time()
-    test = {
-        "ssh": {"ok": False, "identity": None, "error": None, "elapsedMs": None},
-        "rest": {"ok": False, "status": None, "error": None, "elapsedMs": None},
-    }
-
-    ssh_started = time.time()
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    try:
-        client.connect(
-            config["host"],
-            port=config["sshPort"],
-            username=config["user"],
-            password=config["password"],
-            timeout=SSH_TIMEOUT,
-            banner_timeout=SSH_TIMEOUT,
-            auth_timeout=SSH_TIMEOUT,
-            allow_agent=False,
-            look_for_keys=False,
-        )
-        stdin, stdout, stderr = client.exec_command(":put [/system/identity/get name]", timeout=SSH_TIMEOUT)
-        stdout.channel.settimeout(SSH_TIMEOUT)
-        stderr.channel.settimeout(SSH_TIMEOUT)
-        identity = stdout.read().decode("utf-8", errors="replace").strip()
-        error = stderr.read().decode("utf-8", errors="replace").strip()
-        exit_status = stdout.channel.recv_exit_status()
-        if exit_status != 0 or error:
-            raise RuntimeError(error or f"SSH command exited with status {exit_status}")
-        test["ssh"].update({"ok": True, "identity": identity or "RouterOS"})
-    except Exception as exc:
-        test["ssh"]["error"] = format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT)
-    finally:
-        test["ssh"]["elapsedMs"] = round((time.time() - ssh_started) * 1000)
-        try:
-            client.close()
-        except Exception:
-            pass
-
-    rest_started = time.time()
-    session = requests.Session()
-    session.auth = (config["user"], config["password"])
-    try:
-        response = session.get(f"http://{config['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/system/resource", timeout=min(REST_TIMEOUT, 8))
-        test["rest"]["status"] = response.status_code
-        response.raise_for_status()
-        test["rest"]["ok"] = True
-    except Exception as exc:
-        test["rest"]["error"] = compact_exception_text(exc)
-    finally:
-        test["rest"]["elapsedMs"] = round((time.time() - rest_started) * 1000)
-        test["elapsedMs"] = round((time.time() - started_at) * 1000)
-        session.close()
-
-    return test
 
 
 def normalize_panel_profile(value):
@@ -1399,448 +922,6 @@ def build_panel_capabilities(wan_lines, pppoe_count):
         "singleWan": wan_count == 1,
         "multiWan": wan_count > 1,
     }
-
-
-def address_is_globalish(address_text):
-    try:
-        text = str(address_text or "").strip()
-        if not text:
-            return False
-        ip_obj = ipaddress.ip_interface(text).ip if "/" in text else ipaddress.ip_address(text)
-        if ip_obj.version == 4:
-            if (
-                ip_obj.is_private
-                or ip_obj in CGNAT_NETWORK
-                or ip_obj.is_loopback
-                or ip_obj.is_link_local
-                or ip_obj.is_multicast
-                or ip_obj.is_unspecified
-                or ip_obj.is_reserved
-            ):
-                return False
-            return True
-        if (
-            ip_obj.is_private
-            or ip_obj.is_loopback
-            or ip_obj.is_link_local
-            or ip_obj.is_multicast
-            or ip_obj.is_unspecified
-            or ip_obj.is_reserved
-        ):
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def infer_wan_interface_names(rest, addresses_by_interface):
-    interface_types = {row.get("name"): str(row.get("type", "")).lower() for row in rest.get("interfaces", [])}
-    wan_names = {row.get("name") for row in rest.get("pppoe", []) if row.get("name")}
-    wan_names.update(
-        item.get("interface")
-        for item in rest.get("dhcp_clients", [])
-        if item.get("interface") and not to_bool(item.get("disabled"))
-    )
-    defaults = [
-        row for row in rest.get("routes", [])
-        if row.get("dst-address") == "0.0.0.0/0" and not to_bool(row.get("disabled"))
-    ]
-    for route in defaults:
-        gateway = str(route.get("gateway") or "").strip()
-        if not gateway:
-            continue
-        gateway_name = gateway.split("%", 1)[1] if "%" in gateway else gateway
-        if gateway_name in interface_types:
-            wan_names.add(gateway_name)
-    for iface_name, address_rows in addresses_by_interface.items():
-        if not iface_name or iface_name in wan_names:
-            continue
-        iface_type = interface_types.get(iface_name, "")
-        low_name = str(iface_name).lower()
-        if iface_type in {"bridge", "loopback", "wireguard"}:
-            continue
-        if low_name.startswith(("bridge", "docker", "veth", "lo", "tailscale", "zerotier")):
-            continue
-        if any(address_is_globalish(item.get("address")) for item in address_rows):
-            wan_names.add(iface_name)
-    return {name for name in wan_names if name}
-
-
-def build_distribution_from_lines(lines):
-    rows = list(lines or [])
-    total_rate = sum(max(0, to_int(row.get("upRate"))) + max(0, to_int(row.get("downRate"))) for row in rows)
-    return [
-        {
-            "name": row.get("name", "-"),
-            "share": round((((to_int(row.get("upRate")) + to_int(row.get("downRate"))) / total_rate) * 100), 2)
-            if total_rate
-            else 0,
-            "upRate": to_int(row.get("upRate")),
-            "downRate": to_int(row.get("downRate")),
-            "status": row.get("status", "-"),
-        }
-        for row in rows
-    ]
-
-
-def count_pool_addresses(ranges):
-    total = 0
-    for raw_part in str(ranges or "").split(","):
-        part = raw_part.strip()
-        if not part:
-            continue
-        try:
-            if "-" in part:
-                start_text, end_text = [item.strip() for item in part.split("-", 1)]
-                start_ip = ipaddress.ip_address(start_text)
-                end_ip = ipaddress.ip_address(end_text)
-                if start_ip.version != end_ip.version:
-                    continue
-                start_int = int(start_ip)
-                end_int = int(end_ip)
-                if end_int >= start_int:
-                    total += end_int - start_int + 1
-            else:
-                ipaddress.ip_address(part)
-                total += 1
-        except Exception:
-            continue
-    return total
-
-
-def normalize_ip_key(value):
-    text = str(value or "").strip()
-    if not text or text == "-":
-        return ""
-    if text.startswith("[") and text.endswith("]"):
-        text = text[1:-1].strip()
-    if "/" in text:
-        text = text.split("/", 1)[0].strip()
-    try:
-        return str(ipaddress.ip_address(text))
-    except Exception:
-        return text
-
-
-def normalize_custom_name(value):
-    text = re.sub(r"\s+", " ", str(value or "").strip())
-    if not text:
-        return ""
-    return text[:CUSTOM_NAME_MAX_LENGTH]
-
-
-def is_fake_ip(value):
-    try:
-        address = ipaddress.ip_address(str(value or "").strip())
-        return address.version == 4 and address in ipaddress.ip_network("198.18.0.0/15")
-    except Exception:
-        return False
-
-
-def dns_encode_name(domain):
-    parts = [part for part in str(domain or "").strip(".").split(".") if part]
-    return b"".join(bytes([len(part.encode("idna"))]) + part.encode("idna") for part in parts) + b"\x00"
-
-
-def dns_read_name(payload, offset, depth=0):
-    if depth > 8:
-        raise ValueError("DNS name compression loop")
-    labels = []
-    jumped = False
-    next_offset = offset
-    while True:
-        if offset >= len(payload):
-            raise ValueError("DNS name outside packet")
-        length = payload[offset]
-        if length == 0:
-            offset += 1
-            if not jumped:
-                next_offset = offset
-            break
-        if length & 0xC0 == 0xC0:
-            if offset + 1 >= len(payload):
-                raise ValueError("DNS pointer outside packet")
-            pointer = ((length & 0x3F) << 8) | payload[offset + 1]
-            if not jumped:
-                next_offset = offset + 2
-            offset = pointer
-            jumped = True
-            depth += 1
-            if depth > 8:
-                raise ValueError("DNS pointer loop")
-            continue
-        offset += 1
-        label = payload[offset : offset + length]
-        try:
-            labels.append(label.decode("idna"))
-        except Exception:
-            labels.append(label.decode("ascii", errors="replace"))
-        offset += length
-        if not jumped:
-            next_offset = offset
-    return ".".join(labels), next_offset
-
-
-def dns_query(server, domain, qtype):
-    qtype_name = "AAAA" if qtype == 28 else "A"
-    started_at = time.time()
-    transaction_id = os.urandom(2)
-    question = dns_encode_name(domain) + qtype.to_bytes(2, "big") + (1).to_bytes(2, "big")
-    packet = (
-        transaction_id
-        + b"\x01\x00"
-        + (1).to_bytes(2, "big")
-        + (0).to_bytes(2, "big")
-        + (0).to_bytes(2, "big")
-        + (0).to_bytes(2, "big")
-        + question
-    )
-    result = {
-        "server": server,
-        "domain": domain,
-        "type": qtype_name,
-        "answers": [],
-        "fakeIp": False,
-        "rcode": None,
-        "elapsedMs": None,
-        "error": None,
-    }
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(READONLY_DIAGNOSTIC_DNS_TIMEOUT)
-    try:
-        sock.sendto(packet, (server, 53))
-        response, _ = sock.recvfrom(4096)
-        elapsed_ms = round((time.time() - started_at) * 1000)
-        result["elapsedMs"] = elapsed_ms
-        if len(response) < 12 or response[:2] != transaction_id:
-            raise ValueError("invalid DNS response")
-        flags = int.from_bytes(response[2:4], "big")
-        result["rcode"] = flags & 0x0F
-        qdcount = int.from_bytes(response[4:6], "big")
-        ancount = int.from_bytes(response[6:8], "big")
-        offset = 12
-        for _ in range(qdcount):
-            _, offset = dns_read_name(response, offset)
-            offset += 4
-        answers = []
-        for _ in range(ancount):
-            _, offset = dns_read_name(response, offset)
-            if offset + 10 > len(response):
-                raise ValueError("truncated DNS answer")
-            answer_type = int.from_bytes(response[offset : offset + 2], "big")
-            answer_class = int.from_bytes(response[offset + 2 : offset + 4], "big")
-            offset += 8
-            rdlength = int.from_bytes(response[offset : offset + 2], "big")
-            offset += 2
-            rdata = response[offset : offset + rdlength]
-            offset += rdlength
-            if answer_class != 1:
-                continue
-            if answer_type == 1 and len(rdata) == 4:
-                answers.append(socket.inet_ntop(socket.AF_INET, rdata))
-            elif answer_type == 28 and len(rdata) == 16:
-                answers.append(socket.inet_ntop(socket.AF_INET6, rdata))
-        result["answers"] = answers
-        result["fakeIp"] = any(is_fake_ip(item) for item in answers)
-    except Exception as exc:
-        result["elapsedMs"] = round((time.time() - started_at) * 1000)
-        result["error"] = str(exc)
-    finally:
-        sock.close()
-    return result
-
-
-def system_dns_query(domain, qtype):
-    qtype_name = "AAAA" if qtype == 28 else "A"
-    family = socket.AF_INET6 if qtype == 28 else socket.AF_INET
-    started_at = time.time()
-    result = {
-        "server": "system",
-        "domain": domain,
-        "type": qtype_name,
-        "answers": [],
-        "fakeIp": False,
-        "rcode": None,
-        "elapsedMs": None,
-        "error": None,
-    }
-    try:
-        infos = socket.getaddrinfo(str(domain), None, family, socket.SOCK_STREAM)
-        answers = []
-        for info in infos:
-            address = info[4][0]
-            if address not in answers:
-                answers.append(address)
-        result["answers"] = answers
-        result["fakeIp"] = any(is_fake_ip(item) for item in answers)
-        result["rcode"] = 0
-    except Exception as exc:
-        result["error"] = str(exc)
-    result["elapsedMs"] = round((time.time() - started_at) * 1000)
-    return result
-
-
-def http_probe(target):
-    started_at = time.time()
-    result = {
-        "name": target.get("name", "-"),
-        "url": target.get("url", "-"),
-        "expected": target.get("expected", "-"),
-        "status": None,
-        "ok": False,
-        "elapsedMs": None,
-        "finalHost": None,
-        "error": None,
-    }
-    try:
-        response = requests.get(
-            target["url"],
-            timeout=READONLY_DIAGNOSTIC_HTTP_TIMEOUT,
-            allow_redirects=True,
-            stream=True,
-            headers={"User-Agent": "RouterOSTriagePanel-Readonly-Diagnostics/1.0"},
-        )
-        result["status"] = response.status_code
-        result["ok"] = response.status_code < 500
-        result["finalHost"] = urlparse(response.url).netloc
-        response.close()
-    except Exception as exc:
-        result["error"] = str(exc)
-    result["elapsedMs"] = round((time.time() - started_at) * 1000)
-    return result
-
-
-def tcp_probe(target):
-    started_at = time.time()
-    parsed = urlparse(target.get("url", ""))
-    host = parsed.hostname or target.get("host") or target.get("name", "")
-    port = int(target.get("port") or (parsed.port or 443))
-    result = {
-        "name": target.get("name", "-"),
-        "host": host,
-        "port": port,
-        "expected": target.get("expected", "-"),
-        "ok": False,
-        "elapsedMs": None,
-        "error": None,
-    }
-    try:
-        with socket.create_connection((host, port), timeout=READONLY_DIAGNOSTIC_HTTP_TIMEOUT):
-            result["ok"] = True
-    except Exception as exc:
-        result["error"] = str(exc)
-    result["elapsedMs"] = round((time.time() - started_at) * 1000)
-    return result
-
-
-def exit_probe(target):
-    started_at = time.time()
-    result = {
-        "name": target.get("name", "-"),
-        "url": target.get("url", "-"),
-        "ip": None,
-        "raw": "",
-        "elapsedMs": None,
-        "error": None,
-    }
-    try:
-        response = requests.get(
-            target["url"],
-            timeout=READONLY_DIAGNOSTIC_HTTP_TIMEOUT,
-            headers={"User-Agent": "RouterOSTriagePanel-Readonly-Diagnostics/1.0"},
-        )
-        text = response.text.strip()
-        result["raw"] = text[:500]
-        if target.get("type") == "json_ip":
-            payload = response.json()
-            result["ip"] = payload.get("ip")
-        elif target.get("type") == "cloudflare_trace":
-            for line in text.splitlines():
-                if line.startswith("ip="):
-                    result["ip"] = line.split("=", 1)[1].strip()
-                    break
-        else:
-            result["ip"] = text.split()[0] if text else None
-    except Exception as exc:
-        result["error"] = str(exc)
-    result["elapsedMs"] = round((time.time() - started_at) * 1000)
-    return result
-
-
-def file_mtime_summary(path):
-    try:
-        stat = Path(path).stat()
-        return {
-            "path": str(Path(path)),
-            "exists": True,
-            "mtime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(stat.st_mtime)),
-            "size": stat.st_size,
-        }
-    except Exception as exc:
-        return {
-            "path": str(Path(path)),
-            "exists": False,
-            "mtime": None,
-            "size": 0,
-            "error": str(exc),
-        }
-
-
-def nikki_probe():
-    result = {
-        "controller": READONLY_NIKKI_CONTROLLER,
-        "ok": False,
-        "disabled": False,
-        "version": None,
-        "providers": [],
-        "providerCount": 0,
-        "ruleCount": 0,
-        "error": None,
-    }
-    if not READONLY_NIKKI_CONTROLLER:
-        result["disabled"] = True
-        result["error"] = "Nikki controller is not configured"
-        return result
-    try:
-        version_response = requests.get(
-            f"{READONLY_NIKKI_CONTROLLER.rstrip('/')}/version",
-            timeout=READONLY_DIAGNOSTIC_HTTP_TIMEOUT,
-        )
-        if version_response.status_code < 500:
-            result["ok"] = version_response.ok
-            try:
-                version_payload = version_response.json()
-                result["version"] = version_payload.get("version") or version_payload.get("meta")
-            except Exception:
-                result["version"] = version_response.text.strip()[:80]
-        providers_response = requests.get(
-            f"{READONLY_NIKKI_CONTROLLER.rstrip('/')}/providers/rules",
-            timeout=READONLY_DIAGNOSTIC_HTTP_TIMEOUT,
-        )
-        if providers_response.ok:
-            payload = providers_response.json()
-            providers = payload.get("providers") if isinstance(payload, dict) else {}
-            if isinstance(providers, dict):
-                rows = []
-                for name, provider in providers.items():
-                    rules = provider.get("ruleCount") or provider.get("rule-count") or len(provider.get("rules") or [])
-                    rows.append(
-                        {
-                            "name": name,
-                            "type": provider.get("type", "-"),
-                            "vehicleType": provider.get("vehicleType") or provider.get("vehicle-type") or "-",
-                            "ruleCount": to_int(rules),
-                            "updatedAt": provider.get("updatedAt") or provider.get("updated-at") or "-",
-                        }
-                    )
-                rows.sort(key=lambda row: row["ruleCount"], reverse=True)
-                result["providers"] = rows[:40]
-                result["providerCount"] = len(rows)
-                result["ruleCount"] = sum(row["ruleCount"] for row in rows)
-                result["ok"] = True
-    except Exception as exc:
-        result["error"] = str(exc)
-    return result
 
 
 class Collector:
