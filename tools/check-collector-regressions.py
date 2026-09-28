@@ -674,10 +674,11 @@ def assert_deploy_defaults_are_project_safe():
 
 
 def assert_frontend_charts_skip_missing_values():
+    # panel.js / layout-whitespace-patch.js / readonly-diagnostics.js 已字节级折入
+    # panel-head.js（HEAD 170e762），面板前端只剩单文件，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
     for function_name in ("lineChart", "rateAxisLineChart", "resourcePercentChart"):
         marker = f"function {function_name}"
@@ -700,7 +701,8 @@ def assert_frontend_charts_skip_missing_values():
     assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
     assert "if (value === null || value === undefined || value === '') return null;" in index_source
     assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
-    layout_patch_source = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
+    # layout-whitespace-patch.js 已折入 panel-head.js，断言改读单文件，语义不变。
+    layout_patch_source = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")
     ops_chart_body = layout_patch_source[ops_chart_start : ops_chart_start + 2200]
     assert "function opsChartNumber" in layout_patch_source
@@ -724,10 +726,10 @@ def assert_frontend_wan_aggregate_default():
 
 
 def assert_router_login_password_save_is_opt_in():
+    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
     app_source = (ROOT / "app.py").read_text(encoding="utf-8")
     checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
@@ -741,8 +743,14 @@ def assert_router_login_password_save_is_opt_in():
 
 
 def assert_router_login_tries_rest_when_ssh_fails():
-    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
-    panel_js = (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
+    # test_router_credentials 现位于 ros_panel/router_config.py（后端拆分批次 5），
+    # app_source 拼上新模块内容，断言字符串与语义保持不变。
+    app_source = (
+        (ROOT / "app.py").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "ros_panel" / "router_config.py").read_text(encoding="utf-8")
+    )
+    # panel.js 已折入 panel-head.js，路由登录相关前端断言改读单文件，语义不变。
+    panel_js = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     assert "Skipped because SSH login failed" not in app_source
     # app.py 现经 _ROUTER_REST_PORT_SUFFIX 拼接 REST 端口（该改动早于本任务、已在 HEAD 提交中），
     # 旧断言的精确字符串已失效，此处对齐当前实现，语义不变：SSH 失败后仍探测 REST system/resource。
@@ -763,7 +771,8 @@ def assert_router_login_tries_rest_when_ssh_fails():
 def assert_line_trend_density_is_continuous():
     panel_head = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     panel_css = (ROOT / "public" / "assets" / "panel.css").read_text(encoding="utf-8")
-    layout_patch = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
+    # layout-whitespace-patch.js 已折入 panel-head.js，断言改读单文件，语义不变。
+    layout_patch = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     get_rows = panel_head[panel_head.find("function getLineTrendRows") : panel_head.find("function lineTrendDensity")]
     assert ").slice(0, 8);" not in get_rows
     assert "function lineTrendDensity(count)" in panel_head
@@ -789,10 +798,10 @@ def assert_line_trend_density_is_continuous():
 
 
 def assert_frontend_handles_partial_snapshots():
+    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
     assert "const o = snapshot.overview || {};" in index_source
     assert "const history = o.history || {};" in index_source
@@ -822,10 +831,10 @@ def assert_collector_status_messages_are_specific():
     assert "正在启动" in issue["summary"], issue
     assert "未知错误" not in issue["summary"], issue
 
+    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
     render_start = index_source.find("function renderApp")
     render_body = index_source[render_start : render_start + 1200]
