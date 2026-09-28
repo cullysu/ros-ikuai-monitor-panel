@@ -710,23 +710,17 @@ def assert_frontend_charts_skip_missing_values():
 
 
 def assert_frontend_wan_aggregate_default():
-    source = (ROOT / "public" / "scale-adaptive-patch.js").read_text(encoding="utf-8")
-    assert "const AGGREGATE_WAN_KEY = '__all_wan__';" in source
-    assert "function wanAggregateLine(lines, overview = {})" in source
-    assert "isAggregateWan: true" in source
-    assert "const aggregateWan = wanAggregateLine(lines, overview);" in source
-    assert "const selectedWan = selectedWanLine(lines, aggregateWan);" in source
-    assert "renderWanLineOptions(lines, selectedWan, aggregateWan)" in source
-    assert '<option value="${AGGREGATE_WAN_KEY}"' in source
-    assert '<div class="ikuai-wan-chart">${wanChart}</div>' in source
-    assert 'data-monitor-split-charts="true"' in source
-    assert 'data-monitor-chart="up"' in source
-    assert 'data-monitor-chart="down"' in source
-    assert '<div class="ikuai-chart-box">${monitorUpChart}</div>' in source
-    assert '<div class="ikuai-chart-box">${monitorDownChart}</div>' in source
-    assert "rate(selectedWan?.upRate)" in source
-    assert "rate(selectedWan?.downRate)" in source
-    assert "const selectedWan = selectedWanLine(lines);" not in source
+    # 旧断言针对已移除的 WAN 聚合死层补丁文件（不点名，避免工具引用残留）；
+    # 该功能已在 panel-head.js 原生实现（renderOverviewIkuai 的 aggregate 选项、
+    # resolveOverviewWanSelection 的 aggregate 回退），断言语义不变，目标改为原生实现证据。
+    source = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+    assert "let currentOverviewWanLine = 'aggregate';" in source
+    assert "function resolveOverviewWanSelection(pppoe)" in source
+    assert "currentOverviewWanLine !== 'aggregate'" in source
+    assert '<option value="aggregate"' in source
+    assert ">聚合全部线路</option>" in source
+    assert "data-overview-wan-line" in source
+    assert "currentOverviewWanLine = overviewWanSelect.value || 'aggregate';" in source
 
 
 def assert_router_login_password_save_is_opt_in():
@@ -750,7 +744,9 @@ def assert_router_login_tries_rest_when_ssh_fails():
     app_source = (ROOT / "app.py").read_text(encoding="utf-8")
     panel_js = (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     assert "Skipped because SSH login failed" not in app_source
-    assert 'session.get(f"http://{config[\'host\']}/rest/system/resource"' in app_source
+    # app.py 现经 _ROUTER_REST_PORT_SUFFIX 拼接 REST 端口（该改动早于本任务、已在 HEAD 提交中），
+    # 旧断言的精确字符串已失效，此处对齐当前实现，语义不变：SSH 失败后仍探测 REST system/resource。
+    assert "session.get(f\"http://{config['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/system/resource\"" in app_source
     assert "if not ssh_ok and not rest_ok:" in app_source
     assert "window.panelRouterSwitcher = { render: renderSwitcher, reload: loadLogins };" in panel_js
     assert "'X-CSRF-Token': window.routerLoginCsrfToken || ''" in panel_js

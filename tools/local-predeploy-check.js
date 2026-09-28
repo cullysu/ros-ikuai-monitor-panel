@@ -403,7 +403,6 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
   const assets = [
     'layout-whitespace-patch.js',
     'readonly-diagnostics.js',
-    'panel-professional-redesign.js',
   ];
   for (const asset of assets) {
     const result = await fetchText(`${baseUrl}${asset}`, { timeoutMs: 5000 });
