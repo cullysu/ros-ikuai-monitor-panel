@@ -593,6 +593,7 @@
       font-weight: 500;
       line-height: 1.25;
       word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .record-grid {
       display: grid;
@@ -622,6 +623,7 @@
       font-weight: 500;
       line-height: 1.2;
       word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
     .tag.ok { background: var(--ok-soft); color: var(--ok); }
@@ -632,7 +634,7 @@
     .progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6eaef4 0%, var(--primary) 100%); }
     .stack { display: flex; flex-direction: column; gap: 6px; }
     .line-bar { display: grid; grid-template-columns: 120px 1fr 110px; gap: 12px; align-items: center; }
-    .line-name { font-size: 12px; font-weight: 500; color: var(--text-soft); }
+    .line-name { font-size: 12px; font-weight: 500; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
     .line-share { font: 500 13px/1 "Bahnschrift","Microsoft YaHei",sans-serif; text-align: right; }
     .dual { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .notice { border-radius: 8px; border: 1px solid #a3caf5; background: #f0f6fd; color: #416180; padding: 12px 14px; font-size: 12px; line-height: 1.7; }
@@ -1747,7 +1749,23 @@
       color: #465364;
       font: 700 18px/1 "Bahnschrift","Microsoft YaHei",sans-serif;
       margin-top: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
+    .ik-fold-more { margin-top: 8px; }
+    .ik-fold-more > summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      border: 1px dashed #c9d8ea;
+      border-radius: 8px;
+      color: #416180;
+      font-size: 12px;
+      background: #f6f9fd;
+      user-select: none;
+    }
+    .ik-fold-more > summary:hover { background: #eef5fd; }
+    .ik-fold-more[open] > summary { margin-bottom: 8px; }
     /* Responsive shell collapse is disabled; keep rail/sidebar/content in desktop layout. */
     .app.horizontal-shell {
       grid-template-columns: 1fr;

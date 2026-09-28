@@ -1034,16 +1034,10 @@ const appEl = document.getElementById('app');
       setPageSubtitle('');
     }
 
-    const FIXED_PPPOE_LINE_ORDER = ['pppoe-out10', 'pppoe-out20', 'pppoe-out30', 'pppoe-out40', 'pppoe-out50', 'pppoe-out60', 'pppoe-out70', 'pppoe-out80'];
-    const FIXED_PPPOE_LINE_ORDER_MAP = new Map(FIXED_PPPOE_LINE_ORDER.map((name, index) => [name, index]));
-
     function getPppoeDisplayOrder(name) {
-      const normalized = String(name || '').trim().toLowerCase();
-      if (FIXED_PPPOE_LINE_ORDER_MAP.has(normalized)) {
-        return FIXED_PPPOE_LINE_ORDER_MAP.get(normalized);
-      }
-      const suffixMatch = normalized.match(/pppoe-out(\d+)$/i);
-      return suffixMatch ? FIXED_PPPOE_LINE_ORDER.length + Number(suffixMatch[1]) : Number.POSITIVE_INFINITY;
+      // Natural ordering by the pppoe-out suffix number; no device-specific fixed table.
+      const suffixMatch = String(name || '').trim().toLowerCase().match(/pppoe-out(\d+)$/);
+      return suffixMatch ? Number(suffixMatch[1]) : Number.POSITIVE_INFINITY;
     }
 
     function sortPppoeNamedRows(rows) {
@@ -1138,7 +1132,7 @@ const appEl = document.getElementById('app');
       return `<div class="record-item"><div class="record-label">${escapeHtml(label)}</div><div class="record-value">${value || '-'}</div></div>`;
     }
 
-    function table(headers, rows, emptyText) {
+    function table(headers, rows, emptyText, indexOffset = 0) {
       const body = Array.isArray(rows) ? rows.join('') : String(rows || '');
       if (!body.trim()) return emptyBlock(emptyText);
       const parser = new DOMParser();
@@ -1155,7 +1149,7 @@ const appEl = document.getElementById('app');
         return `
           <article class="record-card">
             <div class="record-head">
-              <span class="record-index">${fmtNumber(rowIndex + 1)}</span>
+              <span class="record-index">${fmtNumber(rowIndex + 1 + indexOffset)}</span>
               <div class="record-title">
                 <div class="record-label">${escapeHtml(primary.label)}</div>
                 <div class="record-value">${primary.value}</div>
@@ -1184,6 +1178,69 @@ const appEl = document.getElementById('app');
 
     function section(title, id, tip, body) {
       return `<section class="section" id="${id}"><div class="section-head"><div class="section-title">${title}</div><div class="section-tip">${tip || ''}</div></div>${body}</section>`;
+    }
+
+    function scaleHint(snapshot, ...keys) {
+      const parts = [];
+      for (const key of keys) {
+        const meta = snapshot?.meta?.scale?.[key];
+        if (meta && meta.hasMore) parts.push(`显示 ${fmtNumber(meta.shownCount)} / 共 ${fmtNumber(meta.totalCount)} 条`);
+      }
+      return parts.join('，');
+    }
+
+    function withScaleHint(snapshot, tip, ...keys) {
+      const hint = scaleHint(snapshot, ...keys);
+      return hint ? `${tip} · ${hint}` : tip;
+    }
+
+    function buildSnapshotAnomalyNotice(snapshot) {
+      const o = snapshot?.overview || {};
+      const parts = Array.isArray(o.resourceAnomaly) ? o.resourceAnomaly.filter(Boolean) : [];
+      if (o.clockAnomaly) {
+        const offset = Number(o.clockOffsetSeconds);
+        parts.push(Number.isFinite(offset) && o.clockOffsetSeconds !== null
+          ? `路由器时钟与面板相差约 ${fmtNumber(Math.round(Math.abs(offset) / 60))} 分钟，日志时间可能不可信`
+          : '路由器时钟读数无法解析，日志时间可能不可信');
+      }
+      if (!parts.length) return '';
+      return `<div class="notice danger" style="margin-bottom:12px">数据异常提醒：${escapeHtml(parts.join('；'))}。</div>`;
+    }
+
+    function tableWithFold(headers, rows, emptyText, keep = 24) {
+      const list = Array.isArray(rows) ? rows : [];
+      if (list.length <= keep) return table(headers, list, emptyText);
+      const head = table(headers, list.slice(0, keep), emptyText);
+      const tail = table(headers, list.slice(keep), '', keep);
+      return `${head}<details class="ik-fold-more"><summary>展开其余 ${fmtNumber(list.length - keep)} 条（共 ${fmtNumber(list.length)} 条）</summary>${tail}</details>`;
+    }
+
+    // Fold blocks live inside a page that re-renders on every poll tick; keep
+    // their expanded state across re-renders so "展开其余" stays usable.
+    const FOLD_STATE_STORE_KEY = 'ikFoldOpenState.v1';
+
+    function loadFoldStateMap() {
+      try { return JSON.parse(localStorage.getItem(FOLD_STATE_STORE_KEY) || '{}'); } catch (error) { return {}; }
+    }
+
+    function restoreFoldStates() {
+      const map = loadFoldStateMap();
+      document.querySelectorAll('details.ik-fold-more').forEach((details, index) => {
+        const key = `${currentSection}:${index}`;
+        details.setAttribute('data-fold-key', key);
+        if (map[key]) details.open = true;
+      });
+    }
+
+    if (!window.__ikFoldEventsBound) {
+      window.__ikFoldEventsBound = true;
+      document.addEventListener('toggle', (event) => {
+        const details = event.target;
+        if (!details || !details.matches || !details.matches('details.ik-fold-more[data-fold-key]')) return;
+        const map = loadFoldStateMap();
+        map[details.getAttribute('data-fold-key')] = details.open;
+        try { localStorage.setItem(FOLD_STATE_STORE_KEY, JSON.stringify(map)); } catch (error) {}
+      }, true);
     }
 
     function metricCard(label, value, footA, footB) {
@@ -1888,18 +1945,21 @@ const appEl = document.getElementById('app');
         </a>`).join('');
       const lineTotalRate = pppoe.reduce((sum, row) => sum + totalTrafficRate(row), 0);
       const lineShareBars = pppoe.slice(0, 8).map((row) => {
-        const share = lineTotalRate ? (totalTrafficRate(row) / lineTotalRate) * 100 : 0;
+        // Single line with no traffic is 100% of the observed share, not 0%.
+        const share = lineTotalRate ? (totalTrafficRate(row) / lineTotalRate) * 100 : pppoe.length === 1 ? 100 : 0;
         return `<div class="line-bar">
           <div class="line-name">${escapeHtml(row.name)}</div>
           ${progress(share)}
           <div class="line-share">${share.toFixed(1)}%</div>
         </div>`;
       }).join('');
+      const hiddenLineCount = Math.max(0, pppoe.length - 8);
       const lineShareBlock = lineShareBars
-        ? `<div class="ik-home-line-bars">${lineShareBars}</div>`
+        ? `<div class="ik-home-line-bars">${lineShareBars}</div>${hiddenLineCount ? `<div class="subtle" style="margin-top:6px">另 ${fmtNumber(hiddenLineCount)} 条线路未计入占比条（共 ${fmtNumber(pppoe.length)} 条）</div>` : ''}`
         : emptyBlock('当前未采集到 PPPoE 线路占比');
 
       return section('系统首页', 'overview', '只读运维仪表盘：WAN、终端、连接、资源和排行集中展示', `
+        ${buildSnapshotAnomalyNotice(snapshot)}
         <div class="ik-home-status-grid">${statusTiles}</div>
         <div class="ik-home-layout">
           <div class="stack">
@@ -2278,7 +2338,7 @@ const appEl = document.getElementById('app');
           </div>
           <div class="card" style="margin-top:12px">
             <div class="card-head"><div class="card-title">线路状态检测</div><div class="subtle">按当前实时状态检测</div></div>
-            <div class="card-body">${table(['线路', '拨号状态', 'IP 检测', '父接口', '默认路由', '实时上行速率', '实时下行速率', '丢包/错误'], detectRows, '暂无线路状态检测数据')}</div>
+            <div class="card-body">${tableWithFold(['线路', '拨号状态', 'IP 检测', '父接口', '默认路由', '实时上行速率', '实时下行速率', '丢包/错误'], detectRows, '暂无线路状态检测数据')}</div>
           </div>`;
       } else if (currentInterfaceView === 'ipv6') {
         body = `
@@ -2323,12 +2383,12 @@ const appEl = document.getElementById('app');
           ${toolbar}
           <div class="card" style="margin-top:12px">
             <div class="card-head"><div class="card-title">线路核心流量</div><div class="subtle">优先展示实时上下行与累计流量</div></div>
-            <div class="card-body">${table(['线路', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], lineRows, '暂无宽带线路数据')}</div>
+            <div class="card-body">${tableWithFold(['线路', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], lineRows, '暂无宽带线路数据')}</div>
           </div>
           <div class="grid-2" style="margin-top:12px">
             <div class="card">
               <div class="card-head"><div class="card-title">接口流量详情</div><div class="subtle">${fmtNumber(interfaces.length)} 项</div></div>
-              <div class="card-body">${table(['接口', '角色', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'MAC', '丢包/错误'], ifaceRows, '暂无接口数据')}</div>
+              <div class="card-body">${tableWithFold(['接口', '角色', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'MAC', '丢包/错误'], ifaceRows, '暂无接口数据')}</div>
             </div>
             <div class="stack">
               <div class="card">
@@ -2344,7 +2404,7 @@ const appEl = document.getElementById('app');
             </div>
           </div>`;
       }
-      return section('接口总览', 'interfaces', interfaceViews[currentInterfaceView].tip, `
+      return section('接口总览', 'interfaces', withScaleHint(snapshot, interfaceViews[currentInterfaceView].tip, 'interfaces'), `
         <div class="card">
           <div class="card-body">
             ${tabs}
@@ -2440,15 +2500,21 @@ const appEl = document.getElementById('app');
       } else {
         body = `
           ${toolbar}
-          ${table(['名称', 'IP', '状态', '最后出现', '实时上行速率', '实时下行速率', 'MAC', '连接数', '累计流量'], renderTerminalRows(ipv4Terminals), '暂无在线终端监控数据')}
+          ${tableWithFold(['名称', 'IP', '状态', '最后出现', '实时上行速率', '实时下行速率', 'MAC', '连接数', '累计流量'], renderTerminalRows(ipv4Terminals), '暂无在线终端监控数据')}
           ${snapshot.arp.alerts.length ? `<div style="margin-top:12px" class="notice">${snapshot.arp.alerts.map((item) => `${escapeHtml(item.kind)}：${escapeHtml(item.value)} (${escapeHtml(item.detail)})`).join('；')}</div>` : ''}
           <div class="grid-2" style="margin-top:12px">
-            <div class="card"><div class="card-head"><div class="card-title">ARP 列表</div><div class="subtle">${fmtNumber(snapshot.arp.items.length)} 条</div></div><div class="card-body">${table(['IP', '主机名', 'MAC', '类型', '状态', '最后出现'], arpRows, '暂无 ARP 数据')}</div></div>
+            <div class="card"><div class="card-head"><div class="card-title">ARP 列表</div><div class="subtle">${fmtNumber(snapshot.arp.items.length)} 条</div></div><div class="card-body">${tableWithFold(['IP', '主机名', 'MAC', '类型', '状态', '最后出现'], arpRows, '暂无 ARP 数据')}</div></div>
             <div class="card"><div class="card-head"><div class="card-title">DHCP 地址池</div><div class="subtle">${fmtNumber(snapshot.dhcp.pools.length)} 组</div></div><div class="card-body"><div class="stack">${snapshot.dhcp.pools.map((pool) => `<div><div class="chart-label"><span>${escapeHtml(pool.name)}</span><span>${fmtNumber(pool.used)} / ${fmtNumber(pool.total)}</span></div>${progress(pool.usage)}</div>`).join('') || emptyBlock('暂无 DHCP 地址池')}</div></div></div>
           </div>
-          <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">DHCP 租约与静态分配</div><div class="subtle">${fmtNumber(snapshot.dhcp.leases.length)} 条</div></div><div class="card-body">${table(['IP', '主机名', 'MAC', '服务', '状态', '最后出现', '分配方式'], leaseRows, '暂无 DHCP 数据')}</div></div>`;
+          <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">DHCP 租约与静态分配</div><div class="subtle">${fmtNumber(snapshot.dhcp.leases.length)} 条</div></div><div class="card-body">${tableWithFold(['IP', '主机名', 'MAC', '服务', '状态', '最后出现', '分配方式'], leaseRows, '暂无 DHCP 数据')}</div></div>`;
       }
-      return section('终端监控', 'terminals', terminalViews[currentTerminalView].tip, `
+      const lanScope = snapshot.terminalsLanScope || {};
+      const droppedOutsideLan = Math.max(0, Number(lanScope.arpOutOfScope || 0));
+      const terminalScopeNotice = (!allTerminals.length && droppedOutsideLan > 0)
+        ? `<div class="notice" style="margin-bottom:12px">读取到 ${fmtNumber(droppedOutsideLan)} 条 ARP 记录在路由器 LAN 网段外（共 ${fmtNumber(lanScope.arpTotal || 0)} 条）。终端列表只统计 LAN 网段内的设备，所以当前显示为 0 台。</div>`
+        : '';
+      return section('终端监控', 'terminals', withScaleHint(snapshot, terminalViews[currentTerminalView].tip, 'terminals', 'dhcpLeases'), `
+        ${terminalScopeNotice}
         <div class="card">
           <div class="card-body">
             ${tabs}
@@ -2602,7 +2668,7 @@ const appEl = document.getElementById('app');
       const alerts = (security.alerts || []).length
         ? `<div class="notice">${security.alerts.slice(0, 12).map((row) => `${escapeHtml(row.time)} · ${escapeHtml(row.topics)} · ${escapeHtml(row.message)}`).join('<br>')}</div>`
         : `<div class="notice">当前未读取到显著防火墙 / 异常访问告警。</div>`;
-      return section(sectionTitle, sectionId, sectionTip, `
+      return section(sectionTitle, sectionId, withScaleHint(snapshot, sectionTip, 'securityFilters', 'addressLists'), `
         <div class="grid-4">
           ${metricCard('ACL 规则数', fmtNumber((security.filters || []).length), '仅统计可读 Filter', '')}
           ${metricCard('名单条目数', fmtNumber((security.addressLists || []).length), '黑白名单 / 地址集', '')}
@@ -2611,8 +2677,8 @@ const appEl = document.getElementById('app');
         </div>
         <div style="margin-top:12px">${alerts}</div>
         <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">防火墙 Filter 规则</div><div class="subtle">按命中包数排序</div></div><div class="card-body">${table(['链', '动作', '备注', '命中包', '命中流量', '状态'], filterRows, '暂无 Filter 规则数据')}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">黑白名单与地址集</div><div class="subtle">仅读取已存在条目</div></div><div class="card-body">${table(['列表名', '类别', '地址', '超时', '备注'], listRows, '暂无地址名单数据')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">防火墙 Filter 规则</div><div class="subtle">按命中包数排序</div></div><div class="card-body">${tableWithFold(['链', '动作', '备注', '命中包', '命中流量', '状态'], filterRows, '暂无 Filter 规则数据')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">黑白名单与地址集</div><div class="subtle">仅读取已存在条目</div></div><div class="card-body">${tableWithFold(['列表名', '类别', '地址', '超时', '备注'], listRows, '暂无地址名单数据')}</div></div>
         </div>`);
     }
 
@@ -2648,7 +2714,7 @@ const appEl = document.getElementById('app');
           <td>${row.disabled || row.inactive ? tag('未生效', 'warn') : tag('生效', 'ok')}</td>
           <td>${escapeHtml(row.comment || '-')}</td>
         </tr>`);
-      return section('分流监控中心', 'balance', '默认路由、Mangle 分流规则与策略路由全部归入分流监控中心', `
+      return section('分流监控中心', 'balance', withScaleHint(snapshot, '默认路由、Mangle 分流规则与策略路由全部归入分流监控中心', 'pppoe', 'mangleRules'), `
         <div class="grid-4">
           ${metricCard('负载模式', escapeHtml(lb.mode || '-'), lb.pccDetected ? '检测到 PCC 分流' : '未检测到 PCC', '')}
           ${metricCard('活动线路数', fmtNumber(lb.activeLines), '基于默认路由活动态', '')}
@@ -2666,7 +2732,7 @@ const appEl = document.getElementById('app');
         </div>
         <div class="grid-2" style="margin-top:12px">
           <div class="card"><div class="card-head"><div class="card-title">默认路由状态</div><div class="subtle">${fmtNumber((lb.defaultRoutes || []).length)} 条</div></div><div class="card-body">${table(['网关', '距离', '路由表', '状态', '备注'], routeRows, '暂无默认路由数据')}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">Mangle 分流规则</div><div class="subtle">按命中流量排序</div></div><div class="card-body">${table(['链', '动作', '新路由标记', '备注', '命中包', '命中流量'], mangleRows, '暂无 Mangle 分流数据')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">Mangle 分流规则</div><div class="subtle">按命中流量排序</div></div><div class="card-body">${tableWithFold(['链', '动作', '新路由标记', '备注', '命中包', '命中流量'], mangleRows, '暂无 Mangle 分流数据')}</div></div>
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">策略路由规则</div><div class="subtle">${fmtNumber((lb.routingRules || []).length)} 条</div></div><div class="card-body">${table(['动作', '路由表', '源地址', '目标地址', '状态', '备注'], ruleRows, '暂无策略路由规则')}</div></div>`);
     }
@@ -2723,7 +2789,7 @@ const appEl = document.getElementById('app');
           <td>${escapeHtml(toDisplayText(row.lastSeen || '-'))}</td>
           <td>${row.static ? tag('静态', 'info') : tag('动态', 'ok')}</td>
         </tr>`);
-      return section('DHCP 服务', 'dhcp', 'DHCP 服务器、地址池与租约全部按 RouterOS 实读数据展示', `
+      return section('DHCP 服务', 'dhcp', withScaleHint(snapshot, 'DHCP 服务器、地址池与租约全部按 RouterOS 实读数据展示', 'dhcpLeases'), `
         <div class="grid-4">
           ${metricCard('DHCP 服务器', fmtNumber(servers.length), `运行中 ${fmtNumber(servers.filter((row) => row.running).length)} 个`, '')}
           ${metricCard('地址池', fmtNumber(pools.length), `空闲池 ${fmtNumber(pools.filter((row) => Number(row.available || 0) > 0).length)} 个`, '')}
@@ -2734,7 +2800,7 @@ const appEl = document.getElementById('app');
           <div class="card"><div class="card-head"><div class="card-title">DHCP 服务器</div><div class="subtle">${fmtNumber(servers.length)} 台</div></div><div class="card-body">${table(['服务名', '接口', '地址池', '租期', '状态'], serverRows, '当前未读取到 DHCP 服务器')}</div></div>
           <div class="card"><div class="card-head"><div class="card-title">DHCP 地址池</div><div class="subtle">${fmtNumber(pools.length)} 组</div></div><div class="card-body"><div class="stack">${pools.map((pool) => `<div><div class="chart-label"><span>${escapeHtml(pool.name)}</span><span>${fmtNumber(pool.used)} / ${fmtNumber(pool.total)}</span></div>${progress(pool.usage)}</div>`).join('') || emptyBlock('当前未读取到 DHCP 地址池')}</div></div></div>
         </div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">DHCP 租约与静态分配</div><div class="subtle">${fmtNumber(leases.length)} 条</div></div><div class="card-body">${table(['IP', '主机名', 'MAC', '服务', '状态', '最后出现', '分配方式'], leaseRows, '当前未读取到 DHCP 租约')}</div></div>`);
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">DHCP 租约与静态分配</div><div class="subtle">${fmtNumber(leases.length)} 条</div></div><div class="card-body">${tableWithFold(['IP', '主机名', 'MAC', '服务', '状态', '最后出现', '分配方式'], leaseRows, '当前未读取到 DHCP 租约')}</div></div>`);
     }
 
     function renderRoutes(snapshot) {
@@ -2792,7 +2858,7 @@ const appEl = document.getElementById('app');
           <td>${tag(routeType(row), row.static ? 'info' : row.dynamic ? 'ok' : 'warn')}</td>
           <td>${routeStatus(row)}</td>
         </tr>`);
-      return section('静态路由', 'routes', '真实路由表、默认路由与静态路由按 RouterOS 实表展示', `
+      return section('静态路由', 'routes', withScaleHint(snapshot, '真实路由表、默认路由与静态路由按 RouterOS 实表展示', 'routes'), `
         <div class="grid-2" style="margin-top:12px">
           <div class="card"><div class="card-head"><div class="card-title">默认路由状态</div><div class="subtle">${fmtNumber((routes.defaultRoutes || []).length)} 条</div></div><div class="card-body">${table(['路由表', '网关', '距离', '状态', '备注'], defaultRows, '当前未读取到默认路由')}</div></div>
           <div class="card"><div class="card-head"><div class="card-title">路由概览</div><div class="subtle">仅展示 RouterOS 可读字段</div></div><div class="card-body">${infoGrid([
@@ -2805,7 +2871,7 @@ const appEl = document.getElementById('app');
           ])}</div></div>
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">静态路由列表</div><div class="subtle">${fmtNumber((routes.staticRoutes || []).length)} 条</div></div><div class="card-body">${table(['目标网段', '网关', '路由表', '距离', '类型', '状态', '备注'], staticRows, '当前未读取到静态路由')}</div></div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">当前路由表</div><div class="subtle">前 ${fmtNumber((routes.items || []).length)} 条</div></div><div class="card-body">${table(['目标网段', '网关', '路由表', '距离', '地址族', '类型', '状态'], allRows, '当前未读取到路由表')}</div></div>`);
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">当前路由表</div><div class="subtle">前 ${fmtNumber((routes.items || []).length)} 条</div></div><div class="card-body">${tableWithFold(['目标网段', '网关', '路由表', '距离', '地址族', '类型', '状态'], allRows, '当前未读取到路由表')}</div></div>`);
     }
 
     function totalTrafficRate(row, upKey = 'upRate', downKey = 'downRate') {
@@ -2919,7 +2985,8 @@ const appEl = document.getElementById('app');
           <td>${fmtNumber(row.connections)}</td>
           <td>${fmtBytes(row.sessionBytes)}</td>
         </tr>`);
-      return section('流量负载', 'trafficLoad', '按 RouterOS 真实吞吐数据展示宽带占用、接口吞吐与终端流量排行', `
+      return section('流量负载', 'trafficLoad', withScaleHint(snapshot, '按 RouterOS 真实吞吐数据展示宽带占用、接口吞吐与终端流量排行', 'interfaces', 'terminals'), `
+        ${buildSnapshotAnomalyNotice(snapshot)}
         <div class="grid-4">
           ${metricCard('总上行速率', fmtRate(overview.uplinkBps), `在线宽带 ${fmtNumber(activeLines)} / ${fmtNumber(pppoe.length)}`, busiestLine ? `最繁忙 ${escapeHtml(busiestLine.name)}` : '暂无在线宽带')}
           ${metricCard('总下行速率', fmtRate(overview.downlinkBps), `在线终端 ${fmtNumber(overview.onlineTerminals)}`, `有流量终端 ${fmtNumber(trafficTerminals.length)}`)}
@@ -2932,10 +2999,10 @@ const appEl = document.getElementById('app');
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">线路速率趋势</div><div class="subtle">${fmtNumber(getLineTrendRows(pppoe).length)} 条线路同步展示</div></div><div class="card-body">${renderLineTrendGrid(getLineTrendRows(pppoe), {emptyText:'当前未采集到可展示的线路趋势'})}</div></div>
         <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">宽带实时负载</div><div class="subtle">按 PPPoE 实时吞吐排序</div></div><div class="card-body">${table(['线路', '状态', '父接口', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], lineRows, '当前未读取到宽带实时负载')}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">接口吞吐排行</div><div class="subtle">按接口实时吞吐排序</div></div><div class="card-body">${table(['接口', '角色', '类型', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], interfaceRows, '当前未读取到接口吞吐排行')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">宽带实时负载</div><div class="subtle">按 PPPoE 实时吞吐排序</div></div><div class="card-body">${tableWithFold(['线路', '状态', '父接口', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], lineRows, '当前未读取到宽带实时负载')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">接口吞吐排行</div><div class="subtle">按接口实时吞吐排序</div></div><div class="card-body">${tableWithFold(['接口', '角色', '类型', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], interfaceRows, '当前未读取到接口吞吐排行')}</div></div>
         </div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">终端实时流量排行</div><div class="subtle">按终端实时吞吐与累计流量综合查看</div></div><div class="card-body">${table(['名称', 'IP', '实时上行速率', '实时下行速率', '连接数', '累计流量'], terminalRows, '当前未读取到终端实时流量排行')}</div></div>`);
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">终端实时流量排行</div><div class="subtle">按终端实时吞吐与累计流量综合查看</div></div><div class="card-body">${tableWithFold(['名称', 'IP', '实时上行速率', '实时下行速率', '连接数', '累计流量'], terminalRows, '当前未读取到终端实时流量排行')}</div></div>`);
     }
 
     function renderLoadAudit(snapshot) {
@@ -3099,7 +3166,12 @@ const appEl = document.getElementById('app');
         const arrow = active ? (queueView.sortDir === 'asc' ? ' ▲' : ' ▼') : '';
         return `<th class="ls-sortable${active ? ' is-active' : ''}" data-ls-sort="${escapeHtml(column.key)}" title="点击切换排序">${escapeHtml(column.label)}${arrow}</th>`;
       }).join('');
-      const bodyRows = sortedQueue.map((item, index) => `<tr>${visibleColumns.map((column) => `<td>${column.render(item, index)}</td>`).join('')}</tr>`).join('');
+      const allBodyRows = sortedQueue.map((item, index) => `<tr>${visibleColumns.map((column) => `<td>${column.render(item, index)}</td>`).join('')}</tr>`);
+      const queueKeep = 24;
+      const queueTableBlock = (rows) => `<div class="ops-table-wrap"><table class="ops-table ops-compact-table"><thead><tr>${headerCells}</tr></thead><tbody>${rows}</tbody></table></div>`;
+      const queueTableHtml = allBodyRows.length <= queueKeep
+        ? queueTableBlock(allBodyRows.join(''))
+        : `${queueTableBlock(allBodyRows.slice(0, queueKeep).join(''))}<details class="ik-fold-more"><summary>展开其余 ${fmtNumber(allBodyRows.length - queueKeep)} 条（共 ${fmtNumber(allBodyRows.length)} 条）</summary>${queueTableBlock(allBodyRows.slice(queueKeep).join(''))}</details>`;
       const columnManagerRows = queueView.order.map((key) => {
         const column = lineStatusColumns.find((entry) => entry.key === key);
         const visible = !queueView.hidden.includes(key);
@@ -3122,7 +3194,7 @@ const appEl = document.getElementById('app');
             <div class="ls-col-pop-foot">点击表头可按该列排序；勾选控制显隐，↑↓ 调整顺序。</div>
           </div>` : ''}
         </div>`;
-      const lineBoardCards = diagnostics.map((item) => `
+      const allBoardCards = diagnostics.map((item) => `
         <div class="ls-line-card is-${item.level}">
           <div class="ls-line-card-head"><b>${escapeHtml(item.row.name)}</b>${tag(item.stateLabel, item.level)}</div>
           <div class="ls-line-closure">
@@ -3132,8 +3204,13 @@ const appEl = document.getElementById('app');
           </div>
           <div class="ls-line-rates"><span>↑ ${fmtRate(item.row.upRate)}</span><span>↓ ${fmtRate(item.row.downRate)}</span></div>
           <div class="ls-line-foot">${escapeHtml(item.action)} · ${escapeHtml(item.role.label)} · 丢/错 ${fmtNumber(item.dropTotal)}/${fmtNumber(item.errorTotal)}</div>
-        </div>`).join('');
-      return section('线路状态', 'lineStatus', '按健康闭环、出口角色和处理优先级定位线路问题', `
+        </div>`);
+      const boardKeep = 24;
+      const boardFold = allBoardCards.length > boardKeep
+        ? `<details class="ik-fold-more" style="margin-top:8px"><summary>展开其余 ${fmtNumber(allBoardCards.length - boardKeep)} 条线路板卡（共 ${fmtNumber(allBoardCards.length)} 条）</summary><div class="grid-4">${allBoardCards.slice(boardKeep).join('')}</div></details>`
+        : '';
+      const lineBoardCards = allBoardCards.length <= boardKeep ? allBoardCards.join('') : allBoardCards.slice(0, boardKeep).join('');
+      return section('线路状态', 'lineStatus', withScaleHint(snapshot, '按健康闭环、出口角色和处理优先级定位线路问题', 'wan'), `
         <div class="grid-4">
           ${metricCard('可用出口', fmtNumber(diagnostics.filter((item) => item.level === 'ok').length), `总线路 ${fmtNumber(pppoe.length)} 条`, '健康闭环完整')}
           ${metricCard('待观察', fmtNumber(diagnostics.filter((item) => item.level === 'warn').length), '有累计丢包或轻微异常', '先观察趋势')}
@@ -3152,12 +3229,12 @@ const appEl = document.getElementById('app');
             <div style="display:flex;align-items:center;gap:10px;min-width:0">${columnManager}<span class="subtle">点击表头按列排序</span></div>
           </div>
           <div class="card-body">
-            <div class="ops-table-wrap"><table class="ops-table ops-compact-table"><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>
+            ${queueTableHtml}
           </div>
         </div>
         <div class="card" style="margin-top:12px">
           <div class="card-head"><div class="card-title">线路状态板</div><div class="subtle">每条线路的闭环核对与实时吞吐</div></div>
-          <div class="card-body"><div class="grid-4">${lineBoardCards}</div></div>
+          <div class="card-body"><div class="grid-4">${lineBoardCards}</div>${boardFold}</div>
         </div>`);
     }
 
@@ -3348,7 +3425,7 @@ const appEl = document.getElementById('app');
           <td>${fmtNumber(row.connections)}</td>
           <td>${fmtBytes(row.sessionBytes)}</td>
         </tr>`);
-      return section('流量审计', 'trafficAudit', '活跃连接、单 IP 流量排行与会话审计数据集中查看', `
+      return section('流量审计', 'trafficAudit', withScaleHint(snapshot, '活跃连接、单 IP 流量排行与会话审计数据集中查看', 'connectionsActive'), `
         <div class="grid-4">
           ${metricCard('连接总数', fmtCompact(connections.total), '连接跟踪总量', '')}
           ${metricCard('活跃会话', fmtNumber((connections.active || []).length), '实时有流量会话', '')}
@@ -3431,6 +3508,7 @@ const appEl = document.getElementById('app');
       prepareCompactSection();
       syncTopMetricsVisibility();
       syncSectionTopbarState();
+      restoreFoldStates();
     }
 
     function renderFailure(message) {

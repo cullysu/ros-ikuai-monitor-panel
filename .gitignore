@@ -44,3 +44,10 @@ dist/
 /*.tar.gz
 /*.tgz
 routeros-panel.env
+
+# scale-test working area (logs, captures, fake router state)
+_scale/out/
+_scale/chaos/
+_scale/*.log
+_scale/wan*/
+_scale/ssh_state.json

@@ -1,4 +1,6 @@
+import base64
 import copy
+import datetime
 import hashlib
 import ipaddress
 import json
@@ -89,6 +91,7 @@ def env_value(name, default=None):
 
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
+    request_queue_size = 128
 
 
 def load_panel_env():
@@ -624,6 +627,8 @@ def write_panel_network_env(bind, port, target, env_path=None):
 
 PANEL_ENV_FILE = load_panel_env()
 PUBLIC_DIR = resolve_runtime_path(os.getenv("ROS_PANEL_PUBLIC_DIR", str(BUNDLE_DIR / "public")))
+ROUTER_REST_PORT = max(1, min(65535, int(os.getenv("ROS_MONITOR_ROUTER_REST_PORT", "80") or 80)))
+_ROUTER_REST_PORT_SUFFIX = "" if ROUTER_REST_PORT == 80 else f":{ROUTER_REST_PORT}"
 DEFAULT_ROUTER_HOST = "192.168.88.1"
 ROUTER_HOST = env_value("ROS_MONITOR_ROUTER_HOST", DEFAULT_ROUTER_HOST)
 ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "ros-panel-readonly")
@@ -1370,6 +1375,8 @@ def load_router_login_store_unlocked():
             entry = normalize_saved_router_entry(raw)
             if not entry or entry["id"] in seen:
                 continue
+            if entry.get("password"):
+                entry["password"] = dpapi_unprotect_secret(entry.get("password")) or ""
             seen.add(entry["id"])
             entries.append(entry)
         entries.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
@@ -1387,12 +1394,20 @@ def persist_router_login_store_unlocked(entries):
         if not entry or entry["id"] in seen:
             continue
         seen.add(entry["id"])
+        password = str(entry.get("password") or "")
+        if password and password not in ROUTER_PASSWORD_PLACEHOLDERS:
+            entry = {**entry, "password": dpapi_protect_secret(password)}
         normalized.append(entry)
     normalized.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
     payload = {
         "version": 1,
         "updatedAt": format_iso_now(),
-        "warning": "This local file stores RouterOS SSH passwords in clear text for this panel instance. Keep it private.",
+        "passwordProtection": "dpapi" if os.name == "nt" else "plain",
+        "warning": (
+            "Passwords are DPAPI-protected per Windows user."
+            if os.name == "nt"
+            else "This local file stores RouterOS SSH passwords in clear text for this panel instance. Keep it private."
+        ),
         "entries": normalized[:ROUTER_LOGIN_HISTORY_LIMIT],
     }
     tmp_path = ROUTER_LOGIN_STORE_FILE.with_suffix(".json.tmp")
@@ -1568,12 +1583,12 @@ def test_router_credentials(host, user, password, ssh_port=22):
     session = requests.Session()
     session.auth = (config["user"], config["password"])
     try:
-        response = session.get(f"http://{config['host']}/rest/system/resource", timeout=min(REST_TIMEOUT, 8))
+        response = session.get(f"http://{config['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/system/resource", timeout=min(REST_TIMEOUT, 8))
         test["rest"]["status"] = response.status_code
         response.raise_for_status()
         test["rest"]["ok"] = True
     except Exception as exc:
-        test["rest"]["error"] = str(exc)
+        test["rest"]["error"] = compact_exception_text(exc)
     finally:
         test["rest"]["elapsedMs"] = round((time.time() - rest_started) * 1000)
         test["elapsedMs"] = round((time.time() - started_at) * 1000)
@@ -1685,6 +1700,153 @@ def list_scale_meta(total_count, shown_count=None, limit=None, sampled=False, sa
         "groupedBy": list(grouped_by or []),
         "bucket": scale_bucket(total),
     }
+
+
+ROUTER_LOGIN_SECRET_PREFIX = "dpapi:v1:"
+COUNTER_WRAP_MODULUS = 1 << 64
+_ROUTER_OS_MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+
+
+def split_connection_endpoint(value):
+    """RouterOS connection rows carry endpoints like 192.0.2.7:43470 or [2001:db8::1]:443;
+    return the address part so it can be parsed as an IP."""
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        ipaddress.ip_address(text)
+        return text
+    except ValueError:
+        pass
+    if text.startswith("["):
+        inner, bracket, tail = text.partition("]")
+        if bracket and tail.startswith(":"):
+            candidate = inner[1:]
+            try:
+                ipaddress.ip_address(candidate)
+                return candidate
+            except ValueError:
+                return None
+    head, sep, tail = text.rpartition(":")
+    if sep and head and tail.isdigit() and len(tail) <= 5 and int(tail) <= 65535:
+        try:
+            ipaddress.ip_address(head)
+            return head
+        except ValueError:
+            return None
+    return None
+
+
+def counter_delta(current, previous):
+    """64-bit counter delta; None means the counter was reset, not wrapped around."""
+    if current >= previous:
+        return current - previous
+    if (previous - current) > (COUNTER_WRAP_MODULUS >> 1):
+        return current + COUNTER_WRAP_MODULUS - previous
+    return None
+
+
+def compact_exception_text(exc):
+    """Error text for the UI: drop the full REST URL that requests appends and keep it short."""
+    status = getattr(getattr(exc, "response", None), "status_code", None)
+    if status is not None:
+        return f"REST 返回 HTTP {status}"
+    text = " ".join(str(exc).split())
+    for marker in (" for url:", " with url: "):
+        if marker in text:
+            text = text.split(marker, 1)[0].rstrip(" ,;")
+    if len(text) > 200:
+        text = text[:200] + "…"
+    return text
+
+
+def format_routeros_uptime(value):
+    """'1w2d03:04:05' -> '1周2天 03:04:05'; passthrough when it does not match."""
+    text = str(value or "").strip()
+    match = re.fullmatch(r"(?:(\d+)w)?(?:(\d+)d)?(\d{1,2}:\d{2}:\d{2})", text)
+    if not match:
+        return text or "-"
+    weeks, days, clock = match.groups()
+    parts = []
+    if weeks:
+        parts.append(f"{weeks}周")
+    if days:
+        parts.append(f"{days}天")
+    if not parts:
+        return clock
+    return "".join(parts) + " " + clock
+
+
+def format_routeros_clock(value):
+    """'sep/28/2026' -> '2026-09-28'; passthrough otherwise."""
+    text = str(value or "").strip()
+    match = re.fullmatch(r"([a-z]{3})/(\d{1,2})/(\d{4})", text, re.IGNORECASE)
+    if not match:
+        return text
+    month = _ROUTER_OS_MONTHS.get(match.group(1).lower())
+    return f"{match.group(3)}-{month:02d}-{int(match.group(2)):02d}" if month else text
+
+
+def dpapi_protect_secret(value):
+    """Best-effort DPAPI protection on Windows; returns the input unchanged elsewhere."""
+    if os.name != "nt" or not value:
+        return value
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        # pbData must stay c_void_p: a c_char_p field hands LocalFree a copy of the
+        # buffer instead of the allocated blob, which corrupts the process heap.
+        class DataBlob(ctypes.Structure):
+            _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.c_void_p)]
+
+        raw = value.encode("utf-8")
+        buffer = ctypes.create_string_buffer(raw, len(raw))
+        blob_in = DataBlob(len(raw), ctypes.cast(buffer, ctypes.c_void_p))
+        blob_out = DataBlob()
+        if not ctypes.windll.crypt32.CryptProtectData(
+            ctypes.byref(blob_in), "ros-panel-router-login", None, None, None, 0, ctypes.byref(blob_out)
+        ):
+            return value
+        try:
+            encoded = base64.b64encode(ctypes.string_at(blob_out.pbData, blob_out.cbData)).decode("ascii")
+            return ROUTER_LOGIN_SECRET_PREFIX + encoded
+        finally:
+            ctypes.windll.kernel32.LocalFree(ctypes.c_void_p(blob_out.pbData))
+    except Exception:
+        return value
+
+
+def dpapi_unprotect_secret(value):
+    """Reverse of dpapi_protect_secret; None when a protected value cannot be opened."""
+    text = str(value or "")
+    if not text:
+        return None
+    if not text.startswith(ROUTER_LOGIN_SECRET_PREFIX):
+        return text
+    if os.name != "nt":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class DataBlob(ctypes.Structure):
+            _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.c_void_p)]
+
+        raw = base64.b64decode(text[len(ROUTER_LOGIN_SECRET_PREFIX):])
+        buffer = ctypes.create_string_buffer(raw, len(raw))
+        blob_in = DataBlob(len(raw), ctypes.cast(buffer, ctypes.c_void_p))
+        blob_out = DataBlob()
+        if not ctypes.windll.crypt32.CryptUnprotectData(
+            ctypes.byref(blob_in), None, None, None, None, 0, ctypes.byref(blob_out)
+        ):
+            return None
+        try:
+            return ctypes.string_at(blob_out.pbData, blob_out.cbData).decode("utf-8")
+        finally:
+            ctypes.windll.kernel32.LocalFree(ctypes.c_void_p(blob_out.pbData))
+    except Exception:
+        return None
 
 
 def build_panel_capabilities(wan_lines, pppoe_count):
@@ -2914,7 +3076,7 @@ class Collector:
     def rest_get(self, session, config):
         router = get_ready_router_config()
         response = session.get(
-            f"http://{router['host']}/rest/{config['path']}",
+            f"http://{router['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/{config['path']}",
             params=config.get("params"),
             timeout=config.get("timeout", REST_TIMEOUT),
         )
@@ -2929,7 +3091,7 @@ class Collector:
     def rest_post(self, session, path, payload=None, timeout=None):
         router = get_ready_router_config()
         response = session.post(
-            f"http://{router['host']}/rest/{path.strip('/')}",
+            f"http://{router['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/{path.strip('/')}",
             json=payload or {},
             timeout=timeout or REST_TIMEOUT,
         )
@@ -3026,6 +3188,27 @@ class Collector:
                     break
                 if not received:
                     time.sleep(0.1)
+            # Some servers emit exit-status ahead of the final buffered output;
+            # drain briefly instead of returning an empty capture.
+            if not stdout_chunks and channel.exit_status_ready():
+                drain_deadline = time.time() + 0.5
+                while time.time() < drain_deadline:
+                    progressed = False
+                    while channel.recv_ready():
+                        data = channel.recv(65535)
+                        if not data:
+                            break
+                        stdout_chunks.append(data)
+                        total_bytes += len(data)
+                        progressed = True
+                    while channel.recv_stderr_ready():
+                        data = channel.recv_stderr(65535)
+                        if not data:
+                            break
+                        stderr_chunks.append(data)
+                        progressed = True
+                    if not progressed:
+                        time.sleep(0.05)
             error = b"".join(stderr_chunks).decode("utf-8", errors="replace").strip()
             text = b"".join(stdout_chunks).decode("utf-8", errors="replace")
             complete = channel.exit_status_ready()
@@ -3057,7 +3240,7 @@ class Collector:
         try:
             return key, self.rest_get(session, endpoint_config), None
         except Exception as exc:
-            return key, None, str(exc)
+            return key, None, compact_exception_text(exc)
         finally:
             session.close()
 
@@ -3100,7 +3283,7 @@ class Collector:
                     payload[key] = self.rest_get(session, endpoint_config)
                 except Exception as exc:
                     payload[key] = fallback
-                    failures[key] = str(exc)
+                    failures[key] = compact_exception_text(exc)
             if failures:
                 payload["_failures"] = failures
             required_keys = [key for key, endpoint_config in endpoints.items() if not endpoint_config.get("optional")]
@@ -3321,7 +3504,7 @@ class Collector:
         session.auth = (router["user"], router["password"])
         try:
             response = session.get(
-                f"http://{router['host']}/rest/ip/dns/static",
+                f"http://{router['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/ip/dns/static",
                 params={
                     ".proplist": "name,regexp,address,cname,text,ttl,comment,disabled,type",
                 },
@@ -3494,11 +3677,13 @@ class Collector:
             current[name] = (rx, tx)
             has_baseline = name in previous
             prev_rx, prev_tx = previous.get(name, (rx, tx))
-            reset = has_baseline and (rx < prev_rx or tx < prev_tx)
+            rx_delta = counter_delta(rx, prev_rx) if has_baseline else 0
+            tx_delta = counter_delta(tx, prev_tx) if has_baseline else 0
+            reset = has_baseline and (rx_delta is None or tx_delta is None)
             counter_reset = counter_reset or reset
             sample_ready = sample_ready or (has_baseline and not reset)
-            raw_rx_bps = max(rx - prev_rx, 0) / interval if has_baseline and not reset else 0
-            raw_tx_bps = max(tx - prev_tx, 0) / interval if has_baseline and not reset else 0
+            raw_rx_bps = ((rx_delta or 0) / interval) if has_baseline and not reset else 0
+            raw_tx_bps = ((tx_delta or 0) / interval) if has_baseline and not reset else 0
             rates[name] = {
                 "rxBps": confirm_zero_rate(name, "rx", raw_rx_bps, has_baseline, reset),
                 "txBps": confirm_zero_rate(name, "tx", raw_tx_bps, has_baseline, reset),
@@ -3669,6 +3854,28 @@ class Collector:
                         "when": user.get("when", "-"),
                     }
                 )
+        cpu_raw = to_int(resource.get("cpu-load"))
+        cpu_load = min(max(cpu_raw, 0), 100)
+        memory_usage = min(max(round((used_memory / total_memory) * 100, 2), 0.0), 100.0) if total_memory else 0
+        disk_usage = min(max(round((used_disk / total_disk) * 100, 2), 0.0), 100.0) if total_disk else 0
+        resource_anomaly = []
+        if cpu_raw < 0 or cpu_raw > 100:
+            resource_anomaly.append(f"CPU 负载读数 {cpu_raw}% 超出 0–100%，已按边界值显示")
+        if total_memory and to_int(resource.get("free-memory")) > total_memory:
+            resource_anomaly.append("内存空闲量大于总量，内存读数异常")
+        if total_disk and to_int(resource.get("free-hdd-space")) > total_disk:
+            resource_anomaly.append("磁盘空闲量大于总量，磁盘读数异常")
+        clock_date = format_routeros_clock(rest["clock"].get("date", ""))
+        clock_time = str(rest["clock"].get("time", "")).strip()
+        system_time = f"{clock_date} {clock_time}".strip()
+        clock_offset_seconds = None
+        clock_anomaly = False
+        try:
+            router_clock = datetime.datetime.strptime(f"{clock_date} {clock_time}", "%Y-%m-%d %H:%M:%S")
+            clock_offset_seconds = int((router_clock - datetime.datetime.now()).total_seconds())
+            clock_anomaly = abs(clock_offset_seconds) > 900
+        except ValueError:
+            clock_anomaly = bool(system_time)
         return {
             "identity": rest["identity"].get("name", "RouterOS"),
             "version": resource.get("version", "-"),
@@ -3677,17 +3884,20 @@ class Collector:
             "cpuModel": resource.get("cpu", "-"),
             "cpuCount": to_int(resource.get("cpu-count")),
             "cpuFrequency": to_int(resource.get("cpu-frequency")),
-            "uptime": resource.get("uptime", "-"),
-            "systemTime": f'{rest["clock"].get("date", "")} {rest["clock"].get("time", "")}'.strip(),
+            "uptime": format_routeros_uptime(resource.get("uptime", "-")),
+            "systemTime": system_time,
             "ntpStatus": rest["ntp"].get("status", "unknown"),
             "admins": admins,
-            "cpuLoad": to_int(resource.get("cpu-load")),
+            "cpuLoad": cpu_load,
             "memoryUsedBytes": used_memory,
             "memoryTotalBytes": total_memory,
-            "memoryUsage": round((used_memory / total_memory) * 100, 2) if total_memory else 0,
+            "memoryUsage": memory_usage,
             "diskUsedBytes": used_disk,
             "diskTotalBytes": total_disk,
-            "diskUsage": round((used_disk / total_disk) * 100, 2) if total_disk else 0,
+            "diskUsage": disk_usage,
+            "resourceAnomaly": resource_anomaly,
+            "clockAnomaly": clock_anomaly,
+            "clockOffsetSeconds": clock_offset_seconds,
             "uplinkBps": wan_totals["up"],
             "downlinkBps": wan_totals["down"],
             "wanLatencyMs": latency_ms or None,
@@ -3766,7 +3976,7 @@ class Collector:
                     **quality_row,
                 }
             )
-        items.sort(key=lambda row: (row["role"] != "WAN", row.get("isDerivedInterface", False), row["name"]))
+        items.sort(key=lambda row: (row["role"] != "WAN", row.get("isDerivedInterface", False), str(row.get("name") or "")))
         return items
 
     def build_pppoe(self, rest, rates, addresses_by_interface, update_rate_history=False, rate_history_break=False):
@@ -3824,16 +4034,22 @@ class Collector:
         return rows, distribution
 
     def build_wan_lines(self, rest, pppoe_rows, interfaces, update_rate_history=False, rate_history_break=False):
-        if pppoe_rows:
-            return [
-                {
-                    **copy.deepcopy(row),
-                    "kind": "pppoe",
-                    "lineId": row.get("name", "-"),
-                    "access": "PPPoE",
-                }
-                for row in pppoe_rows
-            ]
+        # Hybrid deployments: PPPoE lines come first, non-PPPoE WAN interfaces (DHCP /
+        # static) must stay visible instead of being hidden whenever PPPoE exists.
+        pppoe_names = {
+            name
+            for name in [str(row.get("name") or "") for row in pppoe_rows] + [str(row.get("parent") or "") for row in pppoe_rows]
+            if name and name != "-"
+        }
+        rows = [
+            {
+                **copy.deepcopy(row),
+                "kind": "pppoe",
+                "lineId": row.get("name", "-"),
+                "access": "PPPoE",
+            }
+            for row in pppoe_rows
+        ]
 
         active_defaults = [
             row for row in rest.get("routes", [])
@@ -3844,8 +4060,7 @@ class Collector:
             for item in rest.get("dhcp_clients", [])
             if item.get("interface")
         }
-        wan_interfaces = [row for row in interfaces if row.get("role") == "WAN"]
-        rows = []
+        wan_interfaces = [row for row in interfaces if row.get("role") == "WAN" and str(row.get("name") or "") not in pppoe_names]
         for iface in wan_interfaces:
             name = iface.get("name", "-")
             history = self.line_history.setdefault(name, {"up": deque(maxlen=HISTORY_LIMIT), "down": deque(maxlen=HISTORY_LIMIT)})
@@ -3902,7 +4117,8 @@ class Collector:
             ("reply-dst-address", "dst-address"),
         ]
         for local_key, remote_key in candidates:
-            address = conn.get(local_key)
+            # Connection endpoints are "ip:port" strings; parse the address part only.
+            address = split_connection_endpoint(conn.get(local_key))
             if not address or address in router_ips:
                 continue
             try:
@@ -3921,6 +4137,8 @@ class Collector:
         mac_to_ips = defaultdict(set)
         ip_to_entries = defaultdict(list)
         mac_to_entries = defaultdict(list)
+        arp_total_seen = 0
+        arp_out_of_scope = 0
         for item in rest["arp"]:
             address = item.get("address")
             mac = item.get("mac-address")
@@ -3930,7 +4148,9 @@ class Collector:
                 ip_obj = ipaddress.ip_address(address)
             except Exception:
                 continue
+            arp_total_seen += 1
             if not any(ip_obj in network for network in local_networks):
+                arp_out_of_scope += 1
                 continue
             ip_to_macs[address].add(mac)
             mac_to_ips[mac].add(address)
@@ -4140,6 +4360,11 @@ class Collector:
             "activeConnections": active_connection_items,
             "meta": {
                 "terminals": list_scale_meta(len(terminals), len(terminals), sampled=False, sorted_by="traffic/connections"),
+                "lanScope": {
+                    "arpTotal": arp_total_seen,
+                    "arpOutOfScope": arp_out_of_scope,
+                    "scopeDescription": "面板只统计路由器 LAN 网段内的终端；网段外的 ARP 记录不计入",
+                },
                 "arp": list_scale_meta(len(arp_rows), len(arp_items), limit=120, sampled=len(arp_items) < len(arp_rows), sample_method="first 120 sorted by IP", sorted_by="ip"),
                 "activeConnections": list_scale_meta(
                     len(active_rows),
@@ -4345,7 +4570,13 @@ class Collector:
             message = str(item.get("message", ""))
             if any(word in topics for word in ["firewall", "warning", "error", "critical"]) or "drop" in message.lower():
                 alerts.append({"time": item.get("time", "-"), "topics": topics, "message": message})
-        return {"filters": filters[:80], "addressLists": address_lists, "alerts": alerts[:40]}
+        return {
+            "filters": filters[:80],
+            "filterTotal": len(filters),
+            "addressLists": address_lists,
+            "addressListTotal": len(rest["address_lists"]),
+            "alerts": alerts[:40],
+        }
 
     def build_load_balance(self, rest, distribution):
         defaults = [item for item in rest["routes"] if item.get("dst-address") == "0.0.0.0/0"]
@@ -4376,6 +4607,8 @@ class Collector:
         return {
             "mode": mode,
             "activeLines": len(active_defaults),
+            "mangleTotal": len(mangle_rules),
+            "routingRuleTotal": len(rest["routing_rules"]),
             "distribution": distribution,
             "defaultRoutes": [
                 {
@@ -4454,8 +4687,10 @@ class Collector:
         }
 
     def build_logs(self, rest):
+        # RouterOS returns logs oldest-first; sample the newest window so recent
+        # events stay visible on routers with large log buffers.
         groups = {"system": [], "firewall": [], "dhcp": [], "dns": [], "all": []}
-        for item in rest["logs"][:200]:
+        for item in rest["logs"][-200:]:
             row = {"time": item.get("time", "-"), "topics": item.get("topics", "-"), "message": item.get("message", "-")}
             groups["all"].append(row)
             topics = str(item.get("topics", ""))
@@ -4467,7 +4702,7 @@ class Collector:
                 groups["dns"].append(row)
             else:
                 groups["system"].append(row)
-        return {key: value[:60] for key, value in groups.items()}
+        return {key: value[-60:] for key, value in groups.items()}
 
     def build_snapshot(self, rest, ssh, fresh_counter_sample=False):
         connection_counts = copy.deepcopy(ssh.get("counts", {}))
@@ -4525,6 +4760,9 @@ class Collector:
         capabilities = build_panel_capabilities(wan_lines, len(pppoe))
         wan_line_count = len(wan_lines)
         active_connection_shown = len(terminals.get("activeConnections", []))
+        mangle_candidate_total = sum(
+            1 for item in rest.get("mangle", []) if item.get("action") in {"mark-routing", "mark-connection", "accept"}
+        )
         scale_meta = {
             "wan": list_scale_meta(wan_line_count, len(wan_lines), sampled=False, sorted_by="natural interface name", grouped_by=["status", "parent", "routeTable"]),
             "pppoe": list_scale_meta(len(pppoe), len(pppoe), sampled=False, sorted_by="natural interface name"),
@@ -4544,6 +4782,46 @@ class Collector:
                 limit=DNS_STATIC_PREVIEW_LIMIT,
                 sampled=True,
                 sample_method="preview rows; full browser uses /api/dns-static pagination",
+                sorted_by="RouterOS order",
+            ),
+            "routes": list_scale_meta(
+                len(rest.get("routes", [])),
+                min(len(rest.get("routes", [])), 160),
+                limit=160,
+                sampled=len(rest.get("routes", [])) > 160,
+                sample_method="first 160 after default/static/active sort",
+                sorted_by="default/static/active/table/distance",
+            ),
+            "securityFilters": list_scale_meta(
+                len(rest.get("filters", [])),
+                min(len(rest.get("filters", [])), 80),
+                limit=80,
+                sampled=len(rest.get("filters", [])) > 80,
+                sample_method="top 80 by packets/bytes",
+                sorted_by="packets/bytes",
+            ),
+            "addressLists": list_scale_meta(
+                len(rest.get("address_lists", [])),
+                min(len(rest.get("address_lists", [])), 100),
+                limit=100,
+                sampled=len(rest.get("address_lists", [])) > 100,
+                sample_method="first 100 in RouterOS order",
+                sorted_by="RouterOS order",
+            ),
+            "mangleRules": list_scale_meta(
+                mangle_candidate_total,
+                min(mangle_candidate_total, 80),
+                limit=80,
+                sampled=mangle_candidate_total > 80,
+                sample_method="top 80 by packets/bytes",
+                sorted_by="packets/bytes",
+            ),
+            "routingRules": list_scale_meta(
+                len(rest.get("routing_rules", [])),
+                min(len(rest.get("routing_rules", [])), 80),
+                limit=80,
+                sampled=len(rest.get("routing_rules", [])) > 80,
+                sample_method="first 80 in RouterOS order",
                 sorted_by="RouterOS order",
             ),
         }
@@ -4632,6 +4910,7 @@ class Collector:
             "pppoe": pppoe,
             "wan": wan_lines,
             "terminals": terminals["terminals"],
+            "terminalsLanScope": terminals.get("meta", {}).get("lanScope", {}),
             "arp": {"items": terminals["arp"], "alerts": terminals["arpAlerts"]},
             "dhcp": dhcp,
             "connections": {

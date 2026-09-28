@@ -2708,7 +2708,7 @@
       </div>
       <div class="ops-page-stack" style="margin-top:12px">
         ${opsCard('DNS 服务摘要', '缓存、DoH 和规则浏览状态全部集中到一行下面，避免左右大空白', opsStatTiles([
-          { label: '上游 DNS', value: fmtNumber((dns.servers || []).length), meta: (dns.servers || []).slice(0, 2).join(' / ') || '未读取到' },
+          { label: '上游 DNS', value: fmtNumber((dns.servers || []).length), meta: escapeHtml((dns.servers || []).slice(0, 2).join(' / ')) || '未读取到' },
           { label: 'DoH 状态', value: dns.dohServer ? '已配置' : '未配置', meta: dns.dohServer ? escapeHtml(dns.dohServer) : '未配置 DoH' },
           { label: '证书校验', value: dns.dohServer ? (dns.verifyDohCert ? '开启' : '关闭') : '-', meta: dns.dohServer ? 'DoH 证书验证状态' : '当前未启用 DoH' },
           { label: '缓存占用率', value: dns.cacheSize ? `${((Number(dns.cacheUsed || 0) / Number(dns.cacheSize || 1)) * 100).toFixed(1)}%` : '-', meta: `${fmtBytes(dns.cacheUsed || 0)} / ${fmtBytes(dns.cacheSize || 0)}` },
@@ -2990,7 +2990,7 @@
           ${opsCard('服务摘要', '当日志窗口为空时，用真实服务状态而不是空白来承接页面', opsStatTiles([
             { label: 'DHCP 地址池', value: fmtNumber((dhcp.pools || []).length), meta: `租约 ${fmtNumber((dhcp.leases || []).length)} 条` },
             { label: '运行中 DHCP', value: fmtNumber((dhcp.servers || []).filter((row) => row.running).length), meta: `总服务 ${fmtNumber((dhcp.servers || []).length)} 个` },
-            { label: 'DNS 上游', value: fmtNumber((dns.servers || []).length), meta: (dns.servers || []).slice(0, 2).join(' / ') || '未读取到' },
+            { label: 'DNS 上游', value: fmtNumber((dns.servers || []).length), meta: escapeHtml((dns.servers || []).slice(0, 2).join(' / ')) || '未读取到' },
             { label: 'DoH', value: dns.dohServer ? '已配置' : '未配置', meta: dns.dohServer ? escapeHtml(dns.dohServer) : '当前未启用' },
             { label: '缓存占用', value: `${fmtBytes(dns.cacheUsed || 0)} / ${fmtBytes(dns.cacheSize || 0)}`, meta: 'DNS 缓存当前状态' },
             { label: '规则总数', value: fmtNumber(dnsTotalRuleCount), meta: `预览 ${fmtNumber((dns.forwardRules || []).length)} 条` }
@@ -3510,7 +3510,7 @@
       </div>
       <div class="ops-page-stack" style="margin-top:8px">
         ${opsCard('DNS 服务摘要', '把状态、缓存、DoH 与规则浏览集中成一条主信息流', opsStatTiles([
-          { label: '上游 DNS', value: fmtNumber((dns.servers || []).length), meta: (dns.servers || []).slice(0, 2).join(' / ') || '未读取到' },
+          { label: '上游 DNS', value: fmtNumber((dns.servers || []).length), meta: escapeHtml((dns.servers || []).slice(0, 2).join(' / ')) || '未读取到' },
           { label: 'DoH', value: dns.dohServer ? '已配置' : '未配置', meta: dns.dohServer ? escapeHtml(dns.dohServer) : '当前未启用 DoH' },
           { label: '证书校验', value: dns.dohServer ? (dns.verifyDohCert ? '开启' : '关闭') : '-', meta: dns.dohServer ? 'DoH 证书校验状态' : '当前未启用 DoH' },
           { label: '缓存占用率', value: dns.cacheSize ? `${((Number(dns.cacheUsed || 0) / Math.max(1, Number(dns.cacheSize || 0))) * 100).toFixed(1)}%` : '-', meta: `${fmtBytes(dns.cacheUsed || 0)} / ${fmtBytes(dns.cacheSize || 0)}` },
@@ -3706,7 +3706,7 @@
         ${opsCard('服务摘要', '当服务日志窗口较空时，用真实的 DHCP / DNS 状态承接页面，不再留大片空白', opsStatTiles([
           { label: 'DHCP 地址池', value: fmtNumber((dhcp.pools || []).length), meta: `租约 ${fmtNumber((dhcp.leases || []).length)} 条` },
           { label: '运行中 DHCP', value: fmtNumber((dhcp.servers || []).filter((row) => row.running).length), meta: `总服务 ${fmtNumber((dhcp.servers || []).length)} 个` },
-          { label: 'DNS 上游', value: fmtNumber((dns.servers || []).length), meta: (dns.servers || []).slice(0, 2).join(' / ') || '未读取到' },
+          { label: 'DNS 上游', value: fmtNumber((dns.servers || []).length), meta: escapeHtml((dns.servers || []).slice(0, 2).join(' / ')) || '未读取到' },
           { label: 'DoH', value: dns.dohServer ? '已配置' : '未配置', meta: dns.dohServer ? escapeHtml(dns.dohServer) : '当前未启用' },
           { label: '缓存占用', value: `${fmtBytes(dns.cacheUsed || 0)} / ${fmtBytes(dns.cacheSize || 0)}`, meta: 'DNS 缓存当前状态' },
           { label: '规则总数', value: fmtNumber(dnsTotalRuleCount), meta: `预览 ${fmtNumber((dns.forwardRules || []).length)} 条` }
