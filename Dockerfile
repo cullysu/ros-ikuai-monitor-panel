@@ -38,11 +38,12 @@ RUN python -m pip install --no-index --find-links=/wheels -r requirements.txt \
     && rm -rf /wheels
 
 COPY app.py ./
+COPY ros_panel ./ros_panel
 COPY public ./public
 
 RUN mkdir -p /app/data \
     && chown -R root:root /app \
-    && chmod -R go-w /app/app.py /app/public \
+    && chmod -R go-w /app/app.py /app/public /app/ros_panel \
     && chown panel:panel /app/data \
     && chmod 0750 /app/data
 

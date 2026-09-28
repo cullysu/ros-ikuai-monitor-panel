@@ -24,6 +24,47 @@ from urllib.parse import parse_qs, unquote, urlparse
 import paramiko
 import requests
 
+_APP_DIR = str(Path(__file__).resolve().parent)
+if _APP_DIR not in sys.path:
+    sys.path.insert(0, _APP_DIR)
+from ros_panel.secrets import ROUTER_LOGIN_SECRET_PREFIX, dpapi_protect_secret, dpapi_unprotect_secret
+from ros_panel.util import (
+    COUNTER_WRAP_MODULUS,
+    _ROUTER_OS_MONTHS,
+    compact_exception_text,
+    counter_delta,
+    format_routeros_clock,
+    format_routeros_uptime,
+    split_connection_endpoint,
+    to_bool,
+    to_int,
+)
+from ros_panel.model import (
+    ACTION_SEVERITY_RANK,
+    ARP_ACTIVE_STATUSES,
+    ARP_STALE_STATUSES,
+    CGNAT_NETWORK,
+    arp_evidence_state,
+    arp_status_summary,
+    as_dict,
+    as_list,
+    collector_status_message,
+    compact_text,
+    format_iso_now,
+    interface_is_derived,
+    interface_logical_pair_key,
+    interface_parent_hint,
+    interface_quality_group_key,
+    ip_sort_key,
+    line_layout_tier,
+    list_scale_meta,
+    make_arp_alert,
+    normalize_collector_snapshot_status,
+    parse_ping_latency_ms,
+    rate_level,
+    scale_bucket,
+)
+
 
 def is_frozen_app():
     return bool(getattr(sys, "frozen", False))
@@ -883,162 +924,6 @@ EMPTY_REST_BUNDLE = {
 
 TRACKING_FIELD_PATTERN = re.compile(r"^\s*([A-Za-z0-9-]+):\s*(.*?)\s*$")
 TERSE_FIELD_PATTERN = re.compile(r"([A-Za-z0-9-]+)=(.*?)(?=\s+[A-Za-z0-9-]+=|$)")
-CGNAT_NETWORK = ipaddress.ip_network("100.64.0.0/10")
-
-
-def to_int(value, default=0):
-    try:
-        if value in ("", None):
-            return default
-        if isinstance(value, (int, float)):
-            return int(value)
-        text = str(value).strip().replace(" ", "")
-        if not text:
-            return default
-        match = re.fullmatch(r"(-?\d+(?:\.\d+)?)([A-Za-z]+)?", text)
-        if match:
-            number = float(match.group(1))
-            unit = (match.group(2) or "").upper()
-            factors = {
-                "BPS": 1,
-                "K": 1024,
-                "KB": 1000,
-                "KIB": 1024,
-                "KBPS": 1000,
-                "M": 1024**2,
-                "MB": 1000**2,
-                "MIB": 1024**2,
-                "MBPS": 1000**2,
-                "G": 1024**3,
-                "GB": 1000**3,
-                "GIB": 1024**3,
-                "GBPS": 1000**3,
-                "T": 1024**4,
-                "TB": 1000**4,
-                "TIB": 1024**4,
-                "TBPS": 1000**4,
-            }
-            if unit in factors:
-                return int(number * factors[unit])
-        return int(float(text))
-    except Exception:
-        return default
-
-
-def to_bool(value):
-    if isinstance(value, bool):
-        return value
-    if value is None:
-        return False
-    return str(value).lower() in {"true", "yes", "on", "running", "bound", "active", "enabled"}
-
-
-ARP_ACTIVE_STATUSES = {
-    "active",
-    "complete",
-    "delay",
-    "permanent",
-    "probe",
-    "published",
-    "reachable",
-    "static",
-}
-ARP_STALE_STATUSES = {"expired", "failed", "incomplete", "stale", "unreachable"}
-
-
-def arp_evidence_state(status):
-    text = str(status or "").strip().lower()
-    if text in ARP_ACTIVE_STATUSES:
-        return "active"
-    if text in ARP_STALE_STATUSES:
-        return "stale"
-    return "unknown"
-
-
-def arp_status_summary(entries):
-    counts = defaultdict(int)
-    for entry in entries:
-        counts[str(entry.get("status") or "unknown").strip().lower() or "unknown"] += 1
-    return ", ".join(f"{key}:{counts[key]}" for key in sorted(counts))
-
-
-def make_arp_alert(kind, value, entries, unique_key):
-    rows = [entry for entry in entries if entry.get(unique_key)]
-    unique_values = sorted({str(entry.get(unique_key)) for entry in rows}, key=ip_sort_key if unique_key == "ip" else None)
-    active_values = sorted(
-        {str(entry.get(unique_key)) for entry in rows if entry.get("evidenceState") == "active"},
-        key=ip_sort_key if unique_key == "ip" else None,
-    )
-    stale_count = sum(1 for entry in rows if entry.get("evidenceState") == "stale")
-    unknown_count = sum(1 for entry in rows if entry.get("evidenceState") == "unknown")
-    if kind == "IP conflict":
-        if len(active_values) > 1:
-            severity, confidence, active_conflict = "critical", "high", True
-        elif active_values:
-            severity, confidence, active_conflict = "warning", "medium", False
-        else:
-            severity, confidence, active_conflict = "info", "low", False
-    else:
-        if len(active_values) > 1:
-            severity, confidence, active_conflict = "warning", "medium", False
-        elif active_values:
-            severity, confidence, active_conflict = "info", "low", False
-        else:
-            severity, confidence, active_conflict = "info", "low", False
-    return {
-        "kind": kind,
-        "value": value,
-        "detail": ", ".join(unique_values),
-        "severity": severity,
-        "confidence": confidence,
-        "activeConflict": active_conflict,
-        "activeEvidenceCount": len(active_values),
-        "staleEvidenceCount": stale_count,
-        "unknownEvidenceCount": unknown_count,
-        "statusSummary": arp_status_summary(rows),
-        "interpretation": "active duplicate evidence" if active_conflict else "historical or lower-confidence identity movement",
-    }
-
-
-def interface_is_derived(name, iface_type):
-    type_text = str(iface_type or "").strip().lower()
-    name_text = str(name or "").strip().lower()
-    return type_text in {"vlan", "macvlan"} or name_text.startswith(("vlan", "macvlan"))
-
-
-def interface_parent_hint(item):
-    item = item if isinstance(item, dict) else {}
-    own_name = str(item.get("name") or "").strip()
-    for key in ("interface", "master-interface", "actual-interface", "parent"):
-        value = str(item.get(key) or "").strip()
-        if value and value != own_name:
-            return value
-    return None
-
-
-def interface_logical_pair_key(item):
-    item = item if isinstance(item, dict) else {}
-    name = str(item.get("name") or "").strip().lower()
-    match = re.fullmatch(r"(?:vlan|macvlan)(.+)", name)
-    if match and match.group(1):
-        return f"logical-pair:{match.group(1)}"
-    return None
-
-
-def interface_quality_group_key(item):
-    item = item if isinstance(item, dict) else {}
-    parent = interface_parent_hint(item)
-    logical_pair = interface_logical_pair_key(item)
-    iface_type = str(item.get("type") or "").strip().lower() or "interface"
-    vlan_id = str(item.get("vlan-id") or "").strip()
-    own_name = str(item.get("name") or "").strip()
-    if parent:
-        return ":".join(part for part in (parent, iface_type, vlan_id or own_name) if part)
-    if logical_pair:
-        return logical_pair
-    return own_name or iface_type
-
-
 def env_bool(name, default=False):
     raw = os.getenv(name)
     if raw is None:
@@ -1060,23 +945,6 @@ def connection_detail_sleep_seconds(elapsed):
     adaptive = int(elapsed * CONNECTION_DETAIL_OVERRUN_MULTIPLIER)
     adaptive = max(CONNECTION_DETAIL_OVERRUN_BACKOFF_SECONDS, adaptive)
     return min(CONNECTION_DETAIL_OVERRUN_BACKOFF_CAP_SECONDS, adaptive)
-
-
-def format_iso_now():
-    return time.strftime("%Y-%m-%d %H:%M:%S")
-
-
-def parse_ping_latency_ms(output):
-    text = str(output or "")
-    patterns = [
-        r"(?:time|时间)\s*[=<]\s*<?\s*(\d+(?:\.\d+)?)\s*ms",
-        r"(?:Average|平均)[^\d=]*(?:=)?\s*<?\s*(\d+(?:\.\d+)?)\s*ms",
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, text, flags=re.IGNORECASE)
-        if match:
-            return max(1, int(round(float(match.group(1)))))
-    return None
 
 
 def tcp_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOUT_MS):
@@ -1597,21 +1465,6 @@ def test_router_credentials(host, user, password, ssh_port=22):
     return test
 
 
-def ip_sort_key(address):
-    try:
-        return ipaddress.ip_address(address)
-    except Exception:
-        return ipaddress.ip_address("0.0.0.0")
-
-
-def rate_level(value):
-    if value >= 0.85:
-        return "danger"
-    if value >= 0.65:
-        return "warning"
-    return "ok"
-
-
 def normalize_panel_profile(value):
     text = re.sub(r"[^a-z0-9]+", "_", str(value or "").strip().lower()).strip("_")
     return text
@@ -1656,199 +1509,6 @@ IP_ALIAS_WRITE_ENABLED = env_bool("ROS_PANEL_IP_ALIAS_WRITE_ENABLED", default=no
 EXPOSE_ADMIN_SESSIONS = env_bool("ROS_PANEL_EXPOSE_ADMIN_SESSIONS", default=not PUBLIC_ROUTEROS_PROFILE)
 
 
-def line_layout_tier(count):
-    count = max(0, to_int(count))
-    if count <= 0:
-        return "none"
-    if count == 1:
-        return "single"
-    if count <= 3:
-        return "few"
-    if count <= 6:
-        return "multi"
-    return "dense"
-
-
-def scale_bucket(count):
-    count = max(0, to_int(count))
-    if count <= 0:
-        return "none"
-    if count == 1:
-        return "single"
-    if count <= 6:
-        return "small"
-    if count <= 24:
-        return "medium"
-    if count <= 100:
-        return "large"
-    return "fleet"
-
-
-def list_scale_meta(total_count, shown_count=None, limit=None, sampled=False, sample_method="", sorted_by="", grouped_by=None):
-    total = max(0, to_int(total_count))
-    shown = total if shown_count is None else max(0, to_int(shown_count))
-    effective_limit = limit if limit is not None else shown
-    return {
-        "actualCount": total,
-        "totalCount": total,
-        "shownCount": shown,
-        "limit": max(0, to_int(effective_limit)),
-        "hasMore": shown < total,
-        "sampled": bool(sampled),
-        "sampleMethod": sample_method,
-        "sortedBy": sorted_by,
-        "groupedBy": list(grouped_by or []),
-        "bucket": scale_bucket(total),
-    }
-
-
-ROUTER_LOGIN_SECRET_PREFIX = "dpapi:v1:"
-COUNTER_WRAP_MODULUS = 1 << 64
-_ROUTER_OS_MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
-
-
-def split_connection_endpoint(value):
-    """RouterOS connection rows carry endpoints like 192.0.2.7:43470 or [2001:db8::1]:443;
-    return the address part so it can be parsed as an IP."""
-    text = str(value or "").strip()
-    if not text:
-        return None
-    try:
-        ipaddress.ip_address(text)
-        return text
-    except ValueError:
-        pass
-    if text.startswith("["):
-        inner, bracket, tail = text.partition("]")
-        if bracket and tail.startswith(":"):
-            candidate = inner[1:]
-            try:
-                ipaddress.ip_address(candidate)
-                return candidate
-            except ValueError:
-                return None
-    head, sep, tail = text.rpartition(":")
-    if sep and head and tail.isdigit() and len(tail) <= 5 and int(tail) <= 65535:
-        try:
-            ipaddress.ip_address(head)
-            return head
-        except ValueError:
-            return None
-    return None
-
-
-def counter_delta(current, previous):
-    """64-bit counter delta; None means the counter was reset, not wrapped around."""
-    if current >= previous:
-        return current - previous
-    if (previous - current) > (COUNTER_WRAP_MODULUS >> 1):
-        return current + COUNTER_WRAP_MODULUS - previous
-    return None
-
-
-def compact_exception_text(exc):
-    """Error text for the UI: drop the full REST URL that requests appends and keep it short."""
-    status = getattr(getattr(exc, "response", None), "status_code", None)
-    if status is not None:
-        return f"REST 返回 HTTP {status}"
-    text = " ".join(str(exc).split())
-    for marker in (" for url:", " with url: "):
-        if marker in text:
-            text = text.split(marker, 1)[0].rstrip(" ,;")
-    if len(text) > 200:
-        text = text[:200] + "…"
-    return text
-
-
-def format_routeros_uptime(value):
-    """'1w2d03:04:05' -> '1周2天 03:04:05'; passthrough when it does not match."""
-    text = str(value or "").strip()
-    match = re.fullmatch(r"(?:(\d+)w)?(?:(\d+)d)?(\d{1,2}:\d{2}:\d{2})", text)
-    if not match:
-        return text or "-"
-    weeks, days, clock = match.groups()
-    parts = []
-    if weeks:
-        parts.append(f"{weeks}周")
-    if days:
-        parts.append(f"{days}天")
-    if not parts:
-        return clock
-    return "".join(parts) + " " + clock
-
-
-def format_routeros_clock(value):
-    """'sep/28/2026' -> '2026-09-28'; passthrough otherwise."""
-    text = str(value or "").strip()
-    match = re.fullmatch(r"([a-z]{3})/(\d{1,2})/(\d{4})", text, re.IGNORECASE)
-    if not match:
-        return text
-    month = _ROUTER_OS_MONTHS.get(match.group(1).lower())
-    return f"{match.group(3)}-{month:02d}-{int(match.group(2)):02d}" if month else text
-
-
-def dpapi_protect_secret(value):
-    """Best-effort DPAPI protection on Windows; returns the input unchanged elsewhere."""
-    if os.name != "nt" or not value:
-        return value
-    try:
-        import ctypes
-        from ctypes import wintypes
-
-        # pbData must stay c_void_p: a c_char_p field hands LocalFree a copy of the
-        # buffer instead of the allocated blob, which corrupts the process heap.
-        class DataBlob(ctypes.Structure):
-            _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.c_void_p)]
-
-        raw = value.encode("utf-8")
-        buffer = ctypes.create_string_buffer(raw, len(raw))
-        blob_in = DataBlob(len(raw), ctypes.cast(buffer, ctypes.c_void_p))
-        blob_out = DataBlob()
-        if not ctypes.windll.crypt32.CryptProtectData(
-            ctypes.byref(blob_in), "ros-panel-router-login", None, None, None, 0, ctypes.byref(blob_out)
-        ):
-            return value
-        try:
-            encoded = base64.b64encode(ctypes.string_at(blob_out.pbData, blob_out.cbData)).decode("ascii")
-            return ROUTER_LOGIN_SECRET_PREFIX + encoded
-        finally:
-            ctypes.windll.kernel32.LocalFree(ctypes.c_void_p(blob_out.pbData))
-    except Exception:
-        return value
-
-
-def dpapi_unprotect_secret(value):
-    """Reverse of dpapi_protect_secret; None when a protected value cannot be opened."""
-    text = str(value or "")
-    if not text:
-        return None
-    if not text.startswith(ROUTER_LOGIN_SECRET_PREFIX):
-        return text
-    if os.name != "nt":
-        return None
-    try:
-        import ctypes
-        from ctypes import wintypes
-
-        class DataBlob(ctypes.Structure):
-            _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.c_void_p)]
-
-        raw = base64.b64decode(text[len(ROUTER_LOGIN_SECRET_PREFIX):])
-        buffer = ctypes.create_string_buffer(raw, len(raw))
-        blob_in = DataBlob(len(raw), ctypes.cast(buffer, ctypes.c_void_p))
-        blob_out = DataBlob()
-        if not ctypes.windll.crypt32.CryptUnprotectData(
-            ctypes.byref(blob_in), None, None, None, None, 0, ctypes.byref(blob_out)
-        ):
-            return None
-        try:
-            return ctypes.string_at(blob_out.pbData, blob_out.cbData).decode("utf-8")
-        finally:
-            ctypes.windll.kernel32.LocalFree(ctypes.c_void_p(blob_out.pbData))
-    except Exception:
-        return None
-
-
 def build_panel_capabilities(wan_lines, pppoe_count):
     wan_count = len(wan_lines or [])
     return {
@@ -1865,55 +1525,6 @@ def build_panel_capabilities(wan_lines, pppoe_count):
         "singleWan": wan_count == 1,
         "multiWan": wan_count > 1,
     }
-
-
-ACTION_SEVERITY_RANK = {"critical": 0, "warning": 1, "info": 2}
-
-
-def as_list(value):
-    return value if isinstance(value, list) else []
-
-
-def as_dict(value):
-    return value if isinstance(value, dict) else {}
-
-
-def compact_text(value, limit=180):
-    text = str(value or "").strip()
-    if len(text) <= limit:
-        return text
-    return text[: max(0, limit - 3)] + "..."
-
-
-def collector_status_message(status, error=None):
-    error_text = compact_text(error, 240)
-    if error_text:
-        return error_text
-    normalized = str(status or "").strip().lower()
-    if normalized == "ok":
-        return "采集正常。"
-    if normalized == "starting":
-        return "采集服务正在启动，正在等待首次 RouterOS 数据。"
-    if normalized == "needs_config":
-        return "RouterOS SSH 连接未配置，请在登录页填写 RouterOS 主机、账号和密码。"
-    if normalized == "error":
-        return "采集服务返回异常，但没有提供错误详情；请刷新页面或重新测试 RouterOS 连接。"
-    status_label = normalized or "unknown"
-    return f"采集状态为 {status_label}，但未提供错误详情；请刷新页面或重新测试 RouterOS 连接。"
-
-
-def normalize_collector_snapshot_status(snapshot):
-    if not isinstance(snapshot, dict):
-        return snapshot
-    status = str(snapshot.get("status") or "unknown").strip() or "unknown"
-    message = collector_status_message(status, snapshot.get("error"))
-    snapshot["status"] = status
-    snapshot["statusMessage"] = message
-    meta = snapshot.setdefault("meta", {})
-    if isinstance(meta, dict):
-        meta["collectorStatus"] = status
-        meta["collectorStatusMessage"] = message
-    return snapshot
 
 
 def build_semantic_triage(snapshot):
