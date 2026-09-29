@@ -282,5 +282,151 @@ class LoginStoreTest(unittest.TestCase):
         self.assertIsNone(app.dpapi_unprotect_secret(""))
 
 
+class HealthFindingsTest(unittest.TestCase):
+    def _snapshot(self, **rest_overrides):
+        collector = app.Collector()
+        rest = base_rest(**rest_overrides)
+        ssh = {"counts": {"all": 0, "tcp": 0, "udp": 0, "icmp": 0}, "active_connections": []}
+        return collector.build_snapshot(rest, ssh)
+
+    def test_envelope_matches_strict_readonly_contract(self):
+        payload = app.build_health_findings(self._snapshot())
+        self.assertEqual(payload["kind"], "health-findings")
+        self.assertEqual(payload["schemaVersion"], 1)
+        self.assertIs(payload["readOnly"], True)
+        self.assertEqual(payload["source"], "snapshot-health-analysis")
+        self.assertEqual(payload["evidenceMode"], "current")
+        self.assertEqual(payload["sourceStatus"], "ok")
+        self.assertEqual(payload["coverage"], "bounded-sample")
+        self.assertRegex(payload["generatedAt"], r"Z$")
+        self.assertRegex(payload["observedAt"], r"Z$")
+        self.assertEqual(payload["sourceUpdatedAt"], payload["observedAt"])
+        self.assertIsInstance(payload["findings"], list)
+        for row in payload["findings"]:
+            self.assertIn(row["severity"], {"critical", "warning", "info"})
+            self.assertLessEqual(len(row["id"]), 128)
+            self.assertLessEqual(len(row["evidence"]), 6)
+            for item in row["evidence"]:
+                self.assertLessEqual(len(item["label"]), 64)
+                self.assertIsInstance(item["value"], (str, int, float, bool))
+
+    def test_resource_pressure_becomes_critical_finding(self):
+        rest = base_rest(resource={
+            "cpu-load": "95", "free-memory": "500", "total-memory": "1000",
+            "free-hdd-space": "10", "total-hdd-space": "100",
+            "version": "7.20", "board-name": "x", "architecture-name": "arm",
+        })
+        payload = app.build_health_findings(self._snapshot(**{"resource": rest["resource"]}))
+        self.assertEqual(payload["status"], "critical")
+        self.assertEqual(payload["counts"]["critical"], 1)
+        self.assertEqual(payload["topFinding"]["id"], "system.resource_pressure")
+        self.assertEqual(payload["findings"][0]["severity"], "critical")
+
+    def test_naive_snapshot_clock_becomes_rfc3339(self):
+        snapshot = self._snapshot()
+        # build_snapshot stamps naive local clocks; the envelope must not leak them.
+        self.assertNotIn("T", snapshot["updatedAt"])
+        payload = app.build_health_findings(snapshot)
+        converted = app.public_rfc3339_timestamp(snapshot["updatedAt"])
+        self.assertIsNotNone(converted)
+        self.assertEqual(payload["observedAt"], converted)
+        self.assertTrue(converted.endswith("Z"))
+
+
+def _connection_row(local_ip="192.168.88.2", remote_ip="93.184.216.34:443", up=100, down=200):
+    return {
+        "localIp": local_ip, "remoteIp": remote_ip, "protocol": "TCP",
+        "upRate": up, "downRate": down, "timeout": "4w2d", "mark": "-",
+        "totalRate": up + down, "sessionBytes": up * 10,
+    }
+
+
+class ConnectionSearchTest(unittest.TestCase):
+    def _collector_with_rows(self, rows, detail_error=None):
+        collector = app.Collector()
+        collector.state = {
+            "status": "ok",
+            "updatedAt": "2026-09-29 09:25:50",
+            "error": None,
+            "meta": {},
+            "connections": {"active": rows, "detailError": detail_error},
+        }
+        return collector
+
+    def test_empty_match_keeps_envelope_valid(self):
+        collector = self._collector_with_rows([_connection_row()])
+        payload = collector.fetch_connection_search("192.168.88.99", limit=20)
+        self.assertEqual(payload["kind"], "connection-search")
+        self.assertEqual(payload["schemaVersion"], 1)
+        self.assertIs(payload["readOnly"], True)
+        self.assertEqual(payload["source"], "routeros-ssh")
+        self.assertEqual(payload["evidenceMode"], "current")
+        self.assertEqual(payload["sourceStatus"], "ok")
+        self.assertEqual(payload["coverage"], "bounded-sample")
+        self.assertEqual(payload["targetIp"], "192.168.88.99")
+        self.assertEqual(payload["matchCount"], 0)
+        self.assertEqual(payload["rows"], [])
+        self.assertIsNone(payload["capture"]["timedOut"])
+        self.assertFalse(payload["capture"]["truncatedByRows"])
+        self.assertFalse(payload["capture"]["incompleteTransport"])
+        self.assertRegex(payload["observedAt"], r"Z$")
+
+    def test_match_by_local_ip_respects_limit_and_truncation(self):
+        collector = self._collector_with_rows([_connection_row(remote_ip=f"93.184.216.{i}:443") for i in range(5)])
+        payload = collector.fetch_connection_search("192.168.88.2", limit=3)
+        self.assertEqual(payload["matchCount"], 3)
+        self.assertEqual(payload["limit"], 3)
+        self.assertTrue(payload["capture"]["truncatedByRows"])
+        self.assertEqual({row["srcIp"] for row in payload["rows"]}, {"192.168.88.2"})
+        self.assertTrue(all(row["dstIp"].startswith("93.184.216.") for row in payload["rows"]))
+        self.assertEqual(payload["rows"][0]["origRateBps"], 100)
+        self.assertEqual(payload["rows"][0]["replRateBps"], 200)
+
+    def test_match_by_remote_ip_and_source_pair_filter(self):
+        collector = self._collector_with_rows([
+            _connection_row(local_ip="192.168.88.2", remote_ip="93.184.216.34:443"),
+            _connection_row(local_ip="192.168.88.3", remote_ip="93.184.216.34:443"),
+        ])
+        payload = collector.fetch_connection_search("93.184.216.34", source_ip="192.168.88.3", limit=20)
+        self.assertEqual(payload["matchCount"], 1)
+        self.assertEqual(payload["rows"][0]["srcIp"], "192.168.88.3")
+        self.assertEqual(payload["sourceIp"], "192.168.88.3")
+
+    def test_degraded_channel_marks_source_status(self):
+        collector = self._collector_with_rows([], detail_error="REST failed; SSH fallback failed")
+        payload = collector.fetch_connection_search("192.168.88.2", limit=20)
+        self.assertEqual(payload["sourceStatus"], "degraded")
+        self.assertTrue(payload["capture"]["incompleteTransport"])
+
+    def test_query_parser_rejects_bad_input(self):
+        with self.assertRaises(ValueError):
+            app.parse_connection_search_query({"target": ["not-an-ip"]})
+        with self.assertRaises(ValueError):
+            app.parse_connection_search_query({"target": ["192.168.88.2"], "limit": ["0"]})
+        with self.assertRaises(ValueError):
+            app.parse_connection_search_query({"target": ["192.168.88.2"], "limit": ["51"]})
+        with self.assertRaises(ValueError):
+            app.parse_connection_search_query({"target": ["192.168.88.2"], "bogus": ["1"]})
+        target, source, limit = app.parse_connection_search_query({"ip": ["192.168.88.2"], "limit": ["40"]})
+        self.assertEqual((target, source, limit), ("192.168.88.2", None, 40))
+
+
+class PeerRateGuardTest(unittest.TestCase):
+    def test_second_call_within_interval_rejected(self):
+        now = [1000.0]
+        guard = app.PeerRateGuard(min_interval=5.0, clock=lambda: now[0])
+        allowed, _ = guard.acquire("10.0.0.1")
+        self.assertTrue(allowed)
+        allowed, retry_after = guard.acquire("10.0.0.1")
+        self.assertFalse(allowed)
+        self.assertGreaterEqual(retry_after, 1)
+        self.assertLessEqual(retry_after, 5)
+        now[0] += 6.0
+        allowed, _ = guard.acquire("10.0.0.1")
+        self.assertTrue(allowed)
+        allowed, _ = guard.acquire("10.0.0.2")
+        self.assertTrue(allowed, "different peer must not share the interval")
+
+
 if __name__ == "__main__":
     unittest.main()

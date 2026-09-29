@@ -96,6 +96,11 @@ PANEL_BIND, PANEL_TARGET = validate_panel_public_contract(PANEL_BIND, PANEL_TARG
 DNS_STATIC_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT", "100"))
 DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT", "300"))
 
+# Connection search supplement: bounded point query over the collector's latest
+# active-connection sample; React caps the page at 50 rows.
+CONNECTION_SEARCH_MAX_LIMIT = 50
+CONNECTION_SEARCH_MIN_INTERVAL_SECONDS = 5.0
+
 
 def env_bool(name, default=False):
     raw = os.getenv(name)

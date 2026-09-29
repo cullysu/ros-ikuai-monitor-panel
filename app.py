@@ -36,9 +36,11 @@ from ros_panel.util import (
     env_value,
     format_routeros_clock,
     format_routeros_uptime,
+    public_rfc3339_timestamp,
     split_connection_endpoint,
     to_bool,
     to_int,
+    utc_now_rfc3339,
 )
 from ros_panel.model import (
     ACTION_SEVERITY_RANK,
@@ -76,6 +78,7 @@ from ros_panel.endpoints import (
     endpoint,
 )
 from ros_panel.triage import ACTION_QUEUE_LIMIT, build_semantic_triage
+from ros_panel.health_findings import build_health_findings
 from ros_panel.diagnostics import (
     CUSTOM_NAME_MAX_LENGTH,
     READONLY_DIAGNOSTIC_CACHE_TTL,
@@ -268,9 +271,11 @@ from ros_panel.collector import (
 # collector 单例注入见下方 configure() 调用。
 from ros_panel.server import (
     Handler,
+    PeerRateGuard,
     ReusableThreadingHTTPServer,
     configure,
     main,
+    parse_connection_search_query,
 )
 
 

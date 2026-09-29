@@ -84,14 +84,17 @@ from ros_panel.util import (
     counter_delta,
     format_routeros_clock,
     format_routeros_uptime,
+    public_rfc3339_timestamp,
     split_connection_endpoint,
     to_bool,
     to_int,
+    utc_now_rfc3339,
 )
 # 导入顺序敏感：router_config/diagnostics 等的 import 期 env 读取必须发生在
 # config 的 env 文件加载之前（与原 app.py 行为一致）。
 from ros_panel.config import (
     BASE_DIR,
+    CONNECTION_SEARCH_MAX_LIMIT,
     DNS_STATIC_MAX_PAGE_LIMIT,
     DNS_STATIC_PAGE_LIMIT,
     EXPOSE_ADMIN_SESSIONS,
@@ -956,6 +959,81 @@ class Collector:
                 raise RuntimeError(
                     f"REST connection detail failed: {rest_exc}; SSH fallback failed: {ssh_exc}"
                 ) from ssh_exc
+
+    def fetch_connection_search(self, target_ip, source_ip=None, limit=CONNECTION_SEARCH_MAX_LIMIT):
+        """Bounded point query over the collector's latest active-connection sample.
+
+        Read-only contract supplement for the React connection search: exact
+        local/remote IP match, row-capped, wrapped in the strict evidence
+        envelope accepted by parseConnectionSearchSupplement (kind
+        "connection-search", source "routeros-ssh", coverage "bounded-sample").
+        """
+        target = str(ipaddress.ip_address(str(target_ip or "").strip()))
+        source = str(ipaddress.ip_address(str(source_ip or "").strip())) if source_ip else None
+        safe_limit = max(1, min(to_int(limit, CONNECTION_SEARCH_MAX_LIMIT), CONNECTION_SEARCH_MAX_LIMIT))
+        state = self.get_state()
+        connections = state.get("connections") if isinstance(state.get("connections"), dict) else {}
+        active_rows = connections.get("active") if isinstance(connections.get("active"), list) else []
+        detail_error = connections.get("detailError")
+        source_status = "degraded" if detail_error else "ok"
+        rows = []
+        for raw_row in active_rows:
+            row = raw_row if isinstance(raw_row, dict) else {}
+            local_ip = split_connection_endpoint(row.get("localIp"))
+            remote_ip = split_connection_endpoint(row.get("remoteIp"))
+            if not local_ip or not remote_ip:
+                continue
+            row_ips = {local_ip, remote_ip}
+            if target not in row_ips:
+                continue
+            if source is not None and source not in row_ips:
+                continue
+            protocol = str(row.get("protocol") or "").strip()[:32] or "other"
+            timeout = str(row.get("timeout") if row.get("timeout") is not None else "").strip()[:64]
+            rows.append(
+                {
+                    "srcIp": local_ip,
+                    "dstIp": remote_ip,
+                    "protocol": protocol,
+                    "timeout": timeout,
+                    "origRateBps": max(0, to_int(row.get("upRate"))),
+                    "replRateBps": max(0, to_int(row.get("downRate"))),
+                }
+            )
+            if len(rows) >= safe_limit:
+                break
+        truncated_by_rows = len(rows) >= safe_limit
+        observed_at = utc_now_rfc3339()
+        return {
+            "schemaVersion": 1,
+            "kind": "connection-search",
+            "targetIp": target,
+            "sourceIp": source,
+            "limit": safe_limit,
+            "query": {"targetIp": target, "sourceIp": source},
+            "page": {
+                "requestedLimit": safe_limit,
+                "returnedCount": len(rows),
+                "maxLimit": CONNECTION_SEARCH_MAX_LIMIT,
+            },
+            "matchCount": len(rows),
+            "rows": rows,
+            "readOnly": True,
+            "generatedAt": observed_at,
+            "observedAt": observed_at,
+            "evidenceMode": "current",
+            "source": "routeros-ssh",
+            "sourceStatus": source_status,
+            # Point-in-time, row-bounded query over the active-connection
+            # sample: never an inventory claim about all connections.
+            "coverage": "bounded-sample",
+            "capture": {
+                "truncatedByRows": truncated_by_rows,
+                "truncatedByBytes": False,
+                "timedOut": None,
+                "incompleteTransport": bool(detail_error),
+            },
+        }
 
     def fetch_dns_static_count(self):
         with self.ssh_lock:
