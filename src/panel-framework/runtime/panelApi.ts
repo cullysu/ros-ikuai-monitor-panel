@@ -19,6 +19,7 @@ import {
 } from "../sections/routeSupplementSchema";
 import { dnsPageUrl, type DnsPageRequest } from "../sections/routeSupplementState";
 import { parseReadonlyDiagnostics, type ReadonlyDiagnosticsData } from "../sections/readonlyDiagnosticsSchema";
+import { buildIpAliasRequest, parseIpAliasResponse, type IpAliasResult } from "./ipAliasClient";
 
 export interface RouterConnectionInput {
   host: string;
@@ -235,5 +236,28 @@ export async function fetchPanelNetwork(signal?: AbortSignal): Promise<PanelNetw
   const payload = await requestJson("/api/panel-network", { signal });
   const parsed = parsePanelNetworkInfo(payload);
   if (!parsed) throw new PanelApiError("面板网络接口返回了不符合契约的数据", 0, "invalid_panel_network_schema", payload);
+  return parsed;
+}
+
+/**
+ * The panel's single write endpoint. Mirrors the vanilla desktop semantics:
+ * same-origin POST {ip, name}; an empty name clears the alias. Returns the
+ * server-confirmed ip/customName so callers can update local state.
+ */
+export async function submitIpAlias(ip: string, name: string, csrfToken = "", signal?: AbortSignal): Promise<IpAliasResult> {
+  const request = buildIpAliasRequest(ip, name, csrfToken);
+  if (!request) throw new PanelApiError("IP 别名需要非空的 IP 地址", 0, "invalid_ip_alias_target");
+  let payload: unknown = null;
+  try {
+    payload = await requestJson(request.path, { method: request.method, headers: request.headers, body: request.body, signal });
+  } catch (error) {
+    if (error instanceof PanelApiError) {
+      const failure = parseIpAliasResponse(error.payload, false);
+      throw new PanelApiError(failure.error || error.message, error.status, error.code, error.payload, error.retryAfterSeconds);
+    }
+    throw error;
+  }
+  const parsed = parseIpAliasResponse(payload, true);
+  if (!parsed.ok) throw new PanelApiError(parsed.error, 200, "invalid_ip_alias_schema", payload);
   return parsed;
 }
