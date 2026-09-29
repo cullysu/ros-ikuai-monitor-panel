@@ -54,7 +54,10 @@ jobs:
       - name: Frontend and tool JavaScript syntax
         run: |
           shopt -s nullglob
-          for file in public/*.js public/assets/*.js tools/*.js; do
+          # 默认 index 只引用 /assets/framework/ 下的 hash 产物（由 vite/esbuild 在
+          # 构建时把关，framework-asset-identity.js 校验 manifest 摘要），不再对
+          # public/ 产物跑 node --check；这里只检查仓库自有的 tools JS。
+          for file in tools/*.js tools/**/*.js; do
             node --check "$file"
           done
           node <<'NODE'
@@ -67,6 +70,12 @@ jobs:
           scripts.forEach((source, index) => {
             new vm.Script(source, { filename: `public/index.html#inline-${index + 1}.js` });
           });
+          // React 壳契约：默认 index 必须引用 manifest 记录的 surface loader。
+          const manifest = JSON.parse(fs.readFileSync('public/assets/framework/manifest.json', 'utf8'));
+          const loaderSrc = `/assets/framework/${manifest.assets.loader.file}`;
+          if (!html.includes(loaderSrc)) {
+            throw new Error(`public/index.html does not reference the manifest surface loader: ${loaderSrc}`);
+          }
           NODE
 
       - name: Docker Compose config
@@ -140,10 +149,19 @@ jobs:
           $index = Get-ChildItem -Recurse .\dist\routeros-triage-panel -Filter index.html | Select-Object -First 1
           if (-not $index) { throw "Bundled public/index.html was not found." }
           $bundleRoot = Split-Path -Parent $index.FullName
-          foreach ($needle in @("smoothRateNeedleZeros", "ik-wan-rate-axis", "ops-axis-labels")) {
-            $hit = Get-ChildItem -Recurse -LiteralPath $bundleRoot -Include *.html,*.css,*.js -File | Select-String -SimpleMatch $needle -Quiet
-            if (-not $hit) { throw "Bundled frontend is missing $needle." }
-          }
+          # 默认 index 是 React 壳：钉子从 vanilla 字符串改为 framework 产物存在性——
+          # index 引用的 surface loader 必须在 dist 里，且 framework 至少有一个 >100KB 的
+          # 桌面/移动 bundle（React 前端本体）与 manifest.json。
+          $indexHtml = Get-Content -Raw -LiteralPath $index.FullName
+          $loaderRef = [regex]::Match($indexHtml, '/assets/framework/(panel-surface-loader\.[0-9a-f]{12}\.js)').Groups[1].Value
+          if (-not $loaderRef) { throw "Bundled public/index.html does not reference a framework surface loader." }
+          $loaderPath = Join-Path $bundleRoot "assets/framework/$loaderRef"
+          if (-not (Test-Path -LiteralPath $loaderPath)) { throw "Bundled surface loader is missing: $loaderRef" }
+          $manifestPath = Join-Path $bundleRoot "assets/framework/manifest.json"
+          if (-not (Test-Path -LiteralPath $manifestPath)) { throw "Bundled framework manifest.json is missing." }
+          $bigBundle = Get-ChildItem -LiteralPath (Join-Path $bundleRoot "assets/framework") -Filter "panel-*.js" -File |
+            Where-Object { $_.Name -ne $loaderRef -and $_.Length -gt 100KB }
+          if (-not $bigBundle) { throw "Bundled framework desktop/mobile bundle (>100KB) is missing." }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
           Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing loopback bind default." }

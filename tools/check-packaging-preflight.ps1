@@ -85,32 +85,31 @@ try {
   Write-Host ""
 
   $indexPath = Join-Path $repoRoot "public/index.html"
-  $scalePatchPath = Join-Path $repoRoot "public/scale-adaptive-patch.js"
   if (-not (Test-Path -LiteralPath $indexPath)) {
     Add-Check "FAIL" "frontend axis assets" "public/index.html was not found."
   }
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
-    $scalePatchText = if (Test-Path -LiteralPath $scalePatchPath) { Get-Content -Raw -LiteralPath $scalePatchPath } else { "" }
-    $frontendAllText = $indexText + (Get-ChildItem -LiteralPath (Join-Path $repoRoot "public/assets") -Include *.css,*.js -Recurse -File | ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName }) -join ""
-    $legacyAxisAssets = (
-      $indexText -match "axis-tick-label" -and
-      $scalePatchText -match "ikuai-wan-chart \.axis-line-chart" -and
-      $scalePatchText -match "ikuai-chart-box \.axis-line-chart" -and
-      $scalePatchText -match "data-ikuai-terminal-summary"
+    # 默认 index 已是 React 壳；能力标记改靶 React 源码树（src/panel-framework），
+    # minified bundle 里不再有 vanilla 的函数名/class 字面量。映射：
+    #   smoothRateNeedleZeros（速率图零点处理）      -> buildOverviewInstruments.ts trafficPoints()：缺失样本跳过，不补 0
+    #   ik-wan-rate-axis（WAN 速率轴）               -> LegacyDesktopOverview.tsx data-chart-peak-label / data-axis-left 轴标记
+    #   ops-axis-labels（资源图轴标签）              -> legacy-axis-label（TrafficChart/ResourceChart 轴文案 class）
+    #   data-overview-wan-switch（WAN 切换）         -> data-desktop-wan-evidence（React 概览 WAN 证据列）
+    #   data-overview-rank-grid（终端/排名栅格）     -> "在线终端" SummaryTile（终端摘要位）
+    $frontendSourceText = (Get-ChildItem -LiteralPath (Join-Path $repoRoot "src/panel-framework") -Include *.ts,*.tsx,*.css -Recurse -File | ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName }) -join ""
+    $reactFrameworkMarkers = (
+      $frontendSourceText -match "function trafficPoints" -and
+      $frontendSourceText -match "data-chart-peak-label" -and
+      $frontendSourceText -match "legacy-axis-label" -and
+      $frontendSourceText -match "data-desktop-wan-evidence" -and
+      $frontendSourceText -match "在线终端"
     )
-    $current35Assets = (
-      $frontendAllText -match "smoothRateNeedleZeros" -and
-      $frontendAllText -match "ik-wan-rate-axis" -and
-      $frontendAllText -match "ops-axis-labels" -and
-      $frontendAllText -match "data-overview-wan-switch" -and
-      $frontendAllText -match "data-overview-rank-grid"
-    )
-    if ($legacyAxisAssets -or $current35Assets) {
-      Add-Check "PASS" "frontend axis assets" "Overview WAN/resource chart axes and terminal/ranking placement markers are present."
+    if ($reactFrameworkMarkers) {
+      Add-Check "PASS" "frontend axis assets" "React framework source carries overview WAN/resource chart axis and terminal placement markers."
     }
     else {
-      Add-Check "FAIL" "frontend axis assets" "Overview chart axes or terminal/ranking placement markers are missing from public assets."
+      Add-Check "FAIL" "frontend axis assets" "Overview chart axes or terminal/ranking placement markers are missing from src/panel-framework."
     }
   }
 
@@ -119,7 +118,8 @@ try {
   $composePath = Join-Path $repoRoot "compose.yml"
   $linuxDeployPath = Join-Path $repoRoot "deploy_linux.sh"
   $sharedChecks = @(
-    (Test-Path -LiteralPath $specPath) -and ((Get-Content -Raw -LiteralPath $specPath) -match 'public"\),\s*"public"'),
+    # spec 现以 public_datas() 聚合 public 资产（rglob），旧的双 "public" 字面量正则已失配。
+    (Test-Path -LiteralPath $specPath) -and ((Get-Content -Raw -LiteralPath $specPath) -match 'datas=public_datas\(\)'),
     (Test-Path -LiteralPath $dockerfilePath) -and ((Get-Content -Raw -LiteralPath $dockerfilePath) -match '(?m)^COPY\s+public\s+\./public'),
     (Test-Path -LiteralPath $composePath) -and ((Get-Content -Raw -LiteralPath $composePath) -match 'dockerfile:\s*Dockerfile'),
     (Test-Path -LiteralPath $linuxDeployPath) -and ((Get-Content -Raw -LiteralPath $linuxDeployPath) -match 'rsync -a --delete')

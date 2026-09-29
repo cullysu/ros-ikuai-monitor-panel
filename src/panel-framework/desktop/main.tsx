@@ -1,5 +1,6 @@
 import { createRoot, type Root } from "react-dom/client";
 import { DesktopPanelApp } from "./DesktopPanelApp";
+import { normalizeLegacySnapshot } from "../runtime/legacyContract";
 import "./desktop-entry.css";
 
 type TestSnapshotWindow = Window & { __PANEL_TEST_SNAPSHOT__?: unknown };
@@ -9,7 +10,9 @@ function mount() {
   const app = document.getElementById("app");
   if (!app) throw new Error("RouterOS panel root #app is missing");
   root = createRoot(app);
-  root.render(<DesktopPanelApp snapshot={(window as TestSnapshotWindow).__PANEL_TEST_SNAPSHOT__} />);
+  // Test fixture goes through the same legacy contract boundary as
+  // fetchPanelSnapshot so a vanilla-shaped harness payload validates.
+  root.render(<DesktopPanelApp snapshot={normalizeLegacySnapshot((window as TestSnapshotWindow).__PANEL_TEST_SNAPSHOT__)} />);
   window.dispatchEvent(new CustomEvent("router-panel-mounted", { detail: { surface: "desktop" } }));
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount, { once: true }); else mount();

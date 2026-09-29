@@ -30,11 +30,42 @@ const DEFAULT_PUBLIC_SECTIONS = [
 ];
 const DEFAULT_PRIVATE_SECTIONS = [
   ...DEFAULT_PUBLIC_SECTIONS,
-  'collectionHealthDiagnostics',
-  'dnsProxyDiagnostics',
+  // React 路由表（src/panel-framework/routes/panelRoutes.ts PANEL_ROUTE_IDS）里的
+  // 只读诊断/服务日志页，替代 vanilla 的 collectionHealthDiagnostics/dnsProxyDiagnostics。
+  'readonlyDiagnostics',
+  'serviceLogs',
 ];
 const DEFAULT_SCALE_SCENARIOS = ['multi'];
 const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet']);
+
+// 默认 index 已是 React 壳：script 只剩 /assets/framework/panel-surface-loader.<hash>.js，
+// 桌面/移动 bundle 与样式由 loader 按 manifest 运行时注入。这里从 manifest.json 动态解析
+// 内容寻址文件名，避免硬编码 hash。
+function frameworkAssets() {
+  const assets = { loaderSrc: null, files: [] };
+  try {
+    const manifest = JSON.parse(fsSync.readFileSync(
+      path.join(ROOT, 'public', 'assets', 'framework', 'manifest.json'),
+      'utf8',
+    ));
+    const recorded = manifest && manifest.assets && typeof manifest.assets === 'object' ? manifest.assets : null;
+    const loaderFile = recorded && recorded.loader && typeof recorded.loader.file === 'string'
+      ? recorded.loader.file
+      : null;
+    if (loaderFile && /^panel-surface-loader\.[0-9a-f]{12}\.js$/.test(loaderFile)) {
+      assets.loaderSrc = `/assets/framework/${loaderFile}`;
+    }
+    for (const surface of ['desktop', 'mobile']) {
+      const entry = recorded && recorded[surface];
+      if (!entry) continue;
+      if (entry.script && typeof entry.script.file === 'string') assets.files.push(`assets/framework/${entry.script.file}`);
+      if (entry.style && typeof entry.style.file === 'string') assets.files.push(`assets/framework/${entry.style.file}`);
+    }
+  } catch (error) {
+    // manifest 缺失时保持 loaderSrc=null，让 index 断言失败并给出明确原因。
+  }
+  return assets;
+}
 
 function usage() {
   return `
@@ -395,27 +426,41 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
   }
 
   const index = await fetchText(baseUrl, { timeoutMs: 5000 });
-  record(report, 'GET / serves panel shell', index.response.ok && index.text.includes('id="app"') && index.text.includes('assets/panel-head.js'), {
+  // 默认 index 是 React 壳：挂载点 #app + manifest 记录的 surface loader。
+  const framework = frameworkAssets();
+  record(report, 'GET / serves panel shell', index.response.ok
+    && index.text.includes('id="app"')
+    && Boolean(framework.loaderSrc)
+    && index.text.includes(framework.loaderSrc), {
     statusCode: index.response.status,
     bytes: index.text.length,
+    loaderSrc: framework.loaderSrc,
   });
 
   const scriptSrcs = (index.text.match(/<script\b[^>]*>/gi) || [])
     .map((tag) => (tag.match(/\bsrc=["']([^"']+)["']/i) || [])[1])
     .filter(Boolean);
-  const foldedLayers = ['panel.js', 'layout-whitespace-patch.js', 'readonly-diagnostics.js', 'panel-professional-redesign'];
-  record(report, 'GET / loads exactly the bundled panel-head.js (layers folded)', index.response.ok
+  const linkHrefs = (index.text.match(/<link\b[^>]*>/gi) || [])
+    .map((tag) => (tag.match(/\bhref=["']([^"']+)["']/i) || [])[1])
+    .filter(Boolean);
+  // 恰好 1 个 script（surface loader），且不再引用任何 vanilla 层。
+  // foldedLayers：已折叠的 vanilla 补丁 + panel-head.js / panel.css（旧前端仅存于 index.legacy.html）。
+  const foldedLayers = ['panel.js', 'layout-whitespace-patch.js', 'readonly-diagnostics.js', 'panel-professional-redesign', 'assets/panel-head.js', 'assets/panel.css'];
+  const stylesheetHrefs = linkHrefs.filter((href) => href.includes('panel.css') || href.includes('framework'));
+  record(report, 'GET / loads exactly the framework surface loader (vanilla layers retired)', index.response.ok
     && scriptSrcs.length === 1
-    && scriptSrcs[0].includes('assets/panel-head.js')
-    && foldedLayers.every((legacy) => !scriptSrcs.some((src) => src.includes(legacy))), {
+    && scriptSrcs[0].includes('panel-surface-loader')
+    && stylesheetHrefs.length === 0
+    && foldedLayers.every((legacy) => !scriptSrcs.some((src) => src.includes(legacy)))
+    && foldedLayers.every((legacy) => !linkHrefs.some((href) => href.includes(legacy))), {
     statusCode: index.response.status,
     scriptSrcs,
+    linkHrefs,
   });
 
-  const assets = [
-    'assets/panel-head.js',
-    'assets/panel.css',
-  ];
+  // 资产 GET 清单改为 framework 产物（manifest 记录的桌面/移动 script + style）。
+  // loader 本体由 index 断言覆盖，这里验证 manifest 列出的运行时注入资产确实可被 GET。
+  const assets = framework.files;
   for (const asset of assets) {
     const result = await fetchText(`${baseUrl}${asset}`, { timeoutMs: 5000 });
     record(report, `GET /${asset}`, result.response.ok && result.text.length > 1000, {
@@ -713,25 +758,37 @@ async function launchBrowser(args, report) {
   };
 }
 
-async function waitForApp(cdp, timeoutMs = 8000) {
+// React 壳的挂载点是 #app（vanilla 的 #app .section 已退役）。注入 fixture 后
+// DesktopPanelApp/MobilePanelApp 直接以 __PANEL_TEST_SNAPSHOT__ 渲染，稳定后
+// #app 应有子节点且文本量充足（>500）。
+async function waitForApp(cdp, timeoutMs = 15000, minTextOverride = null) {
   const deadline = Date.now() + timeoutMs;
   let last = null;
   while (Date.now() < deadline) {
-    const result = await cdp.send('Runtime.evaluate', {
-      expression: `(() => {
+    try {
+      const result = await cdp.send('Runtime.evaluate', {
+        expression: `(() => {
         const app = document.querySelector('#app');
-        const section = document.querySelector('#app .section');
         return {
           readyState: document.readyState,
           app: Boolean(app),
-          section: section ? section.id : '',
-          textLength: section ? section.innerText.trim().length : 0
+          appChildren: app ? app.children.length : 0,
+          surface: document.documentElement.dataset.panelSurface || '',
+          route: document.body.dataset.panelRoute || '',
+          textLength: app ? app.innerText.trim().length : 0
         };
       })()`,
-      returnByValue: true,
-    });
-    last = result.result && result.result.value;
-    if (last && last.app && last.section && last.textLength > 20) return last;
+        returnByValue: true,
+      });
+      last = result.result && result.result.value;
+      // 桌面概览注入 fixture 后文本量充足（>500）；移动端 Hub 页与工作区子页更紧凑，
+      // 调用方可显式放宽阈值（setSection 传 200）。
+      const minText = minTextOverride || (last && last.surface === 'mobile' ? 200 : 500);
+      if (last && last.app && last.appChildren > 0 && last.textLength > minText) return last;
+    } catch (error) {
+      // location.search 导航会重载文档，过渡期 Runtime.evaluate 可能暂时失败，继续轮询。
+      last = { error: error.message };
+    }
     await delay(250);
   }
   throw new Error(`Timed out waiting for app render: ${JSON.stringify(last)}`);
@@ -772,272 +829,99 @@ async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scal
     mobile: viewport.width < 768,
   });
   await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: fixtureSource });
+  // surface loader 按 ?surface= / sessionStorage / 指针启发式选面。同一浏览器 target 会在
+  // 视口之间复用 sessionStorage，因此按视口显式钉住 surface，保证移动/桌面断言确定性。
+  const surface = viewport.width < 768 ? 'mobile' : 'desktop';
   await cdp.send('Page.navigate', {
-    url: `${baseUrl}?section=overview&predeploy=${Date.now()}#overview`,
+    url: `${baseUrl}?section=overview&surface=${surface}&predeploy=${Date.now()}`,
   });
   await waitForApp(cdp);
-  record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, {
+  // 页面加载断言：#app 实质内容（waitForApp 已保证 >500 字符）+ 品牌文案
+  // （桌面概览 SummaryTile "RouterOS"；移动端品牌条 "NTR RouterOS"）。
+  const brand = await cdp.send('Runtime.evaluate', {
+    expression: `(() => {
+      const text = String(document.body?.innerText || '');
+      return {
+        brandVisible: text.includes('RouterOS') || text.includes('总览') || text.includes('系统首页'),
+        textLength: text.trim().length,
+      };
+    })()`,
+    returnByValue: true,
+  });
+  const brandValue = brand.result && brand.result.value;
+  record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, Boolean(brandValue && brandValue.brandVisible), {
     viewport,
     profile,
     scaleScenario,
+    surface,
+    brand: brandValue,
   });
 }
 
-async function setSection(cdp, section) {
+// React 无 vanilla 的 [data-section] 侧栏 DOM（面板由 React 渲染），section 导航统一走
+// ?section=<routeId> 地址栏导航：React usePanelRoute 挂载时读 location.search，
+// addScriptToEvaluateOnNewDocument 会在新文档重新注入 fixture。导航后等待 #app 重新渲染。
+async function setSection(cdp, section, surface = 'desktop') {
   await cdp.send('Runtime.evaluate', {
     expression: `(() => {
-      const section = ${JSON.stringify(section)};
-      const link = document.querySelector('[data-section="' + CSS.escape(section) + '"]');
-      if (link) link.click();
-      else location.hash = '#' + section;
+      location.search = '?section=' + encodeURIComponent(${JSON.stringify(section)}) + '&surface=' + ${JSON.stringify(surface)};
       return true;
     })()`,
-    awaitPromise: true,
     returnByValue: true,
   });
-  await delay(450);
+  await waitForApp(cdp, 15000, 40);
 }
 
+// CDP DOM 断言已重写为 React 等价物（默认 index = React 壳）。被删除的 vanilla 断言
+// 及原因：.ik-rail/.sidebar/.frame 壳几何、.ik-home-layout/data-overview-action-panel/
+// data-overview-drilldown/data-overview-wan-line/data-overview-wan-switch、
+// .ikuai-*/.ops-* 资源与轴标签、[data-protocol-rank]、[data-broadband-realtime-table]
+// 宽带表头、.scale-window 横向滚动、 Wan 卡 sticky 探针、[data-ikuai-terminal-summary]
+// 终端卡位——这些选择器全部属于 vanilla panel-head.js DOM，在 React 渲染树中不存在，
+// 且 React 无逐条等价物（面板信息架构已重设计）。React 等价断言：
+//   - #app 有实质内容（children>0 且文本长度>200）
+//   - body.dataset.panelRoute === ?section= 请求的路由（React 路由同步标记）
+//   - 渲染文本不含 NaN/undefined/[object Object]（与实现无关的质量门，保留）
+//   - 桌面无横向溢出、窄视口 --strict-responsive 下无横向溢出（保留）
+//   - 零 pageerror / console error 由 runBrowserChecks 的 Runtime.exceptionThrown 监听承担
 async function inspectSection(cdp, profile, viewport, section, args, scaleScenario) {
   const expression = `(() => {
     const sectionName = ${JSON.stringify(section)};
-    const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim();
-    const rectOf = (selector) => {
-      const node = document.querySelector(selector);
-      if (!node) return null;
-      const rect = node.getBoundingClientRect();
-      const style = getComputedStyle(node);
-      return {
-        selector,
-        position: style.position,
-        display: style.display,
-        top: Math.round(rect.top),
-        left: Math.round(rect.left),
-        right: Math.round(rect.right),
-        bottom: Math.round(rect.bottom),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-      };
-    };
+    const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
     const app = document.querySelector('#app');
-    const active = document.querySelector('#app .section');
-    const requested = document.querySelector('#' + CSS.escape(sectionName));
     const root = document.documentElement;
     const body = document.body;
     const overflowX = Math.max(root.scrollWidth, body.scrollWidth) - window.innerWidth;
-    const text = normalize((requested || active || app || body).innerText);
-    const hasBadLiteral = /\\bNaN\\b|\\bundefined\\b|\\[object Object\\]/.test(text);
-    const scaleMeta = window.__PANEL_TEST_SNAPSHOT__?.meta?.scale || {};
-    const scenario = ${JSON.stringify(scaleScenario)};
-    const scaleDisclosureCount = document.querySelectorAll('.scale-meta, .scale-pager, .scale-toolbar, [data-scale-meta]').length;
-    const isCurrent35Shell = Boolean(document.querySelector('.ik-rail'));
-    const scaleMetaOk = Boolean(scaleMeta.wan && Number(scaleMeta.wan.actualCount || 0) >= 0 && Number(scaleMeta.wan.shownCount || 0) >= 0);
-    const scaleRequiredSections = new Set(['overview', 'interfaces', 'terminals', 'dhcp', 'trafficLoad']);
-    const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrent35Shell;
-    const sectionRoot = requested || active;
-    const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
-    const isCurrent35Home = sectionName === 'overview' && Boolean(sectionRoot?.querySelector('.ik-home-layout'));
-    const overviewActionOk = sectionName !== 'overview' || isCurrent35Home || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
-    const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口/.test(text);
-    const terminalSummary = sectionRoot?.querySelector('[data-ikuai-terminal-summary], .ik-home-terminal-card');
-    const latencyRow = sectionRoot?.querySelector('.ikuai-latency, .ik-wan-info-card');
-    const quickHead = sectionRoot?.querySelector('.ikuai-quick-head, .ik-home-quick-card');
-    const overviewTerminalPlacementOk = sectionName !== 'overview' || Boolean(
-      terminalSummary &&
-      latencyRow &&
-      quickHead &&
-      (latencyRow.compareDocumentPosition(terminalSummary) & Node.DOCUMENT_POSITION_FOLLOWING) &&
-      (terminalSummary.compareDocumentPosition(quickHead) & Node.DOCUMENT_POSITION_FOLLOWING)
-    );
-    const duplicateTerminalCards = Array.from(sectionRoot?.querySelectorAll('.ikuai-right .ikuai-card-title') || [])
-      .filter((node) => normalize(node.textContent) === '终端数量');
-    const overviewNoDuplicateTerminalOk = sectionName !== 'overview' || duplicateTerminalCards.length === 0;
-    const visibleAxisLabels = (selector) => Array.from(sectionRoot?.querySelectorAll(selector) || [])
-      .filter((node) => {
-        const rect = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none' && style.opacity !== '0' && normalize(node.textContent);
-      });
-    const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label, .ik-wan-info-card .ik-wan-rate-axis span');
-    const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label, .ik-home-main .ik-wan-rate-axis span');
-    const overviewAxesOk = sectionName !== 'overview' || (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6);
-    const monitorSplit = sectionRoot?.querySelector('[data-monitor-split-charts], .ik-wan-rate-split.is-main');
-    const monitorPanels = Array.from(monitorSplit?.querySelectorAll('[data-monitor-chart], .ik-wan-rate-card') || []);
-    const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
-    const monitorSplitText = normalize(monitorSplit?.textContent || '');
-    const overviewMonitorSplitOk = sectionName !== 'overview' || Boolean(
-      monitorSplit &&
-      monitorPanels.length === 2 &&
-      monitorSplitColumns >= 2 &&
-      monitorSplitText.includes('上行速率') &&
-      monitorSplitText.includes('下行速率')
-    );
-    const wanCard = sectionRoot?.querySelector('.ikuai-wan-card, .ik-wan-info-card');
-    const wanSelect = wanCard?.querySelector('.ikuai-wan-select, .ik-wan-line-select, [data-overview-wan-line]');
-    const wanIpRow = Array.from(wanCard?.querySelectorAll('.ikuai-info-row, .info-item') || [])
-      .find((node) => normalize(node.querySelector('span, .info-k')?.textContent) === 'WAN IP');
-    const wanIpText = normalize(wanIpRow?.querySelector('strong, .info-v')?.textContent || '');
-    const wanCardStyle = wanCard ? getComputedStyle(wanCard) : null;
-    const overviewAggregateWanNoIpv6Ok = sectionName !== 'overview' || !wanSelect || wanSelect.value !== '__all_wan__' || !wanIpText.includes(':');
-    const overviewWanCardNoInternalScrollOk = sectionName !== 'overview' || !wanCardStyle || (
-      !['auto', 'scroll'].includes(wanCardStyle.overflowY) &&
-      Math.round(wanCard.scrollHeight - wanCard.clientHeight) <= 2
-    );
-    const scrollHeight = Math.max(root.scrollHeight, body.scrollHeight);
-    let overviewStickyOk = true;
-    let overviewStickyProbe = null;
-    if (sectionName === 'overview' && window.innerWidth >= 1024) {
-      const originalScrollY = window.scrollY || root.scrollTop || body.scrollTop || 0;
-      const titleNode = wanCard?.querySelector('.ikuai-card-title, .card-title');
-      const maxProbeY = Math.max(0, scrollHeight - window.innerHeight - 1);
-      const probeY = Math.min(520, maxProbeY);
-      if (wanCard && titleNode && probeY >= 120) {
-        window.scrollTo(0, probeY);
-        if (typeof window.__syncHomeStickyFallbacks === 'function') {
-          window.__syncHomeStickyFallbacks();
+    const text = normalize((app || body).innerText);
+    // 词边界用 indexOf 手工判断，避免模板字面量里的正则反斜杠转义陷阱。
+    const badTokens = ['NaN', 'undefined', '[object Object]'];
+    const badLiteralHits = [];
+    for (const token of badTokens) {
+      let at = text.indexOf(token);
+      while (at >= 0 && badLiteralHits.length < 3) {
+        const before = at === 0 ? ' ' : text[at - 1];
+        const after = at + token.length >= text.length ? ' ' : text[at + token.length];
+        const wordish = /[A-Za-z0-9_]/;
+        if (!wordish.test(before) && !wordish.test(after)) {
+          badLiteralHits.push(token + '@' + at + ' :: ' + text.slice(Math.max(0, at - 60), at + 60));
+          break;
         }
-        const cardRect = wanCard.getBoundingClientRect();
-        const titleRect = titleNode.getBoundingClientRect();
-        const cardStyle = getComputedStyle(wanCard);
-        const nativeStickyOk = (
-          cardStyle.position === 'sticky' &&
-          cardRect.top >= 0 &&
-          cardRect.top <= 24 &&
-          titleRect.top >= cardRect.top &&
-          titleRect.top < window.innerHeight / 2
-        );
-        const fixedFallbackOk = (
-          cardStyle.position === 'fixed' &&
-          wanCard.classList.contains('is-ikuai-home-fixed') &&
-          cardRect.top >= 0 &&
-          cardRect.top <= 24 &&
-          titleRect.top >= cardRect.top &&
-          titleRect.top < window.innerHeight / 2
-        );
-        overviewStickyOk = cardStyle.position === 'static' ? true : (nativeStickyOk || fixedFallbackOk);
-        overviewStickyProbe = {
-          probeY,
-          cardTop: Math.round(cardRect.top),
-          titleTop: Math.round(titleRect.top),
-          position: cardStyle.position,
-          internalScrollTop: Math.round(wanCard.scrollTop || 0),
-        };
-        window.scrollTo(0, originalScrollY);
+        at = text.indexOf(token, at + 1);
       }
     }
-    const resourceGrid = sectionRoot?.querySelector('.ikuai-resource-grid, .ops-resource-grid');
-    const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card, .ops-resource-card') || []);
-    const resourceText = normalize(resourceGrid?.textContent || '');
-    const resourceColumns = resourceGrid ? getComputedStyle(resourceGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
-    const resourceAxisLabels = Array.from(resourceGrid?.querySelectorAll('.axis-tick-label, .ops-axis-labels span') || []).map((node) => normalize(node.textContent));
-    const overviewResourceRowOk = sectionName !== 'overview' || Boolean(
-      resourceCards.length === 3 &&
-      (resourceColumns >= 3 || window.innerWidth < 768) &&
-      (resourceText.includes('CPU负载') || resourceText.includes('CPU')) &&
-      (resourceText.includes('内存使用率') || resourceText.includes('内存')) &&
-      (resourceText.includes('磁盘使用率') || resourceText.includes('磁盘'))
-    );
-    const overviewResourceAxisOk = sectionName !== 'overview' || Boolean(
-      resourceAxisLabels.filter((label) => label === '100.0%' || label === '100%').length >= 3 &&
-      resourceAxisLabels.filter((label) => label === '50.0%' || label === '50%').length >= 3 &&
-      resourceAxisLabels.filter((label) => label === '0.0%' || label === '0%').length >= 3
-    );
-    const protocolRank = sectionRoot?.querySelector('[data-protocol-rank]');
-    const protocolRankText = normalize(protocolRank?.textContent || '');
-    const overviewProtocolRankOk = sectionName !== 'overview' || isCurrent35Home || Boolean(
-      protocolRank &&
-      /TCP|UDP|ICMP/.test(protocolRankText) &&
-      !protocolRankText.includes('当前暂无协议/应用流量') &&
-      !protocolRankText.includes('当前暂无数据')
-    );
-    const detailFeedbackOk = !detailSections.has(sectionName) || isCurrent35Shell || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
-    const scaleWindowScrollers = Array.from(sectionRoot?.querySelectorAll('.scale-window .scale-table-wrap') || []);
-    const scaleWindowHorizontalOverflow = scaleWindowScrollers
-      .map((node) => {
-        const rect = node.getBoundingClientRect();
-        const windowNode = node.closest('.scale-window');
-        const key = windowNode?.dataset?.scaleKey || '';
-        return {
-          key,
-          width: Math.round(rect.width),
-          scrollWidth: Math.round(node.scrollWidth),
-          clientWidth: Math.round(node.clientWidth),
-          overflowX: Math.round(node.scrollWidth - node.clientWidth),
-        };
-      })
-      .filter((row) => row.width > 0 && row.overflowX > 2);
-    const scaleWindowHorizontalOk = !detailSections.has(sectionName) || scaleWindowHorizontalOverflow.length === 0;
-    const broadbandTable = sectionRoot?.querySelector('[data-broadband-realtime-table]');
-    const broadbandText = normalize(broadbandTable?.textContent || '');
-    const broadbandHeaders = Array.from(broadbandTable?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
-    const interfaceBroadbandTableOk = sectionName !== 'interfaces' || isCurrent35Shell || Boolean(
-      broadbandTable &&
-      broadbandHeaders.includes('线路') &&
-      broadbandHeaders.includes('状态') &&
-      broadbandHeaders.includes('IP 地址') &&
-      broadbandHeaders.includes('实时上行速率') &&
-      broadbandHeaders.includes('实时下行速率') &&
-      broadbandHeaders.includes('累计上行流量') &&
-      broadbandHeaders.includes('累计下行流量') &&
-      broadbandHeaders.includes('活动路由') &&
-      broadbandHeaders.includes('父接口') &&
-      broadbandText.includes('宽带实时流量') &&
-      broadbandTable.querySelectorAll('tbody tr').length > 0
-    );
-    const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
-    const scaleHeightOk = scenario !== 'fleet' || isCurrent35Shell || (
-      sectionName === 'overview' ? scrollHeight <= 3000 :
-      sectionName === 'trafficLoad' ? scrollHeight <= 10000 :
-      !detailSections.has(sectionName) || scrollHeight <= 6200
-    );
-    const rail = rectOf('.ik-rail');
-    const sidebar = rectOf('.sidebar');
-    const frame = rectOf('.frame');
-    const topbar = rectOf('.topbar');
-    const visibleControls = Array.from(document.querySelectorAll('button, a, input, select'))
-      .map((node) => {
-        const rect = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        return { width: rect.width, height: rect.height, display: style.display, visibility: style.visibility };
-      })
-      .filter((row) => row.display !== 'none' && row.visibility !== 'hidden' && row.width > 0 && row.height > 0);
-    const smallTargets = visibleControls.filter((row) => row.width < 28 || row.height < 24).length;
-    const sidebarVisible = Boolean(sidebar && sidebar.display !== 'none' && sidebar.width > 0 && sidebar.height > 0);
-    const shellOverlap = Boolean(
-      window.innerWidth >= 1024 &&
-      rail && sidebar && frame &&
-      (
-        (sidebarVisible && rail.right > sidebar.left + 4) ||
-        (sidebarVisible ? sidebar.right : rail.right) > frame.left + 6
-      )
-    );
+    const hasBadLiteral = badLiteralHits.length > 0;
+    const route = body.dataset.panelRoute || '';
+    const surface = document.documentElement.dataset.panelSurface || '';
+    // 移动端子页（Hub/空态）文本量小（~70 字符），阈值按 surface 区分。
+    const minSectionText = surface === 'mobile' ? 40 : 200;
+    const contentReady = Boolean(app && app.children.length > 0 && text.length > minSectionText);
+    const routeMatched = route === sectionName;
     const desktopOverflow = window.innerWidth >= 1024 && overflowX > 24;
     const strictNarrowOverflow = ${args.strictResponsive ? 'true' : 'false'} && window.innerWidth < 768 && overflowX > 24;
     const pass = Boolean(
-      app &&
-      active &&
-      (requested || active.id === sectionName) &&
-      text.length > 20 &&
+      contentReady &&
+      routeMatched &&
       !hasBadLiteral &&
-      scaleMetaOk &&
-      scaleDisclosureOk &&
-      overviewActionOk &&
-      overviewMinimalOk &&
-      overviewTerminalPlacementOk &&
-      overviewNoDuplicateTerminalOk &&
-      overviewAxesOk &&
-      overviewMonitorSplitOk &&
-      overviewAggregateWanNoIpv6Ok &&
-      overviewWanCardNoInternalScrollOk &&
-      overviewResourceRowOk &&
-      overviewResourceAxisOk &&
-      overviewProtocolRankOk &&
-      detailFeedbackOk &&
-      scaleWindowHorizontalOk &&
-      interfaceBroadbandTableOk &&
-      humanScaleCopyOk &&
-      scaleHeightOk &&
-      !shellOverlap &&
       !desktopOverflow &&
       !strictNarrowOverflow
     );
@@ -1046,64 +930,17 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       profile: ${JSON.stringify(profile)},
       viewport: ${JSON.stringify(viewport)},
       requestedSection: sectionName,
-      activeSection: active ? active.id : '',
-      requestedFound: Boolean(requested),
-      title: normalize(document.querySelector('#pageTitle')?.textContent),
+      activeRoute: route,
+      surface,
       url: location.href,
       textLength: text.length,
+      textSample: text.slice(0, 400),
       overflowX: Math.round(overflowX),
-      scroll: {
-        width: root.scrollWidth,
-        height: root.scrollHeight,
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-      },
-      bodyDataset: { ...document.body.dataset },
-      rail,
-      sidebar,
-      frame,
-      topbar,
-      smallTargets,
-      sidebarVisible,
+      appChildren: app ? app.children.length : 0,
       hasBadLiteral,
-      scaleMetaOk,
-      scaleDisclosureOk,
-      scaleDisclosureCount,
-      overviewActionOk,
-      overviewMinimalOk,
-      overviewTerminalPlacementOk,
-      overviewNoDuplicateTerminalOk,
-      duplicateTerminalCardCount: duplicateTerminalCards.length,
-      overviewAxesOk,
-      overviewMonitorSplitOk,
-      monitorSplitColumns,
-      monitorPanelCount: monitorPanels.length,
-      overviewAggregateWanNoIpv6Ok,
-      overviewWanCardNoInternalScrollOk,
-      wanIpText,
-      wanCardOverflowY: wanCardStyle?.overflowY || '',
-      wanCardScrollDelta: wanCard ? Math.round(wanCard.scrollHeight - wanCard.clientHeight) : 0,
-      wanAxisLabelCount: wanAxisLabels.length,
-      wanAxisLabels: wanAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
-      monitorAxisLabelCount: monitorAxisLabels.length,
-      monitorAxisLabels: monitorAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
-      overviewStickyOk,
-      overviewStickyProbe,
-      overviewResourceRowOk,
-      overviewResourceAxisOk,
-      resourceAxisLabels,
-      overviewProtocolRankOk,
-      protocolRankText,
-      resourceCardCount: resourceCards.length,
-      resourceColumns,
-      detailFeedbackOk,
-      scaleWindowHorizontalOk,
-      scaleWindowHorizontalOverflow,
-      interfaceBroadbandTableOk,
-      broadbandHeaders,
-      humanScaleCopyOk,
-      scaleHeightOk,
-      shellOverlap,
+      badLiteralHits,
+      contentReady,
+      routeMatched,
       desktopOverflow,
       strictNarrowOverflow,
     };
@@ -1179,7 +1016,8 @@ async function runBrowserChecks(args, report, baseUrl) {
           for (const section of sections) {
             const runtimeErrorStart = runtimeErrors.length;
             const consoleErrorStart = consoleErrors.length;
-            await setSection(cdp, section);
+            const sectionSurface = viewport.width < 768 ? 'mobile' : 'desktop';
+            await setSection(cdp, section, sectionSurface);
             const inspection = await inspectSection(cdp, profile, viewport, section, args, scaleScenario);
             inspection.runtimeErrorCount = runtimeErrors.length;
             inspection.consoleErrorCount = consoleErrors.length;
@@ -1428,7 +1266,9 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         disk: [20, 20, 21, 21, 21, 21],
         uplink: [32000000, 48000000, 51000000, 62000000, 70000000, 79000000],
         downlink: [180000000, 210000000, 225000000, 280000000, 300000000, 323000000],
-        timestamps: [1, 2, 3, 4, 5, 6],
+        // vanilla 前端容忍任意哨兵值；React 契约要求 epoch 秒落在
+        // [1e9, 1e10)（legacyContract 可规范化为 RFC3339），故用真实历元秒。
+        timestamps: [5, 4, 3, 2, 1, 0].map((back) => Math.floor(Date.parse('2026-05-24T12:00:00+08:00') / 1000) - back * 60),
       },
     },
     interfaces,

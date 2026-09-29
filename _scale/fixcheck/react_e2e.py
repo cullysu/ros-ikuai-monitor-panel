@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:28997/index.react.html?surface=desktop"
+BASE = "http://127.0.0.1:28997/index.html?surface=desktop"
 CHROME = str(Path.home() / "AppData/Local/ms-playwright/chromium-1223/chrome-win64/chrome.exe")
 HERE = Path(__file__).resolve().parent
 failures = []
