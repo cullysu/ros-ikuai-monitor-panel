@@ -1,9 +1,13 @@
 import ipaddress
 import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 COUNTER_WRAP_MODULUS = 1 << 64
+RFC3339_TIMESTAMP_PATTERN = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$"
+)
 _ROUTER_OS_MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
 
 
@@ -52,6 +56,31 @@ def to_bool(value):
     if value is None:
         return False
     return str(value).lower() in {"true", "yes", "on", "running", "bound", "active", "enabled"}
+
+
+def utc_now_rfc3339():
+    """Timezone-qualified UTC instant for strict public evidence envelopes."""
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def public_rfc3339_timestamp(value):
+    """Normalize a snapshot timestamp for strict public evidence envelopes.
+
+    Vanilla snapshots carry naive local clocks ("YYYY-MM-DD HH:MM:SS"); interpret
+    those as local time and publish the timezone-qualified UTC instant. Values
+    that already carry an explicit offset pass through unchanged, and anything
+    else stays unavailable instead of being invented.
+    """
+    text = str(value or "").strip()
+    if not text:
+        return None
+    if RFC3339_TIMESTAMP_PATTERN.fullmatch(text):
+        return text
+    try:
+        naive = datetime.strptime(text, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
+    return naive.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def split_connection_endpoint(value):

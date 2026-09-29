@@ -420,5 +420,15 @@ export function buildSectionRowEvidence(
   if (route === "trafficLoad" || route === "loadAudit") return resourceEvidence(title, row);
   if (route === "connections" || route === "trafficAudit") return connectionEvidence(title, row);
   if (route === "readonlyDiagnostics") return buildDiagnosticRowEvidence(title, row);
+  // Readonly diagnostics feature pages: rows are pre-bounded read-only
+  // derivations (freshness, probe context, risk ranking, audit board), so they
+  // carry generic table evidence instead of domain object identities.
+  if (
+    route === "collectionHealthDiagnostics"
+    || route === "dnsProxyDiagnostics"
+    || route === "wanQualityDiagnostics"
+    || route === "terminalRiskDiagnostics"
+    || route === "systemAuditDiagnostics"
+  ) return genericEvidence(title);
   throw new Error("Unsupported section evidence route/title: " + route + "/" + title);
 }

@@ -5,15 +5,19 @@ configure() 注入（app.py 在 import 期构造 Collector 后回填），以解
 app -> collector -> server 的循环依赖。
 """
 
+import ipaddress
 import json
 import mimetypes
 import sys
 import threading
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlparse
 
 from ros_panel.config import (
+    CONNECTION_SEARCH_MAX_LIMIT,
+    CONNECTION_SEARCH_MIN_INTERVAL_SECONDS,
     DNS_STATIC_MAX_PAGE_LIMIT,
     DNS_STATIC_PAGE_LIMIT,
     IP_ALIAS_WRITE_ENABLED,
@@ -44,6 +48,7 @@ from ros_panel.panel_access import (
     parse_request_cookies,
     write_panel_network_env,
 )
+from ros_panel.health_findings import build_health_findings
 from ros_panel.router_config import (
     clear_router_config,
     find_saved_router_login,
@@ -67,6 +72,91 @@ def configure(collector_instance):
     collector = collector_instance
 
 
+class PeerRateGuard:
+    """Minimal per-peer rate limit: one acquire per interval, thread-safe.
+
+    Used for the connection-search supplement so a browser tab cannot hammer
+    the point query; peers beyond max_peers are forgotten oldest-entry-first.
+    """
+
+    def __init__(self, min_interval=CONNECTION_SEARCH_MIN_INTERVAL_SECONDS, max_peers=1024, clock=time.monotonic):
+        self.min_interval = max(0.0, float(min_interval))
+        self.max_peers = max(1, int(max_peers))
+        self.clock = clock
+        self.lock = threading.Lock()
+        self.last_acquire = {}
+
+    def acquire(self, peer):
+        """Return (allowed, retry_after_seconds)."""
+        now = float(self.clock())
+        with self.lock:
+            last = self.last_acquire.get(peer)
+            if last is not None and now - last < self.min_interval:
+                return False, max(1, int(round(self.min_interval - (now - last))))
+            if len(self.last_acquire) >= self.max_peers and peer not in self.last_acquire:
+                oldest_peer = min(self.last_acquire, key=lambda key: self.last_acquire[key])
+                self.last_acquire.pop(oldest_peer, None)
+            self.last_acquire[peer] = now
+            return True, 0
+
+
+CONNECTION_SEARCH_RATE_GUARD = PeerRateGuard()
+
+
+def parse_connection_search_query(params):
+    """Strict query parsing: canonical target IP (target/ip/target_ip), optional
+    source IP, limit 1..50. Raises ValueError for anything else."""
+    if set(params) - {"target", "ip", "target_ip", "source", "source_ip", "limit"}:
+        raise ValueError("unsupported connection search parameter")
+    target_raw = (params.get("target") or params.get("ip") or params.get("target_ip") or [""])[0]
+    source_raw = (params.get("source") or params.get("source_ip") or [""])[0]
+    try:
+        target = str(ipaddress.ip_address(str(target_raw).strip()))
+    except ValueError:
+        raise ValueError("connection search target must be a canonical IP address") from None
+    source = None
+    if str(source_raw).strip():
+        try:
+            source = str(ipaddress.ip_address(str(source_raw).strip()))
+        except ValueError:
+            raise ValueError("connection search source must be a canonical IP address") from None
+    limit = to_int((params.get("limit") or [str(CONNECTION_SEARCH_MAX_LIMIT)])[0], 0)
+    if limit < 1 or limit > CONNECTION_SEARCH_MAX_LIMIT:
+        raise ValueError("connection search limit must be between 1 and 50")
+    return target, source, limit
+
+
+def remember_login_for_request(remember_password, remember_profile, using_saved_password, host, user, password, ssh_port, last_test=None):
+    """Persist login data after a verified RouterOS login.
+
+    rememberPassword keeps the legacy semantic: the entry is stored together
+    with the password (DPAPI-protected at rest). rememberProfile (the React
+    form) stores only the device profile (host/user/sshPort/label); the
+    password of the current request is never persisted on this path. When the
+    login came from an already-saved entry the store is left untouched so an
+    existing saved password cannot be clobbered.
+    """
+    if remember_password:
+        return remember_router_login(
+            host,
+            user,
+            password,
+            ssh_port,
+            last_test=last_test,
+            source="saved" if using_saved_password else "ui",
+        )
+    if remember_profile and not using_saved_password:
+        return remember_router_login(
+            host,
+            user,
+            "",
+            ssh_port,
+            last_test=last_test,
+            source="ui",
+        )
+    return None
+
+
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
     request_queue_size = 128
@@ -76,8 +166,10 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "RouterOSTriagePanel/1.0"
     read_only_api_paths = {
         "/api/action-queue",
+        "/api/connection-search",
         "/api/dns-static",
         "/api/health",
+        "/api/health-findings",
         "/api/panel-network",
         "/api/readonly-diagnostics",
         "/api/router-login",
@@ -244,6 +336,29 @@ class Handler(BaseHTTPRequestHandler):
             )
         if parsed.path in {"/api/action-queue", "/api/semantic-triage"}:
             return self.send_json(collector.get_semantic_triage())
+        if parsed.path == "/api/health-findings":
+            return self.send_json(build_health_findings(collector.get_state()))
+        if parsed.path == "/api/connection-search":
+            params = parse_qs(parsed.query)
+            try:
+                target_ip, source_ip, limit = parse_connection_search_query(params)
+            except ValueError:
+                return self.send_json_error(
+                    "Connection search requires a canonical IP address and a limit from 1 to 50.",
+                    status=400,
+                    code="invalid_connection_query",
+                )
+            peer = str(self.client_address[0]) if self.client_address else ""
+            allowed, retry_after = CONNECTION_SEARCH_RATE_GUARD.acquire(peer)
+            if not allowed:
+                return self.send_json_error(
+                    "Connection search is limited to one request every 5 seconds per client.",
+                    status=429,
+                    code="connection_search_rate_limited",
+                    response_headers={"Retry-After": str(retry_after)},
+                    retryAfterSeconds=retry_after,
+                )
+            return self.send_json(collector.fetch_connection_search(target_ip, source_ip=source_ip, limit=limit))
         if parsed.path == "/api/readonly-diagnostics":
             params = parse_qs(parsed.query)
             force_refresh = (params.get("refresh") or ["0"])[0] in {"1", "true", "yes"}
@@ -297,16 +412,19 @@ class Handler(BaseHTTPRequestHandler):
                     )
                 remember_raw = payload.get("rememberPassword", False)
                 remember_password = remember_raw is True
-                remembered_entry = None
-                if remember_password:
-                    remembered_entry = remember_router_login(
-                        host,
-                        user,
-                        password,
-                        ssh_port,
-                        last_test=test,
-                        source="saved" if using_saved_password else "ui",
-                    )
+                remember_profile_raw = payload.get("rememberProfile", False)
+                remember_profile = remember_profile_raw is True
+                remembered_entry = remember_login_for_request(
+                    remember_password,
+                    remember_profile,
+                    using_saved_password,
+                    host,
+                    user,
+                    password,
+                    ssh_port,
+                    last_test=test,
+                )
+                if remembered_entry:
                     saved_id = remembered_entry.get("id")
                 router_login = set_router_config(
                     host,
@@ -429,7 +547,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as exc:
             raise ValueError("Request body is not valid JSON") from exc
 
-    def send_json_error(self, message, status=400, code="error", **extra):
+    def send_json_error(self, message, status=400, code="error", response_headers=None, **extra):
         payload = {
             "ok": False,
             "error": str(message or "Request failed"),
@@ -437,18 +555,20 @@ class Handler(BaseHTTPRequestHandler):
             "status": int(status),
         }
         payload.update(extra)
-        return self.send_json(payload, status=status)
+        return self.send_json(payload, status=status, response_headers=response_headers)
 
     def send_internal_error(self, exc):
         print(f"[panel] internal API error: {type(exc).__name__}", file=sys.stderr)
         return self.send_json_error("Internal panel error", status=500, code="internal_error")
 
-    def send_json(self, payload, status=200):
+    def send_json(self, payload, status=200, response_headers=None):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        for header_name, header_value in (response_headers or {}).items():
+            self.send_header(str(header_name), str(header_value))
         for cookie_header in self.consume_cookie_headers():
             self.send_header("Set-Cookie", cookie_header)
         self.end_headers()

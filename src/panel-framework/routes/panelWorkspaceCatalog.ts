@@ -54,9 +54,17 @@ const PANEL_WORKSPACE_DEFINITIONS: Partial<Record<PanelWorkspaceGroup, PanelWork
       { route: "dns6", label: "IPv6" },
     ],
   },
-  audit: { label: "流量审计", routes: [] },
-  security: { label: "安全工作区", routes: [] },
-  diagnostics: { label: "诊断工作区", routes: [] },
+  diagnostics: {
+    label: "诊断工作区",
+    routes: [
+      { route: "readonlyDiagnostics", label: "诊断总览" },
+      { route: "collectionHealthDiagnostics", label: "采集健康" },
+      { route: "dnsProxyDiagnostics", label: "DNS 体检" },
+      { route: "wanQualityDiagnostics", label: "线路质量" },
+      { route: "terminalRiskDiagnostics", label: "终端风险" },
+      { route: "systemAuditDiagnostics", label: "系统审计" },
+    ],
+  },
   directory: { label: "只读工具目录", routes: [] },
   overview: { label: "运行概览", routes: [] },
 };
@@ -79,6 +87,11 @@ const PANEL_MORE_ROUTE_CATALOG: Array<{ route: PanelRouteId; label: string; grou
   { route: "dns6", label: "IPv6 与 DNS", group: "services" },
   { route: "security", label: "安全观察", group: "services" },
   { route: "readonlyDiagnostics", label: "只读诊断", group: "services" },
+  { route: "collectionHealthDiagnostics", label: "采集健康", group: "services" },
+  { route: "dnsProxyDiagnostics", label: "DNS / 代理体检", group: "services" },
+  { route: "wanQualityDiagnostics", label: "线路质量", group: "services" },
+  { route: "terminalRiskDiagnostics", label: "终端风险", group: "services" },
+  { route: "systemAuditDiagnostics", label: "系统审计", group: "services" },
 ];
 
 export const PANEL_MORE_ROUTES = PANEL_MORE_ROUTE_CATALOG.filter(

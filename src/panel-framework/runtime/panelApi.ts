@@ -18,6 +18,7 @@ import {
   type RouteSupplementResult,
 } from "../sections/routeSupplementSchema";
 import { dnsPageUrl, type DnsPageRequest } from "../sections/routeSupplementState";
+import { parseReadonlyDiagnostics, type ReadonlyDiagnosticsData } from "../sections/readonlyDiagnosticsSchema";
 
 export interface RouterConnectionInput {
   host: string;
@@ -199,4 +200,9 @@ export async function fetchConnectionSearchSupplement(target: string, signal?: A
   const params = new URLSearchParams({ target, limit: "40" });
   const payload = await requestJson(`/api/connection-search?${params.toString()}`, { signal });
   return parseConnectionSearchSupplement(payload);
+}
+
+export async function fetchReadonlyDiagnostics(signal?: AbortSignal): Promise<RouteSupplementResult<ReadonlyDiagnosticsData>> {
+  const payload = await requestJson("/api/readonly-diagnostics", { signal });
+  return parseReadonlyDiagnostics(payload);
 }

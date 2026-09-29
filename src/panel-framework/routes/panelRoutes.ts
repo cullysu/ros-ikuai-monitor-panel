@@ -19,6 +19,11 @@ export const PANEL_ROUTE_IDS = [
   "logs",
   "serviceLogs",
   "readonlyDiagnostics",
+  "collectionHealthDiagnostics",
+  "dnsProxyDiagnostics",
+  "wanQualityDiagnostics",
+  "terminalRiskDiagnostics",
+  "systemAuditDiagnostics",
   "more",
 ] as const;
 
@@ -192,6 +197,11 @@ export const PANEL_ROUTES: Record<PanelRouteId, PanelRouteDefinition> = {
   logs: { id: "logs", title: "运行日志", shortTitle: "日志", description: "最近系统、网络和服务事件", primaryDestination: "logs", workspaceGroup: "logs", placement: "primary", maturity: "bounded-readonly" },
   serviceLogs: { id: "serviceLogs", title: "服务日志", shortTitle: "服务日志", description: "按系统、防火墙、DHCP 与 DNS 分类", primaryDestination: "logs", workspaceGroup: "logs", placement: "workspace", maturity: "bounded-readonly" },
   readonlyDiagnostics: { id: "readonlyDiagnostics", title: "只读诊断", shortTitle: "诊断", description: "明确边界内的连通性证据", primaryDestination: "overview", workspaceGroup: "diagnostics", placement: "more", maturity: "bounded-readonly" },
+  collectionHealthDiagnostics: { id: "collectionHealthDiagnostics", title: "采集健康", shortTitle: "采集健康", description: "采集通道新鲜度、错误记录与刷新耗时", primaryDestination: "overview", workspaceGroup: "diagnostics", placement: "more", maturity: "bounded-readonly" },
+  dnsProxyDiagnostics: { id: "dnsProxyDiagnostics", title: "DNS / 代理体检", shortTitle: "DNS 体检", description: "DNS 解析、Fake-IP、出口 IP 与站点可达性", primaryDestination: "overview", workspaceGroup: "diagnostics", placement: "more", maturity: "bounded-readonly" },
+  wanQualityDiagnostics: { id: "wanQualityDiagnostics", title: "线路质量", shortTitle: "线路质量", description: "多 WAN 在线、PCC 偏斜与接口错误只读分析", primaryDestination: "overview", workspaceGroup: "diagnostics", placement: "more", maturity: "bounded-readonly" },
+  terminalRiskDiagnostics: { id: "terminalRiskDiagnostics", title: "终端风险", shortTitle: "终端风险", description: "高连接、高流量与 IPv6 暴露只读排行", primaryDestination: "overview", workspaceGroup: "diagnostics", placement: "more", maturity: "bounded-readonly" },
+  systemAuditDiagnostics: { id: "systemAuditDiagnostics", title: "系统审计", shortTitle: "系统审计", description: "近期事件、接口错误、容量与面板文件变化", primaryDestination: "overview", workspaceGroup: "diagnostics", placement: "more", maturity: "bounded-readonly" },
   more: { id: "more", title: "更多工具", shortTitle: "更多", description: "路由、DNS、安全、审计与连接工具", primaryDestination: "overview", workspaceGroup: "directory", placement: "directory", maturity: "unavailable" },
 };
 
