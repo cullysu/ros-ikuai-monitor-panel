@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-packages:
+    name: Windows EXE + ZIP
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build EXE directory and ZIP package
+        shell: pwsh
+        run: .\tools\build-windows-exe.ps1
+
+      - name: Build single-file EXE
+        shell: pwsh
+        run: .\tools\build-windows-exe.ps1 -OneFile -NoZip
+
+      - name: Rename to versioned assets
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          New-Item -ItemType Directory -Force -Path dist\release | Out-Null
+          Copy-Item "dist\$([IO.Path]::ChangeExtension((Split-Path (Join-Path $env:GITHUB_WORKSPACE 'dist\RouterOS-Triage-Panel-Windows.zip') -Leaf), '.zip'))" "dist\release\RouterOS-Triage-Panel-Windows-v$version.zip" -ErrorAction SilentlyContinue
+          if (Test-Path "dist\RouterOS-Triage-Panel-Windows.zip") {
+            Copy-Item "dist\RouterOS-Triage-Panel-Windows.zip" "dist\release\RouterOS-Triage-Panel-Windows-v$version.zip" -Force
+          }
+          if (Test-Path "dist\RouterOS Triage Panel.exe") {
+            Copy-Item "dist\RouterOS Triage Panel.exe" "dist\release\RouterOS-Triage-Panel-Windows-v$version.exe" -Force
+          }
+          Get-ChildItem dist\release
+
+      - name: Hash assets
+        shell: pwsh
+        run: |
+          Get-ChildItem dist\release | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)" | Out-File -FilePath "$($_.FullName).sha256" -Encoding ascii
+          }
+          Get-ChildItem dist\release
+
+      - name: Upload to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null
+          if ($LASTEXITCODE -ne 0) { gh release create $tag --repo $env:GITHUB_REPOSITORY --title $tag --generate-notes }
+          gh release upload $tag (Get-ChildItem dist\release | ForEach-Object { $_.FullName }) --repo $env:GITHUB_REPOSITORY --clobber
+
+  linux-source-package:
+    name: Linux source package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Package source tree
+        run: |
+          version="${{ github.ref_name }}"
+          git archive --format=tar.gz --prefix="ros-ikuai-monitor-panel/" -o "RouterOS-Triage-Panel-Linux-$version.tar.gz" HEAD
+
+      - name: Hash assets
+        run: |
+          for file in RouterOS-Triage-Panel-Linux-*.tar.gz; do
+            sha256sum "$file" > "$file.sha256"
+          done
+
+      - name: Upload to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ github.ref_name }}"
+          gh release view $tag --repo $GITHUB_REPOSITORY 2>/dev/null
+          if [ $? -ne 0 ]; then gh release create $tag --repo $GITHUB_REPOSITORY --title $tag --generate-notes; fi
+          gh release upload $tag RouterOS-Triage-Panel-Linux-*.tar.gz* --repo $GITHUB_REPOSITORY --clobber
+
+  routeros-container-archive:
+    name: RouterOS Container archive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build RouterOS container archive
+        run: bash tools/build-routeros-container-archive.sh --platform linux/amd64
+
+      - name: Rename to versioned asset
+        run: |
+          version="${{ github.ref_name }}"
+          mv routeros-triage-panel-routeros.tar "RouterOS-Triage-Panel-RouterOS-Container-$version-amd64.tar"
+
+      - name: Hash assets
+        run: |
+          for file in RouterOS-Triage-Panel-RouterOS-Container-*.tar; do
+            sha256sum "$file" > "$file.sha256"
+          done
+
+      - name: Upload to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ github.ref_name }}"
+          gh release view $tag --repo $GITHUB_REPOSITORY 2>/dev/null
+          if [ $? -ne 0 ]; then gh release create $tag --repo $GITHUB_REPOSITORY --title $tag --generate-notes; fi
+          gh release upload $tag RouterOS-Triage-Panel-RouterOS-Container-*.tar* --repo $GITHUB_REPOSITORY --clobber
