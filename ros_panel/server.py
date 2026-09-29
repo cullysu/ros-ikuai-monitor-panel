@@ -5,6 +5,7 @@ configure() 注入（app.py 在 import 期构造 Collector 后回填），以解
 app -> collector -> server 的循环依赖。
 """
 
+import gzip
 import ipaddress
 import json
 import mimetypes
@@ -565,6 +566,12 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        # Large payloads (snapshot at scale) compress ~10:1 as gzip; only do it
+        # when the client advertises support and the body is worth compressing.
+        accept_encoding = str(self.headers.get("Accept-Encoding", ""))
+        if "gzip" in accept_encoding.lower() and len(body) >= 1024:
+            body = gzip.compress(body, compresslevel=6)
+            self.send_header("Content-Encoding", "gzip")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         for header_name, header_value in (response_headers or {}).items():
