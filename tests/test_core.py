@@ -428,5 +428,60 @@ class PeerRateGuardTest(unittest.TestCase):
         self.assertTrue(allowed, "different peer must not share the interval")
 
 
+class RememberProfileTest(unittest.TestCase):
+    def _clear_store(self):
+        store = os.environ["ROS_PANEL_ROUTER_LOGIN_STORE_FILE"]
+        with app.ROUTER_LOGIN_STORE_LOCK:
+            if os.path.exists(store):
+                os.remove(store)
+
+    def setUp(self):
+        self._clear_store()
+
+    def tearDown(self):
+        self._clear_store()
+
+    def _stored_entries(self):
+        with app.ROUTER_LOGIN_STORE_LOCK:
+            return app.load_router_login_store_unlocked()
+
+    def test_remember_profile_saves_device_profile_without_password(self):
+        entry = app.remember_login_for_request(False, True, False, "192.0.2.7", "admin", "typed-secret", 22)
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry["password"], "")
+        stored = self._stored_entries()
+        self.assertEqual(len(stored), 1)
+        self.assertEqual(stored[0]["host"], "192.0.2.7")
+        self.assertEqual(stored[0]["user"], "admin")
+        self.assertEqual(stored[0]["sshPort"], 22)
+        self.assertEqual(stored[0]["password"], "")
+        raw = json.loads(open(os.environ["ROS_PANEL_ROUTER_LOGIN_STORE_FILE"], encoding="utf-8").read())
+        self.assertEqual(raw["entries"][0]["password"], "", "rememberProfile must never persist the typed password")
+
+    def test_remember_profile_false_saves_nothing(self):
+        entry = app.remember_login_for_request(False, False, False, "192.0.2.7", "admin", "typed-secret", 22)
+        self.assertIsNone(entry)
+        self.assertEqual(self._stored_entries(), [])
+
+    def test_profile_only_never_clobbers_saved_password(self):
+        app.remember_login_for_request(True, False, False, "192.0.2.7", "admin", "typed-secret", 22)
+        entry = app.remember_login_for_request(False, True, True, "192.0.2.7", "admin", "typed-secret", 22)
+        self.assertIsNone(entry)
+        stored = self._stored_entries()
+        self.assertEqual(len(stored), 1)
+        self.assertEqual(stored[0]["password"], "typed-secret")
+
+    def test_remember_password_keeps_legacy_semantics(self):
+        entry = app.remember_login_for_request(True, False, False, "192.0.2.7", "admin", "typed-secret", 22)
+        self.assertIsNotNone(entry)
+        stored = self._stored_entries()
+        self.assertEqual(stored[0]["password"], "typed-secret")
+        raw = json.loads(open(os.environ["ROS_PANEL_ROUTER_LOGIN_STORE_FILE"], encoding="utf-8").read())
+        if os.name == "nt":
+            self.assertTrue(raw["entries"][0]["password"].startswith(app.ROUTER_LOGIN_SECRET_PREFIX))
+        else:
+            self.assertEqual(raw["entries"][0]["password"], "typed-secret")
+
+
 if __name__ == "__main__":
     unittest.main()

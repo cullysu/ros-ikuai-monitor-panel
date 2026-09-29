@@ -126,6 +126,37 @@ def parse_connection_search_query(params):
     return target, source, limit
 
 
+def remember_login_for_request(remember_password, remember_profile, using_saved_password, host, user, password, ssh_port, last_test=None):
+    """Persist login data after a verified RouterOS login.
+
+    rememberPassword keeps the legacy semantic: the entry is stored together
+    with the password (DPAPI-protected at rest). rememberProfile (the React
+    form) stores only the device profile (host/user/sshPort/label); the
+    password of the current request is never persisted on this path. When the
+    login came from an already-saved entry the store is left untouched so an
+    existing saved password cannot be clobbered.
+    """
+    if remember_password:
+        return remember_router_login(
+            host,
+            user,
+            password,
+            ssh_port,
+            last_test=last_test,
+            source="saved" if using_saved_password else "ui",
+        )
+    if remember_profile and not using_saved_password:
+        return remember_router_login(
+            host,
+            user,
+            "",
+            ssh_port,
+            last_test=last_test,
+            source="ui",
+        )
+    return None
+
+
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
     request_queue_size = 128
@@ -381,16 +412,19 @@ class Handler(BaseHTTPRequestHandler):
                     )
                 remember_raw = payload.get("rememberPassword", False)
                 remember_password = remember_raw is True
-                remembered_entry = None
-                if remember_password:
-                    remembered_entry = remember_router_login(
-                        host,
-                        user,
-                        password,
-                        ssh_port,
-                        last_test=test,
-                        source="saved" if using_saved_password else "ui",
-                    )
+                remember_profile_raw = payload.get("rememberProfile", False)
+                remember_profile = remember_profile_raw is True
+                remembered_entry = remember_login_for_request(
+                    remember_password,
+                    remember_profile,
+                    using_saved_password,
+                    host,
+                    user,
+                    password,
+                    ssh_port,
+                    last_test=test,
+                )
+                if remembered_entry:
                     saved_id = remembered_entry.get("id")
                 router_login = set_router_config(
                     host,

@@ -276,6 +276,7 @@ from ros_panel.server import (
     configure,
     main,
     parse_connection_search_query,
+    remember_login_for_request,
 )
 
 
