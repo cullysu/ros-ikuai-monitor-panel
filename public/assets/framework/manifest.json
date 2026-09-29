@@ -3,17 +3,17 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "62f361d5a7c2977a6ca761182a670f8a396c249aefdf198866d6f9809fa90004",
-    "files": 111
+    "digest": "ec7d843321e70bc442d769f472d0853faa8d6b03e5e392a578cc424bc3b376d4",
+    "files": 113
   },
   "assets": {
     "mobile": {
       "script": {
-        "file": "panel-mobile.c169579f4e4f.js",
-        "sha256": "c169579f4e4f5ef88e48d1e47122135cf789a981ebd0148fba13f5aaf58ce27d",
-        "bytes": 357466,
-        "gzipBytes": 109536,
-        "brotliBytes": 92054
+        "file": "panel-mobile.99ba8fe22e20.js",
+        "sha256": "99ba8fe22e20f2b5302363d75f926ba2ef1b2a5d022cfb79bd5353406e29e7f1",
+        "bytes": 360088,
+        "gzipBytes": 110488,
+        "brotliBytes": 92909
       },
       "style": {
         "file": "mobile.10a1bf88c709.css",
@@ -25,26 +25,26 @@
     },
     "desktop": {
       "script": {
-        "file": "panel-desktop.4e1f1c7d6f3d.js",
-        "sha256": "4e1f1c7d6f3d5799c9601fa6cde5397423f2c02b5b9cffe052ed558f456cb4e5",
-        "bytes": 460990,
-        "gzipBytes": 137436,
-        "brotliBytes": 113361
+        "file": "panel-desktop.66c3cf754aa9.js",
+        "sha256": "66c3cf754aa9e3480a1ae07918609bd2537e7ca9b5a93795312f178539a83259",
+        "bytes": 469928,
+        "gzipBytes": 140460,
+        "brotliBytes": 115808
       },
       "style": {
-        "file": "desktop.e02eedca3537.css",
-        "sha256": "e02eedca3537fa09919377fdb472f9942dc7f6de00a16d47f1d8c2d63a1b45f2",
-        "bytes": 60091,
-        "gzipBytes": 11324,
-        "brotliBytes": 10085
+        "file": "desktop.2f460d75815b.css",
+        "sha256": "2f460d75815b9d22735729c07946cb7d79c124d108d8a77125c0bde20968ad93",
+        "bytes": 61803,
+        "gzipBytes": 11635,
+        "brotliBytes": 10335
       }
     },
     "loader": {
-      "file": "panel-surface-loader.9bf05db1407b.js",
-      "sha256": "9bf05db1407b8c635aba70343530a2990cdd543a7e232df6e739652de0f7623f",
+      "file": "panel-surface-loader.2de25dd14be5.js",
+      "sha256": "2de25dd14be5891ae3b412da8dd291b46beafa3e844a1273bebbed3c2b109faf",
       "bytes": 1683,
-      "gzipBytes": 838,
-      "brotliBytes": 692
+      "gzipBytes": 837,
+      "brotliBytes": 690
     }
   }
 }

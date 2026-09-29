@@ -637,6 +637,76 @@
   background: #f4e7e3;
 }
 
+/* Inline IP alias editing (terminals / arp rows; the panel's only write path). */
+.ddw-alias-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 7px;
+}
+
+.ddw-alias-bar .ddw-alias-badge {
+  padding: 1px 6px;
+  border: 1px solid #a9c2b4;
+  border-radius: 4px;
+  color: #2d6a4a;
+  background: #e8f4ee;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 680;
+}
+
+.ddw-alias-bar .ddw-alias-edit,
+.ddw-alias-editor button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid #b8cad2;
+  border-radius: 5px;
+  color: #315c6c;
+  background: #f6fafb;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.ddw-alias-bar .ddw-alias-edit:hover,
+.ddw-alias-editor button:hover:not(:disabled) { color: #0d5c79; background: #e6f1f5; }
+.ddw-alias-bar .ddw-alias-edit:disabled,
+.ddw-alias-editor button:disabled { cursor: not-allowed; opacity: .5; }
+
+.ddw-alias-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 7px;
+}
+
+.ddw-alias-editor [data-alias-input] {
+  flex: 1 1 140px;
+  min-width: 0;
+  min-height: 26px;
+  padding: 3px 8px;
+  border: 1px solid #a8c3cd;
+  border-radius: 5px;
+  color: #173440;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+}
+
+.ddw-alias-editor [data-alias-input]:focus-visible { outline: 2px solid #0b6d93; outline-offset: 1px; }
+
+.ddw-alias-editor .ddw-alias-error {
+  flex-basis: 100%;
+  color: #95434d;
+  font-size: 11px;
+}
+
 .ddw-empty {
   margin: 0;
   padding: 32px 14px;

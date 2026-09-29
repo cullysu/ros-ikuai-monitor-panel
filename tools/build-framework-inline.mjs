@@ -350,19 +350,29 @@ writeFileSync(
   "utf8",
 );
 
-// Injection target is the React shell; the vanilla public/index.html is never
-// written by this builder. Override with PANEL_REACT_INDEX_TARGET (a filename
-// relative to public/) only when a new React shell is introduced.
-const indexTarget = process.env.PANEL_REACT_INDEX_TARGET || "index.react.html";
-const indexPath = resolve(projectRoot, "public", indexTarget);
-let indexSource = readFileSync(indexPath, "utf8")
-  .replace(/\s*<link rel="stylesheet"[^>]*data-overview-framework-asset="[^"]+"[^>]*>/g, "")
-  .replace(/\s*<script[^>]*data-overview-framework-asset="[^"]+"[^>]*><\/script>/g, "")
-  .replace(
-    /<\/head>/,
-    `  <script defer src="/assets/framework/${assets.loader.file}" data-overview-framework-asset="surface-loader"></script>\n</head>`,
-  );
-writeFileSync(indexPath, indexSource, "utf8");
+// Injection targets are the served React shell (public/index.html) plus its
+// authoring twin (public/index.react.html), kept byte-in-sync on the loader
+// line. Any previously injected panel-surface-loader.*.js reference is
+// stripped first, so repeated builds stay idempotent (exactly one loader per
+// file). Override with PANEL_REACT_INDEX_TARGET (a filename relative to
+// public/) only when a new React shell is introduced; it then becomes the sole
+// target.
+const loaderReferencePattern = /\s*<script[^>]*src="\/assets\/framework\/panel-surface-loader(?:\.[0-9a-f]{12})?\.js"[^>]*><\/script>/g;
+const indexTargets = process.env.PANEL_REACT_INDEX_TARGET
+  ? [process.env.PANEL_REACT_INDEX_TARGET]
+  : ["index.html", "index.react.html"];
+for (const indexTarget of indexTargets) {
+  const indexPath = resolve(projectRoot, "public", indexTarget);
+  const indexSource = readFileSync(indexPath, "utf8")
+    .replace(/\s*<link rel="stylesheet"[^>]*data-overview-framework-asset="[^"]+"[^>]*>/g, "")
+    .replace(/\s*<script[^>]*data-overview-framework-asset="[^"]+"[^>]*><\/script>/g, "")
+    .replace(loaderReferencePattern, "")
+    .replace(
+      /<\/head>/,
+      `  <script defer src="/assets/framework/${assets.loader.file}" data-overview-framework-asset="surface-loader"></script>\n</head>`,
+    );
+  writeFileSync(indexPath, indexSource, "utf8");
+}
 
 // The bundle is committed as a public runtime asset. Validate the generated
 // JavaScript itself so a truncated or otherwise malformed artifact cannot pass
