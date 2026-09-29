@@ -1,0 +1,2881 @@
+{
+  "snapshot": {
+    "ok": false,
+    "kind": "malformed",
+    "issueCount": 60,
+    "issues": [
+      {
+        "issue": "overview.history.timestamps[0] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[0]",
+        "actual": "1790645102"
+      },
+      {
+        "issue": "overview.history.timestamps[1] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[1]",
+        "actual": "1790645103"
+      },
+      {
+        "issue": "overview.history.timestamps[2] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[2]",
+        "actual": "1790645103"
+      },
+      {
+        "issue": "overview.history.timestamps[3] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[3]",
+        "actual": "1790645104"
+      },
+      {
+        "issue": "overview.history.timestamps[4] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[4]",
+        "actual": "1790645105"
+      },
+      {
+        "issue": "overview.history.timestamps[5] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[5]",
+        "actual": "1790645106"
+      },
+      {
+        "issue": "overview.history.timestamps[6] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[6]",
+        "actual": "1790645107"
+      },
+      {
+        "issue": "overview.history.timestamps[7] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[7]",
+        "actual": "1790645107"
+      },
+      {
+        "issue": "overview.history.timestamps[8] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[8]",
+        "actual": "1790645108"
+      },
+      {
+        "issue": "overview.history.timestamps[9] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[9]",
+        "actual": "1790645109"
+      },
+      {
+        "issue": "overview.history.timestamps[10] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[10]",
+        "actual": "1790645110"
+      },
+      {
+        "issue": "overview.history.timestamps[11] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[11]",
+        "actual": "1790645111"
+      },
+      {
+        "issue": "overview.history.timestamps[12] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[12]",
+        "actual": "1790645112"
+      },
+      {
+        "issue": "overview.history.timestamps[13] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[13]",
+        "actual": "1790645113"
+      },
+      {
+        "issue": "overview.history.timestamps[14] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[14]",
+        "actual": "1790645114"
+      },
+      {
+        "issue": "overview.history.timestamps[15] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[15]",
+        "actual": "1790645115"
+      },
+      {
+        "issue": "overview.history.timestamps[16] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[16]",
+        "actual": "1790645115"
+      },
+      {
+        "issue": "overview.history.timestamps[17] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[17]",
+        "actual": "1790645116"
+      },
+      {
+        "issue": "overview.history.timestamps[18] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[18]",
+        "actual": "1790645116"
+      },
+      {
+        "issue": "overview.history.timestamps[19] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[19]",
+        "actual": "1790645117"
+      },
+      {
+        "issue": "overview.history.timestamps[20] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[20]",
+        "actual": "1790645118"
+      },
+      {
+        "issue": "overview.history.timestamps[21] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[21]",
+        "actual": "1790645119"
+      },
+      {
+        "issue": "overview.history.timestamps[22] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[22]",
+        "actual": "1790645120"
+      },
+      {
+        "issue": "overview.history.timestamps[23] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[23]",
+        "actual": "1790645121"
+      },
+      {
+        "issue": "overview.history.timestamps[24] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[24]",
+        "actual": "1790645122"
+      },
+      {
+        "issue": "overview.history.timestamps[25] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[25]",
+        "actual": "1790645123"
+      },
+      {
+        "issue": "overview.history.timestamps[26] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[26]",
+        "actual": "1790645124"
+      },
+      {
+        "issue": "overview.history.timestamps[27] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[27]",
+        "actual": "1790645125"
+      },
+      {
+        "issue": "overview.history.timestamps[28] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[28]",
+        "actual": "1790645126"
+      },
+      {
+        "issue": "overview.history.timestamps[29] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[29]",
+        "actual": "1790645126"
+      },
+      {
+        "issue": "overview.history.timestamps[30] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[30]",
+        "actual": "1790645127"
+      },
+      {
+        "issue": "overview.history.timestamps[31] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[31]",
+        "actual": "1790645128"
+      },
+      {
+        "issue": "overview.history.timestamps[32] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[32]",
+        "actual": "1790645129"
+      },
+      {
+        "issue": "overview.history.timestamps[33] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[33]",
+        "actual": "1790645130"
+      },
+      {
+        "issue": "overview.history.timestamps[34] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[34]",
+        "actual": "1790645130"
+      },
+      {
+        "issue": "overview.history.timestamps[35] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[35]",
+        "actual": "1790645131"
+      },
+      {
+        "issue": "overview.history.timestamps[36] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[36]",
+        "actual": "1790645132"
+      },
+      {
+        "issue": "overview.history.timestamps[37] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[37]",
+        "actual": "1790645133"
+      },
+      {
+        "issue": "overview.history.timestamps[38] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[38]",
+        "actual": "1790645134"
+      },
+      {
+        "issue": "overview.history.timestamps[39] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[39]",
+        "actual": "1790645134"
+      },
+      {
+        "issue": "overview.history.timestamps[40] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[40]",
+        "actual": "1790645135"
+      },
+      {
+        "issue": "overview.history.timestamps[41] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[41]",
+        "actual": "1790645136"
+      },
+      {
+        "issue": "overview.history.timestamps[42] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[42]",
+        "actual": "1790645137"
+      },
+      {
+        "issue": "overview.history.timestamps[43] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[43]",
+        "actual": "1790645138"
+      },
+      {
+        "issue": "overview.history.timestamps[44] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[44]",
+        "actual": "1790645138"
+      },
+      {
+        "issue": "overview.history.timestamps[45] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[45]",
+        "actual": "1790645139"
+      },
+      {
+        "issue": "overview.history.timestamps[46] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[46]",
+        "actual": "1790645140"
+      },
+      {
+        "issue": "overview.history.timestamps[47] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[47]",
+        "actual": "1790645140"
+      },
+      {
+        "issue": "overview.history.timestamps[48] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[48]",
+        "actual": "1790645141"
+      },
+      {
+        "issue": "overview.history.timestamps[49] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[49]",
+        "actual": "1790645142"
+      },
+      {
+        "issue": "overview.history.timestamps[50] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[50]",
+        "actual": "1790645143"
+      },
+      {
+        "issue": "overview.history.timestamps[51] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[51]",
+        "actual": "1790645144"
+      },
+      {
+        "issue": "overview.history.timestamps[52] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[52]",
+        "actual": "1790645145"
+      },
+      {
+        "issue": "overview.history.timestamps[53] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[53]",
+        "actual": "1790645145"
+      },
+      {
+        "issue": "overview.history.timestamps[54] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[54]",
+        "actual": "1790645146"
+      },
+      {
+        "issue": "overview.history.timestamps[55] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[55]",
+        "actual": "1790645146"
+      },
+      {
+        "issue": "overview.history.timestamps[56] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[56]",
+        "actual": "1790645147"
+      },
+      {
+        "issue": "overview.history.timestamps[57] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[57]",
+        "actual": "1790645148"
+      },
+      {
+        "issue": "overview.history.timestamps[58] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[58]",
+        "actual": "1790645149"
+      },
+      {
+        "issue": "overview.history.timestamps[59] 必须是带时区的 RFC 3339 时间",
+        "path": "overview.history.timestamps[59]",
+        "actual": "1790645150"
+      }
+    ],
+    "evidenceTimestamp": 1790645150000,
+    "pollSeconds": 2,
+    "status": "ok",
+    "updatedAt": "2026-09-29T09:25:50+08:00"
+  },
+  "supplements": {
+    "dnsStatic": {
+      "parseStatus": "accepted",
+      "evidenceMode": "current",
+      "reason": null,
+      "response": {
+        "totalCount": 0,
+        "offset": 0,
+        "limit": 50,
+        "visibleRuleCount": 0,
+        "rows": [],
+        "revision": "0b5900f86fec27000b5900f86fec27000b5900f86fec27000b5900f86fec2700",
+        "page": {
+          "offset": 0,
+          "pageSize": 50,
+          "returnedCount": 0,
+          "totalCount": 0,
+          "revision": "0b5900f86fec27000b5900f86fec27000b5900f86fec27000b5900f86fec2700"
+        },
+        "schemaVersion": 1,
+        "readOnly": true,
+        "kind": "dns-static",
+        "source": "rest-live",
+        "evidenceMode": "current",
+        "sourceStatus": "ok",
+        "coverage": "page",
+        "generatedAt": "2026-09-29T02:33:09.749Z",
+        "observedAt": "2026-09-29T02:33:09.749Z"
+      }
+    },
+    "healthFindings": {
+      "httpStatus": 404,
+      "response": {
+        "ok": false,
+        "error": "API route not found",
+        "code": "not_found",
+        "status": 404
+      },
+      "note": "endpoint missing on vanilla"
+    },
+    "connectionSearch": {
+      "httpStatus": 404,
+      "response": {
+        "ok": false,
+        "error": "API route not found",
+        "code": "not_found",
+        "status": 404
+      },
+      "note": "endpoint missing on vanilla"
+    }
+  },
+  "extras": {
+    "timestampKeyInventory": [
+      {
+        "key": "updatedAt",
+        "samplePath": "updatedAt",
+        "sampleValue": "2026-09-29T09:25:50+08:00",
+        "count": 2
+      },
+      {
+        "key": "realtimeUpdatedAt",
+        "samplePath": "meta.realtimeUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:50+08:00",
+        "count": 1
+      },
+      {
+        "key": "slowRestUpdatedAt",
+        "samplePath": "meta.slowRestUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:40+08:00",
+        "count": 1
+      },
+      {
+        "key": "staticUpdatedAt",
+        "samplePath": "meta.staticUpdatedAt",
+        "sampleValue": "2026-09-29T09:23:52+08:00",
+        "count": 1
+      },
+      {
+        "key": "connectionProtocolUpdatedAt",
+        "samplePath": "meta.connectionProtocolUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:45+08:00",
+        "count": 1
+      },
+      {
+        "key": "connectionDetailUpdatedAt",
+        "samplePath": "meta.connectionDetailUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:46+08:00",
+        "count": 1
+      },
+      {
+        "key": "rateHistoryUpdatedAt",
+        "samplePath": "meta.rateHistoryUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:50+08:00",
+        "count": 1
+      },
+      {
+        "key": "qualityUpdatedAt",
+        "samplePath": "meta.qualityUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:50+08:00",
+        "count": 6
+      },
+      {
+        "key": "systemTime",
+        "samplePath": "overview.systemTime",
+        "sampleValue": "2026-09-29T09:25:40+08:00",
+        "count": 1
+      },
+      {
+        "key": "wanLatencyUpdatedAt",
+        "samplePath": "overview.wanLatencyUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:46+08:00",
+        "count": 1
+      },
+      {
+        "key": "latencyUpdatedAt",
+        "samplePath": "pppoe[0].latencyUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:46+08:00",
+        "count": 6
+      },
+      {
+        "key": "protocolUpdatedAt",
+        "samplePath": "connections.protocolUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:45+08:00",
+        "count": 1
+      },
+      {
+        "key": "detailUpdatedAt",
+        "samplePath": "connections.detailUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:46+08:00",
+        "count": 1
+      },
+      {
+        "key": "generatedAt",
+        "samplePath": "semanticTriage.generatedAt",
+        "sampleValue": "2026-09-29T09:25:50+08:00",
+        "count": 1
+      },
+      {
+        "key": "sourceUpdatedAt",
+        "samplePath": "semanticTriage.sourceUpdatedAt",
+        "sampleValue": "2026-09-29T09:25:50+08:00",
+        "count": 1
+      }
+    ],
+    "logsShape": [
+      {
+        "logsKey": "system",
+        "rowLength": 40,
+        "sampleTime": "2026-09-29T12:00:00+08:00",
+        "sampleKeys": [
+          "time",
+          "topics",
+          "message"
+        ]
+      },
+      {
+        "logsKey": "firewall",
+        "rowLength": 0,
+        "sampleKeys": "undefined"
+      },
+      {
+        "logsKey": "dhcp",
+        "rowLength": 0,
+        "sampleKeys": "undefined"
+      },
+      {
+        "logsKey": "dns",
+        "rowLength": 0,
+        "sampleKeys": "undefined"
+      },
+      {
+        "logsKey": "all",
+        "rowLength": 40,
+        "sampleTime": "2026-09-29T12:00:00+08:00",
+        "sampleKeys": [
+          "time",
+          "topics",
+          "message"
+        ]
+      }
+    ],
+    "routerLoginBootstrap": {
+      "parsesOk": true,
+      "profileStorageAvailableRaw": "<absent on vanilla>",
+      "parsedProfileStorageAvailable": false,
+      "vanillaKeys": [
+        "ok",
+        "routerLogin",
+        "savedLogins",
+        "savePasswordAvailable",
+        "csrfToken"
+      ],
+      "routerLoginKeys": [
+        "configured",
+        "host",
+        "user",
+        "sshPort",
+        "restScheme",
+        "restPort",
+        "source",
+        "savedId",
+        "updatedAt",
+        "passwordSet",
+        "lastTest"
+      ],
+      "reactProfileExpectedKeys": [
+        "configured",
+        "host",
+        "user",
+        "sshPort",
+        "sshHostKeyFingerprint",
+        "restScheme",
+        "restPort",
+        "restVerifyTls",
+        "insecureRestConfirmed",
+        "source",
+        "savedId",
+        "updatedAt",
+        "passwordSet",
+        "lastTest"
+      ],
+      "missingInVanillaProfile": [
+        "sshHostKeyFingerprint",
+        "restVerifyTls",
+        "insecureRestConfirmed"
+      ]
+    },
+    "snapshotShapes": [
+      {
+        "path": "status",
+        "kind": "string",
+        "sample": "ok"
+      },
+      {
+        "path": "updatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:50+08:00"
+      },
+      {
+        "path": "error",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.target",
+        "kind": "string",
+        "sample": "127.0.0.1"
+      },
+      {
+        "path": "meta.routerHost",
+        "kind": "string",
+        "sample": "127.0.0.1"
+      },
+      {
+        "path": "meta.routerLogin.configured",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.routerLogin.host",
+        "kind": "string",
+        "sample": "127.0.0.1"
+      },
+      {
+        "path": "meta.routerLogin.user",
+        "kind": "string",
+        "sample": "a"
+      },
+      {
+        "path": "meta.routerLogin.sshPort",
+        "kind": "number",
+        "sample": "8722"
+      },
+      {
+        "path": "meta.routerLogin.restScheme",
+        "kind": "string",
+        "sample": "http"
+      },
+      {
+        "path": "meta.routerLogin.restPort",
+        "kind": "number",
+        "sample": "80"
+      },
+      {
+        "path": "meta.routerLogin.source",
+        "kind": "string",
+        "sample": "env"
+      },
+      {
+        "path": "meta.routerLogin.savedId",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.routerLogin.updatedAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.routerLogin.passwordSet",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.routerLogin.lastTest",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.pollSeconds",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "meta.realtimeUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:50+08:00"
+      },
+      {
+        "path": "meta.realtimeError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.realtimeLastErrorAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.realtimeDurationSeconds",
+        "kind": "number",
+        "sample": "0.01"
+      },
+      {
+        "path": "meta.staticPollSeconds",
+        "kind": "number",
+        "sample": "300"
+      },
+      {
+        "path": "meta.staticRestWorkers",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "meta.slowRestPollSeconds",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "meta.slowRestWorkers",
+        "kind": "number",
+        "sample": "2"
+      },
+      {
+        "path": "meta.slowRestUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:40+08:00"
+      },
+      {
+        "path": "meta.slowRestError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.slowRestLastErrorAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.slowRestDurationSeconds",
+        "kind": "number",
+        "sample": "0.08"
+      },
+      {
+        "path": "meta.connectionDetailPollSeconds",
+        "kind": "number",
+        "sample": "4"
+      },
+      {
+        "path": "meta.detailRestWorkers",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "meta.connectionProtocolPollSeconds",
+        "kind": "number",
+        "sample": "300"
+      },
+      {
+        "path": "meta.staticUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:23:52+08:00"
+      },
+      {
+        "path": "meta.staticError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.staticLastErrorAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.staticDurationSeconds",
+        "kind": "number",
+        "sample": "12.06"
+      },
+      {
+        "path": "meta.staticEndpointFailures[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.realtimeEndpointFailures[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.slowRestEndpointFailures[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.detailEndpointFailures[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.connectionProtocolUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:45+08:00"
+      },
+      {
+        "path": "meta.connectionDetailUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:46+08:00"
+      },
+      {
+        "path": "meta.connectionProtocolError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.connectionProtocolLastErrorAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.connectionProtocolDurationSeconds",
+        "kind": "number",
+        "sample": "5.08"
+      },
+      {
+        "path": "meta.connectionDetailError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.connectionDetailLastErrorAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.connectionDetailDurationSeconds",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "meta.ipv6AddressCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.ipv6NeighborCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.ipv6InterfaceCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.ipv6TerminalCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.profile",
+        "kind": "string",
+        "sample": "routeros_only"
+      },
+      {
+        "path": "meta.capabilities.readonlyDiagnostics",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.privateDiagnostics",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.openwrtDiagnostics",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.nikkiDiagnostics",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.semanticTriage",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.capabilities.actionQueue",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.capabilities.publicRouterosProfile",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.capabilities.ipAliasWrite",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.adminSessions",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.wanFallback",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.singleWan",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.capabilities.multiWan",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.pppoeCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.wanCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.lineCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.lineLayoutTier",
+        "kind": "string",
+        "sample": "few"
+      },
+      {
+        "path": "meta.wanLatency.ok",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.wanLatency.target",
+        "kind": "string",
+        "sample": "www.baidu.com"
+      },
+      {
+        "path": "meta.wanLatency.latencyMs",
+        "kind": "number",
+        "sample": "51"
+      },
+      {
+        "path": "meta.wanLatency.updatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:46+08:00"
+      },
+      {
+        "path": "meta.wanLatency.method",
+        "kind": "string",
+        "sample": "icmp-ping"
+      },
+      {
+        "path": "meta.wanLatency.error",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "meta.freshCounterSample",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.rateSampleReady",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.counterReset",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.rateHistoryBreak",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.rateHistoryUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:50+08:00"
+      },
+      {
+        "path": "meta.rateHistorySampleCount",
+        "kind": "number",
+        "sample": "130"
+      },
+      {
+        "path": "meta.qualityUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:50+08:00"
+      },
+      {
+        "path": "meta.qualitySampleCount",
+        "kind": "number",
+        "sample": "131"
+      },
+      {
+        "path": "meta.scale.wan.actualCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.wan.totalCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.wan.shownCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.wan.limit",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.wan.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.wan.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.wan.sampleMethod",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "meta.scale.wan.sortedBy",
+        "kind": "string",
+        "sample": "natural interface name"
+      },
+      {
+        "path": "meta.scale.wan.groupedBy[]",
+        "kind": "array-of-string",
+        "len": 3
+      },
+      {
+        "path": "meta.scale.wan.bucket",
+        "kind": "string",
+        "sample": "small"
+      },
+      {
+        "path": "meta.scale.pppoe.actualCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.pppoe.totalCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.pppoe.shownCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.pppoe.limit",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.pppoe.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.pppoe.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.pppoe.sampleMethod",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "meta.scale.pppoe.sortedBy",
+        "kind": "string",
+        "sample": "natural interface name"
+      },
+      {
+        "path": "meta.scale.pppoe.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.pppoe.bucket",
+        "kind": "string",
+        "sample": "small"
+      },
+      {
+        "path": "meta.scale.interfaces.actualCount",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "meta.scale.interfaces.totalCount",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "meta.scale.interfaces.shownCount",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "meta.scale.interfaces.limit",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "meta.scale.interfaces.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.interfaces.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.interfaces.sampleMethod",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "meta.scale.interfaces.sortedBy",
+        "kind": "string",
+        "sample": "role/name/quality"
+      },
+      {
+        "path": "meta.scale.interfaces.groupedBy[]",
+        "kind": "array-of-string",
+        "len": 4
+      },
+      {
+        "path": "meta.scale.interfaces.bucket",
+        "kind": "string",
+        "sample": "small"
+      },
+      {
+        "path": "meta.scale.terminals.actualCount",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "meta.scale.terminals.totalCount",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "meta.scale.terminals.shownCount",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "meta.scale.terminals.limit",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "meta.scale.terminals.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.terminals.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.terminals.sampleMethod",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "meta.scale.terminals.sortedBy",
+        "kind": "string",
+        "sample": "traffic/connections"
+      },
+      {
+        "path": "meta.scale.terminals.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.terminals.bucket",
+        "kind": "string",
+        "sample": "large"
+      },
+      {
+        "path": "meta.scale.arp.actualCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "meta.scale.arp.totalCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "meta.scale.arp.shownCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "meta.scale.arp.limit",
+        "kind": "number",
+        "sample": "120"
+      },
+      {
+        "path": "meta.scale.arp.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.arp.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.arp.sampleMethod",
+        "kind": "string",
+        "sample": "first 120 sorted by IP"
+      },
+      {
+        "path": "meta.scale.arp.sortedBy",
+        "kind": "string",
+        "sample": "ip"
+      },
+      {
+        "path": "meta.scale.arp.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.arp.bucket",
+        "kind": "string",
+        "sample": "medium"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.actualCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.totalCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.shownCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.limit",
+        "kind": "number",
+        "sample": "120"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.sampleMethod",
+        "kind": "string",
+        "sample": "first 120 sorted by status and IP"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.sortedBy",
+        "kind": "string",
+        "sample": "status/ip"
+      },
+      {
+        "path": "meta.scale.dhcpLeases.groupedBy[]",
+        "kind": "array-of-string",
+        "len": 3
+      },
+      {
+        "path": "meta.scale.dhcpLeases.bucket",
+        "kind": "string",
+        "sample": "medium"
+      },
+      {
+        "path": "meta.scale.connectionsActive.actualCount",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "meta.scale.connectionsActive.totalCount",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "meta.scale.connectionsActive.shownCount",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "meta.scale.connectionsActive.limit",
+        "kind": "number",
+        "sample": "80"
+      },
+      {
+        "path": "meta.scale.connectionsActive.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.connectionsActive.sampled",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.scale.connectionsActive.sampleMethod",
+        "kind": "string",
+        "sample": "SSH connection detail sample, active rate rows first"
+      },
+      {
+        "path": "meta.scale.connectionsActive.sortedBy",
+        "kind": "string",
+        "sample": "totalRate"
+      },
+      {
+        "path": "meta.scale.connectionsActive.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.connectionsActive.bucket",
+        "kind": "string",
+        "sample": "large"
+      },
+      {
+        "path": "meta.scale.dnsStatic.actualCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.dnsStatic.totalCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.dnsStatic.shownCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.dnsStatic.limit",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "meta.scale.dnsStatic.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.dnsStatic.sampled",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "meta.scale.dnsStatic.sampleMethod",
+        "kind": "string",
+        "sample": "preview rows; full browser uses /api/dns-static pagination"
+      },
+      {
+        "path": "meta.scale.dnsStatic.sortedBy",
+        "kind": "string",
+        "sample": "RouterOS order"
+      },
+      {
+        "path": "meta.scale.dnsStatic.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.dnsStatic.bucket",
+        "kind": "string",
+        "sample": "none"
+      },
+      {
+        "path": "meta.scale.routes.actualCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.routes.totalCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.routes.shownCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.routes.limit",
+        "kind": "number",
+        "sample": "160"
+      },
+      {
+        "path": "meta.scale.routes.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.routes.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.routes.sampleMethod",
+        "kind": "string",
+        "sample": "first 160 after default/static/active sort"
+      },
+      {
+        "path": "meta.scale.routes.sortedBy",
+        "kind": "string",
+        "sample": "default/static/active/table/distance"
+      },
+      {
+        "path": "meta.scale.routes.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.routes.bucket",
+        "kind": "string",
+        "sample": "small"
+      },
+      {
+        "path": "meta.scale.securityFilters.actualCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "meta.scale.securityFilters.totalCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "meta.scale.securityFilters.shownCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "meta.scale.securityFilters.limit",
+        "kind": "number",
+        "sample": "80"
+      },
+      {
+        "path": "meta.scale.securityFilters.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.securityFilters.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.securityFilters.sampleMethod",
+        "kind": "string",
+        "sample": "top 80 by packets/bytes"
+      },
+      {
+        "path": "meta.scale.securityFilters.sortedBy",
+        "kind": "string",
+        "sample": "packets/bytes"
+      },
+      {
+        "path": "meta.scale.securityFilters.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.securityFilters.bucket",
+        "kind": "string",
+        "sample": "single"
+      },
+      {
+        "path": "meta.scale.addressLists.actualCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.addressLists.totalCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.addressLists.shownCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.addressLists.limit",
+        "kind": "number",
+        "sample": "100"
+      },
+      {
+        "path": "meta.scale.addressLists.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.addressLists.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.addressLists.sampleMethod",
+        "kind": "string",
+        "sample": "first 100 in RouterOS order"
+      },
+      {
+        "path": "meta.scale.addressLists.sortedBy",
+        "kind": "string",
+        "sample": "RouterOS order"
+      },
+      {
+        "path": "meta.scale.addressLists.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.addressLists.bucket",
+        "kind": "string",
+        "sample": "none"
+      },
+      {
+        "path": "meta.scale.mangleRules.actualCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.mangleRules.totalCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.mangleRules.shownCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "meta.scale.mangleRules.limit",
+        "kind": "number",
+        "sample": "80"
+      },
+      {
+        "path": "meta.scale.mangleRules.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.mangleRules.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.mangleRules.sampleMethod",
+        "kind": "string",
+        "sample": "top 80 by packets/bytes"
+      },
+      {
+        "path": "meta.scale.mangleRules.sortedBy",
+        "kind": "string",
+        "sample": "packets/bytes"
+      },
+      {
+        "path": "meta.scale.mangleRules.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.mangleRules.bucket",
+        "kind": "string",
+        "sample": "small"
+      },
+      {
+        "path": "meta.scale.routingRules.actualCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.routingRules.totalCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.routingRules.shownCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "meta.scale.routingRules.limit",
+        "kind": "number",
+        "sample": "80"
+      },
+      {
+        "path": "meta.scale.routingRules.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.routingRules.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "meta.scale.routingRules.sampleMethod",
+        "kind": "string",
+        "sample": "first 80 in RouterOS order"
+      },
+      {
+        "path": "meta.scale.routingRules.sortedBy",
+        "kind": "string",
+        "sample": "RouterOS order"
+      },
+      {
+        "path": "meta.scale.routingRules.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "meta.scale.routingRules.bucket",
+        "kind": "string",
+        "sample": "none"
+      },
+      {
+        "path": "meta.collectorStatus",
+        "kind": "string",
+        "sample": "ok"
+      },
+      {
+        "path": "meta.collectorStatusMessage",
+        "kind": "string",
+        "sample": "采集正常。"
+      },
+      {
+        "path": "overview.identity",
+        "kind": "string",
+        "sample": "Chaos-baseline"
+      },
+      {
+        "path": "overview.version",
+        "kind": "string",
+        "sample": "7.15.3 (stable)"
+      },
+      {
+        "path": "overview.boardName",
+        "kind": "string",
+        "sample": "ChaosROS"
+      },
+      {
+        "path": "overview.architecture",
+        "kind": "string",
+        "sample": "arm64"
+      },
+      {
+        "path": "overview.cpuModel",
+        "kind": "string",
+        "sample": "ARM"
+      },
+      {
+        "path": "overview.cpuCount",
+        "kind": "number",
+        "sample": "4"
+      },
+      {
+        "path": "overview.cpuFrequency",
+        "kind": "number",
+        "sample": "1400"
+      },
+      {
+        "path": "overview.uptime",
+        "kind": "string",
+        "sample": "3d4h5m6s"
+      },
+      {
+        "path": "overview.systemTime",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:40+08:00"
+      },
+      {
+        "path": "overview.ntpStatus",
+        "kind": "string",
+        "sample": "synchronized"
+      },
+      {
+        "path": "overview.admins[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "overview.cpuLoad",
+        "kind": "number",
+        "sample": "23"
+      },
+      {
+        "path": "overview.memoryUsedBytes",
+        "kind": "number",
+        "sample": "644245095"
+      },
+      {
+        "path": "overview.memoryTotalBytes",
+        "kind": "number",
+        "sample": "1073741824"
+      },
+      {
+        "path": "overview.memoryUsage",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "overview.diskUsedBytes",
+        "kind": "number",
+        "sample": "117440512"
+      },
+      {
+        "path": "overview.diskTotalBytes",
+        "kind": "number",
+        "sample": "134217728"
+      },
+      {
+        "path": "overview.diskUsage",
+        "kind": "number",
+        "sample": "87.5"
+      },
+      {
+        "path": "overview.resourceAnomaly[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "overview.clockAnomaly",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "overview.clockOffsetSeconds",
+        "kind": "number",
+        "sample": "-10"
+      },
+      {
+        "path": "overview.uplinkBps",
+        "kind": "number",
+        "sample": "2219976"
+      },
+      {
+        "path": "overview.downlinkBps",
+        "kind": "number",
+        "sample": "19979788"
+      },
+      {
+        "path": "overview.wanLatencyMs",
+        "kind": "number",
+        "sample": "51"
+      },
+      {
+        "path": "overview.latencyMs",
+        "kind": "number",
+        "sample": "51"
+      },
+      {
+        "path": "overview.wanLatencyTarget",
+        "kind": "string",
+        "sample": "www.baidu.com"
+      },
+      {
+        "path": "overview.wanLatencyUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:46+08:00"
+      },
+      {
+        "path": "overview.wanLatencyOk",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "overview.wanLatencyError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "overview.onlineTerminals",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "overview.connectionTotal",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "overview.systemLoadLevel",
+        "kind": "string",
+        "sample": "ok"
+      },
+      {
+        "path": "overview.history.cpu[]",
+        "kind": "array-of-number",
+        "len": 60
+      },
+      {
+        "path": "overview.history.memory[]",
+        "kind": "array-of-number",
+        "len": 60
+      },
+      {
+        "path": "overview.history.disk[]",
+        "kind": "array-of-number",
+        "len": 60
+      },
+      {
+        "path": "overview.history.uplink[]",
+        "kind": "array-of-number",
+        "len": 60
+      },
+      {
+        "path": "overview.history.downlink[]",
+        "kind": "array-of-number",
+        "len": 60
+      },
+      {
+        "path": "overview.history.timestamps[]",
+        "kind": "array-of-number",
+        "len": 60
+      },
+      {
+        "path": "interfaces[]",
+        "kind": "array-of-object",
+        "len": 5,
+        "keys": [
+          "name",
+          "role",
+          "type",
+          "running",
+          "disabled",
+          "mac",
+          "parentInterface",
+          "vlanId",
+          "ips",
+          "networks",
+          "gateways",
+          "rxBytes",
+          "txBytes",
+          "rxPackets",
+          "txPackets",
+          "rxDrop",
+          "txDrop",
+          "rxError",
+          "txError",
+          "rxRate",
+          "txRate",
+          "packetTotal",
+          "packetDelta",
+          "dropTotal",
+          "errorTotal",
+          "dropDelta",
+          "errorDelta",
+          "rxDropDelta",
+          "txDropDelta",
+          "rxErrorDelta",
+          "txErrorDelta",
+          "lossRate",
+          "errorRate",
+          "qualityUpdatedAt",
+          "qualitySampleCount",
+          "qualitySampleReady",
+          "qualityCounterReset",
+          "isDerivedInterface",
+          "isLogicalInterface",
+          "qualityDisplayWeight",
+          "qualityEvidenceLevel",
+          "qualityParent",
+          "logicalPairKey",
+          "qualityGroupKey"
+        ]
+      },
+      {
+        "path": "pppoe[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "name",
+          "status",
+          "running",
+          "parent",
+          "addresses",
+          "upRate",
+          "downRate",
+          "rxBytes",
+          "txBytes",
+          "history",
+          "routes",
+          "latencyMs",
+          "latencyTarget",
+          "latencyUpdatedAt",
+          "latencyOk",
+          "latencyError"
+        ]
+      },
+      {
+        "path": "wan[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "name",
+          "status",
+          "running",
+          "parent",
+          "addresses",
+          "upRate",
+          "downRate",
+          "rxBytes",
+          "txBytes",
+          "history",
+          "routes",
+          "kind",
+          "lineId",
+          "access",
+          "latencyMs",
+          "latencyTarget",
+          "latencyUpdatedAt",
+          "latencyOk",
+          "latencyError"
+        ]
+      },
+      {
+        "path": "terminals[]",
+        "kind": "array-of-object",
+        "len": 60,
+        "keys": [
+          "ip",
+          "mac",
+          "hostname",
+          "status",
+          "lastSeen",
+          "upRate",
+          "downRate",
+          "connections",
+          "sessionBytes",
+          "customName",
+          "displayName"
+        ]
+      },
+      {
+        "path": "terminalsLanScope.arpTotal",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "terminalsLanScope.arpOutOfScope",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "terminalsLanScope.scopeDescription",
+        "kind": "string",
+        "sample": "面板只统计路由器 LAN 网段内的终端；网段外的 ARP 记录不计入"
+      },
+      {
+        "path": "arp.items[]",
+        "kind": "array-of-object",
+        "len": 12,
+        "keys": [
+          "ip",
+          "mac",
+          "hostname",
+          "status",
+          "type",
+          "lastSeen",
+          "evidenceState",
+          "customName",
+          "displayName"
+        ]
+      },
+      {
+        "path": "arp.alerts[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "dhcp.pools[]",
+        "kind": "array-of-object",
+        "len": 1,
+        "keys": [
+          "name",
+          "ranges",
+          "used",
+          "total",
+          "available",
+          "usage"
+        ]
+      },
+      {
+        "path": "dhcp.leases[]",
+        "kind": "array-of-object",
+        "len": 12,
+        "keys": [
+          "address",
+          "hostname",
+          "mac",
+          "server",
+          "status",
+          "lastSeen",
+          "static",
+          "customName",
+          "displayName"
+        ]
+      },
+      {
+        "path": "dhcp.servers[]",
+        "kind": "array-of-object",
+        "len": 1,
+        "keys": [
+          "name",
+          "interface",
+          "pool",
+          "leaseTime",
+          "running"
+        ]
+      },
+      {
+        "path": "dhcp.meta.leases.actualCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "dhcp.meta.leases.totalCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "dhcp.meta.leases.shownCount",
+        "kind": "number",
+        "sample": "12"
+      },
+      {
+        "path": "dhcp.meta.leases.limit",
+        "kind": "number",
+        "sample": "120"
+      },
+      {
+        "path": "dhcp.meta.leases.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dhcp.meta.leases.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dhcp.meta.leases.sampleMethod",
+        "kind": "string",
+        "sample": "first 120 sorted by status and IP"
+      },
+      {
+        "path": "dhcp.meta.leases.sortedBy",
+        "kind": "string",
+        "sample": "status/ip"
+      },
+      {
+        "path": "dhcp.meta.leases.groupedBy[]",
+        "kind": "array-of-string",
+        "len": 3
+      },
+      {
+        "path": "dhcp.meta.leases.bucket",
+        "kind": "string",
+        "sample": "medium"
+      },
+      {
+        "path": "dhcp.meta.pools.actualCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.pools.totalCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.pools.shownCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.pools.limit",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.pools.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dhcp.meta.pools.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dhcp.meta.pools.sampleMethod",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "dhcp.meta.pools.sortedBy",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "dhcp.meta.pools.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "dhcp.meta.pools.bucket",
+        "kind": "string",
+        "sample": "single"
+      },
+      {
+        "path": "dhcp.meta.servers.actualCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.servers.totalCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.servers.shownCount",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.servers.limit",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "dhcp.meta.servers.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dhcp.meta.servers.sampled",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dhcp.meta.servers.sampleMethod",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "dhcp.meta.servers.sortedBy",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "dhcp.meta.servers.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "dhcp.meta.servers.bucket",
+        "kind": "string",
+        "sample": "single"
+      },
+      {
+        "path": "connections.total",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "connections.tcp",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "connections.udp",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "connections.icmp",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "connections.protocolTop[]",
+        "kind": "array-of-object",
+        "len": 6,
+        "keys": [
+          "name",
+          "protocol",
+          "mark",
+          "connections",
+          "upRate",
+          "downRate",
+          "totalRate",
+          "sessionBytes",
+          "source"
+        ]
+      },
+      {
+        "path": "connections.topIps[]",
+        "kind": "array-of-object",
+        "len": 20,
+        "keys": [
+          "ip",
+          "hostname",
+          "connections",
+          "upRate",
+          "downRate",
+          "customName",
+          "displayName"
+        ]
+      },
+      {
+        "path": "connections.active[]",
+        "kind": "array-of-object",
+        "len": 60,
+        "keys": [
+          "localIp",
+          "remoteIp",
+          "protocol",
+          "upRate",
+          "downRate",
+          "timeout",
+          "mark",
+          "totalRate",
+          "sessionBytes"
+        ]
+      },
+      {
+        "path": "connections.thresholdLevel",
+        "kind": "string",
+        "sample": "ok"
+      },
+      {
+        "path": "connections.protocolUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:45+08:00"
+      },
+      {
+        "path": "connections.detailUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:46+08:00"
+      },
+      {
+        "path": "connections.protocolError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "connections.protocolLastErrorAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "connections.protocolDurationSeconds",
+        "kind": "number",
+        "sample": "5.08"
+      },
+      {
+        "path": "connections.detailError",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "connections.detailLastErrorAt",
+        "kind": "null",
+        "sample": "null"
+      },
+      {
+        "path": "connections.detailDurationSeconds",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "connections.meta.active.actualCount",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "connections.meta.active.totalCount",
+        "kind": "number",
+        "sample": "5"
+      },
+      {
+        "path": "connections.meta.active.shownCount",
+        "kind": "number",
+        "sample": "60"
+      },
+      {
+        "path": "connections.meta.active.limit",
+        "kind": "number",
+        "sample": "80"
+      },
+      {
+        "path": "connections.meta.active.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "connections.meta.active.sampled",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "connections.meta.active.sampleMethod",
+        "kind": "string",
+        "sample": "SSH connection detail sample, active rate rows first"
+      },
+      {
+        "path": "connections.meta.active.sortedBy",
+        "kind": "string",
+        "sample": "totalRate"
+      },
+      {
+        "path": "connections.meta.active.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "connections.meta.active.bucket",
+        "kind": "string",
+        "sample": "large"
+      },
+      {
+        "path": "connections.meta.topIps.actualCount",
+        "kind": "number",
+        "sample": "20"
+      },
+      {
+        "path": "connections.meta.topIps.totalCount",
+        "kind": "number",
+        "sample": "20"
+      },
+      {
+        "path": "connections.meta.topIps.shownCount",
+        "kind": "number",
+        "sample": "20"
+      },
+      {
+        "path": "connections.meta.topIps.limit",
+        "kind": "number",
+        "sample": "20"
+      },
+      {
+        "path": "connections.meta.topIps.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "connections.meta.topIps.sampled",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "connections.meta.topIps.sampleMethod",
+        "kind": "string",
+        "sample": "terminal traffic top list"
+      },
+      {
+        "path": "connections.meta.topIps.sortedBy",
+        "kind": "string",
+        "sample": "connections/traffic"
+      },
+      {
+        "path": "connections.meta.topIps.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "connections.meta.topIps.bucket",
+        "kind": "string",
+        "sample": "medium"
+      },
+      {
+        "path": "connections.meta.protocolTop.actualCount",
+        "kind": "number",
+        "sample": "6"
+      },
+      {
+        "path": "connections.meta.protocolTop.totalCount",
+        "kind": "number",
+        "sample": "6"
+      },
+      {
+        "path": "connections.meta.protocolTop.shownCount",
+        "kind": "number",
+        "sample": "6"
+      },
+      {
+        "path": "connections.meta.protocolTop.limit",
+        "kind": "number",
+        "sample": "20"
+      },
+      {
+        "path": "connections.meta.protocolTop.hasMore",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "connections.meta.protocolTop.sampled",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "connections.meta.protocolTop.sampleMethod",
+        "kind": "string",
+        "sample": "active connection detail sample grouped by protocol/connecti"
+      },
+      {
+        "path": "connections.meta.protocolTop.sortedBy",
+        "kind": "string",
+        "sample": "traffic/connections"
+      },
+      {
+        "path": "connections.meta.protocolTop.groupedBy[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "connections.meta.protocolTop.bucket",
+        "kind": "string",
+        "sample": "small"
+      },
+      {
+        "path": "dns.running",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "dns.servers[]",
+        "kind": "array-of-string",
+        "len": 2
+      },
+      {
+        "path": "dns.cacheSize",
+        "kind": "number",
+        "sample": "2048"
+      },
+      {
+        "path": "dns.cacheUsed",
+        "kind": "number",
+        "sample": "512"
+      },
+      {
+        "path": "dns.cacheEntries",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "dns.forwardRuleCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "dns.visibleRuleCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "dns.disabledForwardRuleCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "dns.forwardRuleSample",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dns.forwardRules[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "dns.dohServer",
+        "kind": "string",
+        "sample": ""
+      },
+      {
+        "path": "dns.verifyDohCert",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "dns.ipv6Nd[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "dns.ipv6DhcpClients[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "security.filters[]",
+        "kind": "array-of-object",
+        "len": 1,
+        "keys": [
+          "chain",
+          "action",
+          "comment",
+          "packets",
+          "bytes",
+          "disabled"
+        ]
+      },
+      {
+        "path": "security.filterTotal",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "security.addressLists[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "security.addressListTotal",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "security.alerts[]",
+        "kind": "array-of-object",
+        "len": 8,
+        "keys": [
+          "time",
+          "topics",
+          "message"
+        ]
+      },
+      {
+        "path": "loadBalance.mode",
+        "kind": "string",
+        "sample": "多线路容灾 / 优先级切换"
+      },
+      {
+        "path": "loadBalance.activeLines",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "loadBalance.mangleTotal",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "loadBalance.routingRuleTotal",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "loadBalance.distribution[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "name",
+          "share",
+          "upRate",
+          "downRate",
+          "status"
+        ]
+      },
+      {
+        "path": "loadBalance.defaultRoutes[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "gateway",
+          "distance",
+          "table",
+          "active",
+          "comment"
+        ]
+      },
+      {
+        "path": "loadBalance.mangleRules[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "chain",
+          "action",
+          "comment",
+          "newRoutingMark",
+          "packets",
+          "bytes"
+        ]
+      },
+      {
+        "path": "loadBalance.routingRules[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "loadBalance.pccDetected",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "routes.tableCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "routes.staticCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "routes.activeStaticCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "routes.defaultCount",
+        "kind": "number",
+        "sample": "3"
+      },
+      {
+        "path": "routes.dynamicCount",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "routes.items[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "dstAddress",
+          "gateway",
+          "distance",
+          "table",
+          "active",
+          "disabled",
+          "static",
+          "dynamic",
+          "default",
+          "comment",
+          "family"
+        ]
+      },
+      {
+        "path": "routes.defaultRoutes[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "dstAddress",
+          "gateway",
+          "distance",
+          "table",
+          "active",
+          "disabled",
+          "static",
+          "dynamic",
+          "default",
+          "comment",
+          "family"
+        ]
+      },
+      {
+        "path": "routes.staticRoutes[]",
+        "kind": "array-of-object",
+        "len": 3,
+        "keys": [
+          "dstAddress",
+          "gateway",
+          "distance",
+          "table",
+          "active",
+          "disabled",
+          "static",
+          "dynamic",
+          "default",
+          "comment",
+          "family"
+        ]
+      },
+      {
+        "path": "logs.system[]",
+        "kind": "array-of-object",
+        "len": 40,
+        "keys": [
+          "time",
+          "topics",
+          "message"
+        ]
+      },
+      {
+        "path": "logs.firewall[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "logs.dhcp[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "logs.dns[]",
+        "kind": "array-of-undefined",
+        "len": 0
+      },
+      {
+        "path": "logs.all[]",
+        "kind": "array-of-object",
+        "len": 40,
+        "keys": [
+          "time",
+          "topics",
+          "message"
+        ]
+      },
+      {
+        "path": "statusMessage",
+        "kind": "string",
+        "sample": "采集正常。"
+      },
+      {
+        "path": "semanticTriage.status",
+        "kind": "string",
+        "sample": "warning"
+      },
+      {
+        "path": "semanticTriage.readOnly",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "semanticTriage.generatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:50+08:00"
+      },
+      {
+        "path": "semanticTriage.sourceUpdatedAt",
+        "kind": "string",
+        "sample": "2026-09-29T09:25:50+08:00"
+      },
+      {
+        "path": "semanticTriage.sourceStatus",
+        "kind": "string",
+        "sample": "ok"
+      },
+      {
+        "path": "semanticTriage.limit",
+        "kind": "number",
+        "sample": "24"
+      },
+      {
+        "path": "semanticTriage.counts.critical",
+        "kind": "number",
+        "sample": "0"
+      },
+      {
+        "path": "semanticTriage.counts.warning",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "semanticTriage.counts.info",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "semanticTriage.topPriority.id",
+        "kind": "string",
+        "sample": "system.resource_pressure"
+      },
+      {
+        "path": "semanticTriage.topPriority.severity",
+        "kind": "string",
+        "sample": "warning"
+      },
+      {
+        "path": "semanticTriage.topPriority.domain",
+        "kind": "string",
+        "sample": "system"
+      },
+      {
+        "path": "semanticTriage.topPriority.title",
+        "kind": "string",
+        "sample": "Router resource pressure is elevated"
+      },
+      {
+        "path": "semanticTriage.topPriority.summary",
+        "kind": "string",
+        "sample": "disk=87.5%"
+      },
+      {
+        "path": "semanticTriage.topPriority.nextStep",
+        "kind": "string",
+        "sample": "Correlate with traffic and logs before scheduling maintenanc"
+      },
+      {
+        "path": "semanticTriage.topPriority.source",
+        "kind": "string",
+        "sample": "snapshot.overview"
+      },
+      {
+        "path": "semanticTriage.topPriority.readOnly",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "semanticTriage.topPriority.actionType",
+        "kind": "string",
+        "sample": "manual_review"
+      },
+      {
+        "path": "semanticTriage.topPriority.priority",
+        "kind": "number",
+        "sample": "1"
+      },
+      {
+        "path": "semanticTriage.topPriority.evidence[]",
+        "kind": "array-of-object",
+        "len": 1,
+        "keys": [
+          "label",
+          "value"
+        ]
+      },
+      {
+        "path": "semanticTriage.queue[]",
+        "kind": "array-of-object",
+        "len": 2,
+        "keys": [
+          "id",
+          "severity",
+          "domain",
+          "title",
+          "summary",
+          "nextStep",
+          "source",
+          "readOnly",
+          "actionType",
+          "priority",
+          "evidence"
+        ]
+      },
+      {
+        "path": "semanticTriage.actionQueue[]",
+        "kind": "array-of-object",
+        "len": 2,
+        "keys": [
+          "id",
+          "severity",
+          "domain",
+          "title",
+          "summary",
+          "nextStep",
+          "source",
+          "readOnly",
+          "actionType",
+          "priority",
+          "evidence"
+        ]
+      },
+      {
+        "path": "semanticTriage.guardrails.routerosWrites",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "semanticTriage.guardrails.usesCachedSnapshot",
+        "kind": "boolean",
+        "sample": "true"
+      },
+      {
+        "path": "semanticTriage.guardrails.mutatingEndpoints",
+        "kind": "boolean",
+        "sample": "false"
+      },
+      {
+        "path": "actionQueue[]",
+        "kind": "array-of-object",
+        "len": 2,
+        "keys": [
+          "id",
+          "severity",
+          "domain",
+          "title",
+          "summary",
+          "nextStep",
+          "source",
+          "readOnly",
+          "actionType",
+          "priority",
+          "evidence"
+        ]
+      }
+    ]
+  }
+}

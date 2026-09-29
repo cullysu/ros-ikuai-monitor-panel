@@ -9,6 +9,7 @@ routeros-panel.env
 docker.env
 build/
 dist/
+node_modules/
 *.log
 *.out.log
 *.err.log
@@ -51,3 +52,7 @@ _scale/chaos/
 _scale/*.log
 _scale/wan*/
 _scale/ssh_state.json
+_scale/fixcheck/*.png
+_scale/fixcheck/lj_cookies.txt
+_scale/fixcheck/none.env
+_scale/fixcheck/pr_payload.json

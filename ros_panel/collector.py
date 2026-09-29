@@ -2758,11 +2758,17 @@ class Collector:
         service_reachability.sort(key=lambda row: row.get("name", ""))
         tcp_reachability.sort(key=lambda row: row.get("name", ""))
         exit_checks.sort(key=lambda row: row.get("name", ""))
+        # 默认 index 已是 React 壳；只读诊断的面板文件清单改为真实存在的文件。
+        # 不再列出的 layout-whitespace-patch.js / readonly-diagnostics.js 早已折叠进
+        # panel-head.js 并随 React 迁移退役。framework 产物用未 hash 的稳定文件名
+        # （构建时与 hash 版本同内容输出），避免 hash 变化导致清单常驻 exists=False。
         panel_files = [
             file_mtime_summary(BASE_DIR / "app.py"),
             file_mtime_summary(PUBLIC_DIR / "index.html"),
-            file_mtime_summary(PUBLIC_DIR / "layout-whitespace-patch.js"),
-            file_mtime_summary(PUBLIC_DIR / "readonly-diagnostics.js"),
+            file_mtime_summary(PUBLIC_DIR / "index.legacy.html"),
+            file_mtime_summary(PUBLIC_DIR / "assets" / "framework" / "panel-surface-loader.js"),
+            file_mtime_summary(PUBLIC_DIR / "assets" / "framework" / "panel-desktop.js"),
+            file_mtime_summary(PUBLIC_DIR / "assets" / "framework" / "desktop.css"),
         ]
         nikki = nikki_probe()
 

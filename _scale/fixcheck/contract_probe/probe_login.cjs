@@ -1,0 +1,15 @@
+"use strict";
+const path = require("path");
+const fs = require("fs");
+const { parseRouterLoginMutation, parseRouterLoginBootstrap } = require(path.join(__dirname, "compiled", "runtime", "panelRuntimeSchema.js"));
+const FIX = path.dirname(__dirname);
+const load = (n) => JSON.parse(fs.readFileSync(path.join(FIX, n), "utf-8"));
+const post = load("vanilla_router-login_POST.json");
+const out = load("vanilla_router-logout_POST.json");
+const boot = load("vanilla_router-login.json");
+console.log("GET  /api/router-login  parseRouterLoginBootstrap ->", parseRouterLoginBootstrap(boot) === null ? "REJECTED(null)" : "OK");
+console.log("POST /api/router-login  parseRouterLoginMutation ->", parseRouterLoginMutation(post) === null ? "REJECTED(null)" : "OK");
+console.log("POST /api/router-logout parseRouterLoginMutation ->", parseRouterLoginMutation(out) === null ? "REJECTED(null)" : "OK");
+console.log("login updatedAt:", JSON.stringify(post.routerLogin.updatedAt), "| logout updatedAt:", JSON.stringify(out.routerLogin.updatedAt));
+console.log("savedLogins after rememberProfile=true:", JSON.stringify(post.savedLogins), "(React sent rememberProfile, vanilla reads rememberPassword)");
+console.log("restPort echoed back:", post.routerLogin.restPort, "(React sent 8721)");

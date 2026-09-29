@@ -25,6 +25,27 @@ import app  # noqa: E402
 from ros_panel import panel_access  # noqa: E402  (后端拆分批次 6：守卫 flag 的 patch 靶)
 
 
+_FRAMEWORK_SOURCE_CACHE = None
+
+
+def framework_source():
+    """React 前端源码树全文（src/panel-framework/**），带进程内缓存。
+
+    前端已迁移到 React（默认 index 引用 /assets/framework/ 的 loader + 桌面/移动
+    bundle）。原 panel-head.js 拼接源断言全部改靶到该源码树；minified bundle 里
+    找不到函数名字面量，因此断言对象是源码而不是产物。
+    """
+    global _FRAMEWORK_SOURCE_CACHE
+    if _FRAMEWORK_SOURCE_CACHE is None:
+        parts = []
+        src_root = ROOT / "src" / "panel-framework"
+        for path in sorted(src_root.rglob("*")):
+            if path.is_file() and path.suffix in (".ts", ".tsx", ".css"):
+                parts.append(path.read_text(encoding="utf-8"))
+        _FRAMEWORK_SOURCE_CACHE = "\n".join(parts)
+    return _FRAMEWORK_SOURCE_CACHE
+
+
 def make_rate_rest(
     rx_bytes,
     tx_bytes,
@@ -676,73 +697,65 @@ def assert_deploy_defaults_are_project_safe():
 
 
 def assert_frontend_charts_skip_missing_values():
-    # panel.js / layout-whitespace-patch.js / readonly-diagnostics.js 已字节级折入
-    # panel-head.js（HEAD 170e762），面板前端只剩单文件，拼接源只留 index.html + panel-head.js。
-    index_source = (
-        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    )
-    for function_name in ("lineChart", "rateAxisLineChart", "resourcePercentChart"):
-        marker = f"function {function_name}"
-        start = index_source.find(marker)
-        assert start >= 0, f"{function_name} not found"
-        body = index_source[start : index_source.find("\n    function ", start + len(marker))]
-        if not body:
-            body = index_source[start : start + 2400]
-        assert "Number(value || 0)" not in body, f"{function_name} still coerces missing values to 0"
-        assert "Number(item || 0)" not in body, f"{function_name} still coerces missing values to 0"
-    assert "function chartValue" in index_source
-    assert "function smoothRateNeedleZeros" in index_source
-    assert "smoothRateNeedleZeros(rawValues, options)" in index_source
-    assert "smoothRateNeedleZeros(rawValues, { ...options" in index_source
-    assert "function chartSegmentElements" in index_source
-    assert "function smoothSvgPath" in index_source
-    assert "<path fill=\"none\"" in index_source
-    assert "panel-professional-redesign" not in index_source
-    assert "scale-adaptive-patch" not in index_source
-    assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
-    assert "if (value === null || value === undefined || value === '') return null;" in index_source
-    assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
-    # layout-whitespace-patch.js 已折入 panel-head.js，断言改读单文件，语义不变。
-    layout_patch_source = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")
-    ops_chart_body = layout_patch_source[ops_chart_start : ops_chart_start + 2200]
-    assert "function opsChartNumber" in layout_patch_source
-    assert "function opsSmoothPercentValues" in layout_patch_source
-    assert "function opsSmoothPath" in layout_patch_source
-    assert "Number(value || 0)" not in ops_chart_body
+    # 前端已迁移到 React（默认 index 引 /assets/framework loader），本断言改靶
+    # src/panel-framework 源码树。映射关系：
+    #   vanilla chartValue/smoothSvgPath/smoothNumericSeries（缺失值跳过、不补 0）
+    #     -> resourceHistorySamples.ts percentage()：null/undefined/'' -> null（同字面量语义）
+    #     -> buildOverviewInstruments.ts trafficPoints()：timestamp/down/up 任一为 null 跳过该样本
+    #     -> SectionTimeSeriesChart.tsx seriesReadouts：filter(Number.isFinite) 跳过非有限值
+    #   vanilla opsPercentMiniChart/opsChartNumber/opsSmooth*（ops 图缺失值不补 0）
+    #     -> LegacyDesktopOverview.tsx TrafficChart/ResourceChart：points 仅由 trafficPoints/
+    #        资源采样构造，路径按点线性映射，无 Number(value || 0) 兜底
+    #   vanilla <path fill="none"> 图元 -> React <polyline data-section-series> / <path class="legacy-series">
+    source = framework_source()
+    # 回归哨兵：整个 React 源码树禁止把缺失值强转成 0。
+    assert "Number(value || 0)" not in source
+    assert "Number(item || 0)" not in source
+    # resourceHistorySamples.ts：缺失读数返回 null（与 vanilla chartValue 字面量同语义）。
+    assert 'if (value === null || value === undefined || value === "") return null;' in source
+    # buildOverviewInstruments.ts trafficPoints：缺失/乱序样本跳过，不补 0 连假线。
+    assert "if (timestamp === null || down === null || up === null) continue;" in source
+    # SectionTimeSeriesChart.tsx：读数统计前过滤非有限值。
+    assert ".filter(Number.isFinite)" in source
+    # 图表几何与图元仍存在（timeSeriesGeometry.ts + polyline/path series）。
+    assert "export function timeSeriesPointX" in source
+    assert "export function percentagePointY" in source
+    assert "<polyline" in source
+    assert "panel-professional-redesign" not in source
+    assert "scale-adaptive-patch" not in source
 
 
 def assert_frontend_wan_aggregate_default():
-    # 旧断言针对已移除的 WAN 聚合死层补丁文件（不点名，避免工具引用残留）；
-    # 该功能已在 panel-head.js 原生实现（renderOverviewIkuai 的 aggregate 选项、
-    # resolveOverviewWanSelection 的 aggregate 回退），断言语义不变，目标改为原生实现证据。
-    source = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    assert "let currentOverviewWanLine = 'aggregate';" in source
-    assert "function resolveOverviewWanSelection(pppoe)" in source
-    assert "currentOverviewWanLine !== 'aggregate'" in source
-    assert '<option value="aggregate"' in source
-    assert ">聚合全部线路</option>" in source
-    assert "data-overview-wan-line" in source
-    assert "currentOverviewWanLine = overviewWanSelect.value || 'aggregate';" in source
+    # 旧断言针对 panel-head.js 原生 WAN 聚合实现（currentOverviewWanLine 默认 'aggregate'、
+    # resolveOverviewWanSelection 回退）。React 重设计后没有"聚合全部线路"下拉，等价能力
+    # 改为概览 WAN 证据列：默认展示"线路聚合状态"卡 + activeWan 的聚合回退链
+    # （路由匹配线路 -> 任一 running 线路 -> null，而不是钉死单条线路）。断言改靶该实现。
+    source = framework_source()
+    assert "线路聚合状态" in source  # LegacyDesktopOverview.tsx 聚合状态卡标题
+    assert "data-desktop-wan-evidence" in source  # WAN 证据列挂载标记
+    assert "const activeWan = routeWan || wans.find((row) => row.running && !row.disabled) || null;" in source
+    # WAN 信息列头保留"只读展示"口径（对应旧聚合视图的只读语义）。
+    assert "只读展示" in source
 
 
 def assert_router_login_password_save_is_opt_in():
-    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
-    index_source = (
-        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    )
+    # 前端断言改靶 React 源码树：React 连接表单把"记住密码"重设计为"记住设备资料"
+    # （rememberProfile，只保存地址/端口/传输设置/SSH 指纹，密码永不保存），复选框默认
+    # 不勾选，opt-in 语义保持。React 前端不再提交 rememberPassword 字段。
+    # 后端仍读 rememberPassword——index.legacy.html + panel-head.js 旧前端仍在用，
+    # app_source 断言保持不变。
+    source = framework_source()
+    assert 'name="rememberProfile"' in source  # RouterConnectionScreen.tsx 记住设备资料复选框
+    assert "const [rememberProfile, setRememberProfile] = useState(false);" in source  # 默认不勾选 = opt-in
+    assert "rememberProfile: input.rememberProfile" in source  # panelApi.ts submitRouterConnection 提交体
+    assert "密码不会保存" in source  # UI 明示密码不入库
+    assert "rememberPassword" not in source  # React 前端不提交密码保存开关
     # Handler 已迁至 ros_panel/server.py（后端拆分批次 8），app_source 拼上新模块内容，
     # 断言字符串与语义保持不变（照抄 router_config 的 app_source 先例）。
     app_source = (
         (ROOT / "app.py").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "ros_panel" / "server.py").read_text(encoding="utf-8")
     )
-    checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
-    if checkbox_marker in index_source:
-        assert '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>' not in index_source
-        assert "routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : false" in index_source
     assert 'payload.get("rememberPassword", False)' in app_source
     assert "remember_password = remember_raw is True" in app_source
     assert "True if remember_raw is None else to_bool(remember_raw)" not in app_source
@@ -758,65 +771,74 @@ def assert_router_login_tries_rest_when_ssh_fails():
         + chr(10) + (ROOT / "ros_panel" / "router_config.py").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "ros_panel" / "server.py").read_text(encoding="utf-8")
     )
-    # panel.js 已折入 panel-head.js，路由登录相关前端断言改读单文件，语义不变。
-    panel_js = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+    # 前端断言改靶 React 源码树（vanilla panel-head.js 全局对象已不存在）。映射：
+    #   window.panelRouterSwitcher / window.panelRouterSetup
+    #     -> connection/RouterConnectionScreen.tsx 组件 + runtime/panelApi.ts submitRouterConnection
+    #   'X-CSRF-Token': window.routerLoginCsrfToken || ''（vanilla 两处字面量）
+    #     -> panelApi.ts writeHeaders 统一注入 "X-CSRF-Token": csrfToken
+    #   option value="__add__"（新增登录哨兵） -> savedLogins 列表渲染 + clearSavedSelection
+    #   (login && login.restScheme) || 'http' / (login && login.restPort) || 80
+    #     -> useState(current?.restScheme || "https") / useState(current?.restPort || 443)
+    #   id = 'routerSetupOverlay' -> h2 id="router-address-heading"（连接表单标题）
+    #   body: JSON.stringify({ savedId: id, rememberPassword: true })
+    #     -> submitRouterConnection body：savedId 条件展开 + rememberProfile
+    #   wrap.hidden = false（高级设置展开） -> <details data-router-advanced-settings>
     assert "Skipped because SSH login failed" not in app_source
     # app.py 现经 _ROUTER_REST_PORT_SUFFIX 拼接 REST 端口（该改动早于本任务、已在 HEAD 提交中），
     # 旧断言的精确字符串已失效，此处对齐当前实现，语义不变：SSH 失败后仍探测 REST system/resource。
     assert "session.get(f\"http://{config['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/system/resource\"" in app_source
     assert "if not ssh_ok and not rest_ok:" in app_source
-    assert "window.panelRouterSwitcher = { render: renderSwitcher, reload: loadLogins };" in panel_js
-    assert "'X-CSRF-Token': window.routerLoginCsrfToken || ''" in panel_js
-    assert panel_js.count("'X-CSRF-Token': window.routerLoginCsrfToken || ''") >= 2
-    assert "id = 'routerSetupOverlay'" in panel_js or 'id="routerSetupOverlay"' in panel_js
-    assert "(login && login.restScheme) || 'http'" in panel_js
-    assert "(login && login.restPort) || 80" in panel_js
-    assert 'option value="__add__"' in panel_js
-    assert "window.panelRouterSetup = { open: renderSetupForm };" in panel_js
-    assert "body: JSON.stringify({ savedId: id, rememberPassword: true })" in panel_js
-    assert "wrap.hidden = false;" in panel_js
+    source = framework_source()
+    assert '"X-CSRF-Token": csrfToken' in source  # panelApi.ts writeHeaders：登录 POST 必带 CSRF
+    assert "export async function submitRouterConnection" in source
+    assert 'current?.restScheme || "https"' in source  # 连接表单回填已保存登录的 REST 方案
+    assert "current?.restPort || 443" in source  # 连接表单回填已保存登录的 REST 端口
+    assert "runtime.connection.savedLogins.map((profile) => <option" in source  # 已保存登录选择器
+    assert "clearSavedSelection" in source  # 手改地址即退出已保存登录 = 新增入口
+    assert 'h2 id="router-address-heading"' in source  # 连接表单标题（原 routerSetupOverlay）
+    assert "data-router-advanced-settings" in source  # 高级设置（REST 方案/端口/SSH 指纹）
+    assert "...(input.savedId ? { savedId: input.savedId } : {})" in source
+    assert "rememberProfile: input.rememberProfile" in source
 
 
 def assert_line_trend_density_is_continuous():
-    panel_head = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    panel_css = (ROOT / "public" / "assets" / "panel.css").read_text(encoding="utf-8")
-    # layout-whitespace-patch.js 已折入 panel-head.js，断言改读单文件，语义不变。
-    layout_patch = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    get_rows = panel_head[panel_head.find("function getLineTrendRows") : panel_head.find("function lineTrendDensity")]
-    assert ").slice(0, 8);" not in get_rows
-    assert "function lineTrendDensity(count)" in panel_head
-    assert "Math.log2(n)" in panel_head
-    assert "function lineTrendColumns(count)" in panel_head
-    assert "const fill = n % cols;" in panel_head
-    assert "if (fill === 0) return cols;" in panel_head
-    assert "function lineTrendPeak(item)" in panel_head
-    grid_body = panel_head[panel_head.find("function renderLineTrendGrid") : panel_head.find("function recordItem")]
-    assert "rows.filter((item) => item.running)" in grid_body
-    assert "online.length <= 4" in grid_body
-    assert "wanRateSplitCard(" in grid_body
-    assert "line-trend-full" in grid_body
-    assert "line-trend-offline" in grid_body
-    assert "line-trend-anchor" in grid_body
-    assert "--line-trend-cols:${cols}" in grid_body
-    assert "8 条线路速率趋势" not in panel_head
-    assert "repeat(var(--line-trend-cols, 4), minmax(0, 1fr))" in panel_css
-    assert ".line-trend-badge" in panel_css
-    assert ".line-trend-full .ik-wan-rate-svg { height: 120px; }" in panel_css
-    assert "#interfaces .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }" not in layout_patch
-    assert "#trafficLoad .line-trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }" not in layout_patch
+    # vanilla 的 lineTrendDensity/lineTrendColumns/lineTrendPeak（接口 WAN 速率趋势网格的
+    # 对数列密度）没有 1:1 的 React 移植——React 把"趋势连续性"落在采样点逐一映射上：
+    #   - buildOverviewInstruments.ts trafficPoints：时间戳必须严格递增（回退/重复样本跳过），
+    #     缺失样本直接跳过，不补 0 连假线
+    #   - sections/timeSeriesGeometry.ts timeSeriesPointX：每个样本按时间线性映射到 X，不抽稀
+    #   - LegacyDesktopOverview.tsx TrafficChart/ResourceChart：每个点按 (timestamp-start)/span
+    #     线性映射，无固定列密度启发式
+    # vanilla 专有 CSS（line-trend-*，public/assets/panel.css）只服务 index.legacy.html 回退页，
+    # 不再是默认前端的验收对象，相关断言随面板退役删除。
+    source = framework_source()
+    # 回归哨兵：趋势样本不得恢复"只取前 8 行"式截断。
+    assert ").slice(0, 8);" not in source
+    # 时间轴连续性：样本严格递增 + 全量线性映射。
+    assert "if (points.length && timestamp <= points[points.length - 1].timestamp) continue;" in source
+    assert "export function timeSeriesPointX" in source
+    assert "(point.timestamp - start) / span" in source
+    # 趋势图可访问描述保留采样窗语义（vanilla "N 条线路速率趋势" 文案的 React 等价物）。
+    assert "实时速率趋势" in source  # LegacyDesktopOverview.tsx 趋势列标题
+    assert "最新采样窗口" in source
 
 
 def assert_frontend_handles_partial_snapshots():
-    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
-    index_source = (
-        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    )
-    assert "const o = snapshot.overview || {};" in index_source
-    assert "const history = o.history || {};" in index_source
-    assert "const meta = snapshot.meta || {};" in index_source
-    assert "history.uplink || []" in index_source
-    assert "history.downlink || []" in index_source
+    # 前端拼接源（index.html + panel-head.js）退役，改靶 React 源码树的宽松读取标记。
+    # 映射：vanilla renderOverview 的 o/history/meta 兜底 ->
+    #   - overview/deriveOverviewState.ts：snapshot.overview || {} 与 snapshot.meta || {} 兜底
+    #   - overview/evidence-model/buildOverviewInstruments.ts：snapshot.overview?.history || {}
+    #     与 trafficSamples 数组守卫
+    #   - uplink/downlink 并行数组逐样本 finite() 校验（缺失样本跳过，不补 0）
+    source = framework_source()
+    assert "const device = snapshot.overview || {};" in source
+    assert "const meta = snapshot.meta || {};" in source
+    assert "const history = snapshot.overview?.history || {};" in source
+    assert "if (!Array.isArray(history.trafficSamples)) return null;" in source
+    assert "const down = finite(record.downlink);" in source
+    assert "const up = finite(record.uplink);" in source
+    # 顶层集合缺失容忍：wan/pppoe 均可为缺省数组。
+    assert "Array.isArray(snapshot.wan) || Array.isArray(snapshot.pppoe)" in source
 
 
 def assert_collector_status_messages_are_specific():
@@ -840,16 +862,15 @@ def assert_collector_status_messages_are_specific():
     assert "正在启动" in issue["summary"], issue
     assert "未知错误" not in issue["summary"], issue
 
-    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
-    index_source = (
-        (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-    )
-    render_start = index_source.find("function renderApp")
-    render_body = index_source[render_start : render_start + 1200]
-    if "function collectorStatusMessage" in index_source:
-        assert "collectorStatusMessage(snapshot)" in render_body
-        assert "snapshot.error || '未知错误'" not in render_body
+    # 前端拼接源退役，改靶 React 源码树。映射：vanilla renderApp/collectorStatusMessage
+    # -> React runtime/PanelRuntimeChrome.tsx 与 PanelRuntimeShared.tsx 直接透传
+    # runtime.snapshot.error（后端具体 statusMessage/error 原样上屏，无 '未知错误' 兜底）；
+    # runtime/usePanelRuntime.ts 状态异常时的兜底文案是具体短语"采集返回错误状态"，
+    # 同样不是含混的"未知错误"。
+    source = framework_source()
+    assert "未知错误" not in source
+    assert "runtime.snapshot.error ||" in source  # PanelRuntimeChrome/Shared：透传后端具体错误
+    assert 'String(data.error || "采集返回错误状态")' in source  # usePanelRuntime：状态异常的具体兜底
 
 
 def assert_semantic_triage_distinguishes_quality_display_values():

@@ -1,0 +1,11 @@
+.router-overview-framework {
+  min-height: 100%;
+  background: #eaf0f2;
+}
+
+@media (max-width: 1199px) {
+  .router-overview-framework {
+    min-height: 100dvh;
+    background: #f7f8f9;
+  }
+}
