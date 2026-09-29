@@ -1,6 +1,84 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 - 2026-09-30
+
+### Security
+
+- Fixed a stored XSS: DNS server lists are now HTML-escaped everywhere they
+  render (found by full-field XSS spraying during scale testing).
+- The REST credential probe no longer counts a WebFig HTML shell as a working
+  REST API; only a JSON payload counts, so routers without the REST API can no
+  longer produce a false "REST ok" connection result.
+- Added a request rate guard (429 + Retry-After) on the connection search API.
+
+### Fixed
+
+- Active connections, terminal traffic rates and the per-IP traffic ranking
+  work for the first time: connection endpoints are `ip:port` strings and were
+  silently dropped before parsing (this is why "终端流量排行：当前未采集到"
+  appeared on real deployments).
+- A single malformed interface record (missing/None/numeric name) no longer
+  crashes the whole snapshot; sorting is type-safe.
+- Logs now show the newest window. RouterOS returns logs oldest-first, so the
+  previous head-slice displayed only the oldest entries on chatty routers.
+- 64-bit counter wraparound is counted instead of being treated as a reset, so
+  big-traffic lines no longer show 0 Bps once per wrap.
+- Hybrid deployments keep DHCP/static WAN lines visible when PPPoE exists.
+- CPU/memory/disk readings are clamped to 0-100 with an explicit
+  "data anomaly" notice instead of rendering 250% or negative values.
+- REST/API error messages no longer leak full request URLs.
+- Fixed PPPoE line ordering that was hardcoded to one deployment's line names
+  (`pppoe-out10..80`); ordering is now purely natural by suffix number.
+- SSH capture drains buffered output when exit-status arrives before data.
+- RouterOS v6 uptime/date formats are normalized for display.
+- Router clock skew greater than 15 minutes raises a visible warning.
+- A single online line with zero traffic shows a 100% share instead of 0.0%.
+- Home page line-share bars disclose how many lines are not shown.
+
+### Added
+
+- React desktop frontend (iKuai NTR RouterOS) is now the default UI: a surface
+  loader picks the desktop or mobile bundle automatically, and the previous
+  vanilla interface remains available as `index.legacy.html`.
+- Five readonly diagnostics feature pages (collection health, DNS/proxy
+  checks, WAN quality, terminal risk ranking, system audit) plus a diagnostics
+  overview with cross-links.
+- New read-only APIs: `/api/health-findings` and `/api/connection-search`
+  (precise IP search with per-client rate limiting), consumed by the desktop.
+- "Remember device profile" on login stores host/user/ports without the
+  password (DPAPI-protected login store on Windows).
+- Snapshot scale metadata surfaced across the desktop UI ("显示 x / 共 y"
+  badges) and LAN-scope explanation when terminals show zero.
+- Panel access URL in the desktop topbar; load audit admin-session and health
+  event tables; single-IP drill-down on the traffic audit page.
+- Inline IP alias (custom device name) editing in the desktop terminals/ARP
+  tables, behind the existing write-enable switch.
+- 54 unit tests (backend boundaries, contract probes, Windows DPAPI) wired
+  into CI on both Linux and Windows.
+
+### Changed
+
+- Performance at scale (10k interfaces, measured on the scale harness):
+  snapshot payload sampled at the boundary (9.7 MB -> 524 KB, WAN rows kept,
+  `ROS_PANEL_SNAPSHOT_ROW_CAP` adjustable), API responses gzipped when the
+  client accepts it (9.7 MB -> 208 KB on the wire, 46x), and list rendering
+  paginated in the desktop tables.
+- Backend reorganized into the `ros_panel` package (collector, server, config,
+  router config/store with DPAPI, panel access guards, endpoints, semantic
+  triage, diagnostics, model, util); `app.py` remains as a 323-line entry
+  point and all import contracts are preserved.
+- Frontend consolidated: the four stacked legacy scripts are folded into a
+  single served script; stale layers removed; `index.legacy.html` keeps the
+  previous UI.
+- API JSON error text is compact and URL-free; listen backlog raised.
+- RouterOS v6 uptime/date display formats normalized; legacy login store
+  entries without REST scheme/port fall back to secure defaults.
+
+### Upgrade
+
+Replace the previous release with the matching platform asset; keep the
+existing `routeros-panel.env`. The React desktop is served by default and the
+previous interface stays reachable at `index.legacy.html`.
 
 - Added a RouterOS Container archive converter for Docker/BuildKit OCI layout
   tarballs so offline imports can be rewritten to legacy Docker archive shape.
