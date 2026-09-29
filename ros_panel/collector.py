@@ -111,6 +111,9 @@ POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 RATE_ZERO_CONFIRM_SAMPLES = max(1, int(os.getenv("ROS_MONITOR_RATE_ZERO_CONFIRM_SAMPLES", "2")))
 ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))
+SNAPSHOT_ROW_CAP_DEFAULT = 500
+# 采样上限的硬顶必须 ≤ React 校验器 MAX_SNAPSHOT_COLLECTION_ROWS（src/panel-framework/runtime/panelRuntimeSchema.ts，当前 20000）。
+SNAPSHOT_ROW_CAP_MAX = 20000
 STATIC_POLL_SECONDS = max(300, int(os.getenv("ROS_MONITOR_STATIC_POLL_SECONDS", "300")))
 STATIC_REST_WORKERS = max(1, min(3, int(os.getenv("ROS_MONITOR_STATIC_REST_WORKERS", "1"))))
 SLOW_REST_POLL_SECONDS = max(60, int(os.getenv("ROS_MONITOR_SLOW_REST_POLL_SECONDS", "60")))
@@ -251,6 +254,76 @@ def dns_static_total_count_from_meta(dns_static_meta, fallback=DNS_STATIC_PREVIE
         if key in meta:
             return to_int(meta.get(key), fallback)
     return to_int(fallback, DNS_STATIC_PREVIEW_LIMIT)
+
+
+def snapshot_row_cap_from_env(environ=None):
+    # ROS_PANEL_SNAPSHOT_ROW_CAP：快照单数组采样上限（1..SNAPSHOT_ROW_CAP_MAX），非法/越界回落默认值。
+    env = os.environ if environ is None else environ
+    try:
+        value = int(str(env.get("ROS_PANEL_SNAPSHOT_ROW_CAP", "")).strip())
+    except (TypeError, ValueError):
+        return SNAPSHOT_ROW_CAP_DEFAULT
+    if value < 1 or value > SNAPSHOT_ROW_CAP_MAX:
+        return SNAPSHOT_ROW_CAP_DEFAULT
+    return value
+
+
+SNAPSHOT_ROW_CAP = snapshot_row_cap_from_env()
+
+
+def _snapshot_interfaces_sample(rows, cap):
+    # WAN 角色行是面板核心，全量保留；其余（含 VLAN 等逻辑接口行）按现有排序
+    # （role/name/quality）取前 N 补足到 cap。派生接口行指 wan/pppoe 派生数组，
+    # 本函数不触碰。保留行可能超过 cap（WAN 数量极端时以保留优先）。
+    preserved = []
+    remainder = []
+    for row in rows:
+        if isinstance(row, dict) and row.get("role") == "WAN":
+            preserved.append(row)
+        else:
+            remainder.append(row)
+    budget = max(cap - len(preserved), 0)
+    return preserved + remainder[:budget]
+
+
+def _apply_snapshot_row_caps(snapshot, cap=None):
+    # 只在最终 payload 组装层采样：内部消费（build_wan_lines/overview 计数/semantic triage）
+    # 已在上方用全量数据算完，这里只裁剪序列化行数并如实回写 meta.scale。
+    if not isinstance(snapshot, dict):
+        return snapshot
+    if cap is None:
+        cap = SNAPSHOT_ROW_CAP
+    cap = max(1, to_int(cap, SNAPSHOT_ROW_CAP_DEFAULT))
+    scale = snapshot.get("meta", {}).get("scale") if isinstance(snapshot.get("meta"), dict) else None
+    interfaces = snapshot.get("interfaces")
+    if isinstance(interfaces, list) and len(interfaces) > cap:
+        total = len(interfaces)
+        sampled_rows = _snapshot_interfaces_sample(interfaces, cap)
+        snapshot["interfaces"] = sampled_rows
+        if isinstance(scale, dict):
+            scale["interfaces"] = list_scale_meta(
+                total,
+                len(sampled_rows),
+                limit=cap,
+                sampled=True,
+                sample_method="WAN interfaces fully retained; remaining rows first N",
+                sorted_by="role/name/quality",
+                grouped_by=["role", "type", "status", "qualityEvidenceLevel"],
+            )
+    terminals = snapshot.get("terminals")
+    if isinstance(terminals, list) and len(terminals) > cap:
+        total = len(terminals)
+        snapshot["terminals"] = terminals[:cap]
+        if isinstance(scale, dict):
+            scale["terminals"] = list_scale_meta(
+                total,
+                len(snapshot["terminals"]),
+                limit=cap,
+                sampled=True,
+                sample_method="first N sorted by traffic/connections",
+                sorted_by="traffic/connections",
+            )
+    return snapshot
 
 
 def build_panel_capabilities(wan_lines, pppoe_count):
@@ -2503,6 +2576,8 @@ class Collector:
         triage = build_semantic_triage(snapshot)
         snapshot["semanticTriage"] = triage
         snapshot["actionQueue"] = triage["queue"]
+        # 最终 payload 组装层采样：triage/overview 等派生数字保持全量口径，仅裁剪序列化行数。
+        snapshot = _apply_snapshot_row_caps(snapshot)
         return snapshot
 
     def update_state(self, fresh_counter_sample=False):
