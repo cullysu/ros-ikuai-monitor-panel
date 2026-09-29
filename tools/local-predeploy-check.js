@@ -1338,7 +1338,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       forwardRuleCount: 4,
       disabledForwardRuleCount: 0,
       forwardRuleSample: false,
-      forwardRuleRows: [
+      forwardRules: [
         { name: 'lan.local', type: 'A', value: '10.88.0.10', ttl: '1h', disabled: false },
         { name: 'nas.local', type: 'A', value: '10.88.0.31', ttl: '1h', disabled: false },
       ],
@@ -1702,7 +1702,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     arp: listScaleMeta(terminals.length, snapshot.arp.items.length, 120, terminals.length > snapshot.arp.items.length, 'first 120 sorted by IP', 'ip'),
     dhcpLeases: listScaleMeta(terminals.length, snapshot.dhcp.leases.length, 120, terminals.length > snapshot.dhcp.leases.length, 'first 120 sorted by status and IP', 'status/ip', ['status', 'server', 'static']),
     connectionsActive: listScaleMeta(snapshot.connections.total, snapshot.connections.active.length, 80, true, 'active connection sample', 'rate'),
-    dnsStatic: listScaleMeta(snapshot.dns.forwardRuleCount || 4, snapshot.dns.forwardRuleRows.length, 100, true, 'preview rows; /api/dns-static is paged', 'RouterOS order'),
+    dnsStatic: listScaleMeta(snapshot.dns.forwardRuleCount || 4, snapshot.dns.forwardRules.length, 100, true, 'preview rows; /api/dns-static is paged', 'RouterOS order'),
   };
   snapshot.connections.meta = {
     active: snapshot.meta.scale.connectionsActive,

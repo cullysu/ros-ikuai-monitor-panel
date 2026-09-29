@@ -6,3 +6,5 @@
 .panel-runtime-phase.is-stale i,.panel-runtime-phase.is-recovering i { background: #976a32; }
 .panel-runtime-phase.is-error i { background: #95434d; }
 .panel-runtime-bar-desktop .panel-runtime-actions { grid-column: 4; grid-row: 1; justify-self: end; }
+.panel-runtime-device .panel-runtime-access { color: #476773; }
+.panel-runtime-device .panel-runtime-access[data-panel-access-url] { text-decoration: underline dotted rgba(71, 103, 115, 0.55); text-underline-offset: 3px; }

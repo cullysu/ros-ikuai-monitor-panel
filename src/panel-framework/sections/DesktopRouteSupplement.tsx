@@ -34,7 +34,8 @@ export function DesktopRouteSupplement({ route, state }: { route: string; state:
   const resultId = useId();
   const [input, setInput] = useState(state.query || "");
   useEffect(() => { setInput(state.query || ""); }, [state.query]);
-  if (!["connections", "dns4", "security"].includes(route)) return null;
+  if (!["connections", "dns4", "security", "trafficAudit"].includes(route)) return null;
+  const connectionRoute = route === "connections" || route === "trafficAudit";
   const result = state.result;
   const data = result?.data;
   const total = data?.kind === "dns-static" ? data.totalCount : data?.kind === "connection-search" ? data.matchCount : data?.kind === "health-findings" ? data.findings.length : null;
@@ -44,7 +45,7 @@ export function DesktopRouteSupplement({ route, state }: { route: string; state:
   const selectedConnection = data?.kind === "connection-search" && state.selectedConnectionRowId
     ? data.rows.map((row, index) => ({ row, index, rowId: connectionSupplementRowId(row, index) })).find((item) => item.rowId === state.selectedConnectionRowId) || null
     : null;
-  const kind = route === "connections" ? "connection-search" : route === "dns4" ? "dns-static" : "health-findings";
+  const kind = connectionRoute ? "connection-search" : route === "dns4" ? "dns-static" : "health-findings";
   const evidenceTime = formatRfc3339Local(result?.observedAt) || "未取得";
   const sourceLabel = routeSupplementSourceLabel(result?.source);
   const coverageLabel = routeSupplementCoverageLabel(result?.coverage);
@@ -94,7 +95,7 @@ export function DesktopRouteSupplement({ route, state }: { route: string; state:
   const pager = data?.kind === "dns-static" || (route === "dns4" && state.page) ? <nav className="ddrs-pager" aria-label="DNS 补充分页"><button type="button" disabled={!state.page || state.page <= 1 || state.requestStatus === "loading"} onClick={() => state.loadDnsPage((state.page || 1) - 1)} data-supplemental-prev-page><ChevronLeft aria-hidden="true" size={16} />上一页</button><span>第 {state.page || 1} / {state.totalPages || "?"} 页</span><button type="button" disabled={state.requestStatus === "loading" || !state.page || !state.totalPages || state.page >= state.totalPages} onClick={() => state.loadDnsPage((state.page || 0) + 1)} data-supplemental-next-page>下一页<ChevronRight aria-hidden="true" size={16} /></button></nav> : null;
 
   return <section className="ddrs-shell" {...selectors} aria-label="桌面补充只读证据">
-    {route === "connections" ? <header className="ddrs-commandbar"><form className="ddrs-query" onSubmit={(event) => { event.preventDefault(); state.submitConnection(input); }}><div className="ddrs-query-heading"><label htmlFor={`${resultId}-ip`}><b>活动连接精确查询</b><small>完整 IPv4 / IPv6</small></label>{state.query ? <button className="ddrs-clear-query" type="button" onClick={state.clearConnectionQuery} data-supplemental-clear-query><X aria-hidden="true" size={14} />清除</button> : null}</div><div className="ddrs-query-control"><Search aria-hidden="true" size={16} /><input id={`${resultId}-ip`} value={input} onChange={(event) => setInput(event.target.value)} autoComplete="off" spellCheck={false} placeholder="192.0.2.10" data-supplemental-target-input="connections" /><button type="submit" disabled={!isExplicitIpQuery(input) || state.requestStatus === "loading" || state.retryBlocked} aria-controls={resultId} data-supplemental-submit="connections">查询</button></div>{input && !isExplicitIpQuery(input) ? <p>格式错误：不要附加端口、掩码或空格。</p> : null}</form></header> : null}
+    {connectionRoute ? <header className="ddrs-commandbar"><form className="ddrs-query" onSubmit={(event) => { event.preventDefault(); state.submitConnection(input); }}><div className="ddrs-query-heading"><label htmlFor={`${resultId}-ip`}><b>活动连接精确查询</b><small>完整 IPv4 / IPv6</small></label>{state.query ? <button className="ddrs-clear-query" type="button" onClick={state.clearConnectionQuery} data-supplemental-clear-query><X aria-hidden="true" size={14} />清除</button> : null}</div><div className="ddrs-query-control"><Search aria-hidden="true" size={16} /><input id={`${resultId}-ip`} value={input} onChange={(event) => setInput(event.target.value)} autoComplete="off" spellCheck={false} placeholder="192.0.2.10" data-supplemental-target-input={route} /><button type="submit" disabled={!isExplicitIpQuery(input) || state.requestStatus === "loading" || state.retryBlocked} aria-controls={resultId} data-supplemental-submit={route}>查询</button></div>{input && !isExplicitIpQuery(input) ? <p>格式错误：不要附加端口、掩码或空格。</p> : null}</form></header> : null}
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-supplemental-live-status>{liveStatus}</div>
     {status ? <div className="ddrs-status"><span>{status}</span>{state.requestStatus === "error" && (state.query || state.page || route === "security") ? <button type="button" onClick={state.retry} disabled={state.retryBlocked} data-supplemental-retry><RefreshCw aria-hidden="true" size={15} />{state.retryBlocked ? `${state.retryAfterSeconds} 秒后重试` : "重试"}</button> : null}</div> : null}
     <div className="ddrs-results" id={resultId} aria-busy={state.requestStatus === "loading"}>

@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pencil, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   domainDefinitionFor,
@@ -8,6 +8,7 @@ import {
 import { useObjectHistory } from "../domain-workspace/workspaceHistory";
 import { selectSemanticWorkspacePreview } from "../domain-workspace/workspacePreview";
 import { rowsFromModel, type WorkspaceRow } from "../domain-workspace/workspaceRows";
+import { submitIpAlias } from "../runtime/panelApi";
 import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
 import { DesktopDomainInspector } from "./DesktopDomainInspector";
 import { DesktopRouteSupplement } from "./DesktopRouteSupplement";
@@ -80,6 +81,13 @@ export function DesktopDomainWorkspace({ route, model, onNavigate }: { route: Pa
   const titleRef = useRef<HTMLHeadingElement>(null);
   const lastTriggerRef = useRef("");
   const rowRefs = useRef(new Map<string, HTMLButtonElement>());
+  // Inline IP alias editing (the panel's only write path, same semantics as the
+  // vanilla renderEditableNameCell -> POST /api/ip-alias {ip, name}).
+  const aliasEditable = route === "terminals" || route === "arp";
+  const [aliasNames, setAliasNames] = useState<Record<string, string>>({});
+  const [aliasDraft, setAliasDraft] = useState<{ ip: string; value: string } | null>(null);
+  const [aliasBusy, setAliasBusy] = useState(false);
+  const [aliasError, setAliasError] = useState("");
 
   useEffect(() => {
     setQuery(navigationQuery || "");
@@ -109,7 +117,7 @@ export function DesktopDomainWorkspace({ route, model, onNavigate }: { route: Pa
   const semanticPreview = risk && !selectedId ? null : selectSemanticWorkspacePreview(visibleRows);
   const inspectorRow = selectedRow || semanticPreview?.row || null;
   const supplementOwnsDnsList = route === "dns4" && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "dns-static";
-  const supplementOwnsConnectionList = route === "connections" && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "connection-search";
+  const supplementOwnsConnectionList = (route === "connections" || route === "trafficAudit") && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "connection-search";
   const supplementOwnsCollection = supplementOwnsDnsList || supplementOwnsConnectionList;
 
   useEffect(() => {
@@ -136,6 +144,43 @@ export function DesktopDomainWorkspace({ route, model, onNavigate }: { route: Pa
   const unpin = () => {
     if (selectedRow) lastTriggerRef.current = selectedRow.id;
     close();
+  };
+
+  const aliasIpOf = (row: WorkspaceRow): string => (aliasEditable ? row.meta.address.trim() : "");
+  const aliasNameFor = (row: WorkspaceRow): { name: string; custom: boolean } | null => {
+    const ip = aliasIpOf(row);
+    if (!ip || aliasNames[ip] === undefined) return null;
+    const overlay = aliasNames[ip];
+    return overlay
+      ? { name: overlay, custom: true }
+      : { name: row.values._hostname || ip || row.primary, custom: false };
+  };
+  const beginAliasEdit = (row: WorkspaceRow) => {
+    const ip = aliasIpOf(row);
+    if (!ip) return;
+    setAliasError("");
+    setAliasDraft({ ip, value: aliasNames[ip] !== undefined ? aliasNames[ip] : row.values._customName || "" });
+  };
+  const cancelAliasEdit = () => {
+    setAliasDraft(null);
+    setAliasError("");
+  };
+  const submitAliasEdit = async () => {
+    if (!aliasDraft || aliasBusy) return;
+    setAliasBusy(true);
+    setAliasError("");
+    const target = aliasDraft;
+    try {
+      const result = await submitIpAlias(target.ip, target.value);
+      const confirmedIp = result.ip || target.ip;
+      // Optimistic local name update; the polled snapshot confirms it later.
+      setAliasNames((current) => ({ ...current, [confirmedIp]: result.customName }));
+      setAliasDraft(null);
+    } catch (error) {
+      setAliasError(error instanceof Error ? error.message : "名称保存失败");
+    } finally {
+      setAliasBusy(false);
+    }
   };
 
   return (
@@ -177,14 +222,55 @@ export function DesktopDomainWorkspace({ route, model, onNavigate }: { route: Pa
           <div className="ddw-table-scroll">
             <table>
               <thead><tr><th scope="col">对象</th><th scope="col">来源</th><th scope="col">状态</th><th scope="col">关键证据</th></tr></thead>
-              <tbody>{visibleRows.map((row) => (
+              <tbody>{visibleRows.map((row) => {
+                const aliasIp = aliasIpOf(row);
+                const aliasView = aliasNameFor(row);
+                const editingAlias = aliasEditable && aliasDraft !== null && aliasDraft.ip === aliasIp && aliasIp !== "";
+                const customName = aliasView ? aliasView.custom : Boolean(row.values._customName);
+                return (
                 <tr className={row.meta.attention ? "is-attention" : ""} data-desktop-row-id={row.id} key={row.id}>
-                  <td><button type="button" className={selectedRow?.id === row.id ? "is-selected" : ""} aria-current={selectedRow?.id === row.id ? "true" : undefined} ref={(node) => { if (node) rowRefs.current.set(row.id, node); else rowRefs.current.delete(row.id); }} onClick={() => selectRow(row)}><b>{row.primary}</b><small>{row.secondary}</small></button></td>
+                  <td>
+                    <button type="button" className={selectedRow?.id === row.id ? "is-selected" : ""} aria-current={selectedRow?.id === row.id ? "true" : undefined} ref={(node) => { if (node) rowRefs.current.set(row.id, node); else rowRefs.current.delete(row.id); }} onClick={() => selectRow(row)}>
+                      <b>{aliasView ? aliasView.name : row.primary}</b>
+                      {aliasView?.custom ? <small>自定义名称 · 原显示 {row.primary}</small> : <small>{row.secondary}</small>}
+                    </button>
+                    {aliasEditable && aliasIp ? (
+                      editingAlias ? (
+                        <span className="ddw-alias-editor" data-alias-editor={aliasIp}>
+                          <input
+                            value={aliasDraft?.value ?? ""}
+                            disabled={aliasBusy}
+                            autoFocus
+                            maxLength={48}
+                            placeholder="自定义名称，留空清除"
+                            aria-label={`为 ${aliasIp} 设置自定义名称`}
+                            data-alias-input
+                            onChange={(event) => setAliasDraft({ ip: aliasIp, value: event.target.value })}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") { event.preventDefault(); void submitAliasEdit(); }
+                              if (event.key === "Escape") { event.preventDefault(); cancelAliasEdit(); }
+                            }}
+                          />
+                          <button type="button" onClick={() => void submitAliasEdit()} disabled={aliasBusy} data-alias-save>保存</button>
+                          <button type="button" onClick={cancelAliasEdit} disabled={aliasBusy} data-alias-cancel>取消</button>
+                          {aliasError ? <small className="ddw-alias-error" data-alias-error>{aliasError}</small> : null}
+                        </span>
+                      ) : (
+                        <span className="ddw-alias-bar">
+                          {customName ? <em className="ddw-alias-badge" data-alias-custom={aliasIp}>自定义</em> : null}
+                          <button type="button" className="ddw-alias-edit" onClick={() => beginAliasEdit(row)} data-alias-edit={aliasIp} title={`POST /api/ip-alias · ${aliasIp}`}>
+                            <Pencil aria-hidden="true" size={13} /><span>{customName ? "改名" : "命名"}</span>
+                          </button>
+                        </span>
+                      )
+                    ) : null}
+                  </td>
                   <td>{row.table}</td>
                   <td><span className={row.meta.attention ? "is-attention" : ""}>{row.trailing}</span></td>
                   <td>{comparisonValue(row)}</td>
                 </tr>
-              ))}</tbody>
+                );
+              })}</tbody>
             </table>
             {!visibleRows.length ? <p className="ddw-empty">没有符合当前条件的对象。</p> : null}
           </div>
