@@ -460,7 +460,14 @@ def test_router_credentials(host, user, password, ssh_port=22):
         response = session.get(f"http://{config['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/system/resource", timeout=min(REST_TIMEOUT, 8))
         test["rest"]["status"] = response.status_code
         response.raise_for_status()
-        test["rest"]["ok"] = True
+        # A 200 here can still be the WebFig shell (routers without the REST
+        # API serve HTML for /rest/*); only JSON proves the REST handler.
+        content_type = response.headers.get("Content-Type", "")
+        body = (response.text or "").lstrip()
+        if "json" not in content_type.lower() and not body.startswith("{") and not body.startswith("["):
+            test["rest"]["error"] = "REST endpoint returned non-JSON payload (WebFig shell?)"
+        else:
+            test["rest"]["ok"] = True
     except Exception as exc:
         test["rest"]["error"] = compact_exception_text(exc)
     finally:
