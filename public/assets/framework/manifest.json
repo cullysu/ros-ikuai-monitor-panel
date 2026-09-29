@@ -3,17 +3,17 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "27294ac2a601eb84b06c8d5ce3ea018050df0e25fe4df2987a187c812385c6aa",
-    "files": 106
+    "digest": "62f361d5a7c2977a6ca761182a670f8a396c249aefdf198866d6f9809fa90004",
+    "files": 111
   },
   "assets": {
     "mobile": {
       "script": {
-        "file": "panel-mobile.e4a19beefc0d.js",
-        "sha256": "e4a19beefc0d6668bcdad08cf3472455acfae5a4fcfbcd20c536415a8a21c8b2",
-        "bytes": 344820,
-        "gzipBytes": 106163,
-        "brotliBytes": 89380
+        "file": "panel-mobile.c169579f4e4f.js",
+        "sha256": "c169579f4e4f5ef88e48d1e47122135cf789a981ebd0148fba13f5aaf58ce27d",
+        "bytes": 357466,
+        "gzipBytes": 109536,
+        "brotliBytes": 92054
       },
       "style": {
         "file": "mobile.10a1bf88c709.css",
@@ -25,26 +25,26 @@
     },
     "desktop": {
       "script": {
-        "file": "panel-desktop.feff5b37df0c.js",
-        "sha256": "feff5b37df0ceb07b9676164f2989bbfcfe209a64ec410d6789036b383dfc948",
-        "bytes": 432809,
-        "gzipBytes": 130136,
-        "brotliBytes": 107638
+        "file": "panel-desktop.4e1f1c7d6f3d.js",
+        "sha256": "4e1f1c7d6f3d5799c9601fa6cde5397423f2c02b5b9cffe052ed558f456cb4e5",
+        "bytes": 460990,
+        "gzipBytes": 137436,
+        "brotliBytes": 113361
       },
       "style": {
-        "file": "desktop.03d78130875c.css",
-        "sha256": "03d78130875c7723f78f978429c9fcfc91e3dce496df29897b3bcc135fcb4b30",
-        "bytes": 57306,
-        "gzipBytes": 10848,
-        "brotliBytes": 9617
+        "file": "desktop.e02eedca3537.css",
+        "sha256": "e02eedca3537fa09919377fdb472f9942dc7f6de00a16d47f1d8c2d63a1b45f2",
+        "bytes": 60091,
+        "gzipBytes": 11324,
+        "brotliBytes": 10085
       }
     },
     "loader": {
-      "file": "panel-surface-loader.1e60e0fe32f4.js",
-      "sha256": "1e60e0fe32f42a77a16f5a37af9cc6b14f7e4a0b0e556e893cee4128a8041fbf",
-      "bytes": 1682,
+      "file": "panel-surface-loader.9bf05db1407b.js",
+      "sha256": "9bf05db1407b8c635aba70343530a2990cdd543a7e232df6e739652de0f7623f",
+      "bytes": 1683,
       "gzipBytes": 838,
-      "brotliBytes": 702
+      "brotliBytes": 692
     }
   }
 }

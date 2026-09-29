@@ -119,6 +119,15 @@ const DEFAULT_DOMAIN: DomainDefinition = {
   sorts: [NAME_ASC],
 };
 
+const DIAGNOSTICS_DOMAIN: DomainDefinition = {
+  searchable: true,
+  searchPlaceholder: "通道、端点或错误",
+  objectLabel: "诊断记录",
+  defaultSort: "attention-first",
+  filters: [ALL, ATTENTION_FILTER],
+  sorts: [ATTENTION_FIRST, NAME_ASC],
+};
+
 const DOMAIN: Partial<Record<PanelRouteId, DomainDefinition>> = {
   interfaces: {
     searchable: true,
@@ -367,14 +376,12 @@ const DOMAIN: Partial<Record<PanelRouteId, DomainDefinition>> = {
       sort("time-asc", "时间从旧到新", (left, right) => compareNumber(left.meta.timestamp, right.meta.timestamp, "asc") || compareText(left.primary, right.primary)),
     ],
   },
-  readonlyDiagnostics: {
-    searchable: true,
-    searchPlaceholder: "通道、端点或错误",
-    objectLabel: "诊断记录",
-    defaultSort: "attention-first",
-    filters: [ALL, ATTENTION_FILTER],
-    sorts: [ATTENTION_FIRST, NAME_ASC],
-  },
+  readonlyDiagnostics: DIAGNOSTICS_DOMAIN,
+  collectionHealthDiagnostics: DIAGNOSTICS_DOMAIN,
+  dnsProxyDiagnostics: DIAGNOSTICS_DOMAIN,
+  wanQualityDiagnostics: DIAGNOSTICS_DOMAIN,
+  terminalRiskDiagnostics: DIAGNOSTICS_DOMAIN,
+  systemAuditDiagnostics: DIAGNOSTICS_DOMAIN,
 };
 
 export function domainDefinitionFor(route: PanelRouteId): DomainDefinition {

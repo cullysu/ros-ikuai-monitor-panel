@@ -4,14 +4,15 @@ import { PANEL_ROUTES, PANEL_ROUTE_MATURITY_LABELS, type PanelNavigate, type Pan
 import { panelWorkspaceLabel, panelWorkspaceTabs } from "../routes/panelWorkspaceCatalog";
 import { buildSectionModel } from "./sectionModels";
 import { DesktopDomainWorkspace } from "./DesktopDomainWorkspace";
+import { ReadonlyDiagnosticsEvidence } from "./ReadonlyDiagnosticsEvidence";
 import { SectionTimeSeriesChart } from "./SectionTimeSeriesChart";
 
 const READONLY_DESTINATIONS: Array<{ label: string; route: PanelRouteId }> = [
-  { label: "采集状态", route: "readonlyDiagnostics" },
-  { label: "DNS 状态", route: "dns4" },
-  { label: "线路状态", route: "lineStatus" },
-  { label: "终端状态", route: "terminals" },
-  { label: "日志状态", route: "logs" },
+  { label: "采集健康", route: "collectionHealthDiagnostics" },
+  { label: "DNS / 代理体检", route: "dnsProxyDiagnostics" },
+  { label: "线路质量", route: "wanQualityDiagnostics" },
+  { label: "终端风险", route: "terminalRiskDiagnostics" },
+  { label: "系统审计", route: "systemAuditDiagnostics" },
 ];
 
 function ToneMark({ tone = "trust" }: { tone?: OverviewTone }) {
@@ -104,10 +105,12 @@ export function OperationalSectionPage({ route, snapshot, onNavigate }: { route:
 
       <DesktopDomainWorkspace route={route} model={model} onNavigate={onNavigate} />
 
+      <ReadonlyDiagnosticsEvidence route={route} />
+
       {route === "readonlyDiagnostics" ? (
-        <nav className="readonly-feature-nav" aria-label="只读状态入口">
+        <nav className="readonly-feature-nav" aria-label="只读诊断专页入口">
           {READONLY_DESTINATIONS.map((item) => (
-            <button className="readonly-feature-link" type="button" data-section={item.route} onClick={() => onNavigate(item.route)} key={item.label}>
+            <button className="readonly-feature-link" type="button" data-section={item.route} onClick={() => onNavigate(item.route)} key={item.route}>
               <span>{item.label}</span><ChevronRight aria-hidden="true" size={17} />
             </button>
           ))}

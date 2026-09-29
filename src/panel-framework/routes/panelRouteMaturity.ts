@@ -263,6 +263,30 @@ const serviceLogEvidence = (route: PanelRouteId): PanelRouteMaturityEvidence => 
   ],
 });
 
+const readonlyDiagnosticsFeatureEvidence = (route: PanelRouteId, modelToken: string): PanelRouteMaturityEvidence => ({
+  ...sectionEvidence(route, "ReadonlyDiagnosticsEvidence.tsx", `route === "${route}"`),
+  modelSource: "src/panel-framework/sections/readonlyDiagnosticsModels.ts",
+  modelToken: `function ${modelToken}`,
+  rendererSource: "src/panel-framework/sections/ReadonlyDiagnosticsEvidence.tsx",
+  rendererToken: "data-readonly-diagnostics-evidence={route}",
+  objectDetailSource: "src/panel-framework/mobile-reference-ui/MobileReferenceSurface.tsx",
+  objectDetailToken: "ref-object-list",
+  failureRecoverySource: "src/panel-framework/sections/ReadonlyDiagnosticsEvidence.tsx",
+  failureRecoveryToken: "function degradationNotice",
+  failureRecovery: "bounded",
+  dataDepth: "domain-specific",
+  objectDetail: "bounded",
+  evidenceRefs: [
+    "src/panel-framework/sections/readonlyDiagnosticsModels.ts",
+    "src/panel-framework/sections/readonlyDiagnosticsSchema.ts",
+    "src/panel-framework/sections/ReadonlyDiagnosticsEvidence.tsx",
+    "src/panel-framework/sections/useReadonlyDiagnostics.ts",
+    "src/panel-framework/runtime/panelApi.ts",
+    "src/panel-framework/domain-workspace/workspaceRows.ts",
+    ...currentAutomatedEvidence,
+  ],
+});
+
 export const PANEL_ROUTE_MATURITY_EVIDENCE: Record<PanelRouteId, PanelRouteMaturityEvidence> = {
   overview: {
     route: "overview",
@@ -325,6 +349,11 @@ export const PANEL_ROUTE_MATURITY_EVIDENCE: Record<PanelRouteId, PanelRouteMatur
   logs: sectionEvidence("logs", "TerminalLogInspectors.tsx", 'if (route === "logs" || route === "serviceLogs")'),
   serviceLogs: serviceLogEvidence("serviceLogs"),
   readonlyDiagnostics: sectionEvidence("readonlyDiagnostics", "DiagnosticInspector.tsx", 'if (route === "readonlyDiagnostics")'),
+  collectionHealthDiagnostics: readonlyDiagnosticsFeatureEvidence("collectionHealthDiagnostics", "collectionHealthDiagnosticsModel"),
+  dnsProxyDiagnostics: readonlyDiagnosticsFeatureEvidence("dnsProxyDiagnostics", "dnsProxyDiagnosticsModel"),
+  wanQualityDiagnostics: readonlyDiagnosticsFeatureEvidence("wanQualityDiagnostics", "wanQualityDiagnosticsModel"),
+  terminalRiskDiagnostics: readonlyDiagnosticsFeatureEvidence("terminalRiskDiagnostics", "terminalRiskDiagnosticsModel"),
+  systemAuditDiagnostics: readonlyDiagnosticsFeatureEvidence("systemAuditDiagnostics", "systemAuditDiagnosticsModel"),
   more: {
     route: "more",
     renderer: "directory",

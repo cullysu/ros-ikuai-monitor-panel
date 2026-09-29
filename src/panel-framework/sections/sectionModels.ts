@@ -14,6 +14,13 @@ import {
   resourceEvidenceWindow,
 } from "../overview/evidence-model/resourceHistorySamples";
 import { panelObjectIdentityPartsForRaw } from "./panelObjectIdentity";
+import {
+  collectionHealthDiagnosticsModel,
+  dnsProxyDiagnosticsModel,
+  systemAuditDiagnosticsModel,
+  terminalRiskDiagnosticsModel,
+  wanQualityDiagnosticsModel,
+} from "./readonlyDiagnosticsModels";
 import { buildSectionRowEvidence, type SectionEvidenceContext, type SectionRowEvidence } from "./sectionRowEvidence";
 import {
   assessRawInterfaceOperationalState,
@@ -126,6 +133,17 @@ function text(value: unknown, fallback = "未记录"): string {
   if (typeof value === "boolean") return value ? "是" : "否";
   return fallback;
 }
+
+/** Bounded shared helpers reused by readonlyDiagnosticsModels.ts (feature pages). */
+export {
+  text as sectionText,
+  number as sectionNumber,
+  rate as sectionRate,
+  state as sectionState,
+  collectionAt as sectionCollectionAt,
+  table as buildSectionTable,
+  base as buildSectionBase,
+};
 
 function number(value: unknown): number | null {
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
@@ -1022,6 +1040,11 @@ function buildCurrentSectionModel(route: PanelRouteId, snapshot: OverviewRawSnap
   if (route === "security") return securityModel(route, snapshot);
   if (route === "logs" || route === "serviceLogs") return logModel(route, snapshot);
   if (route === "readonlyDiagnostics") return diagnosticsModel(route, snapshot);
+  if (route === "collectionHealthDiagnostics") return collectionHealthDiagnosticsModel(route, snapshot);
+  if (route === "dnsProxyDiagnostics") return dnsProxyDiagnosticsModel(route, snapshot);
+  if (route === "wanQualityDiagnostics") return wanQualityDiagnosticsModel(route, snapshot);
+  if (route === "terminalRiskDiagnostics") return terminalRiskDiagnosticsModel(route, snapshot);
+  if (route === "systemAuditDiagnostics") return systemAuditDiagnosticsModel(route, snapshot);
   return routeModel(route, snapshot);
 }
 
