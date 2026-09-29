@@ -31,6 +31,9 @@ jobs:
           python -m py_compile app.py tools/check-collector-regressions.py tools/convert-oci-to-routeros-docker-archive.py
           python tools/check-collector-regressions.py
 
+      - name: Core unit tests (boundary parsing/building)
+        run: python -m unittest discover -s tests -t . -v
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -116,6 +119,12 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: "Core unit tests (Windows: DPAPI secret round-trip)"
+        run: python -m unittest discover -s tests -t . -v
 
       - name: Packaging preflight
         shell: pwsh

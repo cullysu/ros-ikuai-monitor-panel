@@ -24,6 +24,12 @@ function assertNotContains(relPath, needle, label = needle) {
   }
 }
 
+function assertSourceContains(source, needle) {
+  if (!source.includes(needle)) {
+    throw new Error(`app source is missing ${needle}`);
+  }
+}
+
 function main() {
   const localUrl = 'http://127.0.0.1:28646/';
 
@@ -50,23 +56,29 @@ function main() {
     assertContains(relPath, '28646');
   }
 
-  assertContains('app.py', 'DEFAULT_PANEL_BIND = "127.0.0.1"');
-  assertContains('app.py', 'DEFAULT_PANEL_TARGET = "127.0.0.1"');
-  assertContains('app.py', 'def validate_panel_public_contract(bind, target, profile="routeros_only"):');
-  assertContains('app.py', 'def panel_profile_requires_localhost_contract(profile):');
-  assertContains('app.py', 'def panel_host_header_is_allowed(headers):');
-  assertContains('app.py', 'DEFAULT_PANEL_PORT = 28646');
-  assertContains('app.py', 'Panel is localhost-only. Open {panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)}.');
-  assertContains('app.py', 'f"Panel is localhost-only. Open {panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)}."');
-  assertContains('app.py', 'def panel_request_access_url(headers, fallback_port=None):');
-  assertContains('app.py', 'PANEL_TRUST_PROXY_HEADERS');
-  assertContains('app.py', 'PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
-  assertContains('app.py', 'PANEL_LOCALHOST_FORWARD_TOKEN');
-  assertContains('app.py', 'PANEL_NETWORK_WRITE_ENABLED_RAW');
-  assertContains('app.py', 'headers.get("Host")');
-  assertContains('app.py', 'headers.get("X-Forwarded-Host")');
-  assertContains('app.py', '"browserUrl": browser_url');
-  assertContains('app.py', '"configuredUrl": configured_url');
+  // 后端拆分批次 6：面板地址/来源/会话守卫区块整体迁至 ros_panel/panel_access.py，
+  // 批次 8：Handler/main 迁至 ros_panel/server.py。
+  // app.py 全量 from-import 重导出；对 app 源码的文本断言改读拼接源，语义不变
+  // （照抄 tools/check-collector-regressions.py 的 router_config app_source 先例）。
+  const app_source =
+    read('app.py') + '\n' + read('ros_panel/panel_access.py') + '\n' + read('ros_panel/server.py');
+  assertSourceContains(app_source, 'DEFAULT_PANEL_BIND = "127.0.0.1"');
+  assertSourceContains(app_source, 'DEFAULT_PANEL_TARGET = "127.0.0.1"');
+  assertSourceContains(app_source, 'def validate_panel_public_contract(bind, target, profile="routeros_only"):');
+  assertSourceContains(app_source, 'def panel_profile_requires_localhost_contract(profile):');
+  assertSourceContains(app_source, 'def panel_host_header_is_allowed(headers):');
+  assertSourceContains(app_source, 'DEFAULT_PANEL_PORT = 28646');
+  assertSourceContains(app_source, 'Panel is localhost-only. Open {panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)}.');
+  assertSourceContains(app_source, 'f"Panel is localhost-only. Open {panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)}."');
+  assertSourceContains(app_source, 'def panel_request_access_url(headers, fallback_port=None):');
+  assertSourceContains(app_source, 'PANEL_TRUST_PROXY_HEADERS');
+  assertSourceContains(app_source, 'PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
+  assertSourceContains(app_source, 'PANEL_LOCALHOST_FORWARD_TOKEN');
+  assertSourceContains(app_source, 'PANEL_NETWORK_WRITE_ENABLED_RAW');
+  assertSourceContains(app_source, 'headers.get("Host")');
+  assertSourceContains(app_source, 'headers.get("X-Forwarded-Host")');
+  assertSourceContains(app_source, '"browserUrl": browser_url');
+  assertSourceContains(app_source, '"configuredUrl": configured_url');
 
   assertContains('install.sh', 'PUBLISHED_ADDR="127.0.0.1"');
   assertContains('install.sh', 'TARGET_IP="127.0.0.1"');

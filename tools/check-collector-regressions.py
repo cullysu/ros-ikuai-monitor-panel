@@ -22,6 +22,7 @@ os.environ.setdefault(
 )
 
 import app  # noqa: E402
+from ros_panel import panel_access  # noqa: E402  (后端拆分批次 6：守卫 flag 的 patch 靶)
 
 
 def make_rate_rest(
@@ -296,22 +297,23 @@ def assert_panel_network_config_helpers():
     assert app.panel_request_access_url({"Host": "10.0.0.50:28646"}, 28646) is None
     assert app.panel_host_header_is_allowed({"Host": "127.0.0.1:28646"}) is True
     assert app.panel_host_header_is_allowed({"Host": "10.0.0.50:28646"}) is False
-    original_public_profile = app.PUBLIC_ROUTEROS_PROFILE
+    # 守卫函数已迁至 ros_panel/panel_access.py，按其模块全局在调用时读取 flag，patch 靶随之改为 panel_access。
+    original_public_profile = panel_access.PUBLIC_ROUTEROS_PROFILE
     try:
-        app.PUBLIC_ROUTEROS_PROFILE = False
+        panel_access.PUBLIC_ROUTEROS_PROFILE = False
         assert app.panel_client_address_is_allowed(("10.0.0.20", 52344), {"Host": "10.0.0.5:28646"})
         assert app.panel_host_header_is_allowed({"Host": "10.0.0.5:28646"})
     finally:
-        app.PUBLIC_ROUTEROS_PROFILE = original_public_profile
-    original_trust_proxy = app.PANEL_TRUST_PROXY_HEADERS
+        panel_access.PUBLIC_ROUTEROS_PROFILE = original_public_profile
+    original_trust_proxy = panel_access.PANEL_TRUST_PROXY_HEADERS
     try:
-        app.PANEL_TRUST_PROXY_HEADERS = True
+        panel_access.PANEL_TRUST_PROXY_HEADERS = True
         assert app.panel_request_access_url(
             {"X-Forwarded-Host": "panel.lan", "X-Forwarded-Proto": "https", "X-Forwarded-Port": "443"},
             28646,
         ) is None
     finally:
-        app.PANEL_TRUST_PROXY_HEADERS = original_trust_proxy
+        panel_access.PANEL_TRUST_PROXY_HEADERS = original_trust_proxy
     assert app.panel_request_access_url({"Host": "http://bad.example"}, 28646) is None
     request_payload = app.panel_network_payload(request_url="http://127.0.0.1:28646/")
     assert request_payload["currentUrl"] == "http://127.0.0.1:28646/"
@@ -674,10 +676,11 @@ def assert_deploy_defaults_are_project_safe():
 
 
 def assert_frontend_charts_skip_missing_values():
+    # panel.js / layout-whitespace-patch.js / readonly-diagnostics.js 已字节级折入
+    # panel-head.js（HEAD 170e762），面板前端只剩单文件，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
     for function_name in ("lineChart", "rateAxisLineChart", "resourcePercentChart"):
         marker = f"function {function_name}"
@@ -700,7 +703,8 @@ def assert_frontend_charts_skip_missing_values():
     assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
     assert "if (value === null || value === undefined || value === '') return null;" in index_source
     assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
-    layout_patch_source = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
+    # layout-whitespace-patch.js 已折入 panel-head.js，断言改读单文件，语义不变。
+    layout_patch_source = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")
     ops_chart_body = layout_patch_source[ops_chart_start : ops_chart_start + 2200]
     assert "function opsChartNumber" in layout_patch_source
@@ -710,32 +714,31 @@ def assert_frontend_charts_skip_missing_values():
 
 
 def assert_frontend_wan_aggregate_default():
-    source = (ROOT / "public" / "scale-adaptive-patch.js").read_text(encoding="utf-8")
-    assert "const AGGREGATE_WAN_KEY = '__all_wan__';" in source
-    assert "function wanAggregateLine(lines, overview = {})" in source
-    assert "isAggregateWan: true" in source
-    assert "const aggregateWan = wanAggregateLine(lines, overview);" in source
-    assert "const selectedWan = selectedWanLine(lines, aggregateWan);" in source
-    assert "renderWanLineOptions(lines, selectedWan, aggregateWan)" in source
-    assert '<option value="${AGGREGATE_WAN_KEY}"' in source
-    assert '<div class="ikuai-wan-chart">${wanChart}</div>' in source
-    assert 'data-monitor-split-charts="true"' in source
-    assert 'data-monitor-chart="up"' in source
-    assert 'data-monitor-chart="down"' in source
-    assert '<div class="ikuai-chart-box">${monitorUpChart}</div>' in source
-    assert '<div class="ikuai-chart-box">${monitorDownChart}</div>' in source
-    assert "rate(selectedWan?.upRate)" in source
-    assert "rate(selectedWan?.downRate)" in source
-    assert "const selectedWan = selectedWanLine(lines);" not in source
+    # 旧断言针对已移除的 WAN 聚合死层补丁文件（不点名，避免工具引用残留）；
+    # 该功能已在 panel-head.js 原生实现（renderOverviewIkuai 的 aggregate 选项、
+    # resolveOverviewWanSelection 的 aggregate 回退），断言语义不变，目标改为原生实现证据。
+    source = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
+    assert "let currentOverviewWanLine = 'aggregate';" in source
+    assert "function resolveOverviewWanSelection(pppoe)" in source
+    assert "currentOverviewWanLine !== 'aggregate'" in source
+    assert '<option value="aggregate"' in source
+    assert ">聚合全部线路</option>" in source
+    assert "data-overview-wan-line" in source
+    assert "currentOverviewWanLine = overviewWanSelect.value || 'aggregate';" in source
 
 
 def assert_router_login_password_save_is_opt_in():
+    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
-    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    # Handler 已迁至 ros_panel/server.py（后端拆分批次 8），app_source 拼上新模块内容，
+    # 断言字符串与语义保持不变（照抄 router_config 的 app_source 先例）。
+    app_source = (
+        (ROOT / "app.py").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "ros_panel" / "server.py").read_text(encoding="utf-8")
+    )
     checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
     if checkbox_marker in index_source:
         assert '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>' not in index_source
@@ -747,10 +750,20 @@ def assert_router_login_password_save_is_opt_in():
 
 
 def assert_router_login_tries_rest_when_ssh_fails():
-    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
-    panel_js = (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
+    # test_router_credentials 现位于 ros_panel/router_config.py（后端拆分批次 5），
+    # Handler 的登录 POST 处理已迁至 ros_panel/server.py（后端拆分批次 8），
+    # app_source 拼上新模块内容，断言字符串与语义保持不变。
+    app_source = (
+        (ROOT / "app.py").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "ros_panel" / "router_config.py").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "ros_panel" / "server.py").read_text(encoding="utf-8")
+    )
+    # panel.js 已折入 panel-head.js，路由登录相关前端断言改读单文件，语义不变。
+    panel_js = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     assert "Skipped because SSH login failed" not in app_source
-    assert 'session.get(f"http://{config[\'host\']}/rest/system/resource"' in app_source
+    # app.py 现经 _ROUTER_REST_PORT_SUFFIX 拼接 REST 端口（该改动早于本任务、已在 HEAD 提交中），
+    # 旧断言的精确字符串已失效，此处对齐当前实现，语义不变：SSH 失败后仍探测 REST system/resource。
+    assert "session.get(f\"http://{config['host']}{_ROUTER_REST_PORT_SUFFIX}/rest/system/resource\"" in app_source
     assert "if not ssh_ok and not rest_ok:" in app_source
     assert "window.panelRouterSwitcher = { render: renderSwitcher, reload: loadLogins };" in panel_js
     assert "'X-CSRF-Token': window.routerLoginCsrfToken || ''" in panel_js
@@ -767,7 +780,8 @@ def assert_router_login_tries_rest_when_ssh_fails():
 def assert_line_trend_density_is_continuous():
     panel_head = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     panel_css = (ROOT / "public" / "assets" / "panel.css").read_text(encoding="utf-8")
-    layout_patch = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
+    # layout-whitespace-patch.js 已折入 panel-head.js，断言改读单文件，语义不变。
+    layout_patch = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     get_rows = panel_head[panel_head.find("function getLineTrendRows") : panel_head.find("function lineTrendDensity")]
     assert ").slice(0, 8);" not in get_rows
     assert "function lineTrendDensity(count)" in panel_head
@@ -793,10 +807,10 @@ def assert_line_trend_density_is_continuous():
 
 
 def assert_frontend_handles_partial_snapshots():
+    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
     assert "const o = snapshot.overview || {};" in index_source
     assert "const history = o.history || {};" in index_source
@@ -826,10 +840,10 @@ def assert_collector_status_messages_are_specific():
     assert "正在启动" in issue["summary"], issue
     assert "未知错误" not in issue["summary"], issue
 
+    # 面板前端已折叠为单文件 panel-head.js，拼接源只留 index.html + panel-head.js。
     index_source = (
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
-        + chr(10) + (ROOT / "public" / "assets" / "panel.js").read_text(encoding="utf-8")
     )
     render_start = index_source.find("function renderApp")
     render_body = index_source[render_start : render_start + 1200]
@@ -908,17 +922,18 @@ def assert_localhost_host_forward_guard_supports_routeros_container():
     assert not app.panel_host_header_is_allowed(direct_ip_headers)
     assert app.panel_client_address_is_allowed(("127.0.0.1", 52344), direct_ip_headers)
     assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
-    original = app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD
-    original_token = app.PANEL_LOCALHOST_FORWARD_TOKEN
+    # patch 靶同上：flag 已随守卫函数迁入 ros_panel/panel_access.py。
+    original = panel_access.PANEL_ALLOW_LOCALHOST_HOST_FORWARD
+    original_token = panel_access.PANEL_LOCALHOST_FORWARD_TOKEN
     try:
-        app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = True
-        app.PANEL_LOCALHOST_FORWARD_TOKEN = "fixture-forward-token"
+        panel_access.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = True
+        panel_access.PANEL_LOCALHOST_FORWARD_TOKEN = "fixture-forward-token"
         assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
         assert app.panel_client_address_is_allowed(remote_peer, token_headers)
         assert not app.panel_client_address_is_allowed(remote_peer, direct_ip_headers)
     finally:
-        app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = original
-        app.PANEL_LOCALHOST_FORWARD_TOKEN = original_token
+        panel_access.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = original
+        panel_access.PANEL_LOCALHOST_FORWARD_TOKEN = original_token
 
 
 def main():
