@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-11 17:56:54",
+  "warning": "This local file stores RouterOS SSH passwords in clear text for this panel instance. Keep it private.",
+  "entries": [
+    {
+      "id": "db95adbc8213f2d9",
+      "host": "192.168.3.1",
+      "user": "admin",
+      "password": "admin@163.com",
+      "sshPort": 22,
+      "label": "192.168.3.1",
+      "source": "ui",
+      "createdAt": "2026-09-09 12:42:05",
+      "updatedAt": "2026-09-11 17:56:54",
+      "lastUsedAt": "2026-09-11 17:56:54",
+      "lastTest": {
+        "ssh": {
+          "ok": false,
+          "identity": null,
+          "error": "RouterOS SSH connect failed for 192.168.3.1:22: TCP connected to 192.168.3.1:22, but no SSH banner arrived within 1.5s. Original error: Error reading SSH protocol banner",
+          "elapsedMs": 40
+        },
+        "rest": {
+          "ok": true,
+          "status": 200,
+          "error": null,
+          "elapsedMs": 11
+        },
+        "elapsedMs": 51
+      }
+    }
+  ]
+}

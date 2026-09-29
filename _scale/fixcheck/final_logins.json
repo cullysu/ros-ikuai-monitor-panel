@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-30 00:45:42",
+  "passwordProtection": "dpapi",
+  "warning": "Passwords are DPAPI-protected per Windows user.",
+  "entries": [
+    {
+      "id": "8685e35ee505670d",
+      "host": "127.0.0.1",
+      "user": "a",
+      "password": "",
+      "sshPort": 8722,
+      "label": "127.0.0.1",
+      "source": "ui",
+      "createdAt": "2026-09-30 00:45:42",
+      "updatedAt": "2026-09-30 00:45:42",
+      "lastUsedAt": "2026-09-30 00:45:42",
+      "lastTest": {
+        "ssh": {
+          "ok": true,
+          "identity": "# unknown command",
+          "error": null,
+          "elapsedMs": 5021
+        },
+        "rest": {
+          "ok": true,
+          "status": 200,
+          "error": null,
+          "elapsedMs": 7
+        },
+        "elapsedMs": 5028
+      }
+    }
+  ]
+}

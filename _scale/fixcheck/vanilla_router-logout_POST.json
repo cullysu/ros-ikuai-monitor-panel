@@ -1,0 +1,1 @@
+{"ok": true, "routerLogin": {"configured": false, "host": "127.0.0.1", "user": "a", "sshPort": 8722, "restScheme": "http", "restPort": 80, "source": "ui", "savedId": null, "updatedAt": "2026-09-29 09:43:49", "passwordSet": false, "lastTest": null}, "savedLogins": []}

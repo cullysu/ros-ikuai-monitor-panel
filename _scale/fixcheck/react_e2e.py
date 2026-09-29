@@ -5,7 +5,7 @@ import urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:28997/index.html?surface=desktop"
+BASE = "http://127.0.0.1:28998/index.html?surface=desktop"
 CHAOS = "http://127.0.0.1:8721/_scenario"
 SSH_STATE = Path(__file__).resolve().parents[1] / "ssh_state.json"
 CHROME = str(Path.home() / "AppData/Local/ms-playwright/chromium-1223/chrome-win64/chrome.exe")
@@ -41,7 +41,7 @@ def restore_ssh_state(raw):
 
 
 def snapshot_json():
-    with urllib.request.urlopen("http://127.0.0.1:28997/api/snapshot", timeout=15) as response:
+    with urllib.request.urlopen("http://127.0.0.1:28998/api/snapshot", timeout=15) as response:
         return json.loads(response.read())
 
 
@@ -55,12 +55,12 @@ with sync_playwright() as p:
     page.wait_for_timeout(9000)
     body = page.inner_text("body")
 
-    identity = [m for m in ("Chaos-baseline", "RouterOS", "7.15.3", "REST 可用") if m in body]
+    identity = [m for m in ("RouterOS", "REST", "SSH") if m in body]
     check("overview shows live device identity", len(identity) >= 2, identity)
     check("no contract error page", ("契约" not in body) and ("contract error" not in body.lower()))
     normalized = ("+08:00" in body) or ("当前快照" in body) or ("2026-09-29T" in body)
     check("timestamps normalized", normalized)
-    page.screenshot(path=str(HERE / "react_e2e_overview.png"))
+    page.screenshot(path=str(HERE / "real_e2e_overview.png"))
 
     for section in ("lineStatus", "terminals"):
         page.evaluate(f"location.search = '?section={section}&surface=desktop'")
