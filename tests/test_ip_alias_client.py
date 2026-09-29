@@ -19,14 +19,22 @@ CLIENT = ROOT / "src" / "panel-framework" / "runtime" / "ipAliasClient.ts"
 def run_client(script: str) -> object:
     """Evaluate a snippet against ipAliasClient.ts and return JSON.stringify output."""
     quoted = json.dumps(script)
+    # Capture bytes and decode explicitly: text=True would use the platform
+    # locale (cp1252 on the Windows CI runner) and choke on UTF-8 client
+    # output, which silently empties stdout.
     result = subprocess.run(
         ["node", "--input-type=module", "-e", f"import * as alias from '{CLIENT.as_uri()}';\nconst run = (script) => eval(script);\nconsole.log(JSON.stringify(run({quoted})));"],
         capture_output=True,
-        text=True,
         timeout=60,
-        check=True,
     )
-    return json.loads(result.stdout.strip().splitlines()[-1])
+    stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
+    stderr = result.stderr.decode("utf-8", errors="replace") if result.stderr else ""
+    lines = [line for line in stdout.splitlines() if line.strip()]
+    if not lines:
+        raise AssertionError(
+            f"client snippet produced no stdout (exit {result.returncode}); stderr tail: {stderr[-400:]}"
+        )
+    return json.loads(lines[-1])
 
 
 class IpAliasRequestBodyTest(unittest.TestCase):
