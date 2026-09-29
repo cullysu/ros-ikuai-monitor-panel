@@ -37,11 +37,11 @@ def conn_line(i, st):
         mark = f'mark{i}" data-x="{XSS}'
     elif st.get("lan20k"):
         src = f'10.0.{(i >> 8) & 255}.{i % 250 + 2}:{4000 + i}'
-        dst = f'23.{(i * 7) % 250 + 1}.{(i * 13) % 250 + 1}:{443 if i % 3 else 80}'
+        dst = f'23.{(i * 7) % 250 + 1}.{(i * 13) % 250 + 1}.{i % 250 + 1}:{443 if i % 3 else 80}'
         mark = f'mark-{i % 8}' if i % 2 else ''
     else:
         src = f'192.168.88.{i % 250 + 2}:{4000 + i}'
-        dst = f'23.{(i * 7) % 250 + 1}.{(i * 13) % 250 + 1}:{443 if i % 3 else 80}'
+        dst = f'23.{(i * 7) % 250 + 1}.{(i * 13) % 250 + 1}.{i % 250 + 1}:{443 if i % 3 else 80}'
         mark = f'mark-{i % 8}' if i % 2 else ''
     fields = [
         f'src-address={src}',
