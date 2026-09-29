@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "checks": [
+    "dns_static_total_count_from_meta supports count/total_count/totalCount",
+    "ssh banner diagnostic classifies HTTP endpoint as non-SSH",
+    "latency probing has a TCP fallback for Docker/minimal runtimes without ping",
+    "panel network defaults, validation, URL formatting, and env updates are safe",
+    "counter rate history skips first baselines, preserves stale rates, marks counter rollback as chart breaks, and keeps resource history independent",
+    "interface quality metrics expose cumulative totals, fresh deltas, loss/error rates, stale reuse, and VLAN down-ranking",
+    "ARP alerts classify active conflicts separately from stale identity movement",
+    "arbitrary-scale non-PPPoE fixtures preserve scale metadata, protocol ranking, and WAN fallback semantics",
+    "deploy defaults avoid private IP/admin assumptions unless explicitly configured",
+    "frontend chart helpers skip missing values instead of drawing zeros",
+    "frontend WAN selector defaults to an all-line aggregate traffic option",
+    "RouterOS login password saving is opt-in for public deployments",
+    "RouterOS login still probes REST when SSH banner fails, and first-run POSTs send CSRF",
+    "line trend density follows line count instead of a hardcoded 8-cell grid",
+    "frontend renderers tolerate partial snapshots and missing history collections",
+    "collector startup/config/error states expose specific status messages instead of unknown-error banners",
+    "semantic triage distinguishes cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
+    "RouterOS Container localhost Host-forward guard allows client-local tunnels without allowing direct veth/LAN browser hosts"
+  ]
+}

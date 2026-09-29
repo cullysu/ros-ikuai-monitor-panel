@@ -233,7 +233,7 @@ function validateResourceHistoryTimestamps(overview, issues) {
 function channelTest(value) {
   const source = isRecord(value) ? value : {};
   const trustExpiresAt = stringValue(source.trustExpiresAt);
-  if ("trustExpiresAt" in source && !validTimestamp(source.trustExpiresAt)) return null;
+  if ("trustExpiresAt" in source && source.trustExpiresAt !== null && !validTimestamp(source.trustExpiresAt)) return null;
   return {
     ok: source.ok === true,
     error: stringValue(source.error),
@@ -299,8 +299,8 @@ function savedLogin(value) {
   const host = stringValue(value.host);
   const user = stringValue(value.user);
   const port = finiteNumber(value.sshPort);
-  const restPort = finiteNumber(value.restPort);
-  const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
+  const restPort = value.restPort === void 0 ? 443 : finiteNumber(value.restPort);
+  const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" || value.restScheme === void 0 ? "https" : null;
   const lastTest = connectionTest(value.lastTest);
   if (!id || !host || !user || port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
   if (!validTimestamp(value.updatedAt) || !validTimestamp(value.lastUsedAt)) return null;

@@ -280,7 +280,9 @@ function validateResourceHistoryTimestamps(overview: Record<string, unknown>, is
 function channelTest(value: unknown): RouterChannelTest | null {
   const source = isRecord(value) ? value : {};
   const trustExpiresAt = stringValue(source.trustExpiresAt);
-  if ("trustExpiresAt" in source && !validTimestamp(source.trustExpiresAt)) return null;
+  // Legacy backend emits trustExpiresAt: null when no host-key trust exists;
+  // treat null the same as an absent field.
+  if ("trustExpiresAt" in source && source.trustExpiresAt !== null && !validTimestamp(source.trustExpiresAt)) return null;
   return {
     ok: source.ok === true,
     error: stringValue(source.error),
@@ -350,8 +352,10 @@ function savedLogin(value: unknown): SavedRouterLogin | null {
   const host = stringValue(value.host);
   const user = stringValue(value.user);
   const port = finiteNumber(value.sshPort);
-  const restPort = finiteNumber(value.restPort);
-  const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
+  // Legacy backend saved-logins omit the REST scheme/port; fall back to the
+  // secure UI defaults so old stores still parse.
+  const restPort = value.restPort === undefined ? 443 : finiteNumber(value.restPort);
+  const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" || value.restScheme === undefined ? "https" : null;
   const lastTest = connectionTest(value.lastTest);
   if (!id || !host || !user || port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
   if (!validTimestamp(value.updatedAt) || !validTimestamp(value.lastUsedAt)) return null;

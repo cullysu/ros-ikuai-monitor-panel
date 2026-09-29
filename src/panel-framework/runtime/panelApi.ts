@@ -116,7 +116,7 @@ function writeHeaders(csrfToken: string): HeadersInit {
 
 export async function fetchRouterLoginBootstrap(signal?: AbortSignal): Promise<RouterLoginBootstrap> {
   const payload = await requestJson("/api/router-login", { signal });
-  const parsed = parseRouterLoginBootstrap(payload);
+  const parsed = parseRouterLoginBootstrap(normalizeLegacySnapshot(payload));
   if (!parsed) throw new PanelApiError("连接状态接口返回了不符合契约的数据", 0, "invalid_login_schema", payload);
   return parsed;
 }
@@ -146,7 +146,7 @@ export async function submitRouterConnection(
       rememberProfile: input.rememberProfile,
     }),
   });
-  const parsed = parseRouterLoginMutation(payload);
+  const parsed = parseRouterLoginMutation(normalizeLegacySnapshot(payload));
   if (!parsed) throw new PanelApiError("连接接口返回了不符合契约的数据", 0, "invalid_login_schema", payload);
   return parsed;
 }
@@ -158,7 +158,7 @@ export async function submitRouterLogout(csrfToken: string, signal?: AbortSignal
     headers: writeHeaders(csrfToken),
     body: "{}",
   });
-  const parsed = parseRouterLoginMutation(payload);
+  const parsed = parseRouterLoginMutation(normalizeLegacySnapshot(payload));
   if (!parsed) throw new PanelApiError("注销接口返回了不符合契约的数据", 0, "invalid_login_schema", payload);
   return parsed;
 }
@@ -174,7 +174,7 @@ export async function forgetRouterLoginProfile(
     headers: writeHeaders(csrfToken),
     body: JSON.stringify({ savedId }),
   });
-  const parsed = parseRouterLoginMutation(payload);
+  const parsed = parseRouterLoginMutation(normalizeLegacySnapshot(payload));
   if (!parsed) throw new PanelApiError("设备资料接口返回了不符合契约的数据", 0, "invalid_login_schema", payload);
   return parsed;
 }
