@@ -485,3 +485,46 @@ class RememberProfileTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RouterCredentialsRestProbeTest(unittest.TestCase):
+    """A 200 from /rest/* must be JSON: WebFig-only routers serve HTML there."""
+
+    class FakeResponse:
+        def __init__(self, payload, content_type):
+            self.status_code = 200
+            self.headers = {"Content-Type": content_type}
+            self.text = payload
+
+        def raise_for_status(self):
+            pass
+
+    def _run(self, response):
+        from unittest import mock
+        import ros_panel.router_config as rc
+
+        class FakeSession:
+            def __init__(self, *args, **kwargs):
+                self.auth = None
+
+            def get(self, *args, **kwargs):
+                return response
+
+            def close(self):
+                pass
+
+        with mock.patch.object(rc.requests, "Session", FakeSession), mock.patch.object(
+            rc.time, "time", lambda: 1000.0
+        ):
+            return rc.test_router_credentials("127.0.0.1", "admin", "pw", ssh_port=1)
+
+    def test_webfig_html_200_is_not_rest_ok(self):
+        test = self._run(self.FakeResponse("<!DOCTYPE html><html><head>", "text/html;charset=UTF-8"))
+        self.assertFalse(test["rest"]["ok"])
+        self.assertIn("non-JSON", test["rest"]["error"])
+        self.assertEqual(test["rest"]["status"], 200)
+
+    def test_json_payload_is_rest_ok(self):
+        test = self._run(self.FakeResponse('{"architecture-name":"arm"}', "application/json"))
+        self.assertTrue(test["rest"]["ok"])
+        self.assertIsNone(test["rest"]["error"])
