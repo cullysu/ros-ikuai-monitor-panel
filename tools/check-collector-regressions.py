@@ -733,7 +733,12 @@ def assert_router_login_password_save_is_opt_in():
         (ROOT / "public" / "index.html").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")
     )
-    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    # Handler 已迁至 ros_panel/server.py（后端拆分批次 8），app_source 拼上新模块内容，
+    # 断言字符串与语义保持不变（照抄 router_config 的 app_source 先例）。
+    app_source = (
+        (ROOT / "app.py").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "ros_panel" / "server.py").read_text(encoding="utf-8")
+    )
     checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
     if checkbox_marker in index_source:
         assert '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>' not in index_source
@@ -746,10 +751,12 @@ def assert_router_login_password_save_is_opt_in():
 
 def assert_router_login_tries_rest_when_ssh_fails():
     # test_router_credentials 现位于 ros_panel/router_config.py（后端拆分批次 5），
+    # Handler 的登录 POST 处理已迁至 ros_panel/server.py（后端拆分批次 8），
     # app_source 拼上新模块内容，断言字符串与语义保持不变。
     app_source = (
         (ROOT / "app.py").read_text(encoding="utf-8")
         + chr(10) + (ROOT / "ros_panel" / "router_config.py").read_text(encoding="utf-8")
+        + chr(10) + (ROOT / "ros_panel" / "server.py").read_text(encoding="utf-8")
     )
     # panel.js 已折入 panel-head.js，路由登录相关前端断言改读单文件，语义不变。
     panel_js = (ROOT / "public" / "assets" / "panel-head.js").read_text(encoding="utf-8")

@@ -57,9 +57,11 @@ function main() {
   }
 
   // 后端拆分批次 6：面板地址/来源/会话守卫区块整体迁至 ros_panel/panel_access.py，
+  // 批次 8：Handler/main 迁至 ros_panel/server.py。
   // app.py 全量 from-import 重导出；对 app 源码的文本断言改读拼接源，语义不变
   // （照抄 tools/check-collector-regressions.py 的 router_config app_source 先例）。
-  const app_source = read('app.py') + '\n' + read('ros_panel/panel_access.py');
+  const app_source =
+    read('app.py') + '\n' + read('ros_panel/panel_access.py') + '\n' + read('ros_panel/server.py');
   assertSourceContains(app_source, 'DEFAULT_PANEL_BIND = "127.0.0.1"');
   assertSourceContains(app_source, 'DEFAULT_PANEL_TARGET = "127.0.0.1"');
   assertSourceContains(app_source, 'def validate_panel_public_contract(bind, target, profile="routeros_only"):');
