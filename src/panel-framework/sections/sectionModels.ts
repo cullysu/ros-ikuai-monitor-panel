@@ -124,6 +124,8 @@ export interface SectionModel {
   statusTone: OverviewTone;
   metrics: SectionMetric[];
   tables: SectionTable[];
+  /** LAN-scope explanation shown when terminals are empty but out-of-scope ARP rows exist. */
+  scopeNotice?: string;
   visualization?: SectionTimeSeriesVisualization;
 }
 
@@ -552,6 +554,7 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
       { label: "最近成功", value: model.updatedAt || "未记录", note: "不使用尝试时间兜底", tone: model.updatedAt && model.updatedAt !== "未记录" ? "warn" : "missing" },
       { label: "业务对象", value: "不可判断", note: "等待新的成功快照", tone: "missing" },
     ],
+    scopeNotice: undefined,
     tables: model.tables.map((item) => ({
       ...item,
       rows: [],
@@ -694,6 +697,14 @@ function balanceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Secti
   };
 }
 
+function terminalLanScopeNotice(snapshot: OverviewRawSnapshot, terminalsPresent: boolean, terminalCount: number): string | undefined {
+  const lanScope = record((snapshot as UnknownRecord).terminalsLanScope);
+  const arpOutOfScope = number(lanScope.arpOutOfScope);
+  if (!terminalsPresent || terminalCount > 0 || arpOutOfScope === null || arpOutOfScope <= 0) return undefined;
+  const arpTotal = number(lanScope.arpTotal);
+  return `读取到 ${arpOutOfScope} 条 ARP 记录在路由器 LAN 网段外（共 ${arpTotal === null ? "未知" : arpTotal} 条）。终端列表只统计 LAN 网段内的设备，所以当前显示为 0 台。`;
+}
+
 function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const terminalCollection = directCollection(snapshot, "terminals");
   const items = terminalCollection.rows;
@@ -706,6 +717,7 @@ function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
   const connections = connectionsComplete ? connectionValues.reduce((sum, value) => sum + (value as number), 0) : null;
   return {
     ...base(route, snapshot),
+    scopeNotice: terminalLanScopeNotice(snapshot, terminalCollection.present, items.length),
     metrics: [
       { label: "终端记录", value: collectionCount(terminalCollection), tone: collectionTone(terminalCollection) },
       { label: "在线标记", value: terminalCollection.present ? String(online) : "未取得", tone: !terminalCollection.present ? "missing" : online ? "trust" : "trust" },
@@ -720,6 +732,9 @@ function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
       connections: text(item.connections, "未取得"),
       traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`,
       _mac: text(item.mac, ""),
+      _ip: text(item.ip, ""),
+      _customName: text(item.customName, ""),
+      _hostname: text(item.hostname || item.name, ""),
     }), collectionEmpty(terminalCollection, "当前快照没有终端记录"), undefined, { dhcp: snapshot.dhcp, arp: snapshot.arp })],
   };
 }
@@ -774,7 +789,7 @@ function arpModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionMo
     ],
     tables: [
       table(route, "身份告警", [{ key: "address", label: "地址" }, { key: "kind", label: "类型" }, { key: "detail", label: "证据" }], alerts, (item) => ({ address: text(item.ip || item.address), kind: text(item.type || item.level, "冲突"), detail: text(item.message || item.detail) }), collectionEmpty(alertCollection, "没有记录到 ARP 身份告警")),
-      table(route, "ARP 对象", [{ key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "status", label: "状态" }, { key: "interface", label: "接口" }], items, (item) => ({ address: text(item.ip || item.address), mac: text(item.mac || item.macAddress), status: text(item.status, item.dynamic === true ? "动态" : "未确认"), interface: text(item.interface) }), collectionEmpty(arpItems, "当前快照没有 ARP 记录"), undefined, { dhcp: snapshot.dhcp, arp }),
+      table(route, "ARP 对象", [{ key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "status", label: "状态" }, { key: "interface", label: "接口" }], items, (item) => ({ address: text(item.ip || item.address), mac: text(item.mac || item.macAddress), status: text(item.status, item.dynamic === true ? "动态" : "未确认"), interface: text(item.interface), _ip: text(item.ip || item.address), _customName: text(item.customName, ""), _hostname: text(item.hostname || item.name, "") }), collectionEmpty(arpItems, "当前快照没有 ARP 记录"), undefined, { dhcp: snapshot.dhcp, arp }),
     ],
   };
 }
@@ -822,6 +837,90 @@ function resourceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
       };
     }, "当前快照没有资源采样记录", "没有配套时间戳时只显示样本摘要，不绘制趋势")],
   };
+}
+
+function percentText(value: unknown): string {
+  const observed = number(value);
+  return observed === null ? "未取得" : `${observed}%`;
+}
+
+/**
+ * Classified recent health-evidence rows for the loadAudit page, mirroring the
+ * vanilla collectLoadAuditEvents semantics: live load/NTP/DNS-cache/connection
+ * pressure signals plus the newest system/DNS log warning lines, capped at 10.
+ */
+function loadAuditHealthEventRows(snapshot: OverviewRawSnapshot): UnknownRecord[] {
+  const overview = record(snapshot.overview);
+  const connections = record(snapshot.connections);
+  const dns = record(snapshot.dns);
+  const logs = record(snapshot.logs);
+  const events: UnknownRecord[] = [];
+  const loadLevel = text(overview.systemLoadLevel, "");
+  if (loadLevel === "danger" || loadLevel === "warning") {
+    events.push({
+      time: "实时",
+      source: "系统负载",
+      status: loadLevel === "danger" ? "异常" : "预警",
+      message: `CPU ${percentText(overview.cpuLoad)} / 内存 ${percentText(overview.memoryUsage)}，当前处于${loadLevel === "danger" ? "高压" : "预警"}状态`,
+    });
+  }
+  const ntpStatus = text(overview.ntpStatus, "");
+  if (ntpStatus && ntpStatus !== "synchronized") {
+    events.push({ time: "实时", source: "NTP", status: "预警", message: `NTP 状态为 ${ntpStatus}` });
+  }
+  const cacheSize = number(dns.cacheSize);
+  const cacheUsed = number(dns.cacheUsed);
+  if (cacheSize !== null && cacheUsed !== null && cacheSize > 0 && cacheUsed > 0) {
+    const cacheUsage = Math.min((cacheUsed / cacheSize) * 100, 100);
+    if (cacheUsage >= 85) {
+      events.push({ time: "实时", source: "DNS 缓存", status: cacheUsage >= 95 ? "异常" : "预警", message: `缓存占用 ${cacheUsage.toFixed(1)}%（${cacheUsed} / ${cacheSize} 字节）` });
+    }
+  }
+  const connectionTotal = number(connections.total);
+  if (connectionTotal !== null && connectionTotal >= 60_000) {
+    events.push({
+      time: "实时",
+      source: "连接压力",
+      status: connectionTotal >= 90_000 ? "异常" : "预警",
+      message: `全局连接数 ${connectionTotal}，${connectionTotal >= 90_000 ? "接近上限" : "持续关注连接压力"}`,
+    });
+  }
+  const logRows = [...rows(logs.system), ...rows(logs.dns)]
+    .filter((row) => /error|warning|critical|fail|down|timeout|cache full/i.test(`${text(row.topics, "")} ${text(row.message, "")}`))
+    .slice(0, 8)
+    .map((row) => {
+      const evidence = `${text(row.topics, "")} ${text(row.message, "")}`;
+      return {
+        time: text(row.time, "-"),
+        source: text(row.topics, "-"),
+        status: /error|critical|fail|cache full/i.test(evidence) ? "异常" : "预警",
+        message: text(row.message, "-"),
+      };
+    });
+  return [...events, ...logRows].slice(0, 10);
+}
+
+function loadAuditModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
+  const model = resourceModel(route, snapshot);
+  const admins = rows(record(snapshot.overview).admins);
+  const adminTable = table(route, "当前登录管理员", [
+    { key: "name", label: "用户" }, { key: "via", label: "方式" }, { key: "address", label: "来源地址" }, { key: "when", label: "登录时间" },
+  ], admins, (item) => ({
+    name: text(item.name, "-"),
+    via: text(item.via, "-"),
+    address: text(item.address, "-"),
+    when: text(item.when, "-"),
+  }), "当前未读取到管理员会话");
+  const events = loadAuditHealthEventRows(snapshot);
+  const eventTable = table(route, "健康事件摘要", [
+    { key: "time", label: "时间" }, { key: "source", label: "来源" }, { key: "status", label: "级别" }, { key: "message", label: "内容" },
+  ], events, (item) => ({
+    time: text(item.time, "-"),
+    source: text(item.source, "-"),
+    status: text(item.status, "预警"),
+    message: text(item.message, "-"),
+  }), "当前未发现明显的资源与服务预警");
+  return { ...model, tables: [...model.tables, adminTable, eventTable] };
 }
 
 function connectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
@@ -1033,7 +1132,7 @@ function buildCurrentSectionModel(route: PanelRouteId, snapshot: OverviewRawSnap
   if (route === "dhcp") return dhcpModel(route, snapshot);
   if (route === "arp") return arpModel(route, snapshot);
   if (route === "trafficLoad") return resourceModel(route, snapshot);
-  if (route === "loadAudit") return resourceModel(route, snapshot);
+  if (route === "loadAudit") return loadAuditModel(route, snapshot);
   if (route === "trafficAudit") return connectionModel(route, snapshot);
   if (route === "connections") return connectionModel(route, snapshot);
   if (route === "dns4" || route === "dns6") return dnsModel(route, snapshot);

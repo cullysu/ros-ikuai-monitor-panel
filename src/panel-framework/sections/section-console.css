@@ -187,6 +187,24 @@
 }
 .panel-workspace-tabs button:focus-visible { outline: 2px solid #0b6d93; outline-offset: -3px; }
 
+.panel-scope-notice,
+.panel-scale-notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 8px 2px 0;
+  padding: 6px 10px;
+  border: 1px solid #c3d4dc;
+  border-radius: 6px;
+  color: #46616d;
+  background: rgb(240 246 248 / 72%);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.panel-scope-notice { margin: 8px 2px 0; }
+.panel-scale-notice span { min-width: 0; }
+
 .panel-section-freshness {
   display: inline-flex;
   align-items: center;

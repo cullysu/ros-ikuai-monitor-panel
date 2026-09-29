@@ -98,9 +98,10 @@ export function useRouteSupplementEvidence(route: string): RouteSupplementState 
   }, [route]);
 
   const retryBlocked = request.errorCode === "connection_search_rate_limited" && (request.retryAfterSeconds || 0) > 0;
-  const submitConnection = useCallback((query: string) => retryBlocked ? false : commit(createConnectionSupplementHistory(query), true), [commit, retryBlocked]);
+  const connectionRoute = route === "trafficAudit" ? "trafficAudit" : "connections";
+  const submitConnection = useCallback((query: string) => retryBlocked ? false : commit(createConnectionSupplementHistory(query, null, connectionRoute), true), [commit, connectionRoute, retryBlocked]);
   const clearConnectionQuery = useCallback(() => {
-    if (commandRef.current?.route !== "connections") return false;
+    if (commandRef.current?.route !== connectionRoute || commandRef.current.action !== "connection-search") return false;
     sequenceRef.current += 1;
     const historyState = { ...(window.history.state || {}) };
     delete historyState.panelRouteSupplement;
@@ -110,21 +111,23 @@ export function useRouteSupplementEvidence(route: string): RouteSupplementState 
     setCommand(null);
     setRequest(IDLE);
     return true;
-  }, [route]);
+  }, [connectionRoute, route]);
   const loadDnsPage = useCallback((page: number) => commit(createDnsSupplementHistory(page)), [commit]);
   const openConnection = useCallback((rowId: string) => {
-    const query = commandRef.current?.route === "connections" ? commandRef.current.query : null;
+    const command = commandRef.current;
+    const query = command?.action === "connection-search" && command.route === connectionRoute ? command.query : null;
     const data = request.result?.data;
     if (!query || data?.kind !== "connection-search") return false;
     const exists = data.rows.some((row, index) => connectionSupplementRowId(row, index) === rowId);
-    return exists ? commit(createConnectionSupplementHistory(query, rowId)) : false;
-  }, [commit, request.result]);
+    return exists ? commit(createConnectionSupplementHistory(query, rowId, connectionRoute)) : false;
+  }, [commit, connectionRoute, request.result]);
   const closeConnection = useCallback(() => {
-    if (commandRef.current?.route !== "connections" || !commandRef.current.selectedRowId) return false;
+    const command = commandRef.current;
+    if (command?.route !== connectionRoute || command.action !== "connection-search" || command.selectedRowId === null) return false;
     sequenceRef.current += 1;
     window.history.back();
     return true;
-  }, []);
+  }, [connectionRoute]);
   const retry = useCallback(() => {
     if (retryBlocked) return;
     sequenceRef.current += 1;
@@ -148,10 +151,10 @@ export function useRouteSupplementEvidence(route: string): RouteSupplementState 
   }, [request.errorCode, request.retryAfterSeconds]);
 
   const dnsPage = route === "dns4" ? (command?.route === "dns4" ? command.page : 1) : null;
-  const connectionQuery = command?.route === "connections" ? command.query : null;
+  const connectionQuery = command?.action === "connection-search" && command.route === route ? command.query : null;
   useEffect(() => {
     const dnsRequest = dnsPage ? dnsPageRequest(dnsPage) : null;
-    const shouldRun = route === "security" || (route === "dns4" && Boolean(dnsRequest)) || (route === "connections" && Boolean(connectionQuery));
+    const shouldRun = route === "security" || (route === "dns4" && Boolean(dnsRequest)) || ((route === "connections" || route === "trafficAudit") && Boolean(connectionQuery));
     if (!shouldRun) {
       setRequest(IDLE);
       return;
@@ -201,7 +204,7 @@ export function useRouteSupplementEvidence(route: string): RouteSupplementState 
 
   const query = connectionQuery;
   const page = dnsPage;
-  const selectedConnectionRowId = command?.route === "connections" ? command.selectedRowId : null;
+  const selectedConnectionRowId = command?.action === "connection-search" && command.route === route ? command.selectedRowId : null;
   const totalPages = useMemo(() => {
     const data = request.result?.data;
     return data?.kind === "dns-static" ? Math.min(20, Math.max(1, Math.ceil(data.totalCount / 50))) : null;

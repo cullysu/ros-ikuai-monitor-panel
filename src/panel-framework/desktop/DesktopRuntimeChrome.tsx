@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Ellipsis, LockKeyhole, RefreshCw, Router } from "lucide-react";
 import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
+import { fetchPanelNetwork } from "../runtime/panelApi";
 import type { PanelRuntimeController, PanelSnapshotPhase } from "../runtime/usePanelRuntime";
 import "./desktop-runtime.css";
 
@@ -13,11 +15,32 @@ function phaseLabel(phase: PanelSnapshotPhase, age: number | null): string {
   return "正在载入";
 }
 
+/** Low-key one-shot read of the panel access URL; absence simply hides the line. */
+function usePanelAccessUrl(): string | null {
+  const [accessUrl, setAccessUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchPanelNetwork(controller.signal)
+      .then((info) => {
+        if (!controller.signal.aborted) setAccessUrl(info.accessUrl);
+      })
+      .catch(() => {
+        // The access line is informational only; a failed read keeps the bar quiet.
+      });
+    return () => controller.abort();
+  }, []);
+  return accessUrl;
+}
+
 export function DesktopRuntimeChrome({ runtime, route, onNavigate }: { runtime: PanelRuntimeController; route: PanelRouteId; onNavigate: PanelNavigate }) {
   const busy = runtime.snapshot.phase === "loading" || runtime.snapshot.phase === "refreshing";
   const identity = runtime.snapshot.data?.overview?.identity || runtime.connection.profile?.host || "RouterOS";
+  const accessUrl = usePanelAccessUrl();
   return <header className="panel-runtime-bar panel-runtime-bar-desktop" data-panel-runtime-toolbar="desktop">
-    <div className="panel-runtime-device"><span>当前设备</span><b>{runtime.connection.profile?.host || "RouterOS"}</b><small>{identity}</small></div>
+    <div className="panel-runtime-device">
+      <span>当前设备</span><b>{runtime.connection.profile?.host || "RouterOS"}</b><small>{identity}</small>
+      {accessUrl ? <small className="panel-runtime-access" data-panel-access-url={accessUrl} title="面板访问地址（以 /api/panel-network 实际响应为准）">面板地址 {accessUrl}</small> : null}
+    </div>
     <span className="panel-runtime-mode" aria-label="只读监控模式" title="只读监控模式"><LockKeyhole size={14} aria-hidden="true" /><span>只读</span></span>
     <div className={`panel-runtime-phase is-${runtime.snapshot.phase}`}><i aria-hidden="true" /><span>{phaseLabel(runtime.snapshot.phase, runtime.evidenceAgeSeconds)}</span></div>
     <div className="panel-runtime-actions">

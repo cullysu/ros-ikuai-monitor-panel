@@ -23,9 +23,11 @@ export interface SupplementalRequestFailure {
   message: string;
 }
 
+export type ConnectionSupplementRoute = "connections" | "trafficAudit";
+
 export type RouteSupplementHistory =
   | { schemaVersion: 1; route: "dns4"; action: "dns-page"; page: number; query: null }
-  | { schemaVersion: 1; route: "connections"; action: "connection-search"; page: null; query: string; selectedRowId: string | null };
+  | { schemaVersion: 1; route: ConnectionSupplementRoute; action: "connection-search"; page: null; query: string; selectedRowId: string | null };
 
 export type SupplementalRateOrigin = "unavailable" | "observed-zero" | "observed";
 
@@ -93,7 +95,7 @@ export function dnsRequestForRoute(route: string, history: RouteSupplementHistor
 export function routeSupplementRequestKey(route: string, history: RouteSupplementHistory | null): string {
   if (route === "security") return "security:health-findings";
   if (route === "dns4") return `dns4:${history?.route === "dns4" ? history.page : 1}`;
-  if (route === "connections" && history?.route === "connections") return `connections:${history.query}`;
+  if ((route === "connections" || route === "trafficAudit") && history?.route === route && history.action === "connection-search") return `${route}:${history.query}`;
   return `${route}:idle`;
 }
 
@@ -149,9 +151,9 @@ export function createDnsSupplementHistory(page: number): RouteSupplementHistory
   return dnsPageRequest(page) ? { schemaVersion: 1, route: "dns4", action: "dns-page", page, query: null } : null;
 }
 
-export function createConnectionSupplementHistory(query: string, selectedRowId: string | null = null): RouteSupplementHistory | null {
+export function createConnectionSupplementHistory(query: string, selectedRowId: string | null = null, route: ConnectionSupplementRoute = "connections"): RouteSupplementHistory | null {
   return isExplicitIpQuery(query) && (selectedRowId === null || validConnectionRowId(selectedRowId))
-    ? { schemaVersion: 1, route: "connections", action: "connection-search", page: null, query, selectedRowId }
+    ? { schemaVersion: 1, route, action: "connection-search", page: null, query, selectedRowId }
     : null;
 }
 
@@ -163,9 +165,10 @@ export function parseRouteSupplementHistory(value: unknown, route: string): Rout
   const state = candidate as Record<string, unknown>;
   if (state.schemaVersion !== 1 || state.route !== route) return null;
   if (route === "dns4" && state.action === "dns-page" && typeof state.page === "number") return createDnsSupplementHistory(state.page);
-  if (route === "connections" && state.action === "connection-search" && typeof state.query === "string") {
-    if (state.selectedRowId === undefined || state.selectedRowId === null) return createConnectionSupplementHistory(state.query);
-    return typeof state.selectedRowId === "string" ? createConnectionSupplementHistory(state.query, state.selectedRowId) : null;
+  if ((route === "connections" || route === "trafficAudit") && state.action === "connection-search" && typeof state.query === "string") {
+    const supplementRoute: ConnectionSupplementRoute = route === "trafficAudit" ? "trafficAudit" : "connections";
+    if (state.selectedRowId === undefined || state.selectedRowId === null) return createConnectionSupplementHistory(state.query, null, supplementRoute);
+    return typeof state.selectedRowId === "string" ? createConnectionSupplementHistory(state.query, state.selectedRowId, supplementRoute) : null;
   }
   return null;
 }

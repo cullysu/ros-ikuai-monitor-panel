@@ -206,3 +206,34 @@ export async function fetchReadonlyDiagnostics(signal?: AbortSignal): Promise<Ro
   const payload = await requestJson("/api/readonly-diagnostics", { signal });
   return parseReadonlyDiagnostics(payload);
 }
+
+export interface PanelNetworkInfo {
+  /** Address the operator can open in a browser; falls back to the configured URL. */
+  accessUrl: string;
+  bind: string;
+  port: number;
+}
+
+function httpUrlString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const candidate = value.trim();
+  return /^https?:\/\/\S+$/.test(candidate) ? candidate : null;
+}
+
+export function parsePanelNetworkInfo(payload: unknown): PanelNetworkInfo | null {
+  if (!isRecord(payload) || payload.ok !== true || !isRecord(payload.panelNetwork)) return null;
+  const source = payload.panelNetwork as Record<string, unknown>;
+  const accessUrl = httpUrlString(source.browserUrl) ?? httpUrlString(source.currentUrl) ?? httpUrlString(source.configuredUrl);
+  const port = typeof source.port === "number" && Number.isSafeInteger(source.port) && source.port > 0 && source.port <= 65_535
+    ? source.port
+    : null;
+  if (!accessUrl || port === null || typeof source.bind !== "string" || !source.bind.trim()) return null;
+  return { accessUrl, bind: source.bind.trim(), port };
+}
+
+export async function fetchPanelNetwork(signal?: AbortSignal): Promise<PanelNetworkInfo> {
+  const payload = await requestJson("/api/panel-network", { signal });
+  const parsed = parsePanelNetworkInfo(payload);
+  if (!parsed) throw new PanelApiError("面板网络接口返回了不符合契约的数据", 0, "invalid_panel_network_schema", payload);
+  return parsed;
+}

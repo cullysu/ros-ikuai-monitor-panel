@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Clock3, LockKeyhole, Router } from "lucide-r
 import type { OverviewRawSnapshot, OverviewTone } from "../overview";
 import { PANEL_ROUTES, PANEL_ROUTE_MATURITY_LABELS, type PanelNavigate, type PanelRouteId } from "../routes/panelRoutes";
 import { panelWorkspaceLabel, panelWorkspaceTabs } from "../routes/panelWorkspaceCatalog";
+import { routeScaleBadges, scaleBadgeText } from "./scaleNotice";
 import { buildSectionModel } from "./sectionModels";
 import { DesktopDomainWorkspace } from "./DesktopDomainWorkspace";
 import { ReadonlyDiagnosticsEvidence } from "./ReadonlyDiagnosticsEvidence";
@@ -69,6 +70,7 @@ function MorePage({ onNavigate }: { onNavigate: (route: PanelRouteId) => void })
 export function OperationalSectionPage({ route, snapshot, onNavigate }: { route: PanelRouteId; snapshot: OverviewRawSnapshot; onNavigate: PanelNavigate }) {
   if (route === "more") return <MorePage onNavigate={onNavigate} />;
   const model = buildSectionModel(route, snapshot);
+  const scaleBadges = routeScaleBadges(route, snapshot);
   const metricColumnCount = Math.min(model.metrics.length, 4) || 1;
   const timeLabel = model.evidenceMode === "current" ? "业务成功" : model.evidenceMode === "historical" ? "上次成功" : "成功时间";
   return (
@@ -86,6 +88,13 @@ export function OperationalSectionPage({ route, snapshot, onNavigate }: { route:
       </header>
 
       <DesktopWorkspaceTabs route={route} onNavigate={onNavigate} />
+
+      {model.scopeNotice ? <p className="panel-scope-notice" data-panel-lan-scope-notice>{model.scopeNotice}</p> : null}
+      {scaleBadges.length ? (
+        <div className="panel-scale-notice" data-panel-scale-notice aria-label="采样口径说明">
+          {scaleBadges.map((badge) => <span key={badge.key}>{scaleBadgeText(badge)}</span>)}
+        </div>
+      ) : null}
 
       <section
         className="panel-section-metrics"

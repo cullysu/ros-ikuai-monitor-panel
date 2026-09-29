@@ -109,7 +109,7 @@ export function DesktopDomainWorkspace({ route, model, onNavigate }: { route: Pa
   const semanticPreview = risk && !selectedId ? null : selectSemanticWorkspacePreview(visibleRows);
   const inspectorRow = selectedRow || semanticPreview?.row || null;
   const supplementOwnsDnsList = route === "dns4" && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "dns-static";
-  const supplementOwnsConnectionList = route === "connections" && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "connection-search";
+  const supplementOwnsConnectionList = (route === "connections" || route === "trafficAudit") && supplement.result?.parseStatus === "accepted" && supplement.result.data?.kind === "connection-search";
   const supplementOwnsCollection = supplementOwnsDnsList || supplementOwnsConnectionList;
 
   useEffect(() => {
