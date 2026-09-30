@@ -54,7 +54,7 @@ const fmtRateUnit = (bps: number | null | undefined): string => {
 function uniqueWan(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
   const seen = new Set<string>();
   return [...(snapshot.wan || []), ...(snapshot.pppoe || [])].filter((row) => {
-    const key = norm(row.name || row.interface || row.access || row.parent);
+    const key = norm(row.lineId || row.id || row.name || row.interface || row.access || row.parent);
     if (!key || seen.has(key)) return false;
     seen.add(key); return true;
   });
@@ -207,12 +207,14 @@ function TrafficChart({ traffic }: { traffic: { points: Array<{ timestamp: numbe
 /* ============ 全局状态横幅 ============ */
 function ErrorBanner({ evidence, state }: { evidence: OverviewEvidenceModel; state: OverviewDerivedState }) {
   const mode = evidence.evidenceMode;
+  // navigator.onLine is only a browser transport hint (see usePanelRuntime);
+  // it does not prove RouterOS reachability or that a local snapshot exists.
   const offline = typeof navigator !== "undefined" && navigator.onLine === false;
   const failed = state.facts.failures;
   const stale = state.facts.freshness.stale;
   const missing = state.facts.freshness.missing;
   if (offline) {
-    return <div className="ntr-error" role="alert" style={{ margin: "0 0 8px" }}>网络已断开 · 正在显示最后一份本地数据</div>;
+    return <div className="ntr-error" role="alert" style={{ margin: "0 0 8px" }}>浏览器报告网络断开 · 如有本地快照则继续展示（设备状态以恢复连接后为准）</div>;
   }
   if (missing) {
     return <div className="ntr-error" role="alert" style={{ margin: "0 0 8px" }}>当前快照获取失败 · 下方为最近一次成功数据，不代表实时状态</div>;
@@ -269,7 +271,7 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         <section className="ntr-card ntr-stat">
           <button type="button" className="ntr-row" style={{ padding: 0 }} onClick={() => onNavigate("terminals")}>
             <span className="ntr-stat-icon"><Monitor size={18} /></span>
-            <div className="ntr-stat"><small>在线设备</small><b>{connected} / {terminals.length}</b></div>
+            <div className="ntr-stat"><small>在线设备</small><b>{connected}<span style={{ fontSize: 12, fontWeight: 400 }}> / 列表 {terminals.length} 台</span></b></div>
           </button>
         </section>
         <section className="ntr-card ntr-stat">

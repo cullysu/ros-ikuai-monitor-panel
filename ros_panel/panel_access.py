@@ -323,7 +323,7 @@ def get_panel_session(token):
         return copy.deepcopy(session)
 
 
-def build_panel_cookie(name, value, max_age=PANEL_SESSION_TTL_SECONDS, http_only=True):
+def build_panel_cookie(name, value, max_age=PANEL_SESSION_TTL_SECONDS, http_only=True, secure=False):
     parts = [
         f"{name}={value}",
         "Path=/",
@@ -332,6 +332,10 @@ def build_panel_cookie(name, value, max_age=PANEL_SESSION_TTL_SECONDS, http_only
     ]
     if http_only:
         parts.append("HttpOnly")
+    # Secure is conditional: the default deployment is plain-HTTP localhost,
+    # where Secure would break sessions; HTTPS frontends get it automatically.
+    if secure:
+        parts.append("Secure")
     return "; ".join(parts)
 
 

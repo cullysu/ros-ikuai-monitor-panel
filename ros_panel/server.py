@@ -48,6 +48,7 @@ from ros_panel.panel_access import (
     panel_request_access_url,
     parse_request_cookies,
     write_panel_network_env,
+    PANEL_TRUST_PROXY_HEADERS,
 )
 from ros_panel.health_findings import build_health_findings
 from ros_panel.router_config import (
@@ -210,8 +211,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def issue_panel_session(self):
         session = create_panel_session()
-        self.queue_cookie_header(build_panel_cookie(PANEL_SESSION_COOKIE, session["id"], http_only=True))
-        self.queue_cookie_header(build_panel_cookie(PANEL_CSRF_COOKIE, session["csrf"], http_only=False))
+        # Secure is set only when a trusted proxy certifies HTTPS; the default
+        # plain-HTTP localhost deployment must keep receiving cookies.
+        secure_cookie = PANEL_TRUST_PROXY_HEADERS and str(self.headers.get("X-Forwarded-Proto", "") or "").lower() == "https"
+        self.queue_cookie_header(build_panel_cookie(PANEL_SESSION_COOKIE, session["id"], http_only=True, secure=secure_cookie))
+        self.queue_cookie_header(build_panel_cookie(PANEL_CSRF_COOKIE, session["csrf"], http_only=False, secure=secure_cookie))
         return session
 
     def ensure_panel_session(self, create=False):

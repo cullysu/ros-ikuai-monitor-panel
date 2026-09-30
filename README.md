@@ -13,7 +13,7 @@ tools.
 
 ## Status
 
-This is an early public MVP. It is suitable for controlled localhost trials and
+This is a public release for controlled localhost trials and
 read-only operational review. Do not expose it directly to a LAN or the public
 internet.
 
