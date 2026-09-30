@@ -36,7 +36,7 @@ REALTIME_REST_ENDPOINTS = {
         fields="interface,actual-interface,address,disabled,dynamic,global,link-local,slave",
         optional=True,
     ),
-    "routes": endpoint("ip/route", fields="dst-address,gateway,distance,routing-table,active,comment,static,dynamic,disabled"),
+    "routes": endpoint("ip/route", fields="dst-address,gateway,immediate-gw,distance,routing-table,active,comment,static,dynamic,disabled"),
     "arp": endpoint("ip/arp", fields="address,mac-address,status,dynamic"),
     "ipv6_nd": endpoint(
         "ipv6/nd",
