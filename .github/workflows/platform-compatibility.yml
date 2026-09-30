@@ -1,0 +1,76 @@
+name: Platform compatibility
+
+on:
+  push:
+    branches: [main]
+    paths: ["app.py", "ros_panel/**", "requirements.txt", ".github/workflows/platform-compatibility.yml"]
+  pull_request:
+    paths: [".github/workflows/platform-compatibility.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-smoke:
+    name: Runtime smoke (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest,    label: "Linux x64",                    python-version: "3.12", experimental: false }
+          - { os: ubuntu-24.04-arm, label: "Linux arm64 (native)",         python-version: "3.12", experimental: false }
+          - { os: macos-latest,     label: "macOS Apple Silicon",          python-version: "3.12", experimental: false }
+          - { os: macos-13,         label: "macOS Intel",                  python-version: "3.12", experimental: false }
+          - { os: windows-latest,   label: "Windows x64",                  python-version: "3.12", experimental: false }
+          - { os: windows-11-arm,   label: "Windows ARM64 (experimental)", python-version: "3.13", experimental: true }
+          - { os: windows-latest,   label: "Windows x86 (experimental)",   python-version: "3.12", python-arch: "x86", experimental: true }
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python (${{ matrix.python-version }})
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.python-arch || 'x64' }}
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run unit suite
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Boot the panel and assert it serves
+        shell: bash
+        run: |
+          export ROS_PANEL_OPEN_BROWSER=0
+          export ROS_PANEL_PORT=8999
+          export ROS_PANEL_BIND=127.0.0.1
+          nohup python app.py > panel-runtime.log 2>&1 &
+          for i in $(seq 1 30); do
+            sleep 2
+            if curl -sf http://127.0.0.1:8999/api/health > /dev/null 2>&1; then break; fi
+          done
+          echo "--- /api/health ---"
+          curl -sf http://127.0.0.1:8999/api/health
+          echo "--- assertions ---"
+          # Any status proves the server + collectors answer (needs_config is a
+          # valid state on a runner with no router configured).
+          curl -sf http://127.0.0.1:8999/api/health | grep -q '"status"'
+          curl -sf http://127.0.0.1:8999/ | grep -q 'panel-surface-loader'
+          curl -sf http://127.0.0.1:8999/ | grep -q 'id="app"'
+          curl -sf http://127.0.0.1:8999/api/snapshot | grep -q '"status"'
+          curl -s -H "Accept-Encoding: gzip" -D headers.txt -o /dev/null http://127.0.0.1:8999/api/snapshot
+          grep -qi 'content-encoding: gzip' headers.txt
+          echo "runtime smoke OK on ${{ matrix.label }}"
+
+      - name: Upload runtime log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-log-${{ matrix.label }}
+          path: panel-runtime.log
+          if-no-files-found: ignore
