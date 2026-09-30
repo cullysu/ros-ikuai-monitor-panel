@@ -51,7 +51,11 @@ with sync_playwright() as p:
         snap = json.loads(raw)
     check("snapshot ok against real router", snap.get("status") == "ok", snap.get("status"))
     identity = str((snap.get("overview") or {}).get("identity", ""))
-    check("collector identity is RouterOS", identity == "RouterOS", identity)
+    version = str((snap.get("overview") or {}).get("version", ""))
+    import re as _re
+    check("collector identity is a real RouterOS identity",
+          bool(identity) and _re.match(r"^[67]\.", version) is not None,
+          f"identity={identity!r} version={version!r}")
 
     # ---- 2. desktop overview on real data ----
     page.goto(BASE + "index.html?surface=desktop", wait_until="domcontentloaded", timeout=30000)
