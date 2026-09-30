@@ -1,7 +1,7 @@
 import ipaddress
 import re
-import time
 from collections import defaultdict
+from datetime import datetime, timezone
 
 from ros_panel.util import to_int
 
@@ -115,7 +115,9 @@ def interface_quality_group_key(item):
 
 
 def format_iso_now():
-    return time.strftime("%Y-%m-%d %H:%M:%S")
+    # RFC3339 UTC-Z: evidence timestamps stay unambiguous for browsers in any
+    # timezone and match the readonly-contract canonical form.
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def parse_ping_latency_ms(output):
