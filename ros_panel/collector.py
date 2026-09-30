@@ -1693,7 +1693,7 @@ class Collector:
         dhcp_clients_by_interface = {
             item.get("interface"): item
             for item in rest.get("dhcp_clients", [])
-            if item.get("interface")
+            if item.get("interface") and not to_bool(item.get("disabled"))
         }
         wan_interfaces = [row for row in interfaces if row.get("role") == "WAN" and str(row.get("name") or "") not in pppoe_names]
         for iface in wan_interfaces:
