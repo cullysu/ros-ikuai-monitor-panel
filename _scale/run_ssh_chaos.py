@@ -32,6 +32,7 @@ CASES = {
     "ssh_auth_fail": ("baseline",           {"connections": 5, "tracking": 5, "refuse_auth": True}, ["overview", "connections"], 12),
     "lan_20k_terminals": ("lan_20k_terminals", {"connections": 500, "tracking": 20000, "lan20k": True},       ["overview", "terminals", "trafficAudit", "dhcp", "arp"], 22),
     "dns_static_5000": ("dns_static_5000",  {"connections": 5, "tracking": 10, "dns_count": 5000},              ["dns4", "dns6"], 14),
+    "hybrid_wan_all":  ("hybrid_wan_all",   {"connections": 10, "tracking": 20},                     ["overview", "lineStatus", "balance", "trafficLoad"], 12),
     "xss_everything": ("xss_everything",     {"connections": 10, "tracking": 20, "xss": True}, ["overview", "interfaces", "terminals", "dhcp", "dns4", "dns6", "routes", "lineStatus", "balance", "trafficLoad", "loadAudit", "connections", "security", "arp", "trafficAudit", "logs", "serviceLogs"], 12),
 }
 

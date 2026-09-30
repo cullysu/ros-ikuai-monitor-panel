@@ -2371,7 +2371,9 @@ class Collector:
         wan_latency = self.get_wan_latency()
         pppoe = self.attach_wan_latency(pppoe, wan_latency)
         wan_lines = self.attach_wan_latency(wan_lines, wan_latency)
-        if not distribution and wan_lines:
+        # Distribution must cover every WAN line (PPPoE + DHCP/static); the
+        # PPPoE-only distribution from build_pppoe would hide hybrid lines.
+        if wan_lines:
             distribution = build_distribution_from_lines(wan_lines)
         wan_source = [row for row in wan_lines if row.get("running")] or list(wan_lines)
         wan_totals = {

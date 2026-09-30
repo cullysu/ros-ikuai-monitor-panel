@@ -231,6 +231,26 @@ class BuildWanLinesTest(unittest.TestCase):
         self.assertEqual([row["lineId"] for row in lines], ["pppoe-out10"])
 
 
+class HybridDistributionTest(unittest.TestCase):
+    def test_distribution_covers_non_pppoe_wan(self):
+        # Hybrid router: the share list must include DHCP/static WAN lines,
+        # not just the PPPoE rows build_pppoe knows about.
+        collector = app.Collector()
+        rest = Rest()
+        rest["routes"] = [{"dst-address": "0.0.0.0/0", "active": "true"}]
+        rest["dhcp_clients"] = [{"interface": "etherWan", "add-default-route": "true", "default-route-distance": "1"}]
+        rest["pppoe"] = [{"name": "pppoe-out10", "running": "true", "status": "connected"}]
+        rest["interfaces"] = [
+            {"name": "pppoe-out10", "type": "pppoe-out", "running": "true", "disabled": "false"},
+            {"name": "etherWan", "type": "ether", "running": "true", "disabled": "false"},
+        ]
+        snapshot = collector.build_snapshot(rest, {"counts": {"all": 0, "tcp": 0, "udp": 0, "icmp": 0}, "active_connections": []})
+        self.assertEqual(snapshot["status"], "ok")
+        names = [row["name"] for row in snapshot["loadBalance"]["distribution"]]
+        self.assertIn("pppoe-out10", names)
+        self.assertIn("etherWan", names)
+
+
 class TerminalsLanScopeTest(unittest.TestCase):
     def test_out_of_scope_arp_counted(self):
         collector = app.Collector()
@@ -322,10 +342,11 @@ class HealthFindingsTest(unittest.TestCase):
         self.assertEqual(payload["topFinding"]["id"], "system.resource_pressure")
         self.assertEqual(payload["findings"][0]["severity"], "critical")
 
-    def test_naive_snapshot_clock_becomes_rfc3339(self):
+    def test_snapshot_clock_is_canonical_rfc3339(self):
         snapshot = self._snapshot()
-        # build_snapshot stamps naive local clocks; the envelope must not leak them.
-        self.assertNotIn("T", snapshot["updatedAt"])
+        # build_snapshot stamps canonical UTC-Z timestamps, so the readonly
+        # envelope never has to normalize (and can never leak a naive clock).
+        self.assertRegex(snapshot["updatedAt"], r"Z$")
         payload = app.build_health_findings(snapshot)
         converted = app.public_rfc3339_timestamp(snapshot["updatedAt"])
         self.assertIsNotNone(converted)

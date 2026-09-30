@@ -61,6 +61,10 @@ def lines_for(s):
         return [(f"pppoe-out{i}", f"vlan{i}", i % 9 != 0, (i % 50 + 1) * 1e6, (i % 7 + 1) * 1e5) for i in range(1, 1001)]
     if s == "huge_rate":
         return [("pppoe-out1", "ether2", True, 400e9, 400e9), ("pppoe-out2", "ether3", True, 1, 1)]
+    if s == "hybrid_wan_all":
+        # PPPoE + DHCP-client + static WAN on one router: build_wan_lines must
+        # keep the non-PPPoE rows visible and put the PPPoE rows first.
+        return [("pppoe-out10", "ether2", True, 60e6, 6e6), ("pppoe-out20", "ether3", True, 40e6, 4e6)]
     return [(f"pppoe-out{i}", "ether2", True, (i * 37 % 90 + 10) * 1e6, (i * 13 % 9 + 1) * 1e6) for i in range(1, 4)]
 
 
@@ -99,6 +103,9 @@ def interfaces(s):
         rows.append({"name": 12345, "type": ["x"], "running": {"a": 1}, "rx-byte": [1, 2], "tx-byte": {"x": 1}})
     if s == "iface_10000":
         rows += [mk_iface(f"vlan{i}", "vlan", i % 3 != 0, grow(1e5, i), grow(1e5, i)) for i in range(10000)]
+    if s == "hybrid_wan_all":
+        rows.append(mk_iface("ether5", "ether", True, grow(20e6), grow(2e6)))
+        rows.append(mk_iface("ether6", "ether", True, grow(10e6), grow(1e6)))
     return rows
 
 
@@ -159,6 +166,9 @@ def addresses(s):
                  {"interface": "ether1", "address": ""}, {"interface": "ether1"}, {"address": "::1/200"}]
     if s == "dhcp_wan_mixed":
         rows.append({"interface": "ether5", "actual-interface": "ether5", "address": "203.0.113.5/24", "network": "203.0.113.0"})
+    if s == "hybrid_wan_all":
+        rows.append({"interface": "ether5", "actual-interface": "ether5", "address": "100.64.7.2/32", "network": "100.64.7.1"})
+        rows.append({"interface": "ether6", "actual-interface": "ether6", "address": "223.255.255.6/24", "network": "223.255.255.0"})
     return rows
 
 
@@ -172,6 +182,11 @@ def routes(s):
     if s == "dhcp_wan_mixed":
         rows.append({"dst-address": "0.0.0.0/0", "gateway": "203.0.113.1%ether5", "distance": "5", "routing-table": "main",
                      "active": "true", "dynamic": "true", "disabled": "false"})
+    if s == "hybrid_wan_all":
+        rows.append({"dst-address": "0.0.0.0/0", "gateway": "100.64.7.1%ether5", "distance": "5", "routing-table": "main",
+                     "active": "true", "dynamic": "true", "disabled": "false"})
+        rows.append({"dst-address": "0.0.0.0/0", "gateway": "223.255.255.1%ether6", "distance": "5", "routing-table": "main",
+                     "active": "true", "static": "true", "dynamic": "false", "disabled": "false"})
     return rows
 
 
@@ -230,7 +245,7 @@ def dns(s):
 
 
 def dhcp_clients(s):
-    if s == "dhcp_wan_mixed":
+    if s in ("dhcp_wan_mixed", "hybrid_wan_all"):
         return [{"interface": "ether5", "status": "bound", "use-peer-dns": "true", "add-default-route": "true",
                  "default-route-distance": "5", "disabled": "false"}]
     return []
