@@ -99,10 +99,10 @@
 
 ## 六、未尽事项
 
-- `conn_xss`（SSH 连接字段注入）的页面渲染验证被 H1 掩盖（行在渲染前被丢弃），修复 H1 后需复测；
-- mock 未实现 SSH `dns/static print count-only`，DNS 静态 totalCount 未做端到端验证；
-- 未测 DHCP/静态 IP 型 WAN 拨号的完整矩阵（本轮 WAN 均为 PPPoE）；
-- 每档采样约 1~2 分钟，趋势图点数有限。
+- ~~`conn_xss`（SSH 连接字段注入）的页面渲染验证被 H1 掩盖~~ **已复测关闭（2026-09-30）**：H1 修复后行进入渲染链（connTotal=50/20 证明解析通路），`conn_xss` + `xss_everything`（17 区块）重跑，`window.__xss` 全程 0、0 pageerror、无溢出——XSS 载荷因非法 IP 被校验层拒绝，`connection-mark`/`data-x` 属性注入未破出；
+- ~~mock 未实现 SSH `dns/static print count-only`，DNS 静态 totalCount 未做端到端验证~~ **已关闭（2026-09-30）**：fake_ssh 补实现 count-only（计数经 ssh_state 注入），`dns_static_5000` 端到端实测快照 `dns.forwardRuleCount=5000` + `forwardRuleSample=true`（"显示 x / 共 y" 徽标数据源）；
+- ~~未测 DHCP/静态 IP 型 WAN 拨号的完整矩阵~~ **已按发布面关闭（2026-09-30）**：生产验证路由器 chr-lab（ESXi CHR 7.15.3，192.168.3.66）即为 DHCP 型 WAN，real-machine 验收 11/11 ALL PASS（WAN 在线 + 速率历史 + 17 区块）；多 WAN 混合矩阵仍属 scale 专项；
+- 每档采样约 1~2 分钟，趋势图点数有限。（测试节奏备注，非缺陷，不处理）
 
 ---
 

@@ -81,6 +81,10 @@ def handle_exec(channel, command):
             out = f" total-entries: {n}\n total-ip4-entries: {int(n * 0.9)}\n total-ip6-entries: {n - int(n * 0.9)}\n"
         channel.sendall(out.encode())
         return
+    if "dns/static" in cmd and "count-only" in cmd:
+        # Real RouterOS prints only the row count here; the panel to_int()s it.
+        channel.sendall(f"{int(st.get('dns_count') or 0)}\n".encode())
+        return
     if "connection print terse" in cmd:
         n = int(st.get("connections") or 0)
         lines = []
