@@ -57,8 +57,11 @@ jobs:
           echo "--- /api/health ---"
           curl -sf http://127.0.0.1:8999/api/health
           echo "--- assertions ---"
-          curl -sf http://127.0.0.1:8999/api/health | grep -q '"ok"'
+          # Any status proves the server + collectors answer (needs_config is a
+          # valid state on a runner with no router configured).
+          curl -sf http://127.0.0.1:8999/api/health | grep -q '"status"'
           curl -sf http://127.0.0.1:8999/ | grep -q 'panel-surface-loader'
+          curl -sf http://127.0.0.1:8999/ | grep -q 'id="app"'
           curl -sf http://127.0.0.1:8999/api/snapshot | grep -q '"status"'
           curl -s -H "Accept-Encoding: gzip" -D headers.txt -o /dev/null http://127.0.0.1:8999/api/snapshot
           grep -qi 'content-encoding: gzip' headers.txt
