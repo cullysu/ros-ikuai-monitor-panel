@@ -20,11 +20,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest,    label: "Linux x64",                    python-version: "3.12" }
-          - { os: ubuntu-24.04-arm, label: "Linux arm64 (native)",         python-version: "3.12" }
-          - { os: macos-latest,     label: "macOS Apple Silicon",          python-version: "3.12" }
-          - { os: macos-13,         label: "macOS Intel",                  python-version: "3.12" }
-          - { os: windows-latest,   label: "Windows x64",                  python-version: "3.12" }
+          - { os: ubuntu-latest,    label: "Linux x64",                    python-version: "3.12", experimental: false }
+          - { os: ubuntu-24.04-arm, label: "Linux arm64 (native)",         python-version: "3.12", experimental: false }
+          - { os: macos-latest,     label: "macOS Apple Silicon",          python-version: "3.12", experimental: false }
+          - { os: macos-13,         label: "macOS Intel",                  python-version: "3.12", experimental: false }
+          - { os: windows-latest,   label: "Windows x64",                  python-version: "3.12", experimental: false }
           - { os: windows-11-arm,   label: "Windows ARM64 (experimental)", python-version: "3.13", experimental: true }
           - { os: windows-latest,   label: "Windows x86 (experimental)",   python-version: "3.12", python-arch: "x86", experimental: true }
     steps:
