@@ -20,5 +20,8 @@
     "terser": "5.50.0",
     "typescript": "^5.5.4",
     "vite": "^6.4.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

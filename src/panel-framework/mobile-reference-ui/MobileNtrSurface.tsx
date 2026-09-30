@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, ChevronRight, FileText, Globe, Home, Monitor, RefreshCw, Search, Server, Settings, ShieldCheck, Smartphone, UserRound, Wifi, Activity, AlertOctagon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { OverviewDerivedState, OverviewRawSnapshot, OverviewRawWanRow, OverviewRawInterfaceRow } from "../overview";
 import type { OverviewEvidenceModel } from "../overview/evidence-model/overviewEvidenceTypes";
 import { domainDefinitionFor, filterWorkspaceRows, sortWorkspaceRows } from "../domain-workspace/domainDefinitions";
@@ -54,7 +54,7 @@ const fmtRateUnit = (bps: number | null | undefined): string => {
 function uniqueWan(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
   const seen = new Set<string>();
   return [...(snapshot.wan || []), ...(snapshot.pppoe || [])].filter((row) => {
-    const key = norm(row.name || row.interface || row.access || row.parent);
+    const key = norm(row.lineId || row.id || row.name || row.interface || row.access || row.parent);
     if (!key || seen.has(key)) return false;
     seen.add(key); return true;
   });
@@ -71,6 +71,7 @@ function wanRows(snapshot: OverviewRawSnapshot) {
       online,
       disabled: row.disabled === true,
       runningKnown: typeof row.running === "boolean",
+      defaultRoutes: Array.isArray(row.routes) ? (row.routes as Array<Record<string, unknown>>).filter((r) => r && r.active === true).length : 0,
       duration: val(raw, ["uptime", "onlineFor", "connectedFor", "duration"]) || "",
       down: fmtRate(num(raw, ["rxRate", "downRate", "rx"])),
       up: fmtRate(num(raw, ["txRate", "upRate", "tx"])),
@@ -79,7 +80,7 @@ function wanRows(snapshot: OverviewRawSnapshot) {
       address: val(raw, ["ipv4Address", "address", "ip"]) || "",
       latency: num(raw, ["latency", "delay", "ping", "latencyMs"]),
       loss: num(raw, ["loss", "packetLoss", "lossPercent"]),
-      isDefault: false,
+      isDefault: Array.isArray(row.routes) && (row.routes as Array<Record<string, unknown>>).some((r) => r && r.active === true),
     };
   });
 }
@@ -91,6 +92,7 @@ function interfaceRows(snapshot: OverviewRawSnapshot) {
       id: val(raw, ["name", "id", "interface"]) || "?",
       name: val(raw, ["name", "id", "interface"]) || "?",
       running: row.running === true,
+      runningKnown: typeof row.running === "boolean",
       disabled: row.disabled === true,
       type: val(raw, ["type", "kind"]) || "",
       down: fmtRate(num(raw, ["rxRate", "rx", "downRate"])),
@@ -105,8 +107,8 @@ function terminalsList(snapshot: OverviewRawSnapshot) {
   return rowsFromModel("terminals", buildSectionModel("terminals", snapshot));
 }
 
-function toneFor(online: boolean, disabled: boolean): Tone {
-  if (disabled) return "muted";
+function toneFor(online: boolean, disabled: boolean, known = true): Tone {
+  if (disabled || !known) return "muted";
   return online ? "ok" : "danger";
 }
 
@@ -205,12 +207,14 @@ function TrafficChart({ traffic }: { traffic: { points: Array<{ timestamp: numbe
 /* ============ 全局状态横幅 ============ */
 function ErrorBanner({ evidence, state }: { evidence: OverviewEvidenceModel; state: OverviewDerivedState }) {
   const mode = evidence.evidenceMode;
+  // navigator.onLine is only a browser transport hint (see usePanelRuntime);
+  // it does not prove RouterOS reachability or that a local snapshot exists.
   const offline = typeof navigator !== "undefined" && navigator.onLine === false;
   const failed = state.facts.failures;
   const stale = state.facts.freshness.stale;
   const missing = state.facts.freshness.missing;
   if (offline) {
-    return <div className="ntr-error" role="alert" style={{ margin: "0 0 8px" }}>网络已断开 · 正在显示最后一份本地数据</div>;
+    return <div className="ntr-error" role="alert" style={{ margin: "0 0 8px" }}>浏览器报告网络断开 · 如有本地快照则继续展示（设备状态以恢复连接后为准）</div>;
   }
   if (missing) {
     return <div className="ntr-error" role="alert" style={{ margin: "0 0 8px" }}>当前快照获取失败 · 下方为最近一次成功数据，不代表实时状态</div>;
@@ -254,7 +258,7 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         <button type="button" className="ntr-row" onClick={() => onShowConnection?.()}>
           <span className="ntr-device-icon"><Server size={22} /></span>
           <div className="ntr-device" style={{ flex: 1 }}>
-            <div><b>{SYSTEM_NAME}</b><small>{state.facts.device.version || "RouterOS"} · 运行 {state.facts.device.uptime || "—"}</small></div>
+            <div><b>{state.facts.device.identity || SYSTEM_NAME}</b><small>{state.facts.device.version || "RouterOS"} · 运行 {state.facts.device.uptime || "—"}</small></div>
           </div>
           <Chev />
         </button>
@@ -267,7 +271,7 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         <section className="ntr-card ntr-stat">
           <button type="button" className="ntr-row" style={{ padding: 0 }} onClick={() => onNavigate("terminals")}>
             <span className="ntr-stat-icon"><Monitor size={18} /></span>
-            <div className="ntr-stat"><small>在线设备</small><b>{connected} / {terminals.length}</b></div>
+            <div className="ntr-stat"><small>在线设备</small><b>{connected}<span style={{ fontSize: 12, fontWeight: 400 }}> / 列表 {terminals.length} 台</span></b></div>
           </button>
         </section>
         <section className="ntr-card ntr-stat">
@@ -336,13 +340,15 @@ function NetworkHub(props: NtrProps) {
   const { snapshot, onNavigate, evidence } = props;
   const wans = useMemo(() => wanRows(snapshot), [snapshot]);
   const online = wans.filter((w) => w.online).length;
+  const wanOffline = wans.filter((w) => w.runningKnown && !w.online).length;
+  const wanUnknown = wans.length - online - wanOffline;
   const interfaces = useMemo(() => interfaceRows(snapshot), [snapshot]);
   const ifOnline = interfaces.filter((i) => i.running).length;
   return <HubPage title="网络总览" onBack={() => onNavigate("overview", { replace: true })}
     summary={`${online} / ${wans.length} 条 WAN 在线 · ${ifOnline} / ${interfaces.length} 个接口运行`}
-    summaryTone={online > 0 ? "ok" : "danger"}
+    summaryTone={online > 0 ? "ok" : wanOffline > 0 ? "danger" : "muted"}
     entries={[
-      { icon: <Wifi size={17} />, label: "宽带线路", sub: `${online} 在线 / ${wans.length - online} 离线`, tone: online === wans.length ? "ok" : "warn", onClick: () => onNavigate("lineStatus", { objectId: "__lines__" }) },
+      { icon: <Wifi size={17} />, label: "宽带线路", sub: `${online} 在线 / ${wanOffline} 离线${wanUnknown ? ` / ${wanUnknown} 未采集` : ""}`, tone: online === wans.length ? "ok" : "warn", onClick: () => onNavigate("lineStatus", { objectId: "__lines__" }) },
       { icon: <Globe size={17} />, label: "接口总览", sub: `${interfaces.length} 个接口`, onClick: () => onNavigate("interfaces") },
       { icon: <Activity size={17} />, label: "静态路由", sub: "路由表配置与状态", onClick: () => onNavigate("routes") },
       { icon: <Activity size={17} />, label: "分流监控", sub: "分流规则命中统计", onClick: () => onNavigate("balance") },
@@ -412,6 +418,7 @@ function AuditView({ snapshot }: { snapshot: OverviewRawSnapshot }) {
   return <section className="ntr-card ntr-rows">
     {rows.slice(0, 40).map((row) => <Row key={row.id} title={row.primary} sub={row.secondary} right={row.trailing} />)}
     {rows.length === 0 ? <p className="ntr-empty">当前没有审计记录</p> : null}
+    {rows.length > 40 ? <p className="ntr-empty">显示前 40 条 · 共 {rows.length} 条</p> : null}
   </section>;
 }
 
@@ -484,6 +491,7 @@ function TerminalsPage(props: NtrProps & { presetRisk?: boolean }) {
         </div>;
       })}
       {filtered.length === 0 ? <p className="ntr-empty">当前筛选没有匹配的终端</p> : null}
+      {filtered.length > 50 ? <p className="ntr-empty">显示前 50 条 · 共 {filtered.length} 条</p> : null}
     </section>
   </SubPage>;
 }
@@ -641,7 +649,7 @@ function WanDetailPage(props: NtrProps) {
   if (!wan) return <SubPage title="线路详情" evidence={evidence} state={props.state} onBack={() => onNavigate("lineStatus", { replace: true })}><p className="ntr-empty">当前快照没有可核实的出口对象</p></SubPage>;
   return <SubPage title={wan.name} evidence={evidence} state={props.state} onBack={() => onNavigate("lineStatus", { objectId: null, replace: true })}>
     <section className="ntr-card">
-      <div className="ntr-hub-summary"><Dot tone={wan.online ? "ok" : wan.disabled ? "muted" : "danger"} /><div><b>{wan.name}</b><small>{wan.provider || "运营商"} · {wan.online ? "在线" : "离线"}</small></div></div>
+      <div className="ntr-hub-summary"><Dot tone={wan.runningKnown ? toneFor(wan.online, wan.disabled) : "muted"} /><div><b>{wan.name}</b><small>{wan.provider || "运营商"} · {wan.online ? "在线" : "离线"}</small></div></div>
     </section>
     <div className="ntr-grid2">
       <section className="ntr-card ntr-stat"><span className="ntr-stat-icon"><ArrowDown size={18} /></span><div className="ntr-stat"><small>下载速率</small><b>{wan.down} {wan.downUnit}</b></div></section>
@@ -665,7 +673,7 @@ function LineStatusPage(props: NtrProps) {
   return <SubPage title="线路状态" onBack={() => onNavigate("lineStatus", { objectId: null, query: null, replace: true })}>
     <section className="ntr-card ntr-rows">
       {wans.map((wan) => (
-        <Row key={wan.id} dot={toneFor(wan.online, wan.disabled)} title={wan.name} sub={`${wan.provider || "运营商"} · ${wan.duration || "—"}`} right={!wan.runningKnown ? "未采集" : wan.online ? `${wan.down} ${wan.downUnit}` : "未拨号"} onClick={() => onNavigate("lineStatus", { objectId: wan.name })} />
+        <Row key={wan.id} dot={toneFor(wan.online, wan.disabled)} title={wan.name} sub={`${wan.provider || "运营商"} · ${wan.duration || "—"}${wan.isDefault ? " · 默认出口" : ""}`} right={!wan.runningKnown ? "未采集" : wan.online ? `${wan.down} ${wan.downUnit}` : "未拨号"} onClick={() => onNavigate("lineStatus", { objectId: wan.name })} />
       ))}
       {wans.length === 0 ? <p className="ntr-empty">当前没有 WAN 线路</p> : null}
     </section>
@@ -676,16 +684,29 @@ function LineStatusPage(props: NtrProps) {
 export function MobileNtrSurface(props: NtrProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const route = props.route || "overview";
+  const searchHistoryRef = useRef(false);
   const openSearch = () => {
-    window.history.pushState({ ntrSearch: true }, "");
+    if (!searchHistoryRef.current) {
+      window.history.pushState({ ntrSearch: true }, "");
+      searchHistoryRef.current = true;
+    }
     setSearchOpen(true);
   };
-  const closeSearch = () => setSearchOpen(false);
-  useState(() => {
-    const onPop = () => setSearchOpen(false);
+  const closeSearch = () => {
+    setSearchOpen(false);
+    if (searchHistoryRef.current) {
+      searchHistoryRef.current = false;
+      window.history.back();
+    }
+  };
+  useEffect(() => {
+    const onPop = () => {
+      searchHistoryRef.current = false;
+      setSearchOpen(false);
+    };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  });
+  }, []);
   const shared = { ...props, onOpenSearch: openSearch };
 
   if (route === "overview") {

@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Mobile home device card shows the real router identity instead of the fixed
+  product name (matches the settings page).
+- WAN list/detail mark the default-route carrier from active route evidence
+  instead of a hardcoded `isDefault: false`.
+- Unknown link state (running not reported) no longer renders or is counted as
+  offline: hub dots go muted, hub counters split known-offline from unsampled.
+- Exit/login row is wired to the runtime connection screen (was a dead button).
+- Search modal now tracks its history entry: opening pushes, closing pops,
+  Back closes it, and the popstate listener lives in a proper effect with
+  cleanup (it previously accumulated listeners on every mount).
+- Audit and terminal lists disclose truncation (显示前 40/50 条 · 共 N 条).
+- Cookies gain `Secure` automatically when a trusted proxy certifies HTTPS
+  (the default plain-HTTP localhost deployment is unaffected).
+- Mobile product contract documented (docs/mobile-product-contract.md): the
+  five-tab IA is frozen as user-approved 2026-09-28, superseding the old
+  four-entry draft contract.
+- compose: documented that router passwords should not travel as environment
+  variables; package.json declares a Node engines floor; README release-stage
+  wording updated.
+
 ## 0.4.0 - 2026-09-30
 
 ### Security
