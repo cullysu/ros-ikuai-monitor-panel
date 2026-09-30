@@ -231,6 +231,18 @@ class BuildWanLinesTest(unittest.TestCase):
         self.assertEqual([row["lineId"] for row in lines], ["pppoe-out10"])
 
 
+class WanInferenceTest(unittest.TestCase):
+    def test_plain_ip_gateway_marks_egress_wan(self):
+        # A static WAN whose default route has a plain next-hop IP still has
+        # its egress interface named by immediate-gw ("ip%ether1").
+        rest = Rest()
+        rest["interfaces"] = [{"name": "ether1", "type": "ether"}]
+        rest["routes"] = [{"dst-address": "0.0.0.0/0", "gateway": "192.0.2.1",
+                           "immediate-gw": "192.0.2.1%ether1", "active": "true", "disabled": "false"}]
+        wan_names = app.infer_wan_interface_names(rest, {})
+        self.assertIn("ether1", wan_names)
+
+
 class HybridDistributionTest(unittest.TestCase):
     def test_distribution_covers_non_pppoe_wan(self):
         # Hybrid router: the share list must include DHCP/static WAN lines,

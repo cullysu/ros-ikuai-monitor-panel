@@ -185,8 +185,11 @@ def routes(s):
     if s == "hybrid_wan_all":
         rows.append({"dst-address": "0.0.0.0/0", "gateway": "100.64.7.1%ether5", "distance": "5", "routing-table": "main",
                      "active": "true", "dynamic": "true", "disabled": "false"})
-        rows.append({"dst-address": "0.0.0.0/0", "gateway": "223.255.255.1%ether6", "distance": "5", "routing-table": "main",
-                     "active": "true", "static": "true", "dynamic": "false", "disabled": "false"})
+        # Real-CHR shape: plain next-hop IP in `gateway`, egress interface
+        # only in `immediate-gw`.
+        rows.append({"dst-address": "0.0.0.0/0", "gateway": "223.255.255.1", "immediate-gw": "223.255.255.1%ether6",
+                     "distance": "5", "routing-table": "main", "active": "true", "static": "true", "dynamic": "false",
+                     "disabled": "false"})
     return rows
 
 

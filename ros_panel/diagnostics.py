@@ -156,12 +156,15 @@ def infer_wan_interface_names(rest, addresses_by_interface):
         if row.get("dst-address") == "0.0.0.0/0" and not to_bool(row.get("disabled"))
     ]
     for route in defaults:
-        gateway = str(route.get("gateway") or "").strip()
-        if not gateway:
-            continue
-        gateway_name = gateway.split("%", 1)[1] if "%" in gateway else gateway
-        if gateway_name in interface_types:
-            wan_names.add(gateway_name)
+        # `gateway` may be a plain next-hop IP; the active egress interface
+        # only shows up in `immediate-gw` ("192.0.2.1%ether1"). Check both.
+        for gateway_field in ("gateway", "immediate-gw"):
+            gateway = str(route.get(gateway_field) or "").strip()
+            if not gateway:
+                continue
+            gateway_name = gateway.split("%", 1)[1] if "%" in gateway else gateway
+            if gateway_name in interface_types:
+                wan_names.add(gateway_name)
     for iface_name, address_rows in addresses_by_interface.items():
         if not iface_name or iface_name in wan_names:
             continue

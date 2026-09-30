@@ -1613,6 +1613,12 @@ class Collector:
         route_by_gateway = defaultdict(list)
         for route in defaults:
             route_by_gateway[route.get("gateway")].append(route)
+            # Index the active egress interface too, so a plain-IP gateway
+            # ("192.0.2.1" with immediate-gw "192.0.2.1%ether1") still lands
+            # on the ether1 WAN line.
+            immediate_gw = str(route.get("immediate-gw") or "")
+            if "%" in immediate_gw:
+                route_by_gateway[immediate_gw.split("%", 1)[1]].append(route)
         rows = []
         total_rate = 0
         for item in rest["pppoe"]:
@@ -1708,16 +1714,25 @@ class Collector:
                         "comment": "DHCP client default route",
                     }
                 )
-            elif len(wan_interfaces) == 1:
-                route_rows = [
-                    {
-                        "active": to_bool(route.get("active")),
-                        "distance": route.get("distance", "-"),
-                        "table": route.get("routing-table", "-"),
-                        "comment": route.get("comment", ""),
-                    }
-                    for route in active_defaults[:4]
+            else:
+                # Attribute defaults to this line via its egress interface
+                # (%name in gateway / immediate-gw); a lone WAN line keeps the
+                # legacy "show the active defaults" behavior.
+                own_defaults = [
+                    route for route in active_defaults
+                    if str(route.get("gateway") or "").endswith(f"%{name}")
+                    or str(route.get("immediate-gw") or "").endswith(f"%{name}")
                 ]
+                if own_defaults or len(wan_interfaces) == 1:
+                    route_rows = [
+                        {
+                            "active": to_bool(route.get("active")),
+                            "distance": route.get("distance", "-"),
+                            "table": route.get("routing-table", "-"),
+                            "comment": route.get("comment", ""),
+                        }
+                        for route in (own_defaults or active_defaults)[:4]
+                    ]
             rows.append(
                 {
                     "name": name,
