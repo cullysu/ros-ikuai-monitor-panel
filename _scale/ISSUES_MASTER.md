@@ -170,3 +170,16 @@
   - 覆盖本轮全部边界加固：混合 WAN、lanScope 计数、scale meta 截断计数、overview 钳位+异常标注+时钟偏差、v6 日期/uptime 格式化、REST 错误脱敏、DPAPI 往返（Windows-only 用例）、登录存储往返+明文落盘断言；
   - 已接入 CI：linux-validation 加单测步骤，windows-packaging 加同套件（DPAPI 用例只在 Windows 激活）。
 - 纠正评审一处细节：React 版（panel-framework）不在本仓分支，在姊妹仓 `ros-ikuai-monitor-panel-mobile-native-release/src/panel-framework/`（含 desktop/），双技术栈并存属实、位置跨仓。
+---
+
+## 七、2026-10-01 深夜追加：验证专项挖出的三个真缺陷（v0.5.1 修复）
+
+| # | 缺陷 | 根因 | 修复 | 证据 |
+|---|------|------|------|------|
+| A1 | 混合部署占比条丢线路 | build_pppoe 的 distribution 只含 PPPoE 行，wan_lines 兜底仅在"无任何 PPPoE"时触发 | 一律从完整 wan_lines 重建（diagnostics.build_distribution_from_lines 保 None 透传，回滚期速率不冒充 0） | 回归单测 + mock 三合一 share≈100 |
+| A2 | 静态 WAN 从面板消失 | 默认路由 `gateway` 是纯 IP，活跃出口只在 `immediate-gw`（ip%iface）；推断不读它 + routes proplist 白名单根本没采 immediate-gw + 禁用的 DHCP 客户端仍冒充路由证据 | 推断/逐线挂接双读 immediate-gw；proplist 加列；dhcp_clients 挂接滤 disabled | 真机 CHR 实证（改静态后 ether1 消失→修复回归）+ 单测 |
+| A3 | 跨时区浏览器恒报"快照已过期/通道需复核" | format_iso_now 发朴素主机本地串，前端 RFC3339 严格解析拒收 → 证据时间戳 null → 恒 stale | 后端改发 RFC3339 UTC-Z（与只读契约规范形一致） | Playwright 挂 America/New_York 时区（与本机差 12h）双面 9/9；生产部署后双端横幅干净 |
+
+配套：chaos mock 新增 `hybrid_wan_all`（2×PPPoE+DHCP+静态同机，含真机路由形态）；fake_ssh 补 `dns/static print count-only`。
+发布：v0.5.1（c5dec09，CI/镜像/Release 全绿；**Release 对象在草稿箱**——删旧 tag 孤儿化所致，发布页一键可发，资产 8/8 已挂）。
+生产 3.5 已部署同提交（/opt/panel-deploy.sh 同通道），真机验收 11/11、跨时区双端干净、混合双 WAN（ether1 静态+vlan40-lab）带各自路由证据。
