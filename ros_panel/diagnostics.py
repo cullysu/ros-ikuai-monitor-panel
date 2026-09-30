@@ -188,8 +188,10 @@ def build_distribution_from_lines(lines):
             "share": round((((to_int(row.get("upRate")) + to_int(row.get("downRate"))) / total_rate) * 100), 2)
             if total_rate
             else 0,
-            "upRate": to_int(row.get("upRate")),
-            "downRate": to_int(row.get("downRate")),
+            # Keep None through: a withheld rate (counter reset) must stay
+            # withheld instead of posing as a 0 sample.
+            "upRate": row.get("upRate"),
+            "downRate": row.get("downRate"),
             "status": row.get("status", "-"),
         }
         for row in rows
