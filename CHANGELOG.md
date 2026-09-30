@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.1 - 2026-10-01
+
+### Fixed
+
+- Hybrid routers keep their share list complete: the distribution no longer
+  drops DHCP/static WAN lines when any PPPoE line exists.
+- A static WAN whose default route uses a plain next-hop IP stays visible:
+  WAN inference and per-line route evidence now read `immediate-gw` (added
+  to the routes probe whitelist), and disabled DHCP clients no longer pose
+  as route evidence.
+- Snapshot evidence timestamps are RFC3339 UTC. The previous naive
+  host-local strings made browsers in a different timezone report the
+  snapshot permanently stale (监控快照已过期 / 通道需复核).
+
 ## 0.5.0 - 2026-09-30
 
 ### Fixed
