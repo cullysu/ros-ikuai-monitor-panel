@@ -499,3 +499,26 @@
   color: #eaf4ff;
 }
 .ntr-login .ntr-row small, .ntr-login .ntr-row [class*="sub"] { color: rgba(234, 244, 255, .60); }
+
+/* ============ P1 全套：图标/数字/搜索/空态 ============ */
+/* 数字强调（评审：数字大号粗体、单位细体） */
+.ntr-stat b { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.ntr-row b { font-weight: 700; }
+/* 搜索框玻璃化 */
+.ntr-app input[type="text"], .ntr-app input[type="search"], .ntr-app input:not([type]) {
+  border: 1px solid var(--ntr-glass-line); border-radius: 12px;
+  background: rgba(255, 255, 255, .55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  padding: 8px 12px; color: var(--ntr-ink);
+}
+.ntr-app input::placeholder { color: #8aa2b8; }
+/* 空态/占位文案：柔和虚线容器 */
+.ntr-app .ntr-empty, .ntr-app .ntr-chart i { color: var(--ntr-sub); }
+/* 图标线性化：整体降饱和描边感 */
+.ntr-app svg { stroke-linecap: round; stroke-linejoin: round; }
+.ntr-row > svg:first-child, .ntr-quick button > svg:first-child { opacity: .92; }
+/* 分组标题（目录页 section 标题） */
+.ntr-content > h2, .ntr-content .ntr-group-title { margin: 14px 2px 8px; color: var(--ntr-blue-deep); font-size: 12.5px; font-weight: 750; letter-spacing: .06em; }
+/* 子页底间距 + 尾部安全区 */
+.ntr-scroll.is-sub .ntr-content { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+/* 玻璃描边在暗色登录页外的统一微调 */
+.ntr-app .ntr-kv, .ntr-app .ntr-pill { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
