@@ -261,7 +261,7 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
       <ErrorBanner evidence={evidence} state={state} />
       {/* 状态条：紧凑常驻 */}
       <section className="ntr-card ntr-statusbar" data-tone={summary.tone}>
-        <Dot tone={summary.tone} /><b>{summary.text}</b><small>{summary.note} · {formatRfc3339LocalTime(evidence.evidenceAt) || "—"}</small>
+        <Dot tone={summary.tone} /><b>{summary.text}</b><small>{summary.note}</small>
       </section>
       {/* 设备卡（精简） */}
       <section className="ntr-card ntr-device-card">
@@ -294,9 +294,8 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         <button type="button" onClick={() => onNavigate("lineStatus")}>
           <div className="ntr-wan-head"><Globe size={18} /><b>宽带线路</b><span>{wanOnline} / {wans.length} 在线</span><Chev /></div>
           <div className="ntr-wan-rates">
-            <span><i className="down" />下行 {downRate === null ? "—" : fmtRate(downRate)} bps</span>
-            <span><i className="up" />上行 {upRate === null ? "—" : fmtRate(upRate)} bps</span>
-            <span>连接 {connTotal === null ? "—" : connTotal}</span>
+            <span><i className="down" />下载 {downRate === null ? "—" : fmtRate(downRate)}</span>
+            <span><i className="up" />上传 {upRate === null ? "—" : fmtRate(upRate)}</span>
           </div>
         </button>
       </section>
