@@ -178,8 +178,8 @@ function Ring({ value, size = 52 }: { value: number | null; size?: number }) {
   const v = value === null ? 0 : Math.max(0, Math.min(100, value));
   const r = (size - 12) / 2, c = 2 * Math.PI * r, off = c * (1 - v / 100);
   return <div className="ntr-ring" style={{ width: size, height: size }}>
-    <svg width={size} height={size}><circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef2f7" strokeWidth="5" /><circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e9fff" strokeWidth="5" strokeLinecap="round" strokeDasharray={`${c.toFixed(1)} ${c.toFixed(1)}`} strokeDashoffset={off.toFixed(1)} transform={`rotate(-90 ${size / 2} ${size / 2})`} /></svg>
-    <b>{value === null ? "—" : `${Math.round(value)}%`}</b>
+    <svg width={size} height={size}><circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef2f7" strokeWidth={size >= 80 ? 8 : 5} /><circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e9fff" strokeWidth={size >= 80 ? 8 : 5} strokeLinecap="round" strokeDasharray={`${c.toFixed(1)} ${c.toFixed(1)}`} strokeDashoffset={off.toFixed(1)} transform={`rotate(-90 ${size / 2} ${size / 2})`} /></svg>
+    <b style={size >= 80 ? { fontSize: 30, fontWeight: 800 } : undefined}>{value === null ? "—" : `${Math.round(value)}%`}</b>
   </div>;
 }
 
@@ -253,55 +253,51 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
     <TopBar title="首页" sub={SYSTEM_NAME} onRefresh={onRefresh} onSearch={onSearch} />
     <div className="ntr-scroll"><div className="ntr-content">
       <ErrorBanner evidence={evidence} state={state} />
-      {/* 设备卡 */}
-      <section className="ntr-card">
+      {/* 异常通知条：健康时让位给内容 */}
+      {summary.tone !== "ok" ? <section className="ntr-card ntr-alertbar"><Dot tone={summary.tone} /><div><b>{summary.text}</b><small>{summary.note}</small></div></section> : null}
+      {/* 设备卡（核心入口：大） */}
+      <section className="ntr-card ntr-device-card">
         <button type="button" className="ntr-row" onClick={() => onShowConnection?.()}>
-          <span className="ntr-device-icon"><Server size={22} /></span>
+          <span className="ntr-device-icon"><Server size={30} /></span>
           <div className="ntr-device" style={{ flex: 1 }}>
-            <div><b>{state.facts.device.identity || SYSTEM_NAME}</b><small>{state.facts.device.version || "RouterOS"} · 运行 {state.facts.device.uptime || "—"}</small></div>
+            <b>{state.facts.device.identity || SYSTEM_NAME}</b>
+            <small>{state.facts.device.version || "RouterOS"}</small>
+            <small>运行 {state.facts.device.uptime || "—"}</small>
           </div>
           <Chev />
         </button>
       </section>
 
-      {/* 2x2 指标 */}
+      {/* 六元素：CPU / 内存 / 在线设备 / 活动 WAN / 实时流量（有数据才显示） */}
       <div className="ntr-grid2">
-        <section className="ntr-card ntr-stat-col"><small>CPU 使用率</small><div className="ntr-ring-wrap"><Ring value={cpu} size={64} /></div></section>
-        <section className="ntr-card ntr-stat-col"><small>内存使用率</small><div className="ntr-ring-wrap"><Ring value={memory} size={64} /></div></section>
-        <section className="ntr-card ntr-stat">
-          <button type="button" className="ntr-row" style={{ padding: 0 }} onClick={() => onNavigate("terminals")}>
-            <span className="ntr-stat-icon"><Monitor size={18} /></span>
-            <div className="ntr-stat"><small>在线设备</small><b>{connected}<span style={{ fontSize: 12, fontWeight: 400 }}> / 列表 {terminals.length} 台</span></b></div>
+        <section className="ntr-card ntr-stat-col"><small>CPU 使用率</small><div className="ntr-ring-wrap"><Ring value={cpu} size={96} /></div></section>
+        <section className="ntr-card ntr-stat-col"><small>内存使用率</small><div className="ntr-ring-wrap"><Ring value={memory} size={96} /></div></section>
+      </div>
+      <div className="ntr-grid2">
+        <section className="ntr-card ntr-stat-tile">
+          <button type="button" onClick={() => onNavigate("terminals")}>
+            <span className="ntr-tile-icon"><Monitor size={26} /></span>
+            <b>{connected}</b>
+            <small>在线设备 · 共 {terminals.length} 台</small>
           </button>
         </section>
-        <section className="ntr-card ntr-stat">
-          <button type="button" className="ntr-row" style={{ padding: 0 }} onClick={() => onNavigate("lineStatus")}>
-            <span className="ntr-stat-icon" data-tone="ok"><Globe size={18} /></span>
-            <div className="ntr-stat"><small>活动 WAN 线路</small><b>{wanOnline} / {wans.length}</b></div>
+        <section className="ntr-card ntr-stat-tile">
+          <button type="button" onClick={() => onNavigate("lineStatus")}>
+            <span className="ntr-tile-icon" data-tone="ok"><Globe size={26} /></span>
+            <b>{wanOnline} / {wans.length}</b>
+            <small>活动 WAN 线路</small>
           </button>
         </section>
       </div>
 
-      {/* 状态头条 */}
-      <section className="ntr-card">
-        <div className="ntr-hub-summary"><Dot tone={summary.tone} /><div><b>{summary.text}</b><small>{summary.note}</small></div></div>
-      </section>
-
-      {/* 实时流量 */}
+      {/* 实时流量：有数据才显示 */}
+      {traffic && traffic.points && traffic.points.length ? (
       <section className="ntr-card">
         <div className="ntr-card-head">实时流量 <button className="ntr-link" type="button" onClick={() => onNavigate("lineStatus")}>最近 1 小时 <ChevronRight size={13} /></button></div>
         <div className="ntr-traffic-legend"><span><i className="down" />下行</span><span><i className="up" />上行</span></div>
         <TrafficChart traffic={traffic} />
       </section>
-
-      {/* 快捷入口 */}
-      <div className="ntr-group">快捷入口</div>
-      <div className="ntr-quick">
-        <button type="button" onClick={() => onNavigate("lineStatus")}><Wifi size={18} />线路状态 <Chev /></button>
-        <button type="button" onClick={() => onNavigate("terminals")}><Smartphone size={18} />终端监控 <Chev /></button>
-        <button type="button" onClick={() => onNavigate("logs")}><FileText size={18} />系统日志 <Chev /></button>
-        <button type="button" onClick={() => onNavigate("more")}><Settings size={18} />更多设置 <Chev /></button>
-      </div>
+      ) : null}
 
       <div className="ntr-footer">{SYSTEM_NAME} {APP_VERSION} · 作者 {AUTHOR}</div>
     </div></div>
@@ -527,6 +523,9 @@ function MoreHub(props: NtrProps) {
     </section>
     <div className="ntr-group">快捷功能</div>
     <section className="ntr-card ntr-rows">
+      <Row title="线路状态" sub="WAN 出口与吞吐" onClick={() => onNavigate("lineStatus")} right="›" />
+      <Row title="终端监控" sub="在线设备与流量" onClick={() => onNavigate("terminals")} right="›" />
+      <Row title="系统日志" sub="最近系统事件" onClick={() => onNavigate("logs")} right="›" />
       <Row title="只读总览" sub="系统信息只读视图" onClick={() => onNavigate("readonlyDiagnostics")} right="›" />
       <Row title="全局搜索" sub="跨页面搜索对象与配置" onClick={() => props.onOpenSearch?.()} right="›" />
     </section>

@@ -562,3 +562,25 @@
 .ntr-quick button:nth-child(3) > svg:first-child { color: #d97706; }
 .ntr-quick button:nth-child(4) { background: linear-gradient(155deg, rgba(100, 116, 139, .18), rgba(255, 255, 255, .5)); }
 .ntr-quick button:nth-child(4) > svg:first-child { color: #475569; }
+
+/* ============ 第三轮：首页六元素 ============ */
+.ntr-device-card { padding: 16px; }
+.ntr-device-card .ntr-row { min-height: 72px; gap: 14px; }
+.ntr-device-card .ntr-device-icon { width: 56px; height: 56px; border-radius: 16px; }
+.ntr-device-card .ntr-device b { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+.ntr-device-card .ntr-device small { font-size: 12.5px; margin-top: 3px; }
+.ntr-stat-tile button { display: flex; width: 100%; border: 0; flex-direction: column; align-items: center; gap: 6px; background: transparent; color: inherit; padding: 6px 0; }
+.ntr-stat-tile button:active { opacity: .7; }
+.ntr-tile-icon { display: grid; width: 48px; height: 48px; border-radius: 14px; place-items: center; color: #fff; background: linear-gradient(140deg, #1e9fff, #38bdf8); box-shadow: 0 6px 16px rgba(30, 159, 255, .35); }
+.ntr-tile-icon[data-tone="ok"] { background: linear-gradient(140deg, #16a34a, #4ade80); box-shadow: 0 6px 16px rgba(22, 163, 74, .30); }
+.ntr-stat-tile b { font-size: 32px; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.ntr-stat-tile small { color: var(--ntr-sub); font-size: 12px; }
+.ntr-alertbar { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(245, 158, 11, .35); background: rgba(253, 244, 227, .85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.ntr-alertbar b { display: block; font-size: 13.5px; }
+.ntr-alertbar small { color: var(--ntr-sub); font-size: 12px; }
+/* 登录页微调（第三轮 3 点） */
+.ntr-login .ntr-field-card { background: rgba(255, 255, 255, .20); border: 1px solid rgba(255, 255, 255, .45); }
+.ntr-login .ntr-login-hero { margin-bottom: 10svh; }
+.ntr-adv-link { width: auto; margin: 14px auto 0; padding: 7px 18px; border: 1px solid rgba(255, 255, 255, .55); border-radius: 999px; }
+.ntr-device-card .ntr-device { flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+.ntr-device-card .ntr-row { align-items: center; }
