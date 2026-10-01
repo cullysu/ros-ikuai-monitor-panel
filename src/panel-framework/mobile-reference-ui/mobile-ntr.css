@@ -337,3 +337,165 @@
   .ntr-stat b { font-size: 16px; }
   .ntr-logo { font-size: 17px; }
 }
+
+/* ================================================================
+   iOS 液态玻璃重设计（2026-10-01，评审=cullysu UI评审意见.md）
+   爱快蓝 #1E9FFF 主导 · 毛玻璃材质 · 分组卡片 · 深色渐变登录页
+   ================================================================ */
+:root {
+  --ntr-blue: #1e9fff;
+  --ntr-blue-deep: #0b6fd8;
+  --ntr-blue-soft: rgba(30, 159, 255, .12);
+  --ntr-glass: rgba(255, 255, 255, .60);
+  --ntr-glass-strong: rgba(255, 255, 255, .78);
+  --ntr-glass-line: rgba(255, 255, 255, .72);
+  --ntr-radius: 18px;
+  --ntr-shadow: 0 10px 30px rgba(23, 108, 197, .14), 0 1px 2px rgba(23, 108, 197, .08);
+}
+
+/* 画布：蓝调渐变，让玻璃模糊可读 */
+.ntr-app {
+  background:
+    radial-gradient(120% 60% at 15% -8%, rgba(30, 159, 255, .22) 0%, rgba(30, 159, 255, 0) 60%),
+    radial-gradient(110% 55% at 95% 8%, rgba(56, 189, 248, .16) 0%, rgba(56, 189, 248, 0) 55%),
+    linear-gradient(180deg, #e3efff 0%, #eef5fc 40%, #f2f7fb 100%);
+  background-attachment: fixed;
+}
+
+/* 顶栏：更透的玻璃 + 蓝字品牌 */
+.ntr-topbar, .ntr-subbar {
+  background: rgba(238, 246, 255, .62);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, .55);
+}
+.ntr-logo {
+  background: linear-gradient(135deg, #1e9fff, #38bdf8);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 0 22px rgba(30, 159, 255, .35);
+}
+
+/* 卡片基座：液态玻璃 */
+.ntr-card {
+  border: 1px solid var(--ntr-glass-line);
+  border-radius: var(--ntr-radius);
+  background: var(--ntr-glass);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  box-shadow: var(--ntr-shadow), inset 0 1px 0 rgba(255, 255, 255, .75);
+}
+
+/* 行列表：玻璃行卡（组间距替代 1px 分割线） */
+.ntr-rows { display: flex; flex-direction: column; gap: 8px; }
+.ntr-row {
+  min-height: 50px; padding: 10px 12px;
+  border: 1px solid var(--ntr-glass-line); border-radius: 15px;
+  background: var(--ntr-glass);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 4px 14px rgba(23, 108, 197, .10), inset 0 1px 0 rgba(255, 255, 255, .65);
+}
+.ntr-row:active { transform: scale(.985); transition: transform .12s ease; }
+.ntr-link { color: var(--ntr-blue); }
+
+/* 底部 Tab：iOS 玻璃 TabBar */
+.ntr-tabbar {
+  background: rgba(250, 253, 255, .58);
+  border-top: 1px solid rgba(255, 255, 255, .6);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  box-shadow: 0 -8px 30px rgba(23, 108, 197, .10);
+}
+.ntr-tabbar button { transition: transform .15s ease, color .15s ease; }
+.ntr-tabbar button[aria-current="page"] {
+  color: var(--ntr-blue); font-weight: 750;
+  transform: translateY(-1px) scale(1.06);
+}
+.ntr-tabbar button[aria-current="page"] svg { filter: drop-shadow(0 2px 8px rgba(30, 159, 255, .55)); }
+
+/* 首页设备卡：蓝渐变图标 + 玻璃 */
+.ntr-device-icon {
+  color: #fff; background: linear-gradient(140deg, #1e9fff, #38bdf8);
+  box-shadow: 0 6px 18px rgba(30, 159, 255, .38);
+}
+.ntr-device b { font-size: 16px; }
+
+/* 统计图标：渐变胶囊 */
+.ntr-stat-icon { background: linear-gradient(140deg, #1e9fff, #38bdf8) !important; box-shadow: 0 5px 14px rgba(30, 159, 255, .35); }
+.ntr-stat-icon[data-tone="ok"] { background: linear-gradient(140deg, #16a34a, #4ade80) !important; box-shadow: 0 5px 14px rgba(22, 163, 74, .30); }
+.ntr-stat-icon[data-tone="warn"] { background: linear-gradient(140deg, #d97706, #fbbf24) !important; }
+.ntr-stat-icon[data-tone="danger"] { background: linear-gradient(140deg, #dc2626, #f87171) !important; }
+
+/* 快捷入口：蓝系渐变玻璃瓦片 */
+.ntr-quick button {
+  border: 1px solid rgba(255, 255, 255, .66); border-radius: 16px;
+  background: linear-gradient(155deg, rgba(30, 159, 255, .16) 0%, rgba(255, 255, 255, .55) 55%, rgba(255, 255, 255, .40) 100%);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: var(--ntr-shadow), inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+.ntr-quick button:active { transform: scale(.96); }
+.ntr-quick button > svg:first-child { color: var(--ntr-blue-deep); }
+
+/* 环形进度：加粗 + 蓝 */
+.ntr-ring svg { filter: drop-shadow(0 3px 8px rgba(30, 159, 255, .30)); }
+
+/* 状态点发光 */
+.ntr-dot[data-tone="ok"] { box-shadow: 0 0 8px rgba(34, 197, 94, .55); }
+.ntr-dot[data-tone="warn"] { box-shadow: 0 0 8px rgba(245, 158, 11, .55); }
+.ntr-dot[data-tone="danger"] { box-shadow: 0 0 8px rgba(239, 68, 68, .60); }
+
+/* 主按钮：胶囊渐变 */
+.ntr-primary-btn, .ntr-app button[class*="primary"] {
+  border: 0; border-radius: 999px;
+  background: linear-gradient(135deg, #1e9fff, #38bdf8);
+  color: #fff; font-weight: 750;
+  box-shadow: 0 10px 26px rgba(30, 159, 255, .42), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+
+/* ============ 登录页：深色渐变 + 玻璃表单 ============ */
+.ntr-login {
+  min-height: 100svh;
+  background:
+    radial-gradient(90% 42% at 50% -6%, rgba(56, 189, 248, .38) 0%, rgba(56, 189, 248, 0) 62%),
+    linear-gradient(168deg, #07223f 0%, #0b3f74 44%, #1263b4 82%, #1e9fff 128%);
+  background-attachment: fixed;
+  color: #eaf4ff;
+}
+.ntr-login .ntr-login-hero { padding-top: max(64px, 14svh); text-align: center; }
+.ntr-login .ntr-logo {
+  font-size: 44px;
+  background: linear-gradient(135deg, #7cd4ff, #1e9fff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 26px rgba(56, 189, 248, .55));
+}
+.ntr-login .ntr-note { color: rgba(234, 244, 255, .72); font-size: 13px; letter-spacing: .04em; }
+.ntr-login .ntr-card {
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .22);
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  box-shadow: 0 18px 50px rgba(3, 20, 40, .45), inset 0 1px 0 rgba(255, 255, 255, .25);
+  border-radius: 20px;
+}
+.ntr-login .ntr-field, .ntr-login .ntr-field input, .ntr-login .ntr-kv {
+  color: #f2f8ff; border-color: rgba(255, 255, 255, .22); background: rgba(255, 255, 255, .08);
+}
+.ntr-login .ntr-field input::placeholder { color: rgba(234, 244, 255, .45); }
+.ntr-login .ntr-subbar { background: transparent; border-bottom: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.ntr-login .ntr-subbar h1, .ntr-login .ntr-back { color: #eaf4ff; }
+.ntr-login .ntr-primary-btn {
+  background: linear-gradient(135deg, #1e9fff, #38bdf8);
+  box-shadow: 0 12px 34px rgba(30, 159, 255, .55), inset 0 1px 0 rgba(255, 255, 255, .4);
+}
+.ntr-login .ntr-error { color: #ffd7d7; background: rgba(239, 68, 68, .22); border-radius: 12px; }
+
+/* 登录页对比度打磨 */
+.ntr-login .ntr-field { border-radius: 12px; border: 1px solid rgba(255, 255, 255, .16); background: rgba(4, 28, 52, .30); }
+.ntr-login .ntr-field > label, .ntr-login .ntr-field label, .ntr-login label { color: rgba(234, 244, 255, .85) !important; }
+.ntr-login .ntr-row {
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .20);
+  color: #eaf4ff;
+}
+.ntr-login .ntr-row small, .ntr-login .ntr-row [class*="sub"] { color: rgba(234, 244, 255, .60); }
