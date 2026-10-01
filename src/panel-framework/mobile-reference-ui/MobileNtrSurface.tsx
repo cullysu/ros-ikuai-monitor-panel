@@ -242,71 +242,79 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
   const resource = state.facts.resource;
   const cpu = resource.available ? resource.cpu : null;
   const memory = resource.available ? resource.memory : null;
-  const connected = terminals.filter((t) => t.evidence.kind === "terminal" && t.evidence.online).length;
+  const overviewData = (snapshot as { overview?: Record<string, unknown> }).overview || {};
+  const disk = Number.isFinite(Number(overviewData.diskUsage)) ? Number(overviewData.diskUsage) : null;
+  const upRate = Number.isFinite(Number(overviewData.uplinkBps)) ? Number(overviewData.uplinkBps) : null;
+  const downRate = Number.isFinite(Number(overviewData.downlinkBps)) ? Number(overviewData.downlinkBps) : null;
+  const connTotal = onlineConnections(snapshot);
+  const connected = terminals.filter((item) => item.evidence.kind === "terminal" && item.evidence.online).length;
   const traffic = evidence.traffic && evidence.traffic.status === "ready" ? evidence.traffic : null;
   const healthy = state.verdict.level === "ok";
   const summary = healthy
-    ? { tone: "ok" as Tone, text: "网络正常", note: `${wanOnline} 条宽带在线 · 更新于 ${formatRfc3339LocalTime(evidence.evidenceAt) || "—"}` }
+    ? { tone: "ok" as Tone, text: "网络正常", note: `${wanOnline} 条宽带在线` }
     : { tone: "warn" as Tone, text: state.verdict.label || "需要注意", note: state.verdict.summary || evidence.verdictSummary };
+  const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v)}%`);
 
   return <main className="ntr-app" data-ntr-page="home">
     <TopBar title="首页" sub={SYSTEM_NAME} onRefresh={onRefresh} onSearch={onSearch} />
     <div className="ntr-scroll"><div className="ntr-content">
       <ErrorBanner evidence={evidence} state={state} />
-      {/* 网络状态条：紧凑常驻 */}
-      <section className={"ntr-card ntr-statusbar"} data-tone={summary.tone}>
-        <Dot tone={summary.tone} /><b>{summary.text}</b><small>{summary.note}</small>
+      {/* 状态条：紧凑常驻 */}
+      <section className="ntr-card ntr-statusbar" data-tone={summary.tone}>
+        <Dot tone={summary.tone} /><b>{summary.text}</b><small>{summary.note} · {formatRfc3339LocalTime(evidence.evidenceAt) || "—"}</small>
       </section>
-      {/* 设备卡（核心入口：大） */}
+      {/* 设备卡（精简） */}
       <section className="ntr-card ntr-device-card">
         <button type="button" className="ntr-row" onClick={() => onShowConnection?.()}>
-          <span className="ntr-device-icon"><Server size={30} /></span>
+          <span className="ntr-device-icon"><Server size={20} /></span>
           <div className="ntr-device" style={{ flex: 1 }}>
             <b>{state.facts.device.identity || SYSTEM_NAME}</b>
-            <small>{state.facts.device.version || "RouterOS"}</small>
-            <small>运行 {state.facts.device.uptime || "—"}</small>
+            <small>{state.facts.device.version || "RouterOS"} · 运行 {state.facts.device.uptime || "—"}</small>
           </div>
           <Chev />
         </button>
       </section>
 
-      {/* 六元素：CPU / 内存 / 在线设备 / 活动 WAN / 实时流量（有数据才显示） */}
-      <div className="ntr-grid2">
-        <section className="ntr-card ntr-stat-col"><small>CPU 使用率</small><div className="ntr-ring-wrap"><Ring value={cpu} size={96} /></div></section>
-        <section className="ntr-card ntr-stat-col"><small>内存使用率</small><div className="ntr-ring-wrap"><Ring value={memory} size={96} /></div></section>
-      </div>
-      <div className="ntr-grid2">
-        <section className="ntr-card ntr-stat-tile">
-          <button type="button" onClick={() => onNavigate("terminals")}>
-            <span className="ntr-tile-icon"><Monitor size={26} /></span>
-            <b>{connected}</b>
-            <small>在线设备 · 共 {terminals.length} 台</small>
-          </button>
-        </section>
-        <section className="ntr-card ntr-stat-tile">
-          <button type="button" onClick={() => onNavigate("lineStatus")}>
-            <span className="ntr-tile-icon" data-tone="ok"><Globe size={26} /></span>
-            <b>{wanOnline} / {wans.length}</b>
-            <small>活动 WAN 线路</small>
-          </button>
-        </section>
+      <div className="ntr-section-label">当前概览</div>
+      {/* 三列核心指标（健康 App 式纯数字） */}
+      <div className="ntr-grid3">
+        <button className="ntr-mtile" onClick={() => onNavigate("trafficLoad")}><b>{pct(cpu)}</b><small>CPU 使用率</small></button>
+        <button className="ntr-mtile" onClick={() => onNavigate("trafficLoad")}><b>{pct(memory)}</b><small>内存使用率</small></button>
+        <button className="ntr-mtile" onClick={() => onNavigate("trafficLoad")}><b>{pct(disk)}</b><small>磁盘使用率</small></button>
       </div>
 
-      {/* 实时流量：有数据才显示 */}
+      {/* 实时流量图（有数据才显示） */}
       {traffic && traffic.points && traffic.points.length >= 2 ? <section className="ntr-card">
         <div className="ntr-card-head">实时流量 <button className="ntr-link" type="button" onClick={() => onNavigate("lineStatus")}>最近 1 小时 <ChevronRight size={13} /></button></div>
         <div className="ntr-traffic-legend"><span><i className="down" />下行</span><span><i className="up" />上行</span></div>
         <TrafficChart traffic={traffic} />
       </section> : null}
 
-      {/* 快捷入口：横向滑动 */}
-      <div className="ntr-quick-h">
-        <button type="button" onClick={() => onNavigate("lineStatus")}><Wifi size={22} /><b>线路状态</b><small>WAN 出口与吞吐</small></button>
-        <button type="button" onClick={() => onNavigate("terminals")}><Smartphone size={22} /><b>终端监控</b><small>在线设备与流量</small></button>
-        <button type="button" onClick={() => onNavigate("logs")}><FileText size={22} /><b>系统日志</b><small>最近系统事件</small></button>
-        <button type="button" onClick={() => onNavigate("interfaces")}><Settings size={22} /><b>接口总览</b><small>物理与逻辑接口</small></button>
+      {/* WAN 摘要卡 */}
+      <section className="ntr-card ntr-wan-card">
+        <button type="button" onClick={() => onNavigate("lineStatus")}>
+          <div className="ntr-wan-head"><Globe size={18} /><b>宽带线路</b><span>{wanOnline} / {wans.length} 在线</span><Chev /></div>
+          <div className="ntr-wan-rates">
+            <span><i className="down" />下行 {downRate === null ? "—" : fmtRate(downRate)}bps</span>
+            <span><i className="up" />上行 {upRate === null ? "—" : fmtRate(upRate)}bps</span>
+            <span>连接 {connTotal === null ? "—" : connTotal}</span>
+          </div>
+        </button>
+      </section>
+
+      {/* 次要指标两列 */}
+      <div className="ntr-grid2">
+        <button className="ntr-mtile" onClick={() => onNavigate("terminals")}><b>{connected}<span className="ntr-mtile-sub"> / {terminals.length}</span></b><small>在线设备（台）</small></button>
+        <button className="ntr-mtile" onClick={() => onNavigate("lineStatus")}><b>{wanOnline}<span className="ntr-mtile-sub"> / {wans.length}</span></b><small>活动 WAN 线路</small></button>
       </div>
 
+      {/* 快捷入口：横向滑动 */}
+      <div className="ntr-quick-h">
+        <button type="button" onClick={() => onNavigate("lineStatus")}><Wifi size={20} /><b>线路状态</b><small>WAN 出口与吞吐</small></button>
+        <button type="button" onClick={() => onNavigate("terminals")}><Smartphone size={20} /><b>终端监控</b><small>在线设备与流量</small></button>
+        <button type="button" onClick={() => onNavigate("logs")}><FileText size={20} /><b>系统日志</b><small>最近系统事件</small></button>
+        <button type="button" onClick={() => onNavigate("interfaces")}><Settings size={20} /><b>接口总览</b><small>物理与逻辑接口</small></button>
+      </div>
     </div></div>
   </main>;
 }

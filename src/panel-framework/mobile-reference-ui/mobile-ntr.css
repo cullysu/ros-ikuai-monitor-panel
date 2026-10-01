@@ -644,3 +644,27 @@
 .ntr-statusbar small { color: var(--ntr-sub); font-size: 12px; }
 .ntr-statusbar[data-tone="ok"] { border-color: rgba(34, 197, 94, .30); background: rgba(233, 249, 240, .78); }
 .ntr-statusbar[data-tone="warn"], .ntr-statusbar[data-tone="danger"] { border-color: rgba(245, 158, 11, .35); background: rgba(253, 244, 227, .85); }
+/* ============ 第七轮：健康 App 骨架 ============ */
+.ntr-section-label { margin: 12px 2px 8px; color: var(--ntr-sub); font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+.ntr-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.ntr-mtile {
+  display: flex; min-height: 76px; padding: 12px 10px; border: 1px solid var(--ntr-glass-line);
+  border-radius: 16px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px;
+  background: var(--ntr-glass); backdrop-filter: blur(20px) saturate(175%); -webkit-backdrop-filter: blur(20px) saturate(175%);
+  box-shadow: var(--ntr-shadow), inset 0 1px 0 rgba(255, 255, 255, .7);
+  color: inherit; text-align: left;
+}
+.ntr-mtile:active { transform: scale(.97); }
+.ntr-mtile b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.ntr-mtile .ntr-mtile-sub { font-size: 15px; font-weight: 600; color: var(--ntr-sub); }
+.ntr-mtile small { color: var(--ntr-sub); font-size: 12px; }
+.ntr-wan-card { padding: 0; }
+.ntr-wan-card > button { display: block; width: 100%; border: 0; background: transparent; color: inherit; padding: 12px 14px; text-align: left; }
+.ntr-wan-head { display: flex; align-items: center; gap: 8px; }
+.ntr-wan-head svg:first-child { color: var(--ntr-blue-deep); }
+.ntr-wan-head b { font-size: 15px; font-weight: 750; }
+.ntr-wan-head span { margin-left: auto; color: var(--ntr-sub); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.ntr-wan-rates { display: flex; gap: 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ntr-line); color: var(--ntr-sub); font-size: 12.5px; }
+.ntr-wan-rates i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; }
+.ntr-wan-rates i.down { background: var(--ntr-blue); }
+.ntr-wan-rates i.up { background: var(--ntr-green); }
