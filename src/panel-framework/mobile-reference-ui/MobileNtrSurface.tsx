@@ -303,11 +303,12 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
 
       {/* 次要指标两列 */}
       <div className="ntr-grid2">
-        <button className="ntr-mtile" onClick={() => onNavigate("terminals")}><span className="ntr-tile-icon"><Monitor size={20} /></span><b className="ntr-accent">{connected}<span className="ntr-mtile-sub"> / {terminals.length}</span></b><small>在线设备（台）</small></button>
-        <button className="ntr-mtile" onClick={() => onNavigate("lineStatus")}><span className="ntr-tile-icon" data-tone="ok"><Globe size={20} /></span><b className="ntr-accent">{wanOnline}<span className="ntr-mtile-sub"> / {wans.length}</span></b><small>活动 WAN 线路</small></button>
+        <button className="ntr-mtile-h" onClick={() => onNavigate("terminals")}><span className="ntr-tile-icon"><Monitor size={20} /></span><span className="ntr-mtile-h-main"><b>{connected}</b><small>在线设备</small></span><Chev /></button>
+        <button className="ntr-mtile-h" onClick={() => onNavigate("lineStatus")}><span className="ntr-tile-icon" data-tone="ok"><Globe size={20} /></span><span className="ntr-mtile-h-main"><b>{wanOnline}</b><small>WAN 线路</small></span><Chev /></button>
       </div>
 
-      {/* 快捷入口：横向滑动 */}
+      {/* 快捷操作 */}
+      <div className="ntr-section-title">快捷操作</div>
       <div className="ntr-quick-h">
         <button type="button" onClick={() => onNavigate("lineStatus")}><Wifi size={20} /><b>线路状态</b><small>WAN 出口监控</small></button>
         <button type="button" onClick={() => onNavigate("terminals")}><Smartphone size={20} /><b>终端监控</b><small>查看在线设备</small></button>

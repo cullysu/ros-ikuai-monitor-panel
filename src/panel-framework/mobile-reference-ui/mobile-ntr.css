@@ -712,3 +712,28 @@
 .ntr-wan-rates { font-size: 13px; }
 .ntr-wan-head b { font-size: 16px; font-weight: 600; }
 .ntr-device-card .ntr-device-icon { width: 36px; height: 36px; }
+
+/* ============ 第十一轮：对齐标准参考图（浅灰画布 + 白实卡） ============ */
+.ntr-app { background: #f2f4f8; background-attachment: fixed; }
+.ntr-card, .ntr-row, .ntr-quick-h button, .ntr-mtile, .ntr-mtile-h {
+  background: #ffffff;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(31, 41, 55, .05);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.ntr-topbar, .ntr-subbar { background: #f2f4f8; border-bottom: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.ntr-logo { background: none; -webkit-background-clip: initial; background-clip: initial; color: #1e9fff; text-shadow: none; }
+.ntr-brand-sub { color: #1f2937; }
+.ntr-tabbar { background: #ffffff; border-top: 1px solid #eef1f5; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 -2px 10px rgba(31, 41, 55, .04); }
+.ntr-statusbar { background: #e8f8ee; border: 0; padding: 8px 14px; border-radius: 14px; }
+.ntr-statusbar b { color: #15803d; }
+.ntr-statusbar small { color: #16a34a; }
+.ntr-device-card .ntr-device-icon { width: 48px; height: 48px; border-radius: 14px; box-shadow: none; }
+.ntr-mtile-h { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 14px; }
+.ntr-mtile-h-main { display: flex; flex-direction: column; gap: 2px; }
+.ntr-mtile-h-main b { font-size: 28px; font-weight: 600; color: var(--ntr-blue-deep); line-height: 1.1; }
+.ntr-mtile-h-main small { color: var(--ntr-sub); font-size: 13px; }
+.ntr-tile-icon { width: 44px; height: 44px; border-radius: 12px; box-shadow: none; }
+.ntr-section-title { margin: 16px 2px 10px; font-size: 17px; font-weight: 600; color: var(--ntr-ink); }
+.ntr-wan-card .ntr-wan-rates { border-top-color: #f1f3f7; }
