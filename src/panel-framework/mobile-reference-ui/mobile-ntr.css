@@ -584,3 +584,19 @@
 .ntr-adv-link { width: auto; margin: 14px auto 0; padding: 7px 18px; border: 1px solid rgba(255, 255, 255, .55); border-radius: 999px; }
 .ntr-device-card .ntr-device { flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
 .ntr-device-card .ntr-row { align-items: center; }
+/* ============ 第四轮首页打磨 ============ */
+.ntr-device-card .ntr-device-name { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ntr-pullhint { display: flex; width: 100%; margin: 18px 0 2px; border: 0; align-items: center; justify-content: center; gap: 8px; color: var(--ntr-faint); background: transparent; font-size: 12px; }
+.ntr-pullhint i { width: 36px; height: 4px; border-radius: 2px; background: rgba(100, 130, 160, .35); }
+.ntr-pullhint:active { opacity: .6; }
+/* 毛玻璃更明显：透明度降 + 画布色块加强 */
+.ntr-app {
+  background:
+    radial-gradient(120% 55% at 12% -6%, rgba(30, 159, 255, .34) 0%, rgba(30, 159, 255, 0) 58%),
+    radial-gradient(105% 50% at 96% 6%, rgba(56, 189, 248, .28) 0%, rgba(56, 189, 248, 0) 55%),
+    radial-gradient(90% 46% at 50% 108%, rgba(14, 116, 220, .20) 0%, rgba(14, 116, 220, 0) 60%),
+    linear-gradient(180deg, #dcebfd 0%, #ecf4fd 45%, #f0f6fb 100%);
+  background-attachment: fixed;
+}
+.ntr-card { background: rgba(255, 255, 255, .60); backdrop-filter: blur(20px) saturate(175%); -webkit-backdrop-filter: blur(20px) saturate(175%); }
+.ntr-row { background: rgba(255, 255, 255, .60); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); }

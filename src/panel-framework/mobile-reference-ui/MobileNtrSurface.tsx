@@ -260,7 +260,7 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         <button type="button" className="ntr-row" onClick={() => onShowConnection?.()}>
           <span className="ntr-device-icon"><Server size={30} /></span>
           <div className="ntr-device" style={{ flex: 1 }}>
-            <b>{state.facts.device.identity || SYSTEM_NAME}</b>
+            <b className="ntr-device-name">{state.facts.device.identity || SYSTEM_NAME}</b>
             <small>{state.facts.device.version || "RouterOS"}</small>
             <small>运行 {state.facts.device.uptime || "—"}</small>
           </div>
@@ -278,14 +278,14 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
           <button type="button" onClick={() => onNavigate("terminals")}>
             <span className="ntr-tile-icon"><Monitor size={26} /></span>
             <b>{connected}</b>
-            <small>在线设备 · 共 {terminals.length} 台</small>
+            <small>共 {terminals.length} 台</small>
           </button>
         </section>
         <section className="ntr-card ntr-stat-tile">
           <button type="button" onClick={() => onNavigate("lineStatus")}>
             <span className="ntr-tile-icon" data-tone="ok"><Globe size={26} /></span>
             <b>{wanOnline} / {wans.length}</b>
-            <small>活动 WAN 线路</small>
+            <small>WAN 线路</small>
           </button>
         </section>
       </div>
@@ -299,7 +299,8 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
       </section>
       ) : null}
 
-      <div className="ntr-footer">{SYSTEM_NAME} {APP_VERSION} · 作者 {AUTHOR}</div>
+      {/* 上拉指示器：轻提示可进入更多 */}
+      <button type="button" className="ntr-pullhint" onClick={() => onNavigate("more")}><i />上拉查看更多</button>
     </div></div>
   </main>;
 }
