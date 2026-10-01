@@ -186,7 +186,7 @@ function Ring({ value, size = 52 }: { value: number | null; size?: number }) {
 /* 实时流量图 */
 function TrafficChart({ traffic }: { traffic: { points: Array<{ timestamp: number; down: number; up: number }>; unit: string } | null }) {
   const points = traffic?.points || [];
-  if (points.length < 2) return <p className="ntr-empty">当前没有可核实的速率采样</p>;
+  if (points.length < 2) return <div className="ntr-chart-empty"><span>暂无数据</span></div>;
   const W = 320, H = 120, left = 30, right = 6, top = 8, bottom = 18;
   const max = Math.max(1, ...points.flatMap((p) => [p.down, p.up]));
   const unit = traffic!.unit || "Mbps";
@@ -260,7 +260,7 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         <button type="button" className="ntr-row" onClick={() => onShowConnection?.()}>
           <span className="ntr-device-icon"><Server size={30} /></span>
           <div className="ntr-device" style={{ flex: 1 }}>
-            <b className="ntr-device-name">{state.facts.device.identity || SYSTEM_NAME}</b>
+            <b>{state.facts.device.identity || SYSTEM_NAME}</b>
             <small>{state.facts.device.version || "RouterOS"}</small>
             <small>运行 {state.facts.device.uptime || "—"}</small>
           </div>
@@ -278,14 +278,14 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
           <button type="button" onClick={() => onNavigate("terminals")}>
             <span className="ntr-tile-icon"><Monitor size={26} /></span>
             <b>{connected}</b>
-            <small>共 {terminals.length} 台</small>
+            <small>在线设备 · 共 {terminals.length} 台</small>
           </button>
         </section>
         <section className="ntr-card ntr-stat-tile">
           <button type="button" onClick={() => onNavigate("lineStatus")}>
             <span className="ntr-tile-icon" data-tone="ok"><Globe size={26} /></span>
             <b>{wanOnline} / {wans.length}</b>
-            <small>WAN 线路</small>
+            <small>活动 WAN 线路</small>
           </button>
         </section>
       </div>
@@ -299,8 +299,6 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
       </section>
       ) : null}
 
-      {/* 上拉指示器：轻提示可进入更多 */}
-      <button type="button" className="ntr-pullhint" onClick={() => onNavigate("more")}><i />上拉查看更多</button>
     </div></div>
   </main>;
 }

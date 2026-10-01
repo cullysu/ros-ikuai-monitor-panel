@@ -600,3 +600,33 @@
 }
 .ntr-card { background: rgba(255, 255, 255, .60); backdrop-filter: blur(20px) saturate(175%); -webkit-backdrop-filter: blur(20px) saturate(175%); }
 .ntr-row { background: rgba(255, 255, 255, .60); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); }
+/* ============ 第五轮：密度回归 + 横向快捷入口 + 虚线空态 ============ */
+.ntr-device-card .ntr-device-name, .ntr-device-card .ntr-device b { white-space: normal; overflow: visible; text-overflow: unset; }
+.ntr-quick-h { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 6px; margin: 0 -2px; }
+.ntr-quick-h::-webkit-scrollbar { display: none; }
+.ntr-quick-h button {
+  flex: 0 0 auto; width: 132px; min-height: 84px; padding: 12px 14px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
+  border: 1px solid var(--ntr-glass-line); border-radius: 16px;
+  background: var(--ntr-glass); backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--ntr-shadow), inset 0 1px 0 rgba(255, 255, 255, .7);
+  color: var(--ntr-ink); text-align: left;
+}
+.ntr-quick-h button:nth-child(1) { background: linear-gradient(150deg, rgba(30, 159, 255, .20), rgba(255, 255, 255, .55)); }
+.ntr-quick-h button:nth-child(1) svg { color: var(--ntr-blue-deep); }
+.ntr-quick-h button:nth-child(2) { background: linear-gradient(150deg, rgba(34, 197, 94, .18), rgba(255, 255, 255, .55)); }
+.ntr-quick-h button:nth-child(2) svg { color: #16a34a; }
+.ntr-quick-h button:nth-child(3) { background: linear-gradient(150deg, rgba(245, 158, 11, .18), rgba(255, 255, 255, .55)); }
+.ntr-quick-h button:nth-child(3) svg { color: #d97706; }
+.ntr-quick-h button:nth-child(4) { background: linear-gradient(150deg, rgba(100, 116, 139, .16), rgba(255, 255, 255, .55)); }
+.ntr-quick-h button:nth-child(4) svg { color: #475569; }
+.ntr-quick-h button b { font-size: 14.5px; font-weight: 700; }
+.ntr-quick-h button small { color: var(--ntr-sub); font-size: 11.5px; }
+.ntr-quick-h button:active { transform: scale(.97); }
+.ntr-chart-empty {
+  display: grid; place-items: center; height: 128px; margin-top: 6px;
+  border: 1.5px dashed rgba(100, 130, 160, .40); border-radius: 12px;
+  color: var(--ntr-sub); font-size: 13px;
+}
+.ntr-pullhint { display: none; }
