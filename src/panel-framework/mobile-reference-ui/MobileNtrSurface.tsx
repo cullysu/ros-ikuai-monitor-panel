@@ -291,13 +291,19 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
       </div>
 
       {/* 实时流量：有数据才显示 */}
-      {traffic && traffic.points && traffic.points.length ? (
       <section className="ntr-card">
         <div className="ntr-card-head">实时流量 <button className="ntr-link" type="button" onClick={() => onNavigate("lineStatus")}>最近 1 小时 <ChevronRight size={13} /></button></div>
         <div className="ntr-traffic-legend"><span><i className="down" />下行</span><span><i className="up" />上行</span></div>
         <TrafficChart traffic={traffic} />
       </section>
-      ) : null}
+
+      {/* 快捷入口：横向滑动 */}
+      <div className="ntr-quick-h">
+        <button type="button" onClick={() => onNavigate("lineStatus")}><Wifi size={22} /><b>线路状态</b><small>WAN 出口与吞吐</small></button>
+        <button type="button" onClick={() => onNavigate("terminals")}><Smartphone size={22} /><b>终端监控</b><small>在线设备与流量</small></button>
+        <button type="button" onClick={() => onNavigate("logs")}><FileText size={22} /><b>系统日志</b><small>最近系统事件</small></button>
+        <button type="button" onClick={() => onNavigate("interfaces")}><Settings size={22} /><b>接口总览</b><small>物理与逻辑接口</small></button>
+      </div>
 
     </div></div>
   </main>;
