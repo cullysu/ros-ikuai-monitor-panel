@@ -693,3 +693,22 @@
 /* ============ 第九轮：字号归位 iOS 点值规格（截图改 DPR=1 后可量） ============ */
 .ntr-mtile-ring .ntr-ring b { font-size: 34px !important; }  /* 统计数字 32-36 规格 */
 .ntr-quick-h button b { font-size: 15.5px; }                 /* 快捷标题 15-17 规格 */
+/* ============ 第十轮：按设计系统归位（规格表硬值） ============ */
+:root { --ntr-sub: #6b7280; --ntr-faint: #9ca3af; }
+.ntr-statusbar { min-height: 32px; padding: 5px 12px; }
+.ntr-statusbar b { font-size: 15px; }
+.ntr-statusbar small { font-size: 12px; }
+.ntr-device-card .ntr-device b { font-size: 17px; font-weight: 600; }
+.ntr-device-card .ntr-device small { font-size: 13px; font-weight: 400; }
+.ntr-mtile-ring .ntr-ring b { font-size: 32px !important; font-weight: 600; }
+.ntr-stat-tile b, .ntr-mtile b { font-size: 28px; font-weight: 600; }
+.ntr-mtile .ntr-mtile-sub { font-size: 14px; }
+.ntr-quick-h button b { font-size: 15px; font-weight: 600; }
+.ntr-quick-h button small { font-size: 12px; }
+.ntr-mtile small, .ntr-card-head small { font-size: 13px; }
+.ntr-grid2 { gap: 12px; margin-bottom: 12px; }
+.ntr-grid3 { gap: 12px; margin-bottom: 12px; }
+.ntr-card { margin-bottom: 12px; }
+.ntr-wan-rates { font-size: 13px; }
+.ntr-wan-head b { font-size: 16px; font-weight: 600; }
+.ntr-device-card .ntr-device-icon { width: 36px; height: 36px; }

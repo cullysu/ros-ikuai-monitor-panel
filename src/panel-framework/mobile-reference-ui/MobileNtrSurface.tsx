@@ -309,8 +309,8 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
 
       {/* 快捷入口：横向滑动 */}
       <div className="ntr-quick-h">
-        <button type="button" onClick={() => onNavigate("lineStatus")}><Wifi size={20} /><b>线路状态</b><small>WAN 出口与吞吐</small></button>
-        <button type="button" onClick={() => onNavigate("terminals")}><Smartphone size={20} /><b>终端监控</b><small>在线设备与流量</small></button>
+        <button type="button" onClick={() => onNavigate("lineStatus")}><Wifi size={20} /><b>线路状态</b><small>WAN 出口监控</small></button>
+        <button type="button" onClick={() => onNavigate("terminals")}><Smartphone size={20} /><b>终端监控</b><small>查看在线设备</small></button>
         <button type="button" onClick={() => onNavigate("logs")}><FileText size={20} /><b>系统日志</b><small>最近系统事件</small></button>
         <button type="button" onClick={() => onNavigate("interfaces")}><Settings size={20} /><b>接口总览</b><small>物理与逻辑接口</small></button>
       </div>
