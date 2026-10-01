@@ -689,3 +689,7 @@
 .ntr-mtile-ring .ntr-ring { flex: none; margin-top: 2px; }
 .ntr-mtile-ring .ntr-ring b { font-size: 26px !important; }
 .ntr-mtile-ring small { margin-top: 6px; }
+
+/* ============ 第九轮：字号归位 iOS 点值规格（截图改 DPR=1 后可量） ============ */
+.ntr-mtile-ring .ntr-ring b { font-size: 34px !important; }  /* 统计数字 32-36 规格 */
+.ntr-quick-h button b { font-size: 15.5px; }                 /* 快捷标题 15-17 规格 */
