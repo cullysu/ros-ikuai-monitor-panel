@@ -253,8 +253,10 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
     <TopBar title="首页" sub={SYSTEM_NAME} onRefresh={onRefresh} onSearch={onSearch} />
     <div className="ntr-scroll"><div className="ntr-content">
       <ErrorBanner evidence={evidence} state={state} />
-      {/* 异常通知条：健康时让位给内容 */}
-      {summary.tone !== "ok" ? <section className="ntr-card ntr-alertbar"><Dot tone={summary.tone} /><div><b>{summary.text}</b><small>{summary.note}</small></div></section> : null}
+      {/* 网络状态条：紧凑常驻 */}
+      <section className={"ntr-card ntr-statusbar"} data-tone={summary.tone}>
+        <Dot tone={summary.tone} /><b>{summary.text}</b><small>{summary.note}</small>
+      </section>
       {/* 设备卡（核心入口：大） */}
       <section className="ntr-card ntr-device-card">
         <button type="button" className="ntr-row" onClick={() => onShowConnection?.()}>
@@ -291,11 +293,11 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
       </div>
 
       {/* 实时流量：有数据才显示 */}
-      <section className="ntr-card">
+      {traffic && traffic.points && traffic.points.length >= 2 ? <section className="ntr-card">
         <div className="ntr-card-head">实时流量 <button className="ntr-link" type="button" onClick={() => onNavigate("lineStatus")}>最近 1 小时 <ChevronRight size={13} /></button></div>
         <div className="ntr-traffic-legend"><span><i className="down" />下行</span><span><i className="up" />上行</span></div>
         <TrafficChart traffic={traffic} />
-      </section>
+      </section> : null}
 
       {/* 快捷入口：横向滑动 */}
       <div className="ntr-quick-h">

@@ -630,3 +630,17 @@
   color: var(--ntr-sub); font-size: 13px;
 }
 .ntr-pullhint { display: none; }
+/* ============ 第六轮：尺寸全面收敛（信息密度优先） ============ */
+.ntr-device-card .ntr-device b { font-size: 20px; }
+.ntr-device-card .ntr-device-icon { width: 40px; height: 40px; border-radius: 12px; }
+.ntr-device-card .ntr-row { min-height: 56px; gap: 11px; padding: 10px 12px; }
+.ntr-stat-col { gap: 6px; }
+.ntr-ring b { font-size: 36px !important; font-weight: 800; }
+.ntr-tile-icon { width: 40px; height: 40px; border-radius: 12px; }
+.ntr-tile-icon svg { width: 20px; height: 20px; }
+.ntr-stat-tile b { font-size: 28px; }
+.ntr-statusbar { display: flex; align-items: center; gap: 9px; padding: 10px 14px; }
+.ntr-statusbar b { font-size: 13.5px; }
+.ntr-statusbar small { color: var(--ntr-sub); font-size: 12px; }
+.ntr-statusbar[data-tone="ok"] { border-color: rgba(34, 197, 94, .30); background: rgba(233, 249, 240, .78); }
+.ntr-statusbar[data-tone="warn"], .ntr-statusbar[data-tone="danger"] { border-color: rgba(245, 158, 11, .35); background: rgba(253, 244, 227, .85); }
