@@ -179,7 +179,7 @@ function Ring({ value, size = 52 }: { value: number | null; size?: number }) {
   const r = (size - 12) / 2, c = 2 * Math.PI * r, off = c * (1 - v / 100);
   return <div className="ntr-ring" style={{ width: size, height: size }}>
     <svg width={size} height={size}><circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef2f7" strokeWidth={size >= 80 ? 8 : 5} /><circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e9fff" strokeWidth={size >= 80 ? 8 : 5} strokeLinecap="round" strokeDasharray={`${c.toFixed(1)} ${c.toFixed(1)}`} strokeDashoffset={off.toFixed(1)} transform={`rotate(-90 ${size / 2} ${size / 2})`} /></svg>
-    <b style={size >= 80 ? { fontSize: 30, fontWeight: 800 } : undefined}>{value === null ? "—" : `${Math.round(value)}%`}</b>
+    <b style={size >= 80 ? { fontSize: 32, fontWeight: 800 } : undefined}>{value === null ? "—" : `${Math.round(value)}%`}</b>
   </div>;
 }
 
@@ -251,7 +251,7 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
   const traffic = evidence.traffic && evidence.traffic.status === "ready" ? evidence.traffic : null;
   const healthy = state.verdict.level === "ok";
   const summary = healthy
-    ? { tone: "ok" as Tone, text: "网络正常", note: `${wanOnline} 条宽带在线` }
+    ? { tone: "ok" as Tone, text: "网络正常", note: `${wanOnline}/${wans.length} 在线` }
     : { tone: "warn" as Tone, text: state.verdict.label || "需要注意", note: state.verdict.summary || evidence.verdictSummary };
   const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v)}%`);
 
@@ -275,12 +275,11 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         </button>
       </section>
 
-      <div className="ntr-section-label">当前概览</div>
       {/* 三列核心指标（健康 App 式纯数字） */}
       <div className="ntr-grid3">
-        <button className="ntr-mtile" onClick={() => onNavigate("trafficLoad")}><b>{pct(cpu)}</b><small>CPU 使用率</small></button>
-        <button className="ntr-mtile" onClick={() => onNavigate("trafficLoad")}><b>{pct(memory)}</b><small>内存使用率</small></button>
-        <button className="ntr-mtile" onClick={() => onNavigate("trafficLoad")}><b>{pct(disk)}</b><small>磁盘使用率</small></button>
+        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={cpu} size={80} /><small>CPU</small></button>
+        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={memory} size={80} /><small>内存</small></button>
+        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={disk} size={80} /><small>磁盘</small></button>
       </div>
 
       {/* 实时流量图（有数据才显示） */}
@@ -295,8 +294,8 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
         <button type="button" onClick={() => onNavigate("lineStatus")}>
           <div className="ntr-wan-head"><Globe size={18} /><b>宽带线路</b><span>{wanOnline} / {wans.length} 在线</span><Chev /></div>
           <div className="ntr-wan-rates">
-            <span><i className="down" />下行 {downRate === null ? "—" : fmtRate(downRate)}bps</span>
-            <span><i className="up" />上行 {upRate === null ? "—" : fmtRate(upRate)}bps</span>
+            <span><i className="down" />下行 {downRate === null ? "—" : fmtRate(downRate)} bps</span>
+            <span><i className="up" />上行 {upRate === null ? "—" : fmtRate(upRate)} bps</span>
             <span>连接 {connTotal === null ? "—" : connTotal}</span>
           </div>
         </button>
@@ -304,8 +303,8 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
 
       {/* 次要指标两列 */}
       <div className="ntr-grid2">
-        <button className="ntr-mtile" onClick={() => onNavigate("terminals")}><b>{connected}<span className="ntr-mtile-sub"> / {terminals.length}</span></b><small>在线设备（台）</small></button>
-        <button className="ntr-mtile" onClick={() => onNavigate("lineStatus")}><b>{wanOnline}<span className="ntr-mtile-sub"> / {wans.length}</span></b><small>活动 WAN 线路</small></button>
+        <button className="ntr-mtile" onClick={() => onNavigate("terminals")}><span className="ntr-tile-icon"><Monitor size={20} /></span><b className="ntr-accent">{connected}<span className="ntr-mtile-sub"> / {terminals.length}</span></b><small>在线设备（台）</small></button>
+        <button className="ntr-mtile" onClick={() => onNavigate("lineStatus")}><span className="ntr-tile-icon" data-tone="ok"><Globe size={20} /></span><b className="ntr-accent">{wanOnline}<span className="ntr-mtile-sub"> / {wans.length}</span></b><small>活动 WAN 线路</small></button>
       </div>
 
       {/* 快捷入口：横向滑动 */}

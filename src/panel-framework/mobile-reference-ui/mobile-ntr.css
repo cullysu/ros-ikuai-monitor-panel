@@ -668,3 +668,20 @@
 .ntr-wan-rates i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; }
 .ntr-wan-rates i.down { background: var(--ntr-blue); }
 .ntr-wan-rates i.up { background: var(--ntr-green); }
+/* ============ 第八轮：层次系统（P0 五条） ============ */
+/* 1 状态条瘦身 */
+.ntr-statusbar { padding: 7px 12px; }
+.ntr-statusbar b { font-size: 13px; font-weight: 700; }
+.ntr-statusbar small { margin-left: auto; }
+/* 2 设备卡层次：名 20px 中等粗细，副标题 14px 细体 */
+.ntr-device-card .ntr-device b { font-size: 20px; font-weight: 650; }
+.ntr-device-card .ntr-device small { font-size: 14px; font-weight: 400; color: var(--ntr-sub); }
+/* 3 环形指标卡 */
+.ntr-mtile-ring { align-items: center; gap: 8px; padding: 10px 8px; }
+.ntr-mtile-ring small { font-size: 12px; }
+/* 4 次级卡数字蓝色强调 */
+.ntr-accent { color: var(--ntr-blue-deep); }
+.ntr-accent .ntr-mtile-sub { color: var(--ntr-sub); }
+/* 5 快捷入口统一：灰玻璃底 + 爱快蓝图标 */
+.ntr-quick-h button { background: rgba(244, 248, 252, .72) !important; }
+.ntr-quick-h button svg { color: var(--ntr-blue) !important; }
