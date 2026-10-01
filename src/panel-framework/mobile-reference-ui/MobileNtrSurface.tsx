@@ -277,9 +277,9 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
 
       {/* 三列核心指标（健康 App 式纯数字） */}
       <div className="ntr-grid3">
-        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={cpu} size={80} /><small>CPU</small></button>
-        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={memory} size={80} /><small>内存</small></button>
-        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={disk} size={80} /><small>磁盘</small></button>
+        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={cpu} size={72} /><small>CPU</small></button>
+        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={memory} size={72} /><small>内存</small></button>
+        <button className="ntr-mtile ntr-mtile-ring" onClick={() => onNavigate("trafficLoad")}><Ring value={disk} size={72} /><small>磁盘</small></button>
       </div>
 
       {/* 实时流量图（有数据才显示） */}

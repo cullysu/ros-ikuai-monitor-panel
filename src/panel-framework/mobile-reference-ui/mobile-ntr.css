@@ -685,3 +685,7 @@
 /* 5 快捷入口统一：灰玻璃底 + 爱快蓝图标 */
 .ntr-quick-h button { background: rgba(244, 248, 252, .72) !important; }
 .ntr-quick-h button svg { color: var(--ntr-blue) !important; }
+/* 环形卡呼吸空间 */
+.ntr-mtile-ring .ntr-ring { flex: none; margin-top: 2px; }
+.ntr-mtile-ring .ntr-ring b { font-size: 26px !important; }
+.ntr-mtile-ring small { margin-top: 6px; }
