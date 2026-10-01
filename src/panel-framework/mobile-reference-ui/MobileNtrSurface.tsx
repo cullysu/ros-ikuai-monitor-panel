@@ -266,8 +266,8 @@ function HomePage({ evidence, snapshot, state, onNavigate, onRefresh, onShowConn
 
       {/* 2x2 指标 */}
       <div className="ntr-grid2">
-        <section className="ntr-card ntr-stat"><div className="ntr-ring-wrap"><Ring value={cpu} /><div><small style={{ color: "var(--ntr-sub)", fontSize: 12 }}>CPU 使用率</small><b style={{ display: "block", fontSize: 17 }}>{cpu === null ? "—" : `${Math.round(cpu)}%`}</b></div></div></section>
-        <section className="ntr-card ntr-stat"><div className="ntr-ring-wrap"><Ring value={memory} /><div><small style={{ color: "var(--ntr-sub)", fontSize: 12 }}>内存使用率</small><b style={{ display: "block", fontSize: 17 }}>{memory === null ? "—" : `${Math.round(memory)}%`}</b></div></div></section>
+        <section className="ntr-card ntr-stat-col"><small>CPU 使用率</small><div className="ntr-ring-wrap"><Ring value={cpu} size={64} /></div></section>
+        <section className="ntr-card ntr-stat-col"><small>内存使用率</small><div className="ntr-ring-wrap"><Ring value={memory} size={64} /></div></section>
         <section className="ntr-card ntr-stat">
           <button type="button" className="ntr-row" style={{ padding: 0 }} onClick={() => onNavigate("terminals")}>
             <span className="ntr-stat-icon"><Monitor size={18} /></span>
@@ -322,16 +322,26 @@ function SubPage({ title, onBack, children, onRefresh, evidence, state }: { titl
 }
 
 /* ============ Hub 页（网络/安全/日志） ============ */
-function HubPage({ title, onBack, summary, summaryTone, entries }: { title: string; onBack: () => void; summary: string; summaryTone: Tone; entries: Array<{ icon: React.ReactNode; label: string; sub?: string; tone?: Tone; onClick: () => void }> }) {
+function HubPage({ title, onBack, summary, summaryTone, entries, groups, summaryCards }: { title: string; onBack: () => void; summary?: string; summaryTone?: Tone; entries?: Array<{ icon: React.ReactNode; label: string; sub?: string; tone?: Tone; onClick: () => void }>; groups?: Array<{ title: string; entries: Array<{ icon: React.ReactNode; label: string; sub?: string; tone?: Tone; onClick: () => void }> }>; summaryCards?: Array<{ label: string; value: string; note: string; tone: Tone }> }) {
+  const renderEntry = (entry: { icon: React.ReactNode; label: string; sub?: string; tone?: Tone; onClick: () => void }, i: number) => (
+    <button key={i} type="button" className="ntr-entry" onClick={entry.onClick}>
+      <span className="ntr-entry-icon" data-tone={entry.tone || "ok"}>{entry.icon}</span>
+      <div className="ntr-entry-main"><b>{entry.label}</b>{entry.sub ? <small>{entry.sub}</small> : null}</div>
+      <Chev />
+    </button>
+  );
   return <SubPage title={title} onBack={onBack}>
-    <section className="ntr-card"><div className="ntr-hub-summary"><Dot tone={summaryTone} /><div><b>{summary}</b></div></div></section>
-    <section className="ntr-card ntr-rows">{entries.map((entry, i) => (
-      <button key={i} type="button" className="ntr-entry" onClick={entry.onClick}>
-        <span className="ntr-entry-icon" data-tone={entry.tone || "ok"}>{entry.icon}</span>
-        <div className="ntr-entry-main"><b>{entry.label}</b>{entry.sub ? <small>{entry.sub}</small> : null}</div>
-        <Chev />
-      </button>
-    ))}</section>
+    {summaryCards ? <div className="ntr-grid2">
+      {summaryCards.map((card, i) => <section key={i} className="ntr-card ntr-hub-tile">
+        <small>{card.label}</small>
+        <b data-tone={card.tone}>{card.value}</b>
+        <em>{card.note}</em>
+      </section>)}
+    </div> : summary ? <section className="ntr-card"><div className="ntr-hub-summary"><Dot tone={summaryTone || "muted"} /><div><b>{summary}</b></div></div></section> : null}
+    {groups ? groups.map((group, gi) => <section key={gi} className="ntr-group">
+      <h3 className="ntr-group-title">{group.title}</h3>
+      <div className="ntr-card ntr-rows">{group.entries.map(renderEntry)}</div>
+    </section>) : <section className="ntr-card ntr-rows">{(entries || []).map(renderEntry)}</section>}
   </SubPage>;
 }
 
@@ -345,19 +355,27 @@ function NetworkHub(props: NtrProps) {
   const interfaces = useMemo(() => interfaceRows(snapshot), [snapshot]);
   const ifOnline = interfaces.filter((i) => i.running).length;
   return <HubPage title="网络总览" onBack={() => onNavigate("overview", { replace: true })}
-    summary={`${online} / ${wans.length} 条 WAN 在线 · ${ifOnline} / ${interfaces.length} 个接口运行`}
-    summaryTone={online > 0 ? "ok" : wanOffline > 0 ? "danger" : "muted"}
-    entries={[
-      { icon: <Wifi size={17} />, label: "宽带线路", sub: `${online} 在线 / ${wanOffline} 离线${wanUnknown ? ` / ${wanUnknown} 未采集` : ""}`, tone: online === wans.length ? "ok" : "warn", onClick: () => onNavigate("lineStatus", { objectId: "__lines__" }) },
-      { icon: <Globe size={17} />, label: "接口总览", sub: `${interfaces.length} 个接口`, onClick: () => onNavigate("interfaces") },
-      { icon: <Activity size={17} />, label: "静态路由", sub: "路由表配置与状态", onClick: () => onNavigate("routes") },
-      { icon: <Activity size={17} />, label: "分流监控", sub: "分流规则命中统计", onClick: () => onNavigate("balance") },
-      { icon: <Activity size={17} />, label: "流量负载", sub: "多线负载均衡状态", onClick: () => onNavigate("trafficLoad") },
-      { icon: <Activity size={17} />, label: "负载审计", sub: "负载历史数据分析", onClick: () => onNavigate("loadAudit") },
-      { icon: <BookOpen size={17} />, label: "DHCP 服务", sub: "地址池与租约列表", onClick: () => onNavigate("dhcp") },
-      { icon: <Globe size={17} />, label: "DNS-IPv4", sub: "IPv4 DNS 服务器配置", onClick: () => onNavigate("dns4") },
-      { icon: <Globe size={17} />, label: "DNS-IPv6", sub: "IPv6 DNS 服务器配置", onClick: () => onNavigate("dns6") },
-      { icon: <ShieldCheck size={17} />, label: "DNS 与代理体检", sub: "解析测试与连通性检查", onClick: () => onNavigate("readonlyDiagnostics") },
+    summaryCards={[
+      { label: "WAN 线路", value: `${online} / ${wans.length}`, note: wanOffline ? `${wanOffline} 条离线` : wanUnknown ? `${wanUnknown} 条未采集` : "全部在线", tone: online === wans.length ? "ok" : wanOffline > 0 ? "danger" : "muted" },
+      { label: "接　　口", value: `${ifOnline} / ${interfaces.length}`, note: ifOnline === interfaces.length ? "全部运行" : `${interfaces.length - ifOnline} 个未运行`, tone: ifOnline === interfaces.length ? "ok" : "muted" },
+    ]}
+    groups={[
+      { title: "连接状态", entries: [
+        { icon: <Wifi size={17} />, label: "宽带线路", sub: `${online} 在线 / ${wanOffline} 离线${wanUnknown ? ` / ${wanUnknown} 未采集` : ""}`, tone: online === wans.length ? "ok" : "warn", onClick: () => onNavigate("lineStatus", { objectId: "__lines__" }) },
+        { icon: <Globe size={17} />, label: "接口总览", sub: `${interfaces.length} 个接口`, onClick: () => onNavigate("interfaces") },
+        { icon: <Activity size={17} />, label: "静态路由", sub: "路由表配置与状态", onClick: () => onNavigate("routes") },
+      ] },
+      { title: "流量管理", entries: [
+        { icon: <Activity size={17} />, label: "分流监控", sub: "分流规则命中统计", onClick: () => onNavigate("balance") },
+        { icon: <Activity size={17} />, label: "流量负载", sub: "多线负载均衡状态", onClick: () => onNavigate("trafficLoad") },
+        { icon: <Activity size={17} />, label: "负载审计", sub: "负载历史数据分析", onClick: () => onNavigate("loadAudit") },
+      ] },
+      { title: "网络服务", entries: [
+        { icon: <BookOpen size={17} />, label: "DHCP 服务", sub: "地址池与租约列表", onClick: () => onNavigate("dhcp") },
+        { icon: <Globe size={17} />, label: "DNS-IPv4", sub: "IPv4 DNS 服务器配置", onClick: () => onNavigate("dns4") },
+        { icon: <Globe size={17} />, label: "DNS-IPv6", sub: "IPv6 DNS 服务器配置", onClick: () => onNavigate("dns6") },
+        { icon: <ShieldCheck size={17} />, label: "DNS 与代理体检", sub: "解析测试与连通性检查", onClick: () => onNavigate("readonlyDiagnostics") },
+      ] },
     ]} />;
 }
 
